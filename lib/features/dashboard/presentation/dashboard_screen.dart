@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../buy_crypto/presentation/buy_crypto_flow.dart';
 import '../../crypto/presentation/crypto_full_flow.dart';
+import '../../gift_cards/presentation/gift_card_flow.dart';
 
 const _dashboardAssetRoot = 'assets/images/dashboard';
 
@@ -61,7 +62,7 @@ class _DavochainDashboardScreenState extends State<DavochainDashboardScreen> {
                 child: _QuickActions(
                   onBuy: () => startBuyCryptoFlow(context),
                   onSell: () => startSellCryptoFlow(context),
-                  onGift: () => _showComingSoon('Gift Cards'),
+                  onGift: () => startGiftCardFlow(context),
                   onHistory: () => _showComingSoon('History'),
                 ),
               ),
@@ -115,6 +116,14 @@ class _DavochainDashboardScreenState extends State<DavochainDashboardScreen> {
         index: _navIndex,
         onChanged: (index) {
           if (index == 0) return;
+          if (index == 2) {
+            HapticFeedback.selectionClick();
+            startGiftCardFlow(context).whenComplete(() {
+              if (mounted) setState(() => _navIndex = 0);
+            });
+            setState(() => _navIndex = index);
+            return;
+          }
           setState(() => _navIndex = index);
           _showComingSoon(['Home', 'Trade', 'Gift Cards', 'Settings'][index]);
           Future<void>.delayed(const Duration(milliseconds: 250), () {
