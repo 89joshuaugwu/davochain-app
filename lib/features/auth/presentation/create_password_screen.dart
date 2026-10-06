@@ -135,7 +135,7 @@ class _CreatePasswordScreenState extends State<CreatePasswordScreen> {
   void _continue() {
     FocusManager.instance.primaryFocus?.unfocus();
     Navigator.of(context).pushNamedAndRemoveUntil(
-      AppRoutes.login,
+      AppRoutes.emailVerification,
       (route) => route.settings.name == AppRoutes.onboarding || route.isFirst,
     );
   }

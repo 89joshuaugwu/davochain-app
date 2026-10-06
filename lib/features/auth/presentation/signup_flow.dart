@@ -8,6 +8,24 @@ import 'create_password_screen.dart';
 
 const _iconRoot = 'assets/icons/auth';
 
+class _CountryOption {
+  const _CountryOption(this.name, this.dialCode, this.flag, this.maxDigits);
+
+  final String name;
+  final String dialCode;
+  final String flag;
+  final int maxDigits;
+}
+
+const _countries = <_CountryOption>[
+  _CountryOption('Nigeria', '+234', '🇳🇬', 10),
+  _CountryOption('Ghana', '+233', '🇬🇭', 9),
+  _CountryOption('Kenya', '+254', '🇰🇪', 9),
+  _CountryOption('South Africa', '+27', '🇿🇦', 9),
+  _CountryOption('United Kingdom', '+44', '🇬🇧', 10),
+  _CountryOption('United States', '+1', '🇺🇸', 10),
+];
+
 class CountrySelectionScreen extends StatefulWidget {
   const CountrySelectionScreen({super.key});
 
@@ -16,7 +34,7 @@ class CountrySelectionScreen extends StatefulWidget {
 }
 
 class _CountrySelectionScreenState extends State<CountrySelectionScreen> {
-  String? _country;
+  _CountryOption? _country;
   bool _agreed = false;
 
   bool get _canContinue => _country != null && _agreed;
@@ -65,7 +83,7 @@ class _CountrySelectionScreenState extends State<CountrySelectionScreen> {
               onPressed: _canContinue
                   ? () => pushAppPage<void>(
                         context,
-                        (_) => AccountDetailsScreen(country: _country!),
+                        (_) => _AccountDetailsScreen(country: _country!),
                       )
                   : null,
             ),
@@ -77,7 +95,7 @@ class _CountrySelectionScreenState extends State<CountrySelectionScreen> {
   }
 
   Future<void> _pickCountry() async {
-    final selected = await showModalBottomSheet<String>(
+    final selected = await showModalBottomSheet<_CountryOption>(
       context: context,
       useSafeArea: true,
       showDragHandle: true,
@@ -94,7 +112,7 @@ class _CountrySelectionScreenState extends State<CountrySelectionScreen> {
 class _CountryField extends StatelessWidget {
   const _CountryField({required this.country, required this.onTap});
 
-  final String? country;
+  final _CountryOption? country;
   final VoidCallback onTap;
 
   @override
@@ -113,9 +131,13 @@ class _CountryField extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Row(
             children: [
+              if (country != null) ...[
+                Text(country!.flag, style: const TextStyle(fontSize: 20)),
+                const SizedBox(width: 10),
+              ],
               Expanded(
                 child: Text(
-                  country ?? 'Select your country',
+                  country?.name ?? 'Select your country',
                   style: TextStyle(
                     fontSize: 16,
                     height: 1.35,
@@ -207,13 +229,6 @@ class _AgreementCopy extends StatelessWidget {
 class _CountryPickerSheet extends StatelessWidget {
   const _CountryPickerSheet();
 
-  static const countries = [
-    ('Nigeria', '+234', 'assets/icons/auth/ng_flag.png'),
-    ('Ghana', '+233', null),
-    ('Kenya', '+254', null),
-    ('South Africa', '+27', null),
-  ];
-
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -224,19 +239,14 @@ class _CountryPickerSheet extends StatelessWidget {
         children: [
           Text('Select your country', style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: 12),
-          ...countries.map(
+          ..._countries.map(
             (country) => ListTile(
               contentPadding: EdgeInsets.zero,
-              onTap: () => Navigator.pop(context, country.$1),
-              leading: country.$3 == null
-                  ? const CircleAvatar(
-                      radius: 12,
-                      backgroundColor: AppColors.primarySoft,
-                      child: Icon(Icons.public, size: 14, color: AppColors.primary),
-                    )
-                  : Image.asset(country.$3!, width: 28, height: 19, fit: BoxFit.cover),
-              title: Text(country.$1),
-              trailing: Text(country.$2, style: Theme.of(context).textTheme.bodyMedium),
+              minLeadingWidth: 34,
+              onTap: () => Navigator.pop(context, country),
+              leading: Text(country.flag, style: const TextStyle(fontSize: 26)),
+              title: Text(country.name),
+              trailing: Text(country.dialCode, style: Theme.of(context).textTheme.bodyMedium),
             ),
           ),
         ],
@@ -245,16 +255,16 @@ class _CountryPickerSheet extends StatelessWidget {
   }
 }
 
-class AccountDetailsScreen extends StatefulWidget {
-  const AccountDetailsScreen({super.key, required this.country});
+class _AccountDetailsScreen extends StatefulWidget {
+  const _AccountDetailsScreen({required this.country});
 
-  final String country;
+  final _CountryOption country;
 
   @override
-  State<AccountDetailsScreen> createState() => _AccountDetailsScreenState();
+  State<_AccountDetailsScreen> createState() => _AccountDetailsScreenState();
 }
 
-class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
+class _AccountDetailsScreenState extends State<_AccountDetailsScreen> {
   final _name = TextEditingController();
   final _email = TextEditingController();
   final _phone = TextEditingController();
@@ -265,7 +275,7 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
   bool get _canContinue =>
       _name.text.trim().length >= 2 &&
       _isValidEmail(_email.text.trim()) &&
-      _phone.text.replaceAll(RegExp(r'\D'), '').length >= 10;
+      _phone.text.replaceAll(RegExp(r'\D'), '').length >= widget.country.maxDigits;
 
   @override
   void dispose() {
@@ -338,7 +348,7 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
                     const SizedBox(height: 16),
                     Entrance(
                       delay: const Duration(milliseconds: 130),
-                      child: _PhoneField(controller: _phone, onChanged: _refresh),
+                      child: _PhoneField(country: widget.country, controller: _phone, onChanged: _refresh),
                     ),
                     const SizedBox(height: 16),
                     Entrance(
@@ -376,8 +386,9 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
 }
 
 class _PhoneField extends StatelessWidget {
-  const _PhoneField({required this.controller, required this.onChanged});
+  const _PhoneField({required this.country, required this.controller, required this.onChanged});
 
+  final _CountryOption country;
   final TextEditingController controller;
   final VoidCallback onChanged;
 
@@ -394,18 +405,20 @@ class _PhoneField extends StatelessWidget {
         Row(
           children: [
             Container(
-              width: 67,
               height: 48,
+              constraints: const BoxConstraints(minWidth: 82),
+              padding: const EdgeInsets.symmetric(horizontal: 9),
               decoration: BoxDecoration(
                 border: Border.all(color: AppColors.border),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Row(
+                mainAxisSize: MainAxisSize.min,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Image.asset('$_iconRoot/ng_flag.png', width: 21, height: 14),
-                  const SizedBox(width: 2),
-                  const Text('+234', style: TextStyle(fontSize: 12, color: AppColors.body)),
+                  Text(country.flag, style: const TextStyle(fontSize: 18)),
+                  const SizedBox(width: 5),
+                  Text(country.dialCode, style: const TextStyle(fontSize: 12, color: AppColors.body)),
                 ],
               ),
             ),
@@ -418,11 +431,14 @@ class _PhoneField extends StatelessWidget {
                   keyboardType: TextInputType.phone,
                   textInputAction: TextInputAction.next,
                   autofillHints: const [AutofillHints.telephoneNumberNational],
-                  inputFormatters: [FilteringTextInputFormatter.digitsOnly, LengthLimitingTextInputFormatter(10)],
+                  inputFormatters: [
+                    FilteringTextInputFormatter.digitsOnly,
+                    LengthLimitingTextInputFormatter(country.maxDigits),
+                  ],
                   onChanged: (_) => onChanged(),
                   style: const TextStyle(fontSize: 14, color: AppColors.bodyMuted),
                   decoration: InputDecoration(
-                    hintText: '9062568004',
+                    hintText: country.name == 'Nigeria' ? '9062568004' : 'Phone number',
                     hintStyle: const TextStyle(fontSize: 14, color: AppColors.muted),
                     contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                     enabledBorder: OutlineInputBorder(

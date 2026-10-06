@@ -33,11 +33,11 @@ class _BrandSplashScreenState extends State<BrandSplashScreen>
 
     _intro = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 760),
+      duration: const Duration(milliseconds: 680),
     )..forward();
     _ambient = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 3000),
+      duration: const Duration(milliseconds: 2200),
     )..repeat(reverse: true);
 
     _timer = Timer(const Duration(milliseconds: 1650), _openOnboarding);
@@ -56,14 +56,14 @@ class _BrandSplashScreenState extends State<BrandSplashScreen>
     Navigator.of(context).pushReplacement(
       PageRouteBuilder<void>(
         settings: const RouteSettings(name: '/onboarding'),
-        transitionDuration: const Duration(milliseconds: 620),
+        transitionDuration: const Duration(milliseconds: 520),
         pageBuilder: (_, animation, __) => const OnboardingScreen(),
         transitionsBuilder: (_, animation, __, child) {
           final curved = CurvedAnimation(parent: animation, curve: Curves.easeOutCubic);
           return FadeTransition(
             opacity: curved,
             child: ScaleTransition(
-              scale: Tween<double>(begin: 1.012, end: 1).animate(curved),
+              scale: Tween<double>(begin: 1.008, end: 1).animate(curved),
               child: child,
             ),
           );
@@ -75,6 +75,7 @@ class _BrandSplashScreenState extends State<BrandSplashScreen>
   @override
   Widget build(BuildContext context) {
     final reduceMotion = MediaQuery.disableAnimationsOf(context);
+    final size = MediaQuery.sizeOf(context);
     final introCurve = CurvedAnimation(parent: _intro, curve: Curves.easeOutBack);
 
     return Scaffold(
@@ -82,42 +83,39 @@ class _BrandSplashScreenState extends State<BrandSplashScreen>
       body: Stack(
         fit: StackFit.expand,
         children: [
-          const _SplashGlow(),
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: FractionallySizedBox(
-              widthFactor: 1.18,
-              child: Opacity(
-                opacity: .86,
-                child: Image.asset(
-                  'assets/images/brand/native_splash_branding.png',
-                  height: MediaQuery.sizeOf(context).height * .205,
-                  fit: BoxFit.cover,
-                  alignment: Alignment.topCenter,
-                ),
-              ),
+          // Matches the Figma splash composition: clean cobalt field with the
+          // outlined crypto artwork anchored to the bottom edge.
+          Positioned(
+            left: size.width * .18,
+            right: size.width * .18,
+            bottom: math.max(34.0, size.height * .055),
+            child: Image.asset(
+              'assets/images/brand/native_splash_branding.png',
+              height: math.min(92.0, size.height * .105),
+              fit: BoxFit.contain,
+              alignment: Alignment.center,
+              filterQuality: FilterQuality.high,
             ),
           ),
-          Center(
+          Align(
+            alignment: const Alignment(0, -.015),
             child: AnimatedBuilder(
               animation: Listenable.merge([_intro, _ambient]),
               builder: (context, child) {
-                final wave = math.sin(_ambient.value * math.pi);
-                final dy = reduceMotion ? 0.0 : wave * 4;
-                final scale = reduceMotion ? 1.0 : .88 + introCurve.value * .12;
+                final pulse = reduceMotion ? 0.0 : math.sin(_ambient.value * math.pi) * 1.5;
                 return Opacity(
-                  opacity: Curves.easeOut.transform(_intro.value.clamp(0.0, 1.0).toDouble()),
+                  opacity: Curves.easeOut.transform(_intro.value.clamp(0.0, 1.0)),
                   child: Transform.translate(
-                    offset: Offset(0, dy + (1 - _intro.value) * 14),
-                    child: Transform.scale(scale: scale, child: child),
+                    offset: Offset(0, (1 - _intro.value) * 12 + pulse),
+                    child: Transform.scale(
+                      scale: reduceMotion ? 1 : .9 + introCurve.value * .1,
+                      child: child,
+                    ),
                   ),
                 );
               },
-              child: Image.asset(
-                'assets/images/brand/native_splash_lockup.png',
-                width: math.min(MediaQuery.sizeOf(context).width * .69, 300.0),
-                fit: BoxFit.contain,
-                filterQuality: FilterQuality.high,
+              child: _WhiteDavochainLockup(
+                width: math.min(size.width * .72, 305.0),
               ),
             ),
           ),
@@ -127,19 +125,42 @@ class _BrandSplashScreenState extends State<BrandSplashScreen>
   }
 }
 
-class _SplashGlow extends StatelessWidget {
-  const _SplashGlow();
+class _WhiteDavochainLockup extends StatelessWidget {
+  const _WhiteDavochainLockup({required this.width});
+
+  final double width;
 
   @override
   Widget build(BuildContext context) {
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        gradient: RadialGradient(
-          center: const Alignment(0, -.02),
-          radius: .48,
-          colors: [
-            Colors.white.withOpacity(.12),
-            Colors.transparent,
+    return SizedBox(
+      width: width,
+      child: FittedBox(
+        fit: BoxFit.contain,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ColorFiltered(
+              colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
+              child: Image.asset(
+                'assets/images/brand/davochain_logo.png',
+                width: 60,
+                height: 40,
+                fit: BoxFit.contain,
+                filterQuality: FilterQuality.high,
+              ),
+            ),
+            const SizedBox(width: 8),
+            const Text(
+              'Davochain',
+              style: TextStyle(
+                fontFamily: 'Sora',
+                fontSize: 42,
+                fontWeight: FontWeight.w700,
+                color: Colors.white,
+                letterSpacing: .42,
+                height: 1,
+              ),
+            ),
           ],
         ),
       ),

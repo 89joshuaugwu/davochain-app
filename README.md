@@ -1,91 +1,40 @@
-# Davochain Flutter App — Onboarding + Authentication Milestone
+# Davochain Flutter App
 
-This package implements the Davochain mobile UI milestone from the connected Figma design, with Davochain branding throughout.
+Current milestone: **v4 Dashboard + Deposit Flow**.
 
 ## Included
 
-### Launch / onboarding
-- Native splash configuration using Davochain blue (`#135CF7`).
-- Davochain mark + wordmark launch lockup and lower geometric branding.
-- Animated Flutter brand splash with a seamless hand-off from the native launch screen.
-- A **single stateful onboarding screen shell** for:
-  - Trade Crypto, Your Way
-  - Simple. Fast. Secure.
-  - Turn Gift Cards Into Cash
-- Smooth illustration/text/progress transitions without neighboring-page bleed.
-- Horizontal swipe gestures, Next, Skip, Create Account, and Login actions.
-- Reduced-motion support.
+- Davochain branded native + Flutter splash matching the cobalt Figma treatment
+- Animated onboarding carousel/state flow
+- Multi-country account setup (Nigeria, Ghana, Kenya, South Africa, UK, US)
+- Create account, password strength, login and forgot-password flows
+- Email/SMS OTP verification with shake + haptic error feedback
+- Transaction PIN creation/confirmation
+- Davochain dashboard matching the connected Figma dashboard section
+- Portfolio view and allocation states
+- Deposit wallet selector + add-currency bottom sheet
+- Crypto deposit screen with QR/address/copy/guidelines/share UI
+- Davochain NGD bank-deposit screen with copy/share states
+- Figma-style copied-success toast
+- Shared navigation and motion transitions
 
-### Create account
-- Country selection state + consent checkbox.
-- Animated country picker bottom sheet.
-- Account details form with full name, email, Nigerian phone prefix/flag, and referral code.
-- Live email validation and enabled/disabled Continue state.
-- All visible Davochain auth assets are local; there are no temporary Figma URLs in the source.
-
-### Create password
-- Password visibility toggle.
-- Animated strength meter: low / medium / strong.
-- Live password criteria.
-- Confirm-password mismatch/match states.
-- Continue is enabled only when the password is strong and both entries match.
-
-### Login / password recovery
-- Login form with enabled/disabled button state.
-- Forgot-password flow implemented as **one route with animated state changes**:
-  1. account email
-  2. OTP entry
-  3. set new password
-  4. password-updated confirmation
-- OTP error state is available for prototype testing (`0000` intentionally shows the Figma error state).
-- Reset-password criteria and matching validation.
-- Animated success confirmation.
-
-## First run
-
-If Android/iOS host folders already exist:
+## Run locally
 
 ```bash
 flutter pub get
-dart run flutter_native_splash:create
 flutter run
 ```
 
-If this source package is placed into a fresh folder without platform host projects, generate them first:
+If your local project already has `android/` and `ios/`, keep those folders and merge this source into the project. Run `setup_windows.bat` after merging when native splash assets change.
+
+## Native splash
+
+The native splash configuration is in `pubspec.yaml`. To regenerate it manually:
 
 ```bash
-flutter create .
-flutter pub get
 dart run flutter_native_splash:create
-flutter run
 ```
 
-> The `flutter_native_splash:create` command is important. It replaces the default white native Flutter launch screen with the Davochain launch treatment before Dart/Flutter starts rendering.
+## API status
 
-## Validation commands
-
-```bash
-flutter analyze
-flutter test
-```
-
-The build workspace used to prepare this handoff does not include the Flutter SDK, so those Flutter CLI commands must be run in the local Flutter environment before release packaging.
-
-## Structure
-
-```text
-lib/
-  core/
-    navigation/
-    theme/
-  features/
-    auth/presentation/
-    onboarding/presentation/
-  shared/widgets/
-assets/
-  icons/auth/
-  images/brand/
-  images/onboarding/
-```
-
-The current code intentionally keeps Figma **visual states** as state changes/components rather than creating a route for every screenshot.
+This milestone is frontend/prototype wiring. Authentication, live balances, crypto settlement, bank account generation, real OTP validation and real transaction APIs still need the Davochain backend endpoints.
