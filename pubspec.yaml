@@ -1,5 +1,5 @@
 name: davochain
-version: 0.7.0+8
+version: 0.8.0+9
 publish_to: 'none'
 description: Davochain Flutter mobile application.
 
@@ -24,6 +24,7 @@ flutter:
     - assets/images/onboarding/
     - assets/images/dashboard/
     - assets/images/figma/
+    - assets/images/figma/crypto_full/
     - assets/icons/auth/
     - assets/icons/figma/
 

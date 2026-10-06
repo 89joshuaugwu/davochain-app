@@ -1,9 +1,9 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../../core/theme/app_theme.dart';
 import '../../buy_crypto/presentation/buy_crypto_flow.dart';
+import '../../crypto/presentation/crypto_full_flow.dart';
 
 const _dashboardAssetRoot = 'assets/images/dashboard';
 
@@ -50,7 +50,7 @@ class _DavochainDashboardScreenState extends State<DavochainDashboardScreen> {
                   visible: _balanceVisible,
                   onVisibilityToggle: () => setState(() => _balanceVisible = !_balanceVisible),
                   onDeposit: _openWalletSelector,
-                  onWithdraw: () => _showComingSoon('Withdraw'),
+                  onWithdraw: () => startWithdrawFlow(context),
                 ),
               ),
               const SizedBox(height: 16),
@@ -60,7 +60,7 @@ class _DavochainDashboardScreenState extends State<DavochainDashboardScreen> {
                 index: 3,
                 child: _QuickActions(
                   onBuy: () => startBuyCryptoFlow(context),
-                  onSell: () => _showComingSoon('Sell Crypto'),
+                  onSell: () => startSellCryptoFlow(context),
                   onGift: () => _showComingSoon('Gift Cards'),
                   onHistory: () => _showComingSoon('History'),
                 ),
@@ -384,14 +384,13 @@ class _BalanceCard extends StatelessWidget {
 class _BalanceActionButton extends StatelessWidget {
   const _BalanceActionButton({
     required this.light,
-    this.assetPath,
+    required this.assetPath,
     required this.label,
     required this.onTap,
-  }) : icon = null;
+  });
 
   final bool light;
-  final IconData? icon;
-  final String? assetPath;
+  final String assetPath;
   final String label;
   final VoidCallback onTap;
 
@@ -408,10 +407,7 @@ class _BalanceActionButton extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              if (assetPath != null)
-                Image.asset(assetPath!, width: 20, height: 20, fit: BoxFit.contain)
-              else
-                Icon(icon, size: 19, color: light ? AppColors.primary : Colors.white),
+              Image.asset(assetPath, width: 20, height: 20, fit: BoxFit.contain),
               const SizedBox(width: 12),
               Text(
                 label,
@@ -496,14 +492,14 @@ class _QuickAction extends StatelessWidget {
     required this.bg,
     required this.fg,
     required this.onTap,
-    this.assetPath,
+    required this.assetPath,
   });
 
   final String label;
   final Color bg;
   final Color fg;
   final VoidCallback onTap;
-  final String? assetPath;
+  final String assetPath;
 
   @override
   Widget build(BuildContext context) {
@@ -523,12 +519,10 @@ class _QuickAction extends StatelessWidget {
                 height: 36,
                 alignment: Alignment.center,
                 decoration: BoxDecoration(color: bg, shape: BoxShape.circle),
-                child: assetPath != null
-                    ? Padding(
-                        padding: const EdgeInsets.all(3),
-                        child: Image.asset(assetPath!, fit: BoxFit.contain, filterQuality: FilterQuality.high),
-                      )
-                    : null,
+                child: Padding(
+                  padding: const EdgeInsets.all(3),
+                  child: Image.asset(assetPath, fit: BoxFit.contain, filterQuality: FilterQuality.high),
+                ),
               ),
               const SizedBox(height: 8),
               FittedBox(
@@ -836,6 +830,11 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                               startBuyCryptoFlow(context);
                               return;
                             }
+                            if (index == 1) {
+                              startSellCryptoFlow(context);
+                              return;
+                            }
+                            startConvertCryptoFlow(context);
                             setState(() => _tradeTab = index);
                           },
                           borderRadius: BorderRadius.circular(6),
@@ -1185,7 +1184,7 @@ class _WalletSelectorSheet extends StatelessWidget {
               width: 34,
               height: 34,
               decoration: const BoxDecoration(color: Color(0xFFD8E9FE), shape: BoxShape.circle),
-              child: const Icon(Icons.add_circle, color: AppColors.primary, size: 24),
+              child: Image.asset('assets/images/figma/crypto_full/plus_circle.png', width: 24, height: 24),
             ),
             title: const Text('Add crypto asset', style: TextStyle(fontFamily: 'Sora', fontSize: 14, fontWeight: FontWeight.w600)),
           ),
@@ -1281,7 +1280,7 @@ class _CurrencySelectorSheet extends StatelessWidget {
                       ],
                     ),
                   ),
-                  const Icon(Icons.chevron_right_rounded, color: Color(0xFF8D8D8D)),
+                  Image.asset('assets/images/figma/crypto_full/chevron_right.png', width: 16, height: 16),
                 ],
               ),
             ),
@@ -1321,7 +1320,7 @@ class _DavoSheet extends StatelessWidget {
                   children: [
                     const SizedBox(width: 32),
                     Expanded(child: Center(child: Text(title, style: const TextStyle(fontFamily: 'Sora', fontSize: 14, color: Colors.black)))),
-                    IconButton(onPressed: () => Navigator.pop(context), icon: const Icon(Icons.close_rounded)),
+                    InkWell(onTap: () => Navigator.pop(context), borderRadius: BorderRadius.circular(20), child: SizedBox(width: 40, height: 40, child: Center(child: Image.asset('assets/images/figma/buy_close.png', width: 24, height: 24)))),
                   ],
                 ),
                 Expanded(child: SingleChildScrollView(child: child)),
@@ -1405,7 +1404,7 @@ class CryptoDepositScreen extends StatelessWidget {
                                 IconButton(
                                   visualDensity: VisualDensity.compact,
                                   onPressed: () => _copy(context, _address),
-                                  icon: const Icon(Icons.copy_outlined, size: 21, color: Color(0xFF686868)),
+                                  icon: Image.asset('assets/images/figma/buy_copy.png', width: 18, height: 18),
                                 ),
                               ],
                             ),
@@ -1719,7 +1718,7 @@ class _SimpleAppBar extends StatelessWidget {
         children: [
           Align(
             alignment: Alignment.centerLeft,
-            child: IconButton(onPressed: onBack, icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 19)),
+            child: InkWell(onTap: onBack, borderRadius: BorderRadius.circular(20), child: SizedBox(width: 40, height: 40, child: Center(child: Image.asset('assets/images/figma/buy_back.png', width: 24, height: 24)))),
           ),
           Text(title, style: const TextStyle(fontFamily: 'Sora', fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.ink)),
         ],
@@ -1848,7 +1847,7 @@ class _BankDetailRow extends StatelessWidget {
               Clipboard.setData(ClipboardData(text: value));
               ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$label copied'), behavior: SnackBarBehavior.floating));
             },
-            icon: const Icon(Icons.copy_outlined, size: 18, color: Color(0xFF686868)),
+            icon: Image.asset('assets/images/figma/buy_copy.png', width: 16, height: 16),
           ),
         ],
       ),
