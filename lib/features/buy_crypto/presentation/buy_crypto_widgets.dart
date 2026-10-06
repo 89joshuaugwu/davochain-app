@@ -60,7 +60,7 @@ class BuyFundingWalletSheet extends StatelessWidget {
                     ),
                   ),
                 )
-              : const NigeriaFlagCircle(size: 32);
+              : const NigeriaFlagMark(width: 32);
           return _SheetRow(
             leading: leading,
             title: wallet.name,
@@ -248,110 +248,41 @@ class BuyAssetIcon extends StatelessWidget {
   final BuyCryptoAsset asset;
   final double size;
 
+  String get _assetPath => switch (asset) {
+        BuyCryptoAsset.bitcoin => 'assets/images/figma/btc.png',
+        BuyCryptoAsset.ethereum => 'assets/images/figma/eth.png',
+        BuyCryptoAsset.solana => 'assets/images/figma/sol.png',
+        BuyCryptoAsset.tether => 'assets/images/figma/usdt.png',
+      };
+
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return SizedBox(
       width: size,
       height: size,
-      decoration: BoxDecoration(
-        color: asset.color,
-        shape: BoxShape.circle,
-        boxShadow: [
-          BoxShadow(
-            color: asset.color.withValues(alpha: .18),
-            blurRadius: 8,
-            offset: const Offset(0, 3),
-          ),
-        ],
+      child: Image.asset(
+        _assetPath,
+        fit: BoxFit.contain,
+        filterQuality: FilterQuality.high,
       ),
-      alignment: Alignment.center,
-      child: switch (asset) {
-        BuyCryptoAsset.ethereum => CustomPaint(
-            size: Size(size * .48, size * .57),
-            painter: const _EthereumPainter(),
-          ),
-        BuyCryptoAsset.solana => CustomPaint(
-            size: Size(size * .55, size * .45),
-            painter: const _SolanaPainter(),
-          ),
-        _ => Text(
-            asset.glyph,
-            style: TextStyle(
-              fontFamily: 'Sora',
-              fontSize: size * .52,
-              fontWeight: FontWeight.w700,
-              color: Colors.white,
-              height: 1,
-            ),
-          ),
-      },
     );
   }
 }
 
-class NigeriaFlagCircle extends StatelessWidget {
-  const NigeriaFlagCircle({super.key, this.size = 32});
-  final double size;
+class NigeriaFlagMark extends StatelessWidget {
+  const NigeriaFlagMark({super.key, this.width = 32});
+  final double width;
 
   @override
   Widget build(BuildContext context) {
-    return ClipOval(
-      child: SizedBox(
-        width: size,
-        height: size,
-        child: const Row(
-          children: [
-            Expanded(child: ColoredBox(color: Color(0xFF008751))),
-            Expanded(child: ColoredBox(color: Colors.white)),
-            Expanded(child: ColoredBox(color: Color(0xFF008751))),
-          ],
-        ),
+    return SizedBox(
+      width: width,
+      height: width * .56,
+      child: Image.asset(
+        'assets/icons/auth/ng_flag.png',
+        fit: BoxFit.fill,
+        filterQuality: FilterQuality.high,
       ),
     );
   }
-}
-
-class _EthereumPainter extends CustomPainter {
-  const _EthereumPainter();
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()..color = Colors.white;
-    final center = Offset(size.width / 2, size.height / 2);
-    final top = Offset(center.dx, 0);
-    final left = Offset(0, center.dy * .94);
-    final right = Offset(size.width, center.dy * .94);
-    final mid = Offset(center.dx, center.dy * 1.08);
-    final bottom = Offset(center.dx, size.height);
-    canvas.drawPath(Path()..moveTo(top.dx, top.dy)..lineTo(left.dx, left.dy)..lineTo(mid.dx, mid.dy)..close(), paint..color = Colors.white.withValues(alpha: .88));
-    canvas.drawPath(Path()..moveTo(top.dx, top.dy)..lineTo(right.dx, right.dy)..lineTo(mid.dx, mid.dy)..close(), paint..color = Colors.white);
-    canvas.drawPath(Path()..moveTo(left.dx, center.dy * 1.05)..lineTo(mid.dx, center.dy * 1.20)..lineTo(bottom.dx, bottom.dy)..close(), paint..color = Colors.white.withValues(alpha: .75));
-    canvas.drawPath(Path()..moveTo(right.dx, center.dy * 1.05)..lineTo(mid.dx, center.dy * 1.20)..lineTo(bottom.dx, bottom.dy)..close(), paint..color = Colors.white.withValues(alpha: .95));
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-}
-
-class _SolanaPainter extends CustomPainter {
-  const _SolanaPainter();
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()..color = const Color(0xFF6CFFDF);
-    final h = size.height / 5;
-    for (var i = 0; i < 3; i++) {
-      final y = i * h * 1.65;
-      final path = Path()
-        ..moveTo(size.width * .16, y)
-        ..lineTo(size.width, y)
-        ..lineTo(size.width * .84, y + h)
-        ..lineTo(0, y + h)
-        ..close();
-      canvas.drawPath(path, paint..color = i == 1 ? const Color(0xFF7C5CFF) : const Color(0xFF6CFFDF));
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

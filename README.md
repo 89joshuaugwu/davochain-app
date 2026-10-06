@@ -1,44 +1,47 @@
 # Davochain Flutter App
 
-Current milestone: **v4 Dashboard + Deposit Flow**.
+Current milestone: **Figma fidelity cumulative audit — v6**.
 
 ## Included
 
-- Davochain branded native + Flutter splash matching the cobalt Figma treatment
-- Animated onboarding carousel/state flow
-- Multi-country account setup (Nigeria, Ghana, Kenya, South Africa, UK, US)
-- Create account, password strength, login and forgot-password flows
-- Email/SMS OTP verification with shake + haptic error feedback
-- Transaction PIN creation/confirmation
-- Davochain dashboard matching the connected Figma dashboard section
-- Portfolio view and allocation states
-- Deposit wallet selector + add-currency bottom sheet
-- Crypto deposit screen with QR/address/copy/guidelines/share UI
-- Davochain NGD bank-deposit screen with copy/share states
-- Figma-style copied-success toast
-- Shared navigation and motion transitions
+- Davochain branded native + Flutter splash using the recovered cobalt Figma background artwork
+- Three onboarding states with packaged illustration assets
+- Multi-country account setup and authentication screens
+- Email/SMS OTP verification, password recovery, and transaction-PIN flows
+- Davochain dashboard with packaged Figma avatar, balance-wave, promo, action, notification, and navigation artwork
+- Portfolio and wallet-selection states with packaged BTC, ETH, SOL, USDT, and USDC artwork
+- Deposit wallet selector and add-currency bottom sheet
+- Crypto deposit screen with local QR/address/copy/guidelines/share UI
+- Davochain NGD bank-deposit screen with account copy/share states
+- Buy Crypto frontend flow with cryptocurrency/funding-wallet selection, amount entry, review, PIN, processing, success, and transaction details
+- Exact packaged Nigerian flag artwork in the Naira funding-wallet states
+- Shared navigation, motion, success-toast, and modal behaviors
 
 ## Run locally
 
 ```bash
 flutter pub get
+flutter test
+flutter analyze
 flutter run
 ```
 
-If your local project already has `android/` and `ios/`, keep those folders and merge this source into the project. Run `setup_windows.bat` after merging when native splash assets change.
+If your full repository already contains `android/` and `ios/`, keep those platform folders and merge this source into that project. When native splash assets change, regenerate the splash from the included `flutter_native_splash` configuration.
 
 ## Native splash
-
-The native splash configuration is in `pubspec.yaml`. To regenerate it manually:
 
 ```bash
 dart run flutter_native_splash:create
 ```
 
-## API status
+The source snapshot includes the native splash artwork/configuration, but not generated Android/iOS runner files.
 
-This milestone is frontend/prototype wiring. Authentication, live balances, crypto settlement, bank account generation, real OTP validation and real transaction APIs still need the Davochain backend endpoints.
+## Backend status
 
-## v5 – Buy Crypto frontend
+This milestone is frontend/prototype wiring. Authentication, live balances, wallet-address generation, crypto settlement, bank-account generation, real OTP validation, payment execution, and transaction APIs still require the Davochain backend.
 
-The Buy Crypto journey is fully interactive with local/mock data only: cryptocurrency selection, funding-wallet selection, amount entry, quote preview, review, animated processing, success and transaction details. No backend/API connection is required for any Buy Crypto screen in this milestone. See `BUY_CRYPTO_IMPLEMENTATION.md`.
+The Buy Crypto flow intentionally uses local/mock quote and balance data. See `BUY_CRYPTO_IMPLEMENTATION.md`.
+
+## Font integration note
+
+The UI specifies the **Sora** family to match Figma. Font binaries are not bundled in this handoff, so the host Flutter app should provide its licensed/approved Sora font setup (or an existing project font configuration) before pixel-level typography QA.

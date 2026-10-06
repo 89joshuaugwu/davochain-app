@@ -323,11 +323,12 @@ class _VerificationSuccessScreenState extends State<VerificationSuccessScreen>
               height: 150,
               decoration: const BoxDecoration(shape: BoxShape.circle, color: AppColors.primarySoft),
               alignment: Alignment.center,
-              child: Container(
+              child: Image.asset(
+                'assets/icons/auth/tick_circle.png',
                 width: 58,
                 height: 58,
-                decoration: const BoxDecoration(shape: BoxShape.circle, color: AppColors.primary),
-                child: const Icon(Icons.check_rounded, size: 34, color: Colors.white),
+                fit: BoxFit.contain,
+                filterQuality: FilterQuality.high,
               ),
             ),
           ),

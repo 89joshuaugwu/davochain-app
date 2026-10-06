@@ -798,7 +798,7 @@ class _WalletBadge extends StatelessWidget {
         ),
       );
     }
-    return const NigeriaFlagCircle(size: 32);
+    return const NigeriaFlagMark(width: 32);
   }
 }
 

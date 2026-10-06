@@ -1,4 +1,3 @@
-import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -216,16 +215,13 @@ class _DashboardHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        const CircleAvatar(
-          radius: 20,
-          backgroundColor: Color(0xFFE8ECFC),
-          child: Text(
-            'C',
-            style: TextStyle(
-              fontFamily: 'Sora',
-              color: AppColors.primary,
-              fontWeight: FontWeight.w700,
-            ),
+        ClipOval(
+          child: Image.asset(
+            'assets/images/figma/profile.png',
+            width: 40,
+            height: 40,
+            fit: BoxFit.cover,
+            filterQuality: FilterQuality.high,
           ),
         ),
         const SizedBox(width: 12),
@@ -256,11 +252,11 @@ class _DashboardHeader extends StatelessWidget {
             color: const Color(0x80D0DEFD),
             borderRadius: BorderRadius.circular(1000),
           ),
-          child: const Row(
+          child: Row(
             children: [
-              Icon(Icons.card_giftcard_rounded, size: 20, color: AppColors.primary),
-              SizedBox(width: 4),
-              Text(r'Earn $5', style: TextStyle(fontFamily: 'Sora', fontSize: 12, color: AppColors.primary)),
+              Image.asset('assets/icons/figma/earn_gift.png', width: 20, height: 20, fit: BoxFit.contain),
+              const SizedBox(width: 4),
+              const Text(r'Earn $5', style: TextStyle(fontFamily: 'Sora', fontSize: 12, color: AppColors.primary)),
             ],
           ),
         ),
@@ -269,7 +265,7 @@ class _DashboardHeader extends StatelessWidget {
           width: 32,
           height: 32,
           decoration: const BoxDecoration(color: Color(0x80D0DEFD), shape: BoxShape.circle),
-          child: const Icon(Icons.notifications_none_rounded, color: AppColors.primary, size: 21),
+          child: Center(child: Image.asset('assets/icons/figma/notification.png', width: 21, height: 21, fit: BoxFit.contain)),
         ),
       ],
     );
@@ -300,7 +296,17 @@ class _BalanceCard extends StatelessWidget {
       ),
       child: Stack(
         children: [
-          const Positioned.fill(child: CustomPaint(painter: _BalanceWavePainter())),
+          Positioned(
+            right: 0,
+            bottom: 0,
+            width: 268,
+            height: 94,
+            child: Image.asset(
+              'assets/images/figma/balance_wave.png',
+              fit: BoxFit.fill,
+              filterQuality: FilterQuality.high,
+            ),
+          ),
           Padding(
             padding: const EdgeInsets.fromLTRB(24, 18, 24, 14),
             child: Column(
@@ -317,7 +323,10 @@ class _BalanceCard extends StatelessWidget {
                         style: TextStyle(fontFamily: 'Sora', fontSize: 10, color: Color(0xFFEEF0F5)),
                       ),
                       const SizedBox(width: 4),
-                      Icon(visible ? Icons.visibility_outlined : Icons.visibility_off_outlined, size: 12, color: Colors.white),
+                      Opacity(
+                        opacity: visible ? 1 : .55,
+                        child: Image.asset('assets/icons/figma/eye.png', width: 10, height: 10, fit: BoxFit.contain),
+                      ),
                     ],
                   ),
                 ),
@@ -347,7 +356,7 @@ class _BalanceCard extends StatelessWidget {
                     Expanded(
                       child: _BalanceActionButton(
                         light: true,
-                        icon: Icons.add_circle,
+                        assetPath: 'assets/icons/figma/deposit_plus.png',
                         label: 'Deposit',
                         onTap: onDeposit,
                       ),
@@ -356,7 +365,7 @@ class _BalanceCard extends StatelessWidget {
                     Expanded(
                       child: _BalanceActionButton(
                         light: false,
-                        icon: Icons.north_east_rounded,
+                        assetPath: 'assets/images/figma/withdraw.png',
                         label: 'Withdraw',
                         onTap: onWithdraw,
                       ),
@@ -375,13 +384,14 @@ class _BalanceCard extends StatelessWidget {
 class _BalanceActionButton extends StatelessWidget {
   const _BalanceActionButton({
     required this.light,
-    required this.icon,
+    this.assetPath,
     required this.label,
     required this.onTap,
-  });
+  }) : icon = null;
 
   final bool light;
-  final IconData icon;
+  final IconData? icon;
+  final String? assetPath;
   final String label;
   final VoidCallback onTap;
 
@@ -398,7 +408,10 @@ class _BalanceActionButton extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, size: 19, color: light ? AppColors.primary : Colors.white),
+              if (assetPath != null)
+                Image.asset(assetPath!, width: 20, height: 20, fit: BoxFit.contain)
+              else
+                Icon(icon, size: 19, color: light ? AppColors.primary : Colors.white),
               const SizedBox(width: 12),
               Text(
                 label,
@@ -415,31 +428,6 @@ class _BalanceActionButton extends StatelessWidget {
       ),
     );
   }
-}
-
-class _BalanceWavePainter extends CustomPainter {
-  const _BalanceWavePainter();
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final path = Path()
-      ..moveTo(size.width * .24, size.height)
-      ..cubicTo(size.width * .40, size.height * .93, size.width * .45, size.height * .66, size.width * .57, size.height * .70)
-      ..cubicTo(size.width * .72, size.height * .76, size.width * .72, size.height * .30, size.width * .83, size.height * .33)
-      ..cubicTo(size.width * .90, size.height * .35, size.width * .94, size.height * .55, size.width, size.height * .47)
-      ..lineTo(size.width, size.height)
-      ..close();
-    final paint = Paint()
-      ..shader = const LinearGradient(
-        begin: Alignment.topCenter,
-        end: Alignment.bottomCenter,
-        colors: [Color(0xFFB8CBF5), Color(0xFF6F98EF)],
-      ).createShader(Offset.zero & size);
-    canvas.drawPath(path, paint);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
 class _SetupBanner extends StatelessWidget {
@@ -490,13 +478,13 @@ class _QuickActions extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Expanded(child: _QuickAction(label: 'Buy Crypto', icon: '₿', bg: const Color(0xFFFEE5CB), fg: const Color(0xFFFD9915), onTap: onBuy)),
+        Expanded(child: _QuickAction(label: 'Buy Crypto', assetPath: 'assets/icons/figma/buy_action.png', bg: const Color(0xFFFEE5CB), fg: const Color(0xFFFD9915), onTap: onBuy)),
         const SizedBox(width: 16),
-        Expanded(child: _QuickAction(label: 'Sell Crypto', icon: '↻', bg: const Color(0xFFDBF8E8), fg: const Color(0xFF20C55D), onTap: onSell)),
+        Expanded(child: _QuickAction(label: 'Sell Crypto', assetPath: 'assets/icons/figma/sell_action.png', bg: const Color(0xFFDBF8E8), fg: const Color(0xFF20C55D), onTap: onSell)),
         const SizedBox(width: 16),
-        Expanded(child: _QuickAction(label: 'Gift Card', iconData: Icons.card_giftcard_rounded, bg: const Color(0xFFE9DEFD), fg: const Color(0xFF8247E5), onTap: onGift)),
+        Expanded(child: _QuickAction(label: 'Gift Card', assetPath: 'assets/icons/figma/gift_action.png', bg: const Color(0xFFE9DEFD), fg: const Color(0xFF8247E5), onTap: onGift)),
         const SizedBox(width: 16),
-        Expanded(child: _QuickAction(label: 'History', iconData: Icons.schedule_rounded, bg: const Color(0xFFD8E9FE), fg: AppColors.primary, onTap: onHistory)),
+        Expanded(child: _QuickAction(label: 'History', assetPath: 'assets/icons/figma/history_action.png', bg: const Color(0xFFD8E9FE), fg: AppColors.primary, onTap: onHistory)),
       ],
     );
   }
@@ -508,16 +496,14 @@ class _QuickAction extends StatelessWidget {
     required this.bg,
     required this.fg,
     required this.onTap,
-    this.icon,
-    this.iconData,
+    this.assetPath,
   });
 
   final String label;
   final Color bg;
   final Color fg;
   final VoidCallback onTap;
-  final String? icon;
-  final IconData? iconData;
+  final String? assetPath;
 
   @override
   Widget build(BuildContext context) {
@@ -537,9 +523,12 @@ class _QuickAction extends StatelessWidget {
                 height: 36,
                 alignment: Alignment.center,
                 decoration: BoxDecoration(color: bg, shape: BoxShape.circle),
-                child: iconData != null
-                    ? Icon(iconData, color: fg, size: 21)
-                    : Text(icon!, style: TextStyle(fontFamily: 'Sora', fontSize: 23, fontWeight: FontWeight.w700, color: fg)),
+                child: assetPath != null
+                    ? Padding(
+                        padding: const EdgeInsets.all(3),
+                        child: Image.asset(assetPath!, fit: BoxFit.contain, filterQuality: FilterQuality.high),
+                      )
+                    : null,
               ),
               const SizedBox(height: 8),
               FittedBox(
@@ -575,12 +564,16 @@ class _PromoBanner extends StatelessWidget {
       ),
       child: Stack(
         children: [
-          const Positioned(
-            right: -4,
-            bottom: -6,
-            width: 170,
-            height: 100,
-            child: CustomPaint(painter: _PromoArtPainter()),
+          Positioned(
+            right: 12,
+            bottom: 0,
+            width: 137,
+            height: 87,
+            child: Image.asset(
+              'assets/images/figma/promo_crypto.png',
+              fit: BoxFit.contain,
+              filterQuality: FilterQuality.high,
+            ),
           ),
           const Positioned(
             left: 16,
@@ -619,36 +612,6 @@ class _PromoBanner extends StatelessWidget {
       ),
     );
   }
-}
-
-class _PromoArtPainter extends CustomPainter {
-  const _PromoArtPainter();
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final cardPaint = Paint()..color = const Color(0xFF7C91FF);
-    final card = RRect.fromRectAndRadius(Rect.fromLTWH(size.width * .56, size.height * .23, 60, 76), const Radius.circular(8));
-    canvas.save();
-    canvas.translate(size.width * .60, size.height * .40);
-    canvas.rotate(.14);
-    canvas.translate(-size.width * .60, -size.height * .40);
-    canvas.drawRRect(card, cardPaint);
-    canvas.restore();
-    for (final data in [
-      (Offset(size.width * .32, size.height * .60), 27.0, const Color(0xFFF7931A), '₿'),
-      (Offset(size.width * .50, size.height * .55), 23.0, const Color(0xFFF4B23A), '₿'),
-    ]) {
-      canvas.drawCircle(data.$1, data.$2, Paint()..color = data.$3);
-      final tp = TextPainter(
-        text: TextSpan(text: data.$4, style: const TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.w700)),
-        textDirection: TextDirection.ltr,
-      )..layout();
-      tp.paint(canvas, data.$1 - Offset(tp.width / 2, tp.height / 2));
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
 class _DashboardAssetCard extends StatelessWidget {
@@ -760,10 +723,10 @@ class _BottomNav extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _NavItem(index: 0, current: index, icon: Icons.home_outlined, activeIcon: Icons.home_rounded, label: 'Home', onTap: onChanged),
-              _NavItem(index: 1, current: index, icon: Icons.account_balance_wallet_outlined, activeIcon: Icons.account_balance_wallet_rounded, label: 'Trade', onTap: onChanged),
-              _NavItem(index: 2, current: index, icon: Icons.card_giftcard_outlined, activeIcon: Icons.card_giftcard_rounded, label: 'Gift Cards', onTap: onChanged),
-              _NavItem(index: 3, current: index, icon: Icons.settings_outlined, activeIcon: Icons.settings_rounded, label: 'Settings', onTap: onChanged),
+              _NavItem(index: 0, current: index, assetPath: 'assets/icons/figma/nav_home.png', label: 'Home', onTap: onChanged),
+              _NavItem(index: 1, current: index, assetPath: 'assets/icons/figma/nav_trade.png', label: 'Trade', onTap: onChanged),
+              _NavItem(index: 2, current: index, assetPath: 'assets/icons/figma/nav_gift.png', label: 'Gift Cards', onTap: onChanged),
+              _NavItem(index: 3, current: index, assetPath: 'assets/icons/figma/nav_settings.png', label: 'Settings', onTap: onChanged),
             ],
           ),
         ),
@@ -773,12 +736,11 @@ class _BottomNav extends StatelessWidget {
 }
 
 class _NavItem extends StatelessWidget {
-  const _NavItem({required this.index, required this.current, required this.icon, required this.activeIcon, required this.label, required this.onTap});
+  const _NavItem({required this.index, required this.current, required this.assetPath, required this.label, required this.onTap});
 
   final int index;
   final int current;
-  final IconData icon;
-  final IconData activeIcon;
+  final String assetPath;
   final String label;
   final ValueChanged<int> onTap;
 
@@ -796,7 +758,11 @@ class _NavItem extends StatelessWidget {
           children: [
             AnimatedSwitcher(
               duration: const Duration(milliseconds: 180),
-              child: Icon(active ? activeIcon : icon, key: ValueKey(active), color: color, size: 24),
+              child: ColorFiltered(
+                key: ValueKey(active),
+                colorFilter: ColorFilter.mode(color, BlendMode.srcIn),
+                child: Image.asset(assetPath, width: 24, height: 24, fit: BoxFit.contain),
+              ),
             ),
             const SizedBox(height: 4),
             Text(label, style: TextStyle(fontFamily: 'Sora', fontSize: 10, letterSpacing: .55, color: color)),
@@ -844,7 +810,10 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                       ],
                     ),
                   ),
-                  _RoundIconButton(icon: _visible ? Icons.visibility_outlined : Icons.visibility_off_outlined, onTap: () => setState(() => _visible = !_visible)),
+                  _RoundIconButton(
+                    assetPath: 'assets/icons/figma/eye.png',
+                    onTap: () => setState(() => _visible = !_visible),
+                  ),
                   const SizedBox(width: 4),
                   const _RoundIconButton(icon: Icons.show_chart_rounded),
                 ],
@@ -913,9 +882,10 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
 }
 
 class _RoundIconButton extends StatelessWidget {
-  const _RoundIconButton({required this.icon, this.onTap});
+  const _RoundIconButton({this.icon, this.assetPath, this.onTap}) : assert(icon != null || assetPath != null);
 
-  final IconData icon;
+  final IconData? icon;
+  final String? assetPath;
   final VoidCallback? onTap;
 
   @override
@@ -927,7 +897,17 @@ class _RoundIconButton extends StatelessWidget {
         width: 36,
         height: 36,
         decoration: const BoxDecoration(color: Color(0xFFE8ECFC), shape: BoxShape.circle),
-        child: Icon(icon, size: 20, color: AppColors.primary),
+        child: assetPath != null
+            ? Center(
+                child: Image.asset(
+                  assetPath!,
+                  width: 18,
+                  height: 18,
+                  fit: BoxFit.contain,
+                  filterQuality: FilterQuality.high,
+                ),
+              )
+            : Icon(icon, size: 20, color: AppColors.primary),
       ),
     );
   }
@@ -946,7 +926,17 @@ class _PortfolioValueCard extends StatelessWidget {
       decoration: BoxDecoration(color: AppColors.primary, borderRadius: BorderRadius.circular(12)),
       child: Stack(
         children: [
-          const Positioned.fill(child: CustomPaint(painter: _PortfolioWavePainter())),
+          Positioned(
+            right: 0,
+            bottom: 0,
+            width: 268,
+            height: 94,
+            child: Image.asset(
+              'assets/images/figma/balance_wave.png',
+              fit: BoxFit.fill,
+              filterQuality: FilterQuality.high,
+            ),
+          ),
           const Positioned(
             right: 12,
             top: 16,
@@ -985,29 +975,6 @@ class _PortfolioValueCard extends StatelessWidget {
       ),
     );
   }
-}
-
-class _PortfolioWavePainter extends CustomPainter {
-  const _PortfolioWavePainter();
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final path = Path()
-      ..moveTo(size.width * .25, size.height)
-      ..cubicTo(size.width * .38, size.height * .82, size.width * .44, size.height * .65, size.width * .56, size.height * .72)
-      ..cubicTo(size.width * .70, size.height * .82, size.width * .76, size.height * .26, size.width * .84, size.height * .36)
-      ..cubicTo(size.width * .90, size.height * .44, size.width * .94, size.height * .28, size.width, size.height * .45)
-      ..lineTo(size.width, size.height)
-      ..close();
-    canvas.drawPath(
-      path,
-      Paint()
-        ..shader = const LinearGradient(colors: [Color(0xFF7597E8), Color(0xFFB9CBF5)], begin: Alignment.bottomLeft, end: Alignment.topRight).createShader(Offset.zero & size),
-    );
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
 class _AllocationCard extends StatelessWidget {
@@ -1145,29 +1112,34 @@ enum CryptoAsset {
   final Color color;
 }
 
+String _depositQrAsset(CryptoAsset asset) => switch (asset) {
+      CryptoAsset.bitcoin => '$_dashboardAssetRoot/btc_qr.png',
+      CryptoAsset.ethereum => '$_dashboardAssetRoot/eth_qr.png',
+      CryptoAsset.solana => '$_dashboardAssetRoot/sol_qr.png',
+      CryptoAsset.usdCoin => '$_dashboardAssetRoot/usdc_qr.png',
+      CryptoAsset.tether => '$_dashboardAssetRoot/usdt_qr.png',
+    };
+
 class _CryptoIcon extends StatelessWidget {
   const _CryptoIcon({required this.asset, this.size = 37});
 
   final CryptoAsset asset;
   final double size;
 
+  String get _assetPath => switch (asset) {
+        CryptoAsset.bitcoin => 'assets/images/figma/btc.png',
+        CryptoAsset.ethereum => 'assets/images/figma/eth.png',
+        CryptoAsset.solana => 'assets/images/figma/sol.png',
+        CryptoAsset.tether => 'assets/images/figma/usdt.png',
+        CryptoAsset.usdCoin => 'assets/images/figma/usdc.png',
+      };
+
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return SizedBox(
       width: size,
       height: size,
-      alignment: Alignment.center,
-      decoration: BoxDecoration(color: asset.color, shape: BoxShape.circle),
-      child: Text(
-        asset.glyph,
-        style: TextStyle(
-          fontFamily: 'Sora',
-          fontSize: size * .54,
-          fontWeight: FontWeight.w700,
-          color: Colors.white,
-          height: 1,
-        ),
-      ),
+      child: Image.asset(_assetPath, fit: BoxFit.contain, filterQuality: FilterQuality.high),
     );
   }
 }
@@ -1375,6 +1347,8 @@ class CryptoDepositScreen extends StatelessWidget {
         CryptoAsset.tether => '0x4C55D181b91A6d5fE8B54B925C61D9dC06cE28B4',
       };
 
+  String get _qrAsset => _depositQrAsset(asset);
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -1402,9 +1376,7 @@ class CryptoDepositScreen extends StatelessWidget {
                               height: 273,
                               decoration: BoxDecoration(border: Border.all(color: const Color(0xFFF5F6F9))),
                               padding: const EdgeInsets.all(10),
-                              child: asset == CryptoAsset.bitcoin
-                                  ? Image.asset('$_dashboardAssetRoot/btc_qr.png', fit: BoxFit.contain)
-                                  : const _QrPlaceholder(),
+                              child: Image.asset(_qrAsset, fit: BoxFit.contain, filterQuality: FilterQuality.none),
                             ),
                             Container(
                               width: 48,
@@ -1573,43 +1545,6 @@ class CryptoDepositScreen extends StatelessWidget {
   }
 }
 
-class _QrPlaceholder extends StatelessWidget {
-  const _QrPlaceholder();
-
-  @override
-  Widget build(BuildContext context) {
-    return const CustomPaint(painter: _PseudoQrPainter());
-  }
-}
-
-class _PseudoQrPainter extends CustomPainter {
-  const _PseudoQrPainter();
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final n = 21;
-    final cell = math.min(size.width, size.height) / n;
-    final paint = Paint()..color = Colors.black;
-    for (var y = 0; y < n; y++) {
-      for (var x = 0; x < n; x++) {
-        final finder = (x < 7 && y < 7) || (x >= n - 7 && y < 7) || (x < 7 && y >= n - 7);
-        final pseudo = ((x * 17 + y * 31 + x * y) % 7) < 3;
-        if (finder || pseudo) {
-          canvas.drawRect(Rect.fromLTWH(x * cell, y * cell, cell + .4, cell + .4), paint);
-        }
-      }
-    }
-    final white = Paint()..color = Colors.white;
-    for (final origin in [Offset.zero, Offset((n - 7) * cell, 0), Offset(0, (n - 7) * cell)]) {
-      canvas.drawRect(Rect.fromLTWH(origin.dx + cell, origin.dy + cell, 5 * cell, 5 * cell), white);
-      canvas.drawRect(Rect.fromLTWH(origin.dx + 2 * cell, origin.dy + 2 * cell, 3 * cell, 3 * cell), paint);
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-}
-
 class _DepositMetaRow extends StatelessWidget {
   const _DepositMetaRow({required this.label, required this.value});
 
@@ -1672,7 +1607,7 @@ class _SharePreview extends StatelessWidget {
             children: [
               Text('Deposit ${asset.symbol}', style: const TextStyle(fontFamily: 'Sora', fontSize: 8, fontWeight: FontWeight.w600)),
               const SizedBox(height: 8),
-              SizedBox(width: 110, height: 110, child: asset == CryptoAsset.bitcoin ? Image.asset('$_dashboardAssetRoot/btc_qr.png') : const _QrPlaceholder()),
+              SizedBox(width: 110, height: 110, child: Image.asset(_depositQrAsset(asset), filterQuality: FilterQuality.none)),
               const SizedBox(height: 8),
               Align(alignment: Alignment.centerLeft, child: Text('Network', style: TextStyle(fontSize: 7, color: Colors.grey.shade700))),
               Align(alignment: Alignment.centerLeft, child: Text('${asset.name} (${asset.symbol})', style: const TextStyle(fontSize: 8))),
@@ -1692,7 +1627,7 @@ class _SharePreview extends StatelessWidget {
 class _ShareAction extends StatelessWidget {
   const _ShareAction({required this.icon, required this.label, required this.color, this.iconColor = Colors.white});
 
-  final IconData icon;
+  final IconData? icon;
   final String label;
   final Color color;
   final Color iconColor;

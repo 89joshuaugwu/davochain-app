@@ -83,16 +83,12 @@ class _BrandSplashScreenState extends State<BrandSplashScreen>
       body: Stack(
         fit: StackFit.expand,
         children: [
-          // Matches the Figma splash composition: clean cobalt field with the
-          // outlined crypto artwork anchored to the bottom edge.
-          Positioned(
-            left: size.width * .18,
-            right: size.width * .18,
-            bottom: math.max(34.0, size.height * .055),
+          // Exact Figma splash background recovered from the source artwork:
+          // cobalt field, central shadow and outlined crypto forms at the edge.
+          Positioned.fill(
             child: Image.asset(
-              'assets/images/brand/native_splash_branding.png',
-              height: math.min(92.0, size.height * .105),
-              fit: BoxFit.contain,
+              'assets/images/figma/splash_background.png',
+              fit: BoxFit.cover,
               alignment: Alignment.center,
               filterQuality: FilterQuality.high,
             ),

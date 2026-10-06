@@ -1,11 +1,15 @@
-# Davochain v4 Implementation Notes
+# Davochain v6 Implementation Notes
 
-- The splash now follows Figma node `3418:72060`: cobalt field, centered Davochain white lockup and contained bottom crypto outline artwork.
-- Country selection is data-driven; the flag/dial code/phone-length constraint update with the selected country.
-- Dashboard and Portfolio are full routes. Wallet/currency selectors, guidelines and share panels are modal states rather than duplicate screens.
+- Splash uses the recovered current Davochain/Figma cobalt composition and locally packaged brand artwork.
+- Country selection remains data-driven; the flag, dial code, and phone constraints update with the selected country.
+- Dashboard and Portfolio are full app states. Wallet/currency selectors, guideline panels, and share panels are modal states where appropriate.
+- Dashboard high-visibility visuals use packaged assets rather than custom-painted approximations: profile, balance wave, promo artwork, quick actions, notification/earn controls, bottom navigation, and token artwork.
 - Deposit branches into crypto QR/address UI or Davochain NGD bank-transfer UI.
-- Copy actions use the Figma-style dark floating success toast.
+- BTC, ETH, SOL, USDC, and USDT deposit screens use packaged QR images; the decorative pseudo-QR painter path has been removed.
+- Crypto token artwork uses packaged Figma-derived PNG assets across Dashboard, Portfolio, Deposit, and Buy Crypto.
+- Naira funding-wallet states use the packaged Nigerian flag asset instead of a hand-drawn green/white/green approximation.
+- Buy Crypto is local/mock-driven in this milestone and includes amount, review, PIN, processing, success, and transaction-detail states.
+- Copy actions use the dark floating success-toast treatment used throughout the prototype.
 - Login and successful transaction-PIN setup route to the dashboard in this prototype.
-- Crypto token icons are Flutter-rendered, keeping the new icon treatment while preserving Figma alignment.
-- Bitcoin uses the bundled QR asset; other currencies use a deterministic visual QR placeholder until live wallet-address generation is connected.
-- Legacy product naming has been removed from shipped UI copy.
+- Legacy Davopay product naming is not used in shipped Dart UI copy.
+- Sora is referenced by family name throughout the UI but font binaries are intentionally not bundled in this source snapshot; integrate the approved font in the host app for final typography QA.
