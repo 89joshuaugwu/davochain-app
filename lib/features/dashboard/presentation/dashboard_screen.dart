@@ -5,6 +5,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../buy_crypto/presentation/buy_crypto_flow.dart';
 import '../../crypto/presentation/crypto_full_flow.dart';
 import '../../gift_cards/presentation/gift_card_flow.dart';
+import '../../profile_settings/presentation/profile_settings_flow.dart';
 
 const _dashboardAssetRoot = 'assets/images/dashboard';
 
@@ -124,6 +125,14 @@ class _DavochainDashboardScreenState extends State<DavochainDashboardScreen> {
             setState(() => _navIndex = index);
             return;
           }
+          if (index == 3) {
+            HapticFeedback.selectionClick();
+            startProfileSettingsFlow(context).whenComplete(() {
+              if (mounted) setState(() => _navIndex = 0);
+            });
+            setState(() => _navIndex = index);
+            return;
+          }
           setState(() => _navIndex = index);
           _showComingSoon(['Home', 'Trade', 'Gift Cards', 'Settings'][index]);
           Future<void>.delayed(const Duration(milliseconds: 250), () {
@@ -224,13 +233,17 @@ class _DashboardHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        ClipOval(
-          child: Image.asset(
-            'assets/images/figma/profile.png',
-            width: 40,
-            height: 40,
-            fit: BoxFit.cover,
-            filterQuality: FilterQuality.high,
+        InkWell(
+          onTap: () => startProfileSettingsFlow(context),
+          customBorder: const CircleBorder(),
+          child: ClipOval(
+            child: Image.asset(
+              'assets/images/figma/profile.png',
+              width: 40,
+              height: 40,
+              fit: BoxFit.cover,
+              filterQuality: FilterQuality.high,
+            ),
           ),
         ),
         const SizedBox(width: 12),
@@ -270,11 +283,15 @@ class _DashboardHeader extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 12),
-        Container(
-          width: 32,
-          height: 32,
-          decoration: const BoxDecoration(color: Color(0x80D0DEFD), shape: BoxShape.circle),
-          child: Center(child: Image.asset('assets/icons/figma/notification.png', width: 21, height: 21, fit: BoxFit.contain)),
+        InkWell(
+          onTap: () => openNotificationCenter(context),
+          customBorder: const CircleBorder(),
+          child: Container(
+            width: 32,
+            height: 32,
+            decoration: const BoxDecoration(color: Color(0x80D0DEFD), shape: BoxShape.circle),
+            child: Center(child: Image.asset('assets/icons/figma/notification.png', width: 21, height: 21, fit: BoxFit.contain)),
+          ),
         ),
       ],
     );
