@@ -47,17 +47,14 @@ class BuyFundingWalletSheet extends StatelessWidget {
               ? Container(
                   width: 32,
                   height: 32,
-                  padding: const EdgeInsets.all(6),
+                  padding: const EdgeInsets.all(5),
                   decoration: BoxDecoration(
                     color: AppColors.primary,
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: ColorFiltered(
                     colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
-                    child: Image.asset(
-                      'assets/images/brand/davochain_logo.png',
-                      fit: BoxFit.contain,
-                    ),
+                    child: Image.asset('assets/images/brand/davochain_logo.png', fit: BoxFit.contain),
                   ),
                 )
               : const NigeriaFlagMark(width: 32);
@@ -65,8 +62,8 @@ class BuyFundingWalletSheet extends StatelessWidget {
             leading: leading,
             title: wallet.name,
             subtitle: wallet.symbol,
-            trailingTop: wallet == BuyFundingWallet.ngn ? '1,124.38 USD' : '100.50 USD',
-            trailingBottom: wallet == BuyFundingWallet.ngn ? wallet.formattedBalance : '135,000.00 ₦',
+            trailingTop: wallet == BuyFundingWallet.ngn ? '0.00 USD' : '100.50 USD',
+            trailingBottom: wallet == BuyFundingWallet.ngn ? '0.00₦' : '135,000.00 ₦',
             onTap: () {
               HapticFeedback.selectionClick();
               Navigator.pop(context, wallet);
@@ -135,7 +132,7 @@ class _BuySheetShell extends StatelessWidget {
                       IconButton(
                         visualDensity: VisualDensity.compact,
                         onPressed: () => Navigator.pop(context),
-                        icon: const Icon(Icons.close_rounded, size: 25),
+                        icon: Image.asset('assets/images/figma/buy_close.png', width: 24, height: 24),
                       ),
                     ],
                   ),
@@ -277,10 +274,10 @@ class NigeriaFlagMark extends StatelessWidget {
   Widget build(BuildContext context) {
     return SizedBox(
       width: width,
-      height: width * .56,
+      height: width,
       child: Image.asset(
-        'assets/icons/auth/ng_flag.png',
-        fit: BoxFit.fill,
+        'assets/images/figma/buy_nigeria.png',
+        fit: BoxFit.contain,
         filterQuality: FilterQuality.high,
       ),
     );

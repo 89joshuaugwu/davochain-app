@@ -351,14 +351,324 @@ class BuyReviewScreen extends StatelessWidget {
                 enabled: true,
                 onPressed: () {
                   HapticFeedback.mediumImpact();
-                  Navigator.of(context).pushReplacement<void, void>(
-                    AppPageRoute<void>(builder: (_) => BuyProgressScreen(order: order)),
+                  Navigator.of(context).push<void>(
+                    AppPageRoute<void>(builder: (_) => BuyPinScreen(order: order)),
                   );
                 },
               ),
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class BuyPinScreen extends StatefulWidget {
+  const BuyPinScreen({super.key, required this.order});
+  final BuyCryptoOrder order;
+
+  @override
+  State<BuyPinScreen> createState() => _BuyPinScreenState();
+}
+
+class _BuyPinScreenState extends State<BuyPinScreen> {
+  final List<int> _digits = <int>[];
+
+  void _pressDigit(int digit) {
+    if (_digits.length >= 4) return;
+    HapticFeedback.selectionClick();
+    setState(() => _digits.add(digit));
+  }
+
+  void _backspace() {
+    if (_digits.isEmpty) return;
+    HapticFeedback.selectionClick();
+    setState(() => _digits.removeLast());
+  }
+
+  void _confirm() {
+    if (_digits.length != 4) return;
+    HapticFeedback.mediumImpact();
+    Navigator.of(context).pushReplacement<void, void>(
+      AppPageRoute<void>(builder: (_) => BuyProgressScreen(order: widget.order)),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final complete = _digits.length == 4;
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: SafeArea(
+        child: Stack(
+          children: [
+            Positioned(
+              left: 1,
+              top: 6,
+              child: IconButton(
+                onPressed: () => Navigator.pop(context),
+                padding: EdgeInsets.zero,
+                visualDensity: VisualDensity.compact,
+                icon: Image.asset(
+                  'assets/images/figma/buy_back.png',
+                  width: 24,
+                  height: 24,
+                ),
+              ),
+            ),
+            Positioned.fill(
+              top: 48,
+              child: Column(
+                children: [
+                  Container(
+                    width: 96,
+                    height: 96,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: const Color(0x4DC4C6CF)),
+                    ),
+                    child: Image.asset(
+                      'assets/images/figma/buy_pin_shield.png',
+                      width: 32,
+                      height: 40,
+                      fit: BoxFit.contain,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  const Text(
+                    'Confirm Your Pin',
+                    style: TextStyle(
+                      fontFamily: 'Sora',
+                      fontSize: 24,
+                      height: 1.35,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.ink,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 44),
+                    child: Text(
+                      'Please enter your 4-digit security PIN to\nauthorize this transaction securely.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontFamily: 'Sora',
+                        fontSize: 14,
+                        height: 1.35,
+                        color: AppColors.body,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 40),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: List.generate(4, (index) {
+                      final filled = index < _digits.length;
+                      return AnimatedContainer(
+                        duration: const Duration(milliseconds: 180),
+                        curve: Curves.easeOutCubic,
+                        width: 60,
+                        height: 70,
+                        margin: const EdgeInsets.symmetric(horizontal: 4),
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: filled ? Colors.white : const Color(0xFFF5F6F9),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: filled ? AppColors.primary : const Color(0xFFEBEDF3),
+                          ),
+                          boxShadow: filled
+                              ? const [BoxShadow(color: Color(0x40135CF7), blurRadius: 4)]
+                              : const [],
+                        ),
+                        child: AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 160),
+                          transitionBuilder: (child, animation) => ScaleTransition(
+                            scale: animation,
+                            child: FadeTransition(opacity: animation, child: child),
+                          ),
+                          child: filled
+                              ? Text(
+                                  '${_digits[index]}',
+                                  key: ValueKey(_digits[index]),
+                                  style: const TextStyle(
+                                    fontFamily: 'Sora',
+                                    fontSize: 38,
+                                    height: 1,
+                                    fontWeight: FontWeight.w500,
+                                    color: Color(0xFF555555),
+                                  ),
+                                )
+                              : const SizedBox.shrink(key: ValueKey('empty')),
+                        ),
+                      );
+                    }),
+                  ),
+                  const SizedBox(height: 26),
+                  AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 220),
+                    child: complete
+                        ? Padding(
+                            key: const ValueKey('confirm'),
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            child: _PrimaryButton(
+                              label: 'Confirm',
+                              enabled: true,
+                              onPressed: _confirm,
+                            ),
+                          )
+                        : const Text(
+                            'Enter Secure PIN',
+                            key: ValueKey('hint'),
+                            style: TextStyle(
+                              fontFamily: 'Sora',
+                              fontSize: 14,
+                              color: Color(0xFF434656),
+                            ),
+                          ),
+                  ),
+                  const Spacer(),
+                  _PinKeypad(
+                    onDigit: _pressDigit,
+                    onBackspace: _backspace,
+                  ),
+                  const SizedBox(height: 14),
+                  if (!complete) ...[
+                    const Text(
+                      'Authentication is required',
+                      style: TextStyle(
+                        fontFamily: 'Sora',
+                        fontSize: 12,
+                        color: Color(0xFF8D8D8D),
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Image.asset(
+                          'assets/images/figma/buy_lock.png',
+                          width: 11,
+                          height: 14,
+                        ),
+                        const SizedBox(width: 8),
+                        const Text(
+                          'ENCRYPTED END-TO-END',
+                          style: TextStyle(
+                            fontFamily: 'Sora',
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 1.1,
+                            color: AppColors.body,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                  const SizedBox(height: 10),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _PinKeypad extends StatelessWidget {
+  const _PinKeypad({required this.onDigit, required this.onBackspace});
+  final ValueChanged<int> onDigit;
+  final VoidCallback onBackspace;
+
+  static const _letters = <int, String>{
+    2: 'ABC', 3: 'DEF', 4: 'GHI', 5: 'JKL', 6: 'MNO',
+    7: 'PQRS', 8: 'TUV', 9: 'WXYZ',
+  };
+
+  @override
+  Widget build(BuildContext context) {
+    Widget key(int number) => Expanded(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 2.5, vertical: 3.5),
+            child: Material(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(4.6),
+              elevation: .7,
+              child: InkWell(
+                onTap: () => onDigit(number),
+                borderRadius: BorderRadius.circular(4.6),
+                child: SizedBox(
+                  height: 46,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        '$number',
+                        style: const TextStyle(
+                          fontSize: 25,
+                          height: .95,
+                          color: Colors.black,
+                        ),
+                      ),
+                      if (_letters.containsKey(number))
+                        Text(
+                          _letters[number]!,
+                          style: const TextStyle(
+                            fontSize: 9,
+                            height: 1,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 2,
+                            color: Colors.black,
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+
+    Widget blank() => const Expanded(child: SizedBox(height: 53));
+
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.fromLTRB(3.5, 3, 3.5, 7),
+      color: const Color(0xFFF5F6F9),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(children: [key(1), key(2), key(3)]),
+          Row(children: [key(4), key(5), key(6)]),
+          Row(children: [key(7), key(8), key(9)]),
+          Row(
+            children: [
+              blank(),
+              key(0),
+              Expanded(
+                child: InkWell(
+                  onTap: onBackspace,
+                  child: SizedBox(
+                    height: 53,
+                    child: Center(
+                      child: Image.asset(
+                        'assets/images/figma/buy_backspace.png',
+                        width: 34,
+                        height: 22,
+                        fit: BoxFit.contain,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
@@ -408,7 +718,7 @@ class _BuyProgressScreenState extends State<BuyProgressScreen> with TickerProvid
               top: 4,
               child: IconButton(
                 onPressed: () => Navigator.pop(context),
-                icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+                icon: Image.asset('assets/images/figma/buy_back.png', width: 24, height: 24),
               ),
             ),
             Center(
@@ -422,8 +732,22 @@ class _BuyProgressScreenState extends State<BuyProgressScreen> with TickerProvid
                       height: 150,
                       child: AnimatedBuilder(
                         animation: _pulse,
-                        builder: (_, __) => CustomPaint(
-                          painter: _ProcessingPainter(progress: _pulse.value),
+                        builder: (_, child) {
+                          final wave = math.sin(_pulse.value * math.pi * 2);
+                          return Transform.scale(
+                            scale: .985 + ((wave + 1) * .0075),
+                            child: Opacity(
+                              opacity: .9 + ((wave + 1) * .05),
+                              child: child,
+                            ),
+                          );
+                        },
+                        child: Image.asset(
+                          'assets/images/figma/buy_process.png',
+                          width: 150,
+                          height: 150,
+                          fit: BoxFit.contain,
+                          filterQuality: FilterQuality.high,
                         ),
                       ),
                     ),
@@ -439,7 +763,7 @@ class _BuyProgressScreenState extends State<BuyProgressScreen> with TickerProvid
                     ),
                     const SizedBox(height: 8),
                     const Text(
-                      'Please wait while we process your purchase',
+                      'Please wait while we process your Conversion',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontFamily: 'Sora',
@@ -499,7 +823,7 @@ class _BuySuccessScreenState extends State<BuySuccessScreen> with SingleTickerPr
                 alignment: Alignment.centerLeft,
                 child: IconButton(
                   onPressed: () => Navigator.of(context).pushNamedAndRemoveUntil(AppRoutes.dashboard, (route) => false),
-                  icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+                  icon: Image.asset('assets/images/figma/buy_back.png', width: 24, height: 24),
                 ),
               ),
               Expanded(
@@ -513,29 +837,11 @@ class _BuySuccessScreenState extends State<BuySuccessScreen> with SingleTickerPr
                         children: [
                           ScaleTransition(
                             scale: _scale,
-                            child: Container(
-                              width: 118,
-                              height: 118,
-                              decoration: BoxDecoration(
-                                color: AppColors.primary.withValues(alpha: .10),
-                                shape: BoxShape.circle,
-                              ),
-                              child: Center(
-                                child: Container(
-                                  width: 74,
-                                  height: 74,
-                                  decoration: const BoxDecoration(
-                                    color: AppColors.primary,
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: const Icon(Icons.check_rounded, color: Colors.white, size: 42),
-                                ),
-                              ),
-                            ),
+                            child: const SizedBox(width: 150, height: 150),
                           ),
-                          const SizedBox(height: 26),
+                          const SizedBox(height: 16),
                           const Text(
-                            'Purchase Successful',
+                            'Sold Successful',
                             style: TextStyle(
                               fontFamily: 'Sora',
                               fontSize: 20,
@@ -596,7 +902,7 @@ class _BuySuccessScreenState extends State<BuySuccessScreen> with SingleTickerPr
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
                     textStyle: const TextStyle(fontFamily: 'Sora', fontSize: 14, fontWeight: FontWeight.w600),
                   ),
-                  child: const Text('Buy another asset'),
+                  child: const Text('Send another transfer'),
                 ),
               ),
             ],
@@ -614,7 +920,7 @@ class BuyTransactionDetailsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final now = DateTime.now();
-    final transactionId = 'DVC-BUY-${now.millisecondsSinceEpoch.toString().substring(5)}';
+    final transactionId = '0x3a4f...9c7d';
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FB),
       body: SafeArea(
@@ -622,76 +928,89 @@ class BuyTransactionDetailsScreen extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
           child: Column(
             children: [
-              _TradeTopBar(title: 'Transaction Details', onBack: () => Navigator.pop(context)),
-              const SizedBox(height: 24),
+              _TradeTopBar(
+                title: 'Transaction Details',
+                onBack: () => Navigator.pop(context),
+                compactTitle: true,
+              ),
+              const SizedBox(height: 48),
               Expanded(
                 child: SingleChildScrollView(
                   physics: const BouncingScrollPhysics(),
                   child: Column(
                     children: [
-                      BuyAssetIcon(asset: order.asset, size: 56),
-                      const SizedBox(height: 14),
                       Text(
-                        '${order.cryptoAmount.toStringAsFixed(5)} ${order.asset.symbol}',
-                        style: const TextStyle(fontFamily: 'Sora', fontSize: 24, fontWeight: FontWeight.w700, color: AppColors.ink),
-                      ),
-                      const SizedBox(height: 3),
-                      Text(
-                        '\$${order.usdAmount.toStringAsFixed(2)} USD',
-                        style: const TextStyle(fontFamily: 'Sora', fontSize: 14, color: AppColors.bodyMuted),
-                      ),
-                      const SizedBox(height: 10),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                        decoration: BoxDecoration(color: const Color(0xFFF3FAF5), borderRadius: BorderRadius.circular(100)),
-                        child: const Text(
-                          'Completed',
-                          style: TextStyle(fontFamily: 'Sora', fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.success),
+                        '${order.cryptoAmount.toStringAsFixed(4)} ${order.asset.symbol}',
+                        style: const TextStyle(
+                          fontFamily: 'Sora',
+                          fontSize: 24,
+                          height: 1.35,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.ink,
                         ),
                       ),
-                      const SizedBox(height: 28),
+                      const SizedBox(height: 2),
+                      Text(
+                        '\$${order.usdAmount.toStringAsFixed(2)} USD',
+                        style: const TextStyle(
+                          fontFamily: 'Sora',
+                          fontSize: 14,
+                          height: 1.35,
+                          color: AppColors.body,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Container(
+                        width: 94,
+                        height: 31,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFE5F9ED),
+                          borderRadius: BorderRadius.circular(100),
+                        ),
+                        child: const Text(
+                          'Completed',
+                          style: TextStyle(
+                            fontFamily: 'Sora',
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF1BA44D),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 32),
                       Container(
                         width: double.infinity,
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8)),
+                        padding: const EdgeInsets.fromLTRB(15, 22, 15, 22),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
                         child: Column(
                           children: [
-                            _DetailsRow(label: 'Asset', value: '${order.asset.name} (${order.asset.symbol})'),
+                            const _DetailsRow(label: 'To', value: 'Callieweb3'),
                             const _DetailsDivider(),
-                            _DetailsRow(label: 'Paid from', value: '${order.wallet.name} (${order.wallet.symbol})'),
-                            const _DetailsDivider(),
-                            _DetailsRow(label: 'Amount paid', value: '₦${_formatNgn(order.ngnAmount)}'),
-                            const _DetailsDivider(),
-                            _DetailsRow(label: 'Exchange rate', value: '1 ${order.asset.symbol} ≈ ₦${_formatNgn(order.asset.ngnPerUnit)}'),
-                            const _DetailsDivider(),
-                            const _DetailsRow(label: 'Network fee', value: 'Free'),
+                            _DetailsRow(
+                              label: 'Asset',
+                              value: '${order.asset.name} (${order.asset.symbol})',
+                              leading: BuyAssetIcon(asset: order.asset, size: 24),
+                            ),
                             const _DetailsDivider(),
                             _DetailsRow(
                               label: 'Date',
                               value: '${_month(now.month)} ${now.day}, ${now.year}, ${_two(now.hour)}:${_two(now.minute)}',
                             ),
                             const _DetailsDivider(),
-                            _DetailsRow(label: 'Transaction ID', value: transactionId, copyable: true),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFEEF4FE),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Row(
-                          children: [
-                            Image.asset('assets/images/brand/davochain_logo.png', width: 26, height: 26, fit: BoxFit.contain),
-                            const SizedBox(width: 10),
-                            const Expanded(
-                              child: Text(
-                                'Davochain • Transaction receipt',
-                                style: TextStyle(fontFamily: 'Sora', fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.ink),
-                              ),
+                            const _DetailsRow(
+                              label: 'Network Fee',
+                              value: 'Free',
+                              accent: true,
+                            ),
+                            const _DetailsDivider(),
+                            _DetailsRow(
+                              label: 'Transaction ID',
+                              value: transactionId,
+                              copyable: true,
                             ),
                           ],
                         ),
@@ -703,7 +1022,41 @@ class BuyTransactionDetailsScreen extends StatelessWidget {
               _PrimaryButton(
                 label: 'Done',
                 enabled: true,
-                onPressed: () => Navigator.of(context).pushNamedAndRemoveUntil(AppRoutes.dashboard, (route) => false),
+                onPressed: () => Navigator.of(context).pushNamedAndRemoveUntil(
+                  AppRoutes.dashboard,
+                  (route) => false,
+                ),
+              ),
+              const SizedBox(height: 13),
+              SizedBox(
+                width: double.infinity,
+                height: 48,
+                child: FilledButton(
+                  onPressed: () {
+                    HapticFeedback.selectionClick();
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Receipt ready to share'),
+                        behavior: SnackBarBehavior.floating,
+                        duration: Duration(milliseconds: 1200),
+                      ),
+                    );
+                  },
+                  style: FilledButton.styleFrom(
+                    elevation: 0,
+                    backgroundColor: const Color(0xFFEAF0FB),
+                    foregroundColor: AppColors.primary,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    textStyle: const TextStyle(
+                      fontFamily: 'Sora',
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  child: const Text('Share Receipt'),
+                ),
               ),
             ],
           ),
@@ -714,9 +1067,10 @@ class BuyTransactionDetailsScreen extends StatelessWidget {
 }
 
 class _TradeTopBar extends StatelessWidget {
-  const _TradeTopBar({required this.title, required this.onBack});
+  const _TradeTopBar({required this.title, required this.onBack, this.compactTitle = false});
   final String title;
   final VoidCallback onBack;
+  final bool compactTitle;
 
   @override
   Widget build(BuildContext context) {
@@ -731,16 +1085,16 @@ class _TradeTopBar extends StatelessWidget {
               onPressed: onBack,
               padding: EdgeInsets.zero,
               visualDensity: VisualDensity.compact,
-              icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20, color: AppColors.ink),
+              icon: Image.asset('assets/images/figma/buy_back.png', width: 24, height: 24),
             ),
           ),
           Text(
             title,
-            style: const TextStyle(
+            style: TextStyle(
               fontFamily: 'Sora',
-              fontSize: 20,
+              fontSize: compactTitle ? 14 : 20,
               height: 1.35,
-              fontWeight: FontWeight.w400,
+              fontWeight: compactTitle ? FontWeight.w600 : FontWeight.w400,
               color: AppColors.ink,
             ),
           ),
@@ -902,11 +1256,11 @@ class _ReviewExchangeCards extends StatelessWidget {
               secondary: '≈ \$${order.usdAmount.toStringAsFixed(2)}',
             ),
           ),
-          Container(
+          Image.asset(
+            'assets/images/figma/buy_exchange_down.png',
             width: 40,
             height: 40,
-            decoration: const BoxDecoration(color: Color(0xFFF4F7FF), shape: BoxShape.circle),
-            child: const Icon(Icons.arrow_downward_rounded, color: AppColors.primary, size: 23),
+            fit: BoxFit.contain,
           ),
         ],
       ),
@@ -990,30 +1344,57 @@ class _ReviewDivider extends StatelessWidget {
 }
 
 class _DetailsRow extends StatelessWidget {
-  const _DetailsRow({required this.label, required this.value, this.copyable = false});
+  const _DetailsRow({
+    required this.label,
+    required this.value,
+    this.copyable = false,
+    this.leading,
+    this.accent = false,
+  });
+
   final String label;
   final String value;
   final bool copyable;
+  final Widget? leading;
+  final bool accent;
 
   @override
   Widget build(BuildContext context) {
     return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        SizedBox(
-          width: 108,
-          child: Text(label, style: const TextStyle(fontFamily: 'Sora', fontSize: 12, color: AppColors.bodyMuted)),
+        Text(
+          label,
+          style: const TextStyle(
+            fontFamily: 'Sora',
+            fontSize: 14,
+            height: 1.35,
+            color: AppColors.bodyMuted,
+          ),
         ),
-        Expanded(
+        const Spacer(),
+        if (leading != null) ...[
+          leading!,
+          const SizedBox(width: 8),
+        ],
+        Flexible(
           child: Text(
             value,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
             textAlign: TextAlign.right,
-            style: const TextStyle(fontFamily: 'Sora', fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.ink),
+            style: TextStyle(
+              fontFamily: 'Sora',
+              fontSize: 14,
+              height: 1.35,
+              color: accent ? AppColors.primary : AppColors.ink,
+            ),
           ),
         ),
         if (copyable) ...[
           const SizedBox(width: 8),
           InkWell(
+            borderRadius: BorderRadius.circular(18),
             onTap: () async {
               await Clipboard.setData(ClipboardData(text: value));
               if (!context.mounted) return;
@@ -1026,7 +1407,14 @@ class _DetailsRow extends StatelessWidget {
                 ),
               );
             },
-            child: const Icon(Icons.copy_rounded, size: 17, color: AppColors.bodyMuted),
+            child: Padding(
+              padding: const EdgeInsets.all(2),
+              child: Image.asset(
+                'assets/images/figma/buy_copy.png',
+                width: 16,
+                height: 16,
+              ),
+            ),
           ),
         ],
       ],
@@ -1042,30 +1430,6 @@ class _DetailsDivider extends StatelessWidget {
         child: Divider(height: 1, thickness: .5, color: Color(0xFFEBEDF3)),
       );
 }
-
-class _ProcessingPainter extends CustomPainter {
-  const _ProcessingPainter({required this.progress});
-  final double progress;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final center = Offset(size.width / 2, size.height / 2);
-    final paint = Paint()..color = AppColors.primary;
-    final angle = progress * math.pi * 2;
-    for (var i = 0; i < 3; i++) {
-      final phase = (progress + i / 3) % 1;
-      final radius = 10 + 25 * math.sin(phase * math.pi).abs();
-      final theta = angle + i * (math.pi * 2 / 3);
-      final p = center + Offset(math.cos(theta), math.sin(theta)) * (22 + 18 * phase);
-      canvas.drawCircle(p, radius * .35, paint..color = AppColors.primary.withValues(alpha: .45 + .5 * (1 - phase)));
-    }
-    canvas.drawCircle(center, 25 + 5 * math.sin(progress * math.pi * 2), Paint()..color = AppColors.primary);
-  }
-
-  @override
-  bool shouldRepaint(covariant _ProcessingPainter oldDelegate) => oldDelegate.progress != progress;
-}
-
 
 class _ThousandsFormatter extends TextInputFormatter {
   @override

@@ -33,14 +33,14 @@ class _BrandSplashScreenState extends State<BrandSplashScreen>
 
     _intro = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 680),
+      duration: const Duration(milliseconds: 900),
     )..forward();
     _ambient = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 2200),
+      duration: const Duration(milliseconds: 2400),
     )..repeat(reverse: true);
 
-    _timer = Timer(const Duration(milliseconds: 1650), _openOnboarding);
+    _timer = Timer(const Duration(milliseconds: 1900), _openOnboarding);
   }
 
   @override
@@ -56,14 +56,19 @@ class _BrandSplashScreenState extends State<BrandSplashScreen>
     Navigator.of(context).pushReplacement(
       PageRouteBuilder<void>(
         settings: const RouteSettings(name: '/onboarding'),
-        transitionDuration: const Duration(milliseconds: 520),
+        transitionDuration: const Duration(milliseconds: 560),
+        reverseTransitionDuration: const Duration(milliseconds: 360),
         pageBuilder: (_, animation, __) => const OnboardingScreen(),
         transitionsBuilder: (_, animation, __, child) {
-          final curved = CurvedAnimation(parent: animation, curve: Curves.easeOutCubic);
+          final curved = CurvedAnimation(
+            parent: animation,
+            curve: Curves.easeOutCubic,
+            reverseCurve: Curves.easeInCubic,
+          );
           return FadeTransition(
             opacity: curved,
             child: ScaleTransition(
-              scale: Tween<double>(begin: 1.008, end: 1).animate(curved),
+              scale: Tween<double>(begin: 1.015, end: 1).animate(curved),
               child: child,
             ),
           );
@@ -76,42 +81,62 @@ class _BrandSplashScreenState extends State<BrandSplashScreen>
   Widget build(BuildContext context) {
     final reduceMotion = MediaQuery.disableAnimationsOf(context);
     final size = MediaQuery.sizeOf(context);
-    final introCurve = CurvedAnimation(parent: _intro, curve: Curves.easeOutBack);
+    final intro = CurvedAnimation(parent: _intro, curve: Curves.easeOutCubic);
+    final logoCurve = CurvedAnimation(
+      parent: _intro,
+      curve: const Interval(.16, 1, curve: Curves.easeOutBack),
+    );
 
     return Scaffold(
       backgroundColor: AppColors.primary,
       body: Stack(
         fit: StackFit.expand,
         children: [
-          // Exact Figma splash background recovered from the source artwork:
-          // cobalt field, central shadow and outlined crypto forms at the edge.
+          // Exact Figma composition: cobalt field, wide oval behind the lockup,
+          // and oversized outlined crypto artwork bleeding off the bottom edge.
           Positioned.fill(
-            child: Image.asset(
-              'assets/images/figma/splash_background.png',
-              fit: BoxFit.cover,
-              alignment: Alignment.center,
-              filterQuality: FilterQuality.high,
+            child: AnimatedBuilder(
+              animation: _intro,
+              builder: (context, child) {
+                if (reduceMotion) return child!;
+                return Transform.scale(
+                  scale: 1.035 - (intro.value * .035),
+                  alignment: Alignment.center,
+                  child: Transform.translate(
+                    offset: Offset(0, 12 * (1 - intro.value)),
+                    child: child,
+                  ),
+                );
+              },
+              child: Image.asset(
+                'assets/images/figma/splash_background.png',
+                fit: BoxFit.cover,
+                alignment: Alignment.center,
+                filterQuality: FilterQuality.high,
+              ),
             ),
           ),
           Align(
-            alignment: const Alignment(0, -.015),
+            alignment: const Alignment(0, -.006),
             child: AnimatedBuilder(
               animation: Listenable.merge([_intro, _ambient]),
               builder: (context, child) {
-                final pulse = reduceMotion ? 0.0 : math.sin(_ambient.value * math.pi) * 1.5;
+                final float = reduceMotion
+                    ? 0.0
+                    : math.sin(_ambient.value * math.pi) * 1.6;
                 return Opacity(
-                  opacity: Curves.easeOut.transform(_intro.value.clamp(0.0, 1.0)),
+                  opacity: intro.value.clamp(0.0, 1.0),
                   child: Transform.translate(
-                    offset: Offset(0, (1 - _intro.value) * 12 + pulse),
+                    offset: Offset(0, 14 * (1 - intro.value) + float),
                     child: Transform.scale(
-                      scale: reduceMotion ? 1 : .9 + introCurve.value * .1,
+                      scale: reduceMotion ? 1 : .88 + (.12 * logoCurve.value),
                       child: child,
                     ),
                   ),
                 );
               },
               child: _WhiteDavochainLockup(
-                width: math.min(size.width * .72, 305.0),
+                maxWidth: math.min(size.width - 30, 360),
               ),
             ),
           ),
@@ -122,43 +147,47 @@ class _BrandSplashScreenState extends State<BrandSplashScreen>
 }
 
 class _WhiteDavochainLockup extends StatelessWidget {
-  const _WhiteDavochainLockup({required this.width});
+  const _WhiteDavochainLockup({required this.maxWidth});
 
-  final double width;
+  final double maxWidth;
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: width,
-      child: FittedBox(
-        fit: BoxFit.contain,
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ColorFiltered(
-              colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
-              child: Image.asset(
-                'assets/images/brand/davochain_logo.png',
-                width: 60,
-                height: 40,
-                fit: BoxFit.contain,
-                filterQuality: FilterQuality.high,
+    return ConstrainedBox(
+      constraints: BoxConstraints(maxWidth: maxWidth),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          ColorFiltered(
+            colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
+            child: Image.asset(
+              'assets/images/brand/davochain_logo.png',
+              width: 61,
+              height: 42,
+              fit: BoxFit.contain,
+              filterQuality: FilterQuality.high,
+            ),
+          ),
+          const SizedBox(width: 8),
+          const Flexible(
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                'Davochain',
+                maxLines: 1,
+                style: TextStyle(
+                  fontFamily: 'Sora',
+                  fontSize: 40,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white,
+                  letterSpacing: .4,
+                  height: 1,
+                ),
               ),
             ),
-            const SizedBox(width: 8),
-            const Text(
-              'Davochain',
-              style: TextStyle(
-                fontFamily: 'Sora',
-                fontSize: 42,
-                fontWeight: FontWeight.w700,
-                color: Colors.white,
-                letterSpacing: .42,
-                height: 1,
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
