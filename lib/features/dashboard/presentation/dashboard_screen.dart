@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../../core/theme/app_theme.dart';
+import '../../buy_crypto/presentation/buy_crypto_flow.dart';
 
 const _dashboardAssetRoot = 'assets/images/dashboard';
 
@@ -59,7 +60,7 @@ class _DavochainDashboardScreenState extends State<DavochainDashboardScreen> {
               _Entrance(
                 index: 3,
                 child: _QuickActions(
-                  onBuy: () => _showComingSoon('Buy Crypto'),
+                  onBuy: () => startBuyCryptoFlow(context),
                   onSell: () => _showComingSoon('Sell Crypto'),
                   onGift: () => _showComingSoon('Gift Cards'),
                   onHistory: () => _showComingSoon('History'),
@@ -861,7 +862,13 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                         color: active ? AppColors.primary : const Color(0xFFEEF0F5),
                         borderRadius: BorderRadius.circular(6),
                         child: InkWell(
-                          onTap: () => setState(() => _tradeTab = index),
+                          onTap: () {
+                            if (index == 0) {
+                              startBuyCryptoFlow(context);
+                              return;
+                            }
+                            setState(() => _tradeTab = index);
+                          },
                           borderRadius: BorderRadius.circular(6),
                           child: SizedBox(
                             height: 40,

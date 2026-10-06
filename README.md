@@ -38,3 +38,7 @@ dart run flutter_native_splash:create
 ## API status
 
 This milestone is frontend/prototype wiring. Authentication, live balances, crypto settlement, bank account generation, real OTP validation and real transaction APIs still need the Davochain backend endpoints.
+
+## v5 – Buy Crypto frontend
+
+The Buy Crypto journey is fully interactive with local/mock data only: cryptocurrency selection, funding-wallet selection, amount entry, quote preview, review, animated processing, success and transaction details. No backend/API connection is required for any Buy Crypto screen in this milestone. See `BUY_CRYPTO_IMPLEMENTATION.md`.
