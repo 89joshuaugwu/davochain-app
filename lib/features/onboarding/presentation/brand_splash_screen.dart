@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../../core/theme/app_theme.dart';
-import '../../../shared/widgets/davochain_logo_lockup.dart';
 import 'onboarding_screen.dart';
 
 class BrandSplashScreen extends StatefulWidget {
@@ -17,11 +16,8 @@ class BrandSplashScreen extends StatefulWidget {
 
 class _BrandSplashScreenState extends State<BrandSplashScreen>
     with TickerProviderStateMixin {
-  late final AnimationController _introController;
-  late final AnimationController _ambientController;
-  late final Animation<double> _scale;
-  late final Animation<double> _opacity;
-  late final Animation<Offset> _slide;
+  late final AnimationController _intro;
+  late final AnimationController _ambient;
   Timer? _timer;
 
   @override
@@ -35,54 +31,41 @@ class _BrandSplashScreenState extends State<BrandSplashScreen>
       systemNavigationBarIconBrightness: Brightness.light,
     ));
 
-    _introController = AnimationController(
+    _intro = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 850),
-    );
-    _ambientController = AnimationController(
+      duration: const Duration(milliseconds: 760),
+    )..forward();
+    _ambient = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 3400),
+      duration: const Duration(milliseconds: 3000),
     )..repeat(reverse: true);
 
-    final curve = CurvedAnimation(
-      parent: _introController,
-      curve: Curves.easeOutBack,
-    );
-    _scale = Tween<double>(begin: .82, end: 1).animate(curve);
-    _opacity = CurvedAnimation(
-      parent: _introController,
-      curve: const Interval(0, .65, curve: Curves.easeOut),
-    );
-    _slide = Tween<Offset>(
-      begin: const Offset(0, .16),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _introController,
-      curve: Curves.easeOutCubic,
-    ));
+    _timer = Timer(const Duration(milliseconds: 1650), _openOnboarding);
+  }
 
-    _introController.forward();
-    _timer = Timer(const Duration(milliseconds: 1900), _openOnboarding);
+  @override
+  void dispose() {
+    _timer?.cancel();
+    _intro.dispose();
+    _ambient.dispose();
+    super.dispose();
   }
 
   void _openOnboarding() {
     if (!mounted) return;
     Navigator.of(context).pushReplacement(
       PageRouteBuilder<void>(
-        transitionDuration: const Duration(milliseconds: 650),
-        reverseTransitionDuration: const Duration(milliseconds: 420),
-        pageBuilder: (_, animation, __) => FadeTransition(
-          opacity: CurvedAnimation(parent: animation, curve: Curves.easeOut),
-          child: const OnboardingScreen(),
-        ),
+        settings: const RouteSettings(name: '/onboarding'),
+        transitionDuration: const Duration(milliseconds: 620),
+        pageBuilder: (_, animation, __) => const OnboardingScreen(),
         transitionsBuilder: (_, animation, __, child) {
-          final slide = Tween<Offset>(
-            begin: const Offset(.035, 0),
-            end: Offset.zero,
-          ).animate(CurvedAnimation(parent: animation, curve: Curves.easeOutCubic));
+          final curved = CurvedAnimation(parent: animation, curve: Curves.easeOutCubic);
           return FadeTransition(
-            opacity: animation,
-            child: SlideTransition(position: slide, child: child),
+            opacity: curved,
+            child: ScaleTransition(
+              scale: Tween<double>(begin: 1.012, end: 1).animate(curved),
+              child: child,
+            ),
           );
         },
       ),
@@ -90,16 +73,9 @@ class _BrandSplashScreenState extends State<BrandSplashScreen>
   }
 
   @override
-  void dispose() {
-    _timer?.cancel();
-    _introController.dispose();
-    _ambientController.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final reduceMotion = MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+    final reduceMotion = MediaQuery.disableAnimationsOf(context);
+    final introCurve = CurvedAnimation(parent: _intro, curve: Curves.easeOutBack);
 
     return Scaffold(
       backgroundColor: AppColors.primary,
@@ -107,39 +83,41 @@ class _BrandSplashScreenState extends State<BrandSplashScreen>
         fit: StackFit.expand,
         children: [
           const _SplashGlow(),
-          Positioned.fill(
-            top: null,
-            child: SizedBox(
-              height: MediaQuery.sizeOf(context).height * .22,
-              child: const CustomPaint(painter: _CryptoLinePainter()),
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: FractionallySizedBox(
+              widthFactor: 1.18,
+              child: Opacity(
+                opacity: .86,
+                child: Image.asset(
+                  'assets/images/brand/native_splash_branding.png',
+                  height: MediaQuery.sizeOf(context).height * .205,
+                  fit: BoxFit.cover,
+                  alignment: Alignment.topCenter,
+                ),
+              ),
             ),
           ),
           Center(
             child: AnimatedBuilder(
-              animation: Listenable.merge([_introController, _ambientController]),
+              animation: Listenable.merge([_intro, _ambient]),
               builder: (context, child) {
-                final ambient = reduceMotion
-                    ? 0.0
-                    : math.sin(_ambientController.value * math.pi) * 4;
-                return Transform.translate(
-                  offset: Offset(0, ambient),
-                  child: FadeTransition(
-                    opacity: _opacity,
-                    child: SlideTransition(
-                      position: _slide,
-                      child: ScaleTransition(
-                        scale: _scale,
-                        child: child,
-                      ),
-                    ),
+                final wave = math.sin(_ambient.value * math.pi);
+                final dy = reduceMotion ? 0.0 : wave * 4;
+                final scale = reduceMotion ? 1.0 : .88 + introCurve.value * .12;
+                return Opacity(
+                  opacity: Curves.easeOut.transform(_intro.value.clamp(0.0, 1.0).toDouble()),
+                  child: Transform.translate(
+                    offset: Offset(0, dy + (1 - _intro.value) * 14),
+                    child: Transform.scale(scale: scale, child: child),
                   ),
                 );
               },
-              child: const DavochainLogoLockup(
-                logoColor: Colors.white,
-                textColor: Colors.white,
-                logoWidth: 56,
-                fontSize: 39,
+              child: Image.asset(
+                'assets/images/brand/native_splash_lockup.png',
+                width: math.min(MediaQuery.sizeOf(context).width * .69, 300.0),
+                fit: BoxFit.contain,
+                filterQuality: FilterQuality.high,
               ),
             ),
           ),
@@ -157,50 +135,14 @@ class _SplashGlow extends StatelessWidget {
     return DecoratedBox(
       decoration: BoxDecoration(
         gradient: RadialGradient(
-          center: const Alignment(0, .05),
-          radius: .42,
+          center: const Alignment(0, -.02),
+          radius: .48,
           colors: [
-            Colors.white.withValues(alpha: .13),
+            Colors.white.withOpacity(.12),
             Colors.transparent,
           ],
         ),
       ),
     );
   }
-}
-
-class _CryptoLinePainter extends CustomPainter {
-  const _CryptoLinePainter();
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = Colors.white.withValues(alpha: .72)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.35;
-
-    final faint = Paint()
-      ..color = Colors.white.withValues(alpha: .22)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1;
-
-    final baseY = size.height * .78;
-    for (var i = -1; i < 5; i++) {
-      final x = i * size.width * .24;
-      final path = Path()
-        ..moveTo(x, baseY)
-        ..lineTo(x + size.width * .12, size.height * .48)
-        ..lineTo(x + size.width * .24, baseY)
-        ..lineTo(x + size.width * .12, size.height * 1.08)
-        ..close();
-      canvas.drawPath(path, i.isEven ? paint : faint);
-    }
-
-    final circleRadius = size.width * .075;
-    canvas.drawCircle(Offset(size.width * .12, size.height * .62), circleRadius, paint);
-    canvas.drawCircle(Offset(size.width * .86, size.height * .58), circleRadius, faint);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
