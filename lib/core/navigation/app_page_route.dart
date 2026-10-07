@@ -3,9 +3,11 @@ import 'package:flutter/material.dart';
 class AppPageRoute<T> extends PageRouteBuilder<T> {
   AppPageRoute({
     required WidgetBuilder builder,
-    super.settings,
-    super.fullscreenDialog,
+    RouteSettings? settings,
+    bool fullscreenDialog = false,
   }) : super(
+          settings: settings,
+          fullscreenDialog: fullscreenDialog,
           transitionDuration: const Duration(milliseconds: 440),
           reverseTransitionDuration: const Duration(milliseconds: 330),
           pageBuilder: (context, animation, secondaryAnimation) => builder(context),

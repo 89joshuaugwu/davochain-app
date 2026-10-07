@@ -13,15 +13,17 @@ void main() {
     expect(find.text('Simple. Fast. Secure.'), findsNothing);
 
     await tester.tap(find.text('Next'));
-    await tester.pump(const Duration(milliseconds: 800));
-    await tester.pump(const Duration(milliseconds: 400));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
+    await tester.pump(const Duration(milliseconds: 500));
 
     expect(find.text('Simple. Fast. Secure.'), findsOneWidget);
     expect(find.text('Trade Crypto, Your Way'), findsNothing);
 
     await tester.tap(find.text('Next'));
-    await tester.pump(const Duration(milliseconds: 800));
-    await tester.pump(const Duration(milliseconds: 400));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
+    await tester.pump(const Duration(milliseconds: 500));
 
     expect(find.text('Turn Gift Cards Into Cash'), findsOneWidget);
     expect(find.text('Create Account'), findsOneWidget);

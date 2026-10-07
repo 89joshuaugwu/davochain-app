@@ -28,6 +28,7 @@ flutter:
     - assets/images/figma/gift_cards/
     - assets/icons/auth/
     - assets/icons/figma/
+    - assets/figma_exact/
 
 flutter_native_splash:
   color: "#135CF7"

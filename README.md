@@ -45,3 +45,8 @@ The Buy Crypto flow intentionally uses local/mock quote and balance data. See `B
 ## Font integration note
 
 The UI specifies the **Sora** family to match Figma. Font binaries are not bundled in this handoff, so the host Flutter app should provide its licensed/approved Sora font setup (or an existing project font configuration) before pixel-level typography QA.
+
+
+## Cumulative v8 crypto-board pass
+
+The authoritative Figma crypto section (`7319:55770`) contains 61 top-level states. v8 adds the missing Withdraw, Sell, Swap/Convert, deposit-status, network/scanner/safety, PIN, progress, success, detail, and receipt states while preserving the v7 Buy and splash fidelity work. See `CRYPTO_SCREEN_COVERAGE_V8.md` and `FIGMA_ASSET_AUDIT_V8.md`.

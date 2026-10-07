@@ -13,3 +13,7 @@
 - Login and successful transaction-PIN setup route to the dashboard in this prototype.
 - Legacy Davopay product naming is not used in shipped Dart UI copy.
 - Sora is referenced by family name throughout the UI but font binaries are intentionally not bundled in this source snapshot; integrate the approved font in the host app for final typography QA.
+
+## v9 — Gift Card Figma fidelity
+
+Implemented the complete Gift Card board from Figma section `7319:59420` as interactive Flutter Buy/Sell flows. Added exact local Figma brand/card/UI assets, wired Dashboard and bottom-navigation Gift Card entry points, and documented the 15-state coverage in `GIFT_CARD_SCREEN_COVERAGE_V9.md`.

@@ -9,25 +9,67 @@ class BuyCryptoAssetSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return _BuySheetShell(
-      title: 'Select Cryptocurrency',
-      heightFactor: .46,
-      child: Column(
-        children: BuyCryptoAsset.values
-            .map(
-              (asset) => _SheetRow(
-                leading: BuyAssetIcon(asset: asset, size: 37),
-                title: asset.name,
-                subtitle: asset.symbol,
-                trailingTop: '0.00 USD',
-                trailingBottom: '0.000000 ${asset.symbol}',
+    return Container(
+      height: 351,
+      decoration: const BoxDecoration(
+        color: Color(0xFFF8F9FB),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      child: Stack(
+        children: [
+          Positioned(
+            left: 0,
+            right: 0,
+            top: 6,
+            child: Center(
+              child: Container(
+                width: 85,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF686868),
+                  borderRadius: BorderRadius.circular(100),
+                ),
+              ),
+            ),
+          ),
+          const Positioned(
+            left: 0,
+            right: 0,
+            top: 32,
+            child: Text(
+              'Select Cryptocurrency',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontFamily: 'Sora', fontSize: 14, height: 1.35, color: AppColors.ink),
+            ),
+          ),
+          Positioned(
+            left: 342,
+            top: 20,
+            width: 24,
+            height: 24,
+            child: InkResponse(
+              onTap: () => Navigator.pop(context),
+              radius: 20,
+              child: Image.asset('assets/figma_exact/buy_close.png', width: 24, height: 24),
+            ),
+          ),
+          ...List.generate(BuyCryptoAsset.values.length, (index) {
+            final asset = BuyCryptoAsset.values[index];
+            return Positioned(
+              left: 16,
+              right: 16,
+              top: 67.0 + (index * 63.0),
+              height: 55,
+              child: _ExactAssetSheetRow(
+                asset: asset,
                 onTap: () {
                   HapticFeedback.selectionClick();
                   Navigator.pop(context, asset);
                 },
               ),
-            )
-            .toList(),
+            );
+          }),
+        ],
       ),
     );
   }
@@ -38,205 +80,137 @@ class BuyFundingWalletSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return _BuySheetShell(
-      title: 'Select wallet to buy from',
-      heightFactor: .31,
-      child: Column(
-        children: BuyFundingWallet.values.map((wallet) {
-          final leading = wallet.isDavochain
-              ? Container(
-                  width: 32,
-                  height: 32,
-                  padding: const EdgeInsets.all(5),
-                  decoration: BoxDecoration(
-                    color: AppColors.primary,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: ColorFiltered(
-                    colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
-                    child: Image.asset('assets/images/brand/davochain_logo.png', fit: BoxFit.contain),
-                  ),
-                )
-              : const NigeriaFlagMark(width: 32);
-          return _SheetRow(
-            leading: leading,
-            title: wallet.name,
-            subtitle: wallet.symbol,
-            trailingTop: wallet == BuyFundingWallet.ngn ? '0.00 USD' : '100.50 USD',
-            trailingBottom: wallet == BuyFundingWallet.ngn ? '0.00₦' : '135,000.00 ₦',
-            onTap: () {
-              HapticFeedback.selectionClick();
-              Navigator.pop(context, wallet);
-            },
-          );
-        }).toList(),
+    return Container(
+      height: 242,
+      decoration: const BoxDecoration(
+        color: Color(0xFFF8F9FB),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-    );
-  }
-}
-
-class _BuySheetShell extends StatelessWidget {
-  const _BuySheetShell({
-    required this.title,
-    required this.heightFactor,
-    required this.child,
-  });
-
-  final String title;
-  final double heightFactor;
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    return FractionallySizedBox(
-      heightFactor: heightFactor,
-      child: Container(
-        decoration: const BoxDecoration(
-          color: Color(0xFFF8F9FB),
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-        ),
-        child: SafeArea(
-          top: false,
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 14),
-            child: Column(
-              children: [
-                const SizedBox(height: 7),
-                Container(
-                  width: 85,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF686868),
-                    borderRadius: BorderRadius.circular(100),
-                  ),
+      child: Stack(
+        children: [
+          Positioned(
+            left: 0,
+            right: 0,
+            top: 6,
+            child: Center(
+              child: Container(
+                width: 85,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF686868),
+                  borderRadius: BorderRadius.circular(100),
                 ),
-                const SizedBox(height: 9),
-                SizedBox(
-                  height: 43,
-                  child: Row(
-                    children: [
-                      const SizedBox(width: 40),
-                      Expanded(
-                        child: Center(
-                          child: Text(
-                            title,
-                            style: const TextStyle(
-                              fontFamily: 'Sora',
-                              fontSize: 14,
-                              height: 1.35,
-                              color: AppColors.ink,
-                            ),
-                          ),
-                        ),
-                      ),
-                      IconButton(
-                        visualDensity: VisualDensity.compact,
-                        onPressed: () => Navigator.pop(context),
-                        icon: Image.asset('assets/images/figma/buy_close.png', width: 24, height: 24),
-                      ),
-                    ],
-                  ),
-                ),
-                Expanded(
-                  child: SingleChildScrollView(
-                    physics: const BouncingScrollPhysics(),
-                    child: child,
-                  ),
-                ),
-              ],
+              ),
             ),
           ),
-        ),
+          const Positioned(
+            left: 0,
+            right: 0,
+            top: 32,
+            child: Text(
+              'Select wallet to buy from',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontFamily: 'Sora', fontSize: 14, height: 1.35, color: AppColors.ink),
+            ),
+          ),
+          Positioned(
+            left: 342,
+            top: 20,
+            width: 24,
+            height: 24,
+            child: InkResponse(
+              onTap: () => Navigator.pop(context),
+              radius: 20,
+              child: Image.asset('assets/figma_exact/buy_close.png', width: 24, height: 24),
+            ),
+          ),
+          ...List.generate(BuyFundingWallet.values.length, (index) {
+            final wallet = BuyFundingWallet.values[index];
+            return Positioned(
+              left: 16,
+              right: 16,
+              top: index == 0 ? 67 : 138,
+              height: 55,
+              child: _ExactWalletSheetRow(
+                wallet: wallet,
+                onTap: () {
+                  HapticFeedback.selectionClick();
+                  Navigator.pop(context, wallet);
+                },
+              ),
+            );
+          }),
+        ],
       ),
     );
   }
 }
 
-class _SheetRow extends StatelessWidget {
-  const _SheetRow({
-    required this.leading,
-    required this.title,
-    required this.subtitle,
-    required this.trailingTop,
-    required this.trailingBottom,
-    required this.onTap,
-  });
+class _ExactAssetSheetRow extends StatelessWidget {
+  const _ExactAssetSheetRow({required this.asset, required this.onTap});
+  final BuyCryptoAsset asset;
+  final VoidCallback onTap;
 
-  final Widget leading;
-  final String title;
-  final String subtitle;
-  final String trailingTop;
-  final String trailingBottom;
+  String get _bottom => switch (asset) {
+        BuyCryptoAsset.tether => '0.000000 USDT',
+        _ => '0.00000000 ${asset.symbol}',
+      };
+
+  @override
+  Widget build(BuildContext context) => InkWell(
+        onTap: onTap,
+        child: SizedBox(
+          height: 55,
+          child: Stack(
+            children: [
+              Positioned(left: 0, top: 7, width: 37, height: 37, child: BuyAssetIcon(asset: asset, size: 37)),
+              Positioned(left: 49, top: 7.5, child: Text(asset.name, style: const TextStyle(fontFamily: 'Sora', fontSize: 14, height: 1.35, color: AppColors.ink))),
+              Positioned(left: 49, top: 28.5, child: Text(asset.symbol, style: const TextStyle(fontFamily: 'Sora', fontSize: 12, height: 1.25, color: AppColors.body))),
+              const Positioned(right: 0, top: 8.5, child: Text('0.00 USD', textAlign: TextAlign.right, style: TextStyle(fontFamily: 'Sora', fontSize: 14, height: 1.35, color: AppColors.body))),
+              Positioned(right: 0, top: 29.5, child: Text(_bottom, textAlign: TextAlign.right, style: const TextStyle(fontFamily: 'Sora', fontSize: 10, height: 1.3, color: AppColors.bodyMuted))),
+            ],
+          ),
+        ),
+      );
+}
+
+class _ExactWalletSheetRow extends StatelessWidget {
+  const _ExactWalletSheetRow({required this.wallet, required this.onTap});
+  final BuyFundingWallet wallet;
   final VoidCallback onTap;
 
   @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      child: Container(
-        height: 63,
-        decoration: const BoxDecoration(
-          border: Border(bottom: BorderSide(color: Color(0xFFEBEDF3), width: .4)),
-        ),
-        child: Row(
-          children: [
-            leading,
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: const TextStyle(
-                      fontFamily: 'Sora',
-                      fontSize: 14,
-                      height: 1.35,
-                      color: AppColors.ink,
-                    ),
-                  ),
-                  const SizedBox(height: 1),
-                  Text(
-                    subtitle,
-                    style: const TextStyle(
-                      fontFamily: 'Sora',
-                      fontSize: 12,
-                      color: AppColors.body,
-                    ),
-                  ),
-                ],
+  Widget build(BuildContext context) => InkWell(
+        onTap: onTap,
+        child: SizedBox(
+          height: 55,
+          child: Stack(
+            children: [
+              Positioned(
+                left: 0,
+                top: 7,
+                width: 32,
+                height: 32,
+                child: wallet.isDavochain
+                    ? Image.asset('assets/figma_exact/dashboard_crypto_images__Davochain_Logo.png', width: 32, height: 32, fit: BoxFit.contain)
+                    : const NigeriaFlagMark(width: 32),
               ),
-            ),
-            Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Text(
-                  trailingTop,
-                  style: const TextStyle(
-                    fontFamily: 'Sora',
-                    fontSize: 14,
-                    height: 1.35,
-                    color: AppColors.body,
-                  ),
-                ),
-                const SizedBox(height: 1),
-                Text(
-                  trailingBottom,
-                  style: const TextStyle(
-                    fontFamily: 'Sora',
-                    fontSize: 10,
-                    color: AppColors.bodyMuted,
-                  ),
-                ),
-              ],
-            ),
-          ],
+              Positioned(left: 44, top: 7, child: Text(wallet.name, style: const TextStyle(fontFamily: 'Sora', fontSize: 14, height: 1.35, color: AppColors.ink))),
+              Positioned(left: 44, top: 28, child: Text(wallet.symbol, style: const TextStyle(fontFamily: 'Sora', fontSize: 12, height: 1.25, color: AppColors.body))),
+              Positioned(
+                right: 0,
+                top: 8,
+                child: Text(wallet == BuyFundingWallet.ngn ? '0.00 USD' : '100.50 USD', textAlign: TextAlign.right, style: const TextStyle(fontFamily: 'Sora', fontSize: 14, height: 1.35, color: AppColors.body)),
+              ),
+              Positioned(
+                right: 0,
+                top: 29,
+                child: Text(wallet == BuyFundingWallet.ngn ? '0.00₦' : '135,000.00 ₦', textAlign: TextAlign.right, style: const TextStyle(fontFamily: 'Sora', fontSize: 10, height: 1.3, color: AppColors.bodyMuted)),
+              ),
+            ],
+          ),
         ),
-      ),
-    );
-  }
+      );
 }
 
 class BuyAssetIcon extends StatelessWidget {
@@ -246,21 +220,31 @@ class BuyAssetIcon extends StatelessWidget {
   final double size;
 
   String get _assetPath => switch (asset) {
-        BuyCryptoAsset.bitcoin => 'assets/images/figma/btc.png',
-        BuyCryptoAsset.ethereum => 'assets/images/figma/eth.png',
-        BuyCryptoAsset.solana => 'assets/images/figma/sol.png',
-        BuyCryptoAsset.tether => 'assets/images/figma/usdt.png',
+        BuyCryptoAsset.bitcoin => 'assets/figma_exact/btc.png',
+        BuyCryptoAsset.ethereum => 'assets/figma_exact/eth.png',
+        BuyCryptoAsset.solana => 'assets/figma_exact/sol.png',
+        BuyCryptoAsset.tether => 'assets/figma_exact/usdt.png',
       };
 
   @override
   Widget build(BuildContext context) {
+    final visualSize = switch (asset) {
+      BuyCryptoAsset.bitcoin => size * (36 / 37),
+      BuyCryptoAsset.ethereum => size,
+      BuyCryptoAsset.solana => size,
+      BuyCryptoAsset.tether => size * (28 / 37),
+    };
     return SizedBox(
       width: size,
       height: size,
-      child: Image.asset(
-        _assetPath,
-        fit: BoxFit.contain,
-        filterQuality: FilterQuality.high,
+      child: Center(
+        child: Image.asset(
+          _assetPath,
+          width: visualSize,
+          height: visualSize,
+          fit: BoxFit.contain,
+          filterQuality: FilterQuality.high,
+        ),
       ),
     );
   }
@@ -276,7 +260,7 @@ class NigeriaFlagMark extends StatelessWidget {
       width: width,
       height: width,
       child: Image.asset(
-        'assets/images/figma/buy_nigeria.png',
+        'assets/figma_exact/buy_nigeria.png',
         fit: BoxFit.contain,
         filterQuality: FilterQuality.high,
       ),

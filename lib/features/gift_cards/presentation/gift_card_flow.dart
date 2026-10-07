@@ -6,8 +6,8 @@ import 'package:flutter/services.dart';
 import '../../../core/navigation/app_page_route.dart';
 import '../../../core/theme/app_theme.dart';
 
-const _g = 'assets/images/figma/gift_cards';
-const _f = 'assets/images/figma';
+const _g = 'assets/figma_exact';
+const _f = 'assets/figma_exact';
 
 enum GiftCardMode { buy, sell }
 
@@ -109,7 +109,20 @@ class _GiftCardHomeScreenState extends State<GiftCardHomeScreen> {
             ],
           ),
           const SizedBox(height: 24),
-          const Text('Popular Brands', style: _section),
+          Row(
+            children: [
+              const Text('Popular Brands', style: _section),
+              const Spacer(),
+              InkWell(
+                onTap: _openSelector,
+                borderRadius: BorderRadius.circular(12),
+                child: const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+                  child: Text('View All', style: TextStyle(fontFamily: 'Sora', fontSize: 12, color: AppColors.primary, fontWeight: FontWeight.w600)),
+                ),
+              ),
+            ],
+          ),
           const SizedBox(height: 12),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -123,13 +136,6 @@ class _GiftCardHomeScreenState extends State<GiftCardHomeScreen> {
           const SizedBox(height: 28),
           _ReferralCard(onTap: () => HapticFeedback.lightImpact()),
           const SizedBox(height: 12),
-          SizedBox(
-            width: double.infinity,
-            child: _PrimaryButton(
-              label: mode == GiftCardMode.buy ? 'Browse Gift Cards' : 'Sell a Gift Card',
-              onTap: () => _openSelector(),
-            ),
-          ),
         ],
       ),
     );
@@ -195,7 +201,7 @@ class _GiftCardBrandScreenState extends State<GiftCardBrandScreen> {
                   children: [
                     Text(widget.mode == GiftCardMode.buy ? 'Buy Gift Card' : 'Sell Gift Card', style: _title24),
                     const SizedBox(height: 3),
-                    Text(widget.mode == GiftCardMode.buy ? 'Buy gift cards instantly' : 'Sell gift cards instantly', style: _body14),
+                    const Text('Sell gift cards instantly', style: _body14),
                   ],
                 ),
               ),
@@ -312,6 +318,8 @@ class _GiftCardSellFormScreenState extends State<GiftCardSellFormScreen> {
           const SizedBox(height: 8),
           const _StepProgress(step: 1),
           const SizedBox(height: 24),
+          const Text('Sort by:', style: _caption),
+          const SizedBox(height: 8),
           _TwoChoice(
             left: 'Physical',
             right: 'E-code',
@@ -354,7 +362,7 @@ class _GiftCardSellFormScreenState extends State<GiftCardSellFormScreen> {
               child: uploaded
                   ? ClipRRect(
                       borderRadius: BorderRadius.circular(6),
-                      child: Image.asset('$_g/apple_card_photo.jpg', height: 92, width: 188, fit: BoxFit.cover),
+                      child: Image.asset('$_g/apple_card_photo.png', height: 92, width: 188, fit: BoxFit.cover),
                     )
                   : Row(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -419,11 +427,11 @@ class _GiftCardSellReviewScreenState extends State<GiftCardSellReviewScreen> {
           Center(
             child: ClipRRect(
               borderRadius: BorderRadius.circular(6),
-              child: Image.asset('$_g/apple_card_photo.jpg', width: 120, height: 68, fit: BoxFit.cover),
+              child: Image.asset('$_g/apple_card_photo.png', width: 120, height: 68, fit: BoxFit.cover),
             ),
           ),
           const SizedBox(height: 12),
-          const _InfoNote(
+          _InfoNote(
             text: 'Please note that the payable amount may change if you upload the wrong subcategory. To avoid issues, kindly review the trade terms below carefully.',
           ),
           const SizedBox(height: 14),
@@ -755,7 +763,7 @@ class _GiftCardDeliveryScreenState extends State<GiftCardDeliveryScreen> {
           const SizedBox(height: 14),
           Text('Buy ${widget.brand.name}', style: _section),
           const SizedBox(height: 8),
-          const _StepProgress(step: 2),
+          const _StepProgress(step: 1),
           const SizedBox(height: 20),
           Row(
             children: [
@@ -767,9 +775,13 @@ class _GiftCardDeliveryScreenState extends State<GiftCardDeliveryScreen> {
           const SizedBox(height: 22),
           Text(forMe ? 'Delivery Details' : 'Recipient Details', style: _section),
           const SizedBox(height: 12),
-          _IconTextField(asset: '$_g/mail.png', controller: email, hint: forMe ? 'Email address' : 'Recipient email address', keyboard: TextInputType.emailAddress),
-          const SizedBox(height: 10),
-          _IconTextField(asset: '$_g/phone.png', controller: phone, hint: 'Phone (optional)', keyboard: TextInputType.phone),
+          const _Label('Email Address'),
+          const SizedBox(height: 6),
+          _IconTextField(asset: '$_g/mail.png', controller: email, hint: forMe ? '@gmail.com' : 'recipient@gmail.com', keyboard: TextInputType.emailAddress),
+          const SizedBox(height: 12),
+          const _Label('Phone (optional)'),
+          const SizedBox(height: 6),
+          _IconTextField(asset: '$_g/phone.png', controller: phone, hint: '234 000 0000 000', keyboard: TextInputType.phone),
           const SizedBox(height: 22),
           const Text('Delivery Method', style: _section),
           const SizedBox(height: 10),
@@ -815,8 +827,12 @@ class GiftCardBuyReviewScreen extends StatelessWidget {
           _TopBar(title: 'Review Purchase', onBack: () => Navigator.pop(context)),
           const SizedBox(height: 16),
           Text('Buy ${brand.name}', style: _section),
+          const SizedBox(height: 8),
+          const _StepProgress(step: 1),
           const SizedBox(height: 22),
           const Center(child: Text('Trade Breakdown', style: _title20)),
+          const SizedBox(height: 3),
+          const Center(child: Text('Kindly read the terms carefully', style: _caption)),
           const SizedBox(height: 18),
           _BreakdownCard(amount: amount * quantity, naira: naira, sell: false),
           const Spacer(),
@@ -990,7 +1006,7 @@ class _GiftCardPinScreenState extends State<GiftCardPinScreen> {
           const SizedBox(height: 5),
           const Padding(
             padding: EdgeInsets.symmetric(horizontal: 24),
-            child: Text('Please enter your 4-digit security PIN to authorize this transaction securely.', textAlign: TextAlign.center, style: _caption),
+            child: Text('Please enter your 6-digit security PIN to authorize this transaction securely.', textAlign: TextAlign.center, style: _caption),
           ),
           const SizedBox(height: 22),
           Row(

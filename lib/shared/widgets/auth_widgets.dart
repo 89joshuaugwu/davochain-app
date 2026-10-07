@@ -159,7 +159,7 @@ class DavoPrimaryButton extends StatelessWidget {
           boxShadow: enabled
               ? [
                   BoxShadow(
-                    color: AppColors.primary.withValues(alpha: .12),
+                    color: AppColors.primary.withOpacity(.12),
                     blurRadius: 18,
                     offset: const Offset(0, 7),
                   ),
