@@ -1407,7 +1407,7 @@ class _CryptoDepositScreenState extends State<CryptoDepositScreen> {
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 18),
           child: Column(
             children: [
-              _SimpleAppBar(title: 'Deposit', onBack: () => Navigator.pop(context)),
+              _SimpleAppBar(title: 'Deposit', titleLeft: 128, onBack: () => Navigator.pop(context)),
               const SizedBox(height: 23),
               Expanded(
                 child: SingleChildScrollView(
@@ -1418,21 +1418,27 @@ class _CryptoDepositScreenState extends State<CryptoDepositScreen> {
                         width: 257,
                         height: 283,
                         child: Stack(
-                          alignment: Alignment.center,
                           children: [
-                            Container(
+                            Positioned(
+                              left: 5,
+                              top: 5,
                               width: 247,
                               height: 273,
-                              decoration: BoxDecoration(border: Border.all(color: const Color(0xFFF5F6F9))),
-                              padding: const EdgeInsets.all(10),
-                              child: Image.asset(_qrAsset, fit: BoxFit.contain, filterQuality: FilterQuality.none),
+                              child: Container(
+                                decoration: BoxDecoration(border: Border.all(color: const Color(0xFFF5F6F9), width: 1)),
+                                child: Image.asset(_qrAsset, fit: BoxFit.fill, filterQuality: FilterQuality.none),
+                              ),
                             ),
-                            Container(
+                            Positioned(
+                              left: 105,
+                              top: 118,
                               width: 48,
                               height: 48,
-                              decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
-                              padding: const EdgeInsets.all(4),
-                              child: _CryptoIcon(asset: asset, size: 40),
+                              child: Container(
+                                decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+                                padding: const EdgeInsets.all(4),
+                                child: _CryptoIcon(asset: asset, size: 40),
+                              ),
                             ),
                           ],
                         ),
@@ -1441,7 +1447,7 @@ class _CryptoDepositScreenState extends State<CryptoDepositScreen> {
                       Container(
                         width: double.infinity,
                         height: 91,
-                        padding: const EdgeInsets.fromLTRB(16, 10, 12, 10),
+                        padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
                         decoration: BoxDecoration(color: const Color(0xFFF5F6F9), borderRadius: BorderRadius.circular(8)),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -1452,10 +1458,10 @@ class _CryptoDepositScreenState extends State<CryptoDepositScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Expanded(child: Text(_address, maxLines: 2, style: const TextStyle(fontFamily: 'Sora', fontSize: 16, height: 1.35, color: AppColors.ink))),
-                                const SizedBox(width: 4),
+                                const SizedBox(width: 18),
                                 InkWell(
                                   onTap: () => _copy(context, _address),
-                                  child: SizedBox(width: 24, height: 24, child: Center(child: Image.asset('assets/figma_exact/buy_copy.png', width: 16, height: 16))),
+                                  child: Image.asset('assets/figma_exact/deposit_btc_copy_exact.png', width: 24, height: 24, fit: BoxFit.fill, filterQuality: FilterQuality.high),
                                 ),
                               ],
                             ),
@@ -1506,31 +1512,33 @@ class _CryptoDepositScreenState extends State<CryptoDepositScreen> {
                               )
                             : const SizedBox.shrink(),
                       ),
+                      const SizedBox(height: 167),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _FooterButton(
+                              label: 'Share or save',
+                              background: const Color(0xFFEEF0F5),
+                              foreground: const Color(0xFF424242),
+                              fontWeight: FontWeight.w400,
+                              onTap: () => _openShareSheet(context),
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: _FooterButton(
+                              label: 'Copy Address',
+                              background: AppColors.primary,
+                              foreground: const Color(0xFFEEF0F5),
+                              fontWeight: FontWeight.w600,
+                              onTap: () => _copy(context, _address),
+                            ),
+                          ),
+                        ],
+                      ),
                     ],
                   ),
                 ),
-              ),
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  Expanded(
-                    child: _FooterButton(
-                      label: 'Share or save',
-                      background: const Color(0xFFEEF0F5),
-                      foreground: const Color(0xFF424242),
-                      onTap: () => _openShareSheet(context),
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: _FooterButton(
-                      label: 'Copy Address',
-                      background: AppColors.primary,
-                      foreground: Colors.white,
-                      onTap: () => _copy(context, _address),
-                    ),
-                  ),
-                ],
               ),
             ],
           ),
@@ -1737,12 +1745,13 @@ class _MiniDavochainLockup extends StatelessWidget {
 }
 
 class _FooterButton extends StatelessWidget {
-  const _FooterButton({required this.label, required this.background, required this.foreground, required this.onTap});
+  const _FooterButton({required this.label, required this.background, required this.foreground, required this.onTap, this.fontWeight = FontWeight.w600});
 
   final String label;
   final Color background;
   final Color foreground;
   final VoidCallback onTap;
+  final FontWeight fontWeight;
 
   @override
   Widget build(BuildContext context) {
@@ -1754,7 +1763,7 @@ class _FooterButton extends StatelessWidget {
         borderRadius: BorderRadius.circular(4),
         child: SizedBox(
           height: 48,
-          child: Center(child: Text(label, style: TextStyle(fontFamily: 'Sora', fontSize: 14, fontWeight: FontWeight.w600, color: foreground))),
+          child: Center(child: Text(label, style: TextStyle(fontFamily: 'Sora', fontSize: 14, fontWeight: fontWeight, color: foreground))),
         ),
       ),
     );
@@ -1762,9 +1771,10 @@ class _FooterButton extends StatelessWidget {
 }
 
 class _SimpleAppBar extends StatelessWidget {
-  const _SimpleAppBar({required this.title, required this.onBack});
+  const _SimpleAppBar({required this.title, required this.titleLeft, required this.onBack});
 
   final String title;
+  final double titleLeft;
   final VoidCallback onBack;
 
   @override
@@ -1779,15 +1789,15 @@ class _SimpleAppBar extends StatelessWidget {
             top: 15,
             width: 32,
             height: 32,
-            child: InkResponse(onTap: onBack, child: Image.asset('assets/figma_exact/buy_back.png', width: 32, height: 32)),
+            child: InkResponse(onTap: onBack, child: Image.asset('assets/figma_exact/deposit_back_exact.png', width: 32, height: 32, fit: BoxFit.fill, filterQuality: FilterQuality.high)),
           ),
           Positioned(
-            left: 0,
-            right: 0,
+            left: titleLeft,
             top: 20,
+            width: 66,
             height: 22,
             child: IgnorePointer(
-              child: Text(title, textAlign: TextAlign.center, style: const TextStyle(fontFamily: 'Sora', fontSize: 16, fontWeight: FontWeight.w600, height: 1.35, color: AppColors.ink)),
+              child: Text(title, style: const TextStyle(fontFamily: 'Sora', fontSize: 16, fontWeight: FontWeight.w600, height: 1.35, color: AppColors.ink)),
             ),
           ),
         ],
@@ -1805,10 +1815,10 @@ class NairaDepositScreen extends StatelessWidget {
       backgroundColor: Colors.white,
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 18),
+          padding: const EdgeInsets.fromLTRB(16, 16, 15, 18),
           child: Column(
             children: [
-              _SimpleAppBar(title: 'Deposit', onBack: () => Navigator.pop(context)),
+              _SimpleAppBar(title: 'Deposit', titleLeft: 146, onBack: () => Navigator.pop(context)),
               const SizedBox(height: 34),
               Expanded(
                 child: SingleChildScrollView(
@@ -1857,6 +1867,7 @@ class NairaDepositScreen extends StatelessWidget {
                       const Center(
                         child: SizedBox(
                           width: 305,
+                          height: 75,
                           child: Text(
                             'Any money sent to this bank account will automatically top up your Davochain (NGD) wallet.\nReceive funds from any local Nigerian bank account directly into your Davochain wallet.',
                             textAlign: TextAlign.center,
@@ -1865,7 +1876,7 @@ class NairaDepositScreen extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 22),
-                      const Text('Disclaimer', style: TextStyle(fontFamily: 'Sora', fontSize: 14, color: AppColors.ink)),
+                      const SizedBox(height: 19, child: Text('Disclaimer', style: TextStyle(fontFamily: 'Sora', fontSize: 14, height: 1.35, color: AppColors.ink))),
                       const SizedBox(height: 16),
                       const SizedBox(
                         height: 70,
@@ -1874,16 +1885,17 @@ class NairaDepositScreen extends StatelessWidget {
                           style: TextStyle(fontFamily: 'Sora', fontSize: 10, height: 1.4, color: Color(0xFF424242)),
                         ),
                       ),
+                      const SizedBox(height: 66),
+                      _FooterButton(
+                        label: 'Share Details',
+                        background: AppColors.primary,
+                        foreground: const Color(0xFFF8F9FB),
+                        fontWeight: FontWeight.w400,
+                        onTap: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Bank details are ready to share.'))),
+                      ),
                     ],
                   ),
                 ),
-              ),
-              const SizedBox(height: 20),
-              _FooterButton(
-                label: 'Share Details',
-                background: AppColors.primary,
-                foreground: Colors.white,
-                onTap: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Bank details are ready to share.'))),
               ),
             ],
           ),
@@ -1912,18 +1924,18 @@ class _BankDetailRow extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(label, style: const TextStyle(fontFamily: 'Sora', fontSize: 12, color: Color(0xFF424242))),
+                Text(label, style: const TextStyle(fontFamily: 'Sora', fontSize: 12, height: 1.25, color: Color(0xFF424242))),
                 const SizedBox(height: 4),
-                Text(value, style: const TextStyle(fontFamily: 'Sora', fontSize: 14, color: AppColors.ink)),
+                Text(value, style: const TextStyle(fontFamily: 'Sora', fontSize: 14, height: 1.35, color: AppColors.ink)),
               ],
             ),
           ),
-          IconButton(
-            onPressed: () {
+          InkWell(
+            onTap: () {
               Clipboard.setData(ClipboardData(text: value));
               ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$label copied'), behavior: SnackBarBehavior.floating));
             },
-            icon: Image.asset('assets/figma_exact/buy_copy.png', width: 16, height: 16),
+            child: Image.asset('assets/figma_exact/deposit_ngd_copy_exact.png', width: 16, height: 16, fit: BoxFit.fill, filterQuality: FilterQuality.high),
           ),
         ],
       ),

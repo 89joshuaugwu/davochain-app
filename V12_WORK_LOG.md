@@ -15,6 +15,9 @@ Purpose: preserve checkpoint status so later passes **do not redo completed work
 - [x] Final internal/external Crypto Withdraw **full-screen** polish. See `WIDER_AUDIT_WITHDRAW_ALIGNMENT_V12.md`.
 - [x] Scan/Paste Address final verification. See `WIDER_AUDIT_SCAN_SHARE_V12.md`.
 - [ ] Deposit final verification.
+  - [x] BTC Deposit final patch — closed. See `DEPOSIT_BTC_NGD_FINAL_PATCH_V12.md`.
+  - [x] NGD Deposit final patch — closed. See `DEPOSIT_BTC_NGD_FINAL_PATCH_V12.md`.
+  - [ ] Deposit Details / Copy toast / successful-vs-pending alignment still pending.
 - [x] Share Address final check. See `WIDER_AUDIT_SCAN_SHARE_V12.md`.
 - [ ] Transaction PIN 4-vs-5 digit inconsistency reconciliation.
 - [ ] Progress / success / detail / receipt final pixel pass.
