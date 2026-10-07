@@ -114,22 +114,20 @@ class _WalletSelectRow extends StatelessWidget {
         onTap: onTap,
         child: SizedBox(
           height: 55,
-          child: Padding(
-            padding: const EdgeInsets.only(top: 7, bottom: 8),
-            child: Row(
-              children: [
-                SizedBox(width: 40, height: 40, child: circle ? ClipOval(child: Image.asset(asset, fit: BoxFit.cover)) : Center(child: Image.asset(asset, width: 32, height: 32, fit: BoxFit.contain))),
-                const SizedBox(width: 12),
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(title, style: const TextStyle(fontFamily: 'Sora', fontSize: 14, height: 1.35, color: AppColors.ink)),
-                    Text(symbol, style: const TextStyle(fontFamily: 'Sora', fontSize: 12, height: 1.25, color: Color(0xFF424242))),
-                  ],
-                ),
-              ],
-            ),
+          child: Stack(
+            children: [
+              Positioned(
+                left: 0,
+                top: 7,
+                width: 40,
+                height: 40,
+                child: circle
+                    ? ClipOval(child: Image.asset(asset, fit: BoxFit.cover))
+                    : Center(child: Image.asset(asset, width: 32, height: 32, fit: BoxFit.contain)),
+              ),
+              Positioned(left: 52, top: 9, child: Text(title, style: const TextStyle(fontFamily: 'Sora', fontSize: 14, height: 1.35, color: AppColors.ink))),
+              Positioned(left: 52, top: 30, child: Text(symbol, style: const TextStyle(fontFamily: 'Sora', fontSize: 12, height: 1.25, color: Color(0xFF424242)))),
+            ],
           ),
         ),
       );
@@ -180,14 +178,69 @@ class _NairaWithdrawScreenState extends State<NairaWithdrawScreen> {
   @override void dispose(){amount.dispose();super.dispose();}
   @override Widget build(BuildContext context){
     final ready=amount.text.isNotEmpty&&amount.text!='0'&&account!=null;
-    return _Scaffold(child: Column(children:[
-      const SizedBox(height:4), const _DashboardHeader(), const SizedBox(height:16), const _BalanceCard(), const SizedBox(height:24),
-      _Field(label:'Amount', child:TextField(controller:amount,keyboardType:TextInputType.number,onChanged:(_)=>setState((){}),decoration:const InputDecoration.collapsed(hintText:'0'),style:const TextStyle(fontFamily:'Sora',fontSize:16))),
-      const SizedBox(height:10), const Align(alignment:Alignment.centerLeft,child:Text('Max daily amount - ₦5,000,000',style:TextStyle(fontFamily:'Sora',fontSize:12,color:AppColors.body))),
-      const SizedBox(height:24),
-      _Field(label:'Payment Method',onTap:_payment,trailing:Image.asset('$_cf/chevron_right.png',width:16),child:Text(account?.bank??'Select a payment method',style:TextStyle(fontFamily:'Sora',fontSize:16,color:account==null?AppColors.muted:AppColors.ink))),
-      const Spacer(), _Button(label:'Continue',enabled:ready,fontWeight:FontWeight.w700,onTap:_review),
-    ]));
+    return _Scaffold(
+      child: Stack(
+        children: [
+          const Positioned(left: 0, right: 0, top: 4, height: 40, child: _DashboardHeader()),
+          const Positioned(left: 0, right: 0, top: 60, height: 136, child: _BalanceCard()),
+          Positioned(
+            left: 0,
+            right: 0,
+            top: 220,
+            height: 73,
+            child: _ExactNairaField(
+              label: 'Amount',
+              child: TextField(
+                controller: amount,
+                keyboardType: TextInputType.number,
+                onChanged:(_)=>setState((){}),
+                decoration: const InputDecoration.collapsed(
+                  hintText:'0',
+                  hintStyle: TextStyle(fontFamily:'Sora',fontSize:16,height:1.35,color:Color(0xFF686868)),
+                ),
+                style: const TextStyle(fontFamily:'Sora',fontSize:16,height:1.35,color:AppColors.ink),
+              ),
+            ),
+          ),
+          const Positioned(
+            left: 0,
+            right: 0,
+            top: 305,
+            height: 15,
+            child: Text('Max daily amount - ₦5,000,000',style:TextStyle(fontFamily:'Sora',fontSize:12,height:1.25,color:AppColors.body)),
+          ),
+          Positioned(
+            left: 0,
+            right: 0,
+            top: 344,
+            height: 73,
+            child: _ExactNairaField(
+              label: 'Payment Method',
+              onTap: _payment,
+              trailing: Image.asset('$_exact/naira_payment_chevron_exact.png',width:24,height:24,fit:BoxFit.contain),
+              child: account == null
+                  ? const Text('Select a payment method',style:TextStyle(fontFamily:'Sora',fontSize:16,height:1.35,color:Color(0xFF686868)))
+                  : Padding(
+                      padding: const EdgeInsets.only(left:5),
+                      child: Text(account!.bank,style:const TextStyle(fontFamily:'Sora',fontSize:14,height:1.35,color:AppColors.ink)),
+                    ),
+            ),
+          ),
+          Positioned(
+            left: 0,
+            right: 0,
+            top: 690,
+            height: 48,
+            child: _Button(
+              label:'Continue',
+              enabled:true,
+              fontWeight:FontWeight.w700,
+              onTap: ready ? _review : () {},
+            ),
+          ),
+        ],
+      ),
+    );
   }
   Future<void> _payment() async {
     final value=await showModalBottomSheet<BankAccount>(context:context,isScrollControlled:true,backgroundColor:Colors.transparent,barrierColor:Colors.black.withOpacity(.4),builder:(_)=>_PaymentSheet(current:account));
@@ -202,6 +255,42 @@ class _NairaWithdrawScreenState extends State<NairaWithdrawScreen> {
     _showTransactionToast(context, 'Submitted Successfully');
     Navigator.pop(context);
   }
+}
+
+class _ExactNairaField extends StatelessWidget {
+  const _ExactNairaField({required this.label, required this.child, this.trailing, this.onTap});
+  final String label;
+  final Widget child;
+  final Widget? trailing;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) => Material(
+        color: const Color(0xFFFBFBFD),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(4),
+          side: const BorderSide(color: Color(0xFFEEF0F5), width: 1),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(4),
+          child: Stack(
+            children: [
+              Positioned(left: 12, right: 12, top: 10, height: 19, child: Text(label, style: const TextStyle(fontFamily:'Sora',fontSize:14,height:1.35,color:AppColors.body))),
+              Positioned(
+                left: 12,
+                right: trailing == null ? 12 : 44,
+                top: 37,
+                height: 24,
+                child: child,
+              ),
+              if (trailing != null)
+                Positioned(right: 12, top: 24.5, width: 24, height: 24, child: trailing!),
+            ],
+          ),
+        ),
+      );
 }
 
 void _showTransactionToast(BuildContext context, String message) {
@@ -333,26 +422,34 @@ class _PaymentMethodSavedRow extends StatelessWidget {
       onTap: onTap,
       child: SizedBox(
         height: 56,
-        child: Row(
+        child: Stack(
           children: [
-            Container(
+            Positioned(
+              left: 0,
+              top: 7.5,
               width: 40,
               height: 40,
-              clipBehavior: Clip.antiAlias,
-              decoration: const BoxDecoration(shape: BoxShape.circle),
-              child: Image.asset(bankAsset, fit: BoxFit.cover, errorBuilder: (_, __, ___) => Image.asset('$_exact/bank.png')),
+              child: Container(
+                clipBehavior: Clip.antiAlias,
+                decoration: const BoxDecoration(shape: BoxShape.circle),
+                child: Image.asset(bankAsset, fit: BoxFit.cover, errorBuilder: (_, __, ___) => Image.asset('$_exact/bank.png')),
+              ),
             ),
-            const SizedBox(width: 12),
-            Expanded(
+            Positioned(
+              left: 52,
+              top: 9.5,
+              right: 97,
+              height: 36,
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(account.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontFamily: 'Sora', fontSize: 14, height: 1.35, color: Color(0xFF424242))),
-                  Text('${account.bank} - ${account.number}', style: const TextStyle(fontFamily: 'Sora', fontSize: 12, height: 1.25, color: Color(0xFF686868))),
+                  const SizedBox(height: 2),
+                  Text('${account.bank} - ${account.number}', maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontFamily: 'Sora', fontSize: 12, height: 1.25, color: Color(0xFF686868))),
                 ],
               ),
             ),
+            Positioned(right: 0, top: 19.5, width: 16, height: 16, child: Image.asset('$_exact/crypto_ep_arrow_right_exact.png', width: 16, height: 16, fit: BoxFit.contain)),
           ],
         ),
       ),
@@ -558,11 +655,10 @@ class _BankSheetState extends State<_BankSheet> {
                 onTap: () => Navigator.pop(context, visible[i]),
                 child: SizedBox(
                   height: 52,
-                  child: Row(
+                  child: Stack(
                     children: [
-                      Container(width: 40, height: 40, alignment: Alignment.center, decoration: const BoxDecoration(color: Color(0xFFEEF0F5), shape: BoxShape.circle), child: Image.asset('$_exact/crypto_bank_exact.png', width: 24, height: 24)),
-                      const SizedBox(width: 24),
-                      Text(visible[i], style: const TextStyle(fontFamily: 'Sora', fontSize: 14, height: 1.35, color: AppColors.ink)),
+                      Positioned(left: 0, top: 0, width: 40, height: 40, child: Container(alignment: Alignment.center, decoration: const BoxDecoration(color: Color(0xFFEEF0F5), shape: BoxShape.circle), child: Image.asset('$_exact/crypto_bank_exact.png', width: 24, height: 24))),
+                      Positioned(left: 64, top: 10.5, right: 0, child: Text(visible[i], style: const TextStyle(fontFamily: 'Sora', fontSize: 14, height: 1.35, color: AppColors.ink))),
                     ],
                   ),
                 ),
@@ -591,62 +687,73 @@ class _NairaConfirmState extends State<_NairaConfirm> {
   Widget build(BuildContext context) => Container(
         height: 539,
         decoration: const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 32, 14, 24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SizedBox(
-                height: 24,
+        child: Stack(
+          children: [
+            Positioned(
+              left: 16,
+              top: 32,
+              width: 23,
+              height: 24,
+              child: InkResponse(onTap: () => Navigator.pop(context, false), radius: 20, child: Image.asset('$_exact/crypto_close_exact.png', width: 23, height: 24, fit: BoxFit.fill)),
+            ),
+            const Positioned(right: 14, top: 36.5, child: Text('Use Payment PIN', style: TextStyle(fontFamily: 'Sora', fontSize: 12, height: 1.25, color: AppColors.primary))),
+            Positioned(
+              left: 16,
+              right: 14,
+              top: 80,
+              height: 307,
+              child: Container(
+                decoration: BoxDecoration(color: const Color(0xFFF8F9FB), borderRadius: BorderRadius.circular(8)),
+                child: Stack(
+                  children: [
+                    Positioned(left: 0, right: 0, top: 28, height: 27, child: Center(child: Text('₦${widget.amount}', style: const TextStyle(fontFamily: 'Sora', fontSize: 20, fontWeight: FontWeight.w600, height: 1.35, color: AppColors.ink)))),
+                    Positioned(left: 15, right: 15, top: 73, child: _ExactNairaConfirmLine('Bank', widget.account.bank)),
+                    Positioned(left: 15, right: 15, top: 120, child: _ExactNairaConfirmLine('Account Number', widget.account.number)),
+                    Positioned(left: 15, right: 15, top: 167, child: _ExactNairaConfirmLine('Name', widget.account.name.split(' ').take(2).join(' '))),
+                    Positioned(left: 15, right: 15, top: 214, child: _ExactNairaConfirmLine('Amount', '₦${widget.amount}')),
+                    const Positioned(left: 15, right: 15, top: 267, child: _ExactNairaConfirmLine('Fee', '₦100.00', last: true)),
+                  ],
+                ),
+              ),
+            ),
+            Positioned(
+              left: 16,
+              top: 411,
+              height: 16,
+              child: InkWell(
+                onTap: () => setState(() => agreed = !agreed),
                 child: Row(
                   children: [
-                    InkResponse(onTap: () => Navigator.pop(context, false), child: SizedBox(width: 23, height: 24, child: Image.asset('$_exact/crypto_close_exact.png', width: 23, height: 24, fit: BoxFit.fill))),
-                    const Spacer(),
-                    const Text('Use Payment PIN', style: TextStyle(fontFamily: 'Sora', fontSize: 12, height: 1.25, color: AppColors.primary)),
+                    Image.asset(agreed ? '$_exact/crypto_checked_exact.png' : '$_exact/crypto_unchecked_exact.png', width: 16, height: 16),
+                    const SizedBox(width: 8),
+                    const Text('I agree to the terms and condition', style: TextStyle(fontFamily: 'Sora', fontSize: 12, height: 1.25, color: AppColors.primary)),
                   ],
                 ),
               ),
-              const SizedBox(height: 24),
-              Container(
-                height: 307,
-                width: double.infinity,
-                padding: const EdgeInsets.fromLTRB(15, 25, 15, 10),
-                decoration: BoxDecoration(color: const Color(0xFFF8F9FB), borderRadius: BorderRadius.circular(8)),
-                child: Column(
-                  children: [
-                    Text('₦${widget.amount}', style: const TextStyle(fontFamily: 'Sora', fontSize: 20, fontWeight: FontWeight.w600, height: 1.35, color: AppColors.ink)),
-                    const SizedBox(height: 8),
-                    _ConfirmLine('Bank', widget.account.bank),
-                    _ConfirmLine('Account Number', widget.account.number),
-                    _ConfirmLine('Name', widget.account.name.split(' ').take(2).join(' ')),
-                    _ConfirmLine('Amount', '₦${widget.amount}'),
-                    const _ConfirmLine('Fee', '₦100.00', last: true),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 16),
-              InkWell(
-                onTap: () => setState(() => agreed = !agreed),
-                child: SizedBox(
-                  height: 24,
-                  child: Row(
-                    children: [
-                      Image.asset(agreed ? '$_exact/crypto_checked_exact.png' : '$_exact/crypto_unchecked_exact.png', width: 16, height: 16),
-                      const SizedBox(width: 8),
-                      const Text('I agree to the terms and condition', style: TextStyle(fontFamily: 'Sora', fontSize: 12, height: 1.25, color: AppColors.primary)),
-                    ],
-                  ),
-                ),
-              ),
-              const Spacer(),
-              _Button(label: 'Confirm Withdrawal', enabled: agreed, fontWeight: FontWeight.w700, onTap: () => Navigator.pop(context, true)),
-            ],
-          ),
+            ),
+            Positioned(left: 16, right: 14, top: 467, height: 48, child: _Button(label: 'Confirm Withdrawal', enabled: agreed, fontWeight: FontWeight.w700, onTap: () => Navigator.pop(context, true))),
+          ],
         ),
       );
 }
 
-class _ConfirmLine extends StatelessWidget{const _ConfirmLine(this.label,this.value,{this.last=false,this.valueColor});final String label,value;final bool last;final Color? valueColor;@override Widget build(BuildContext context)=>Container(height:47,decoration:last?null:const BoxDecoration(border:Border(bottom:BorderSide(color:Color(0xFFF2F2F2),width:.6))),child:Row(children:[Text(label,style:const TextStyle(fontFamily:'Sora',fontSize:14,color:Color(0xFF686868))),const Spacer(),Flexible(child:Text(value,textAlign:TextAlign.right,style:TextStyle(fontFamily:'Sora',fontSize:14,fontWeight:FontWeight.w400,color:valueColor??AppColors.ink)))]));}
+class _ExactNairaConfirmLine extends StatelessWidget {
+  const _ExactNairaConfirmLine(this.label, this.value, {this.last = false});
+  final String label, value;
+  final bool last;
+
+  @override
+  Widget build(BuildContext context) => SizedBox(
+        height: 35,
+        child: Stack(
+          children: [
+            Positioned(left: 0, top: 0, child: Text(label, style: const TextStyle(fontFamily: 'Sora', fontSize: 14, height: 1.35, color: Color(0xFF686868)))),
+            Positioned(right: 0, top: 0, child: Text(value, textAlign: TextAlign.right, style: const TextStyle(fontFamily: 'Sora', fontSize: 14, height: 1.35, color: AppColors.ink))),
+            if (!last) const Positioned(left: 0, right: 0, bottom: 0, child: Divider(height: 1, thickness: .6, color: Color(0xFFF2F2F2))),
+          ],
+        ),
+      );
+}
 
 class CryptoWithdrawModeScreen extends StatelessWidget {
   const CryptoWithdrawModeScreen({super.key});
@@ -731,6 +838,7 @@ class _CryptoWithdrawEntryScreenState extends State<CryptoWithdrawEntryScreen> {
                 child: _ExactWithdrawField(
                   label: 'Transfer To',
                   fill: Colors.white,
+                  borderColor: AppColors.mutedSoft,
                   child: TextField(
                     controller: target,
                     onChanged: (_) => setState(() {}),
@@ -750,6 +858,8 @@ class _CryptoWithdrawEntryScreenState extends State<CryptoWithdrawEntryScreen> {
                 child: _ExactWithdrawField(
                   label: 'Enter Amount',
                   fill: Colors.white,
+                  borderColor: AppColors.mutedSoft,
+                  rightPadding: 12,
                   child: Row(
                     children: [
                       SizedBox(width: 24, height: 24, child: Center(child: Image.asset('$_f/btc.png', width: 16, height: 17, fit: BoxFit.contain))),
@@ -766,13 +876,17 @@ class _CryptoWithdrawEntryScreenState extends State<CryptoWithdrawEntryScreen> {
                           style: const TextStyle(fontFamily: 'Sora', fontSize: 12, height: 1.25, color: AppColors.ink),
                         ),
                       ),
-                      InkWell(
-                        onTap: () {
-                          amount.text = '0.02';
-                          setState(() {});
-                        },
-                        child: const SizedBox(width: 32, height: 20, child: Center(child: Text('Max', style: TextStyle(fontFamily: 'Sora', fontSize: 12, height: 1.25, color: AppColors.primary)))),
-                      ),
+                      if (amount.text.isNotEmpty) ...[
+                        const SizedBox(width: 8),
+                        Text('${((double.tryParse(amount.text) ?? 0) * 25000).toStringAsFixed(2)} USD', style: const TextStyle(fontFamily: 'Sora', fontSize: 12, height: 1.25, color: Color(0xFF686868))),
+                      ] else
+                        InkWell(
+                          onTap: () {
+                            amount.text = '0.02';
+                            setState(() {});
+                          },
+                          child: const SizedBox(width: 32, height: 20, child: Center(child: Text('Max', style: TextStyle(fontFamily: 'Sora', fontSize: 12, height: 1.25, color: AppColors.primary)))),
+                        ),
                     ],
                   ),
                 ),
@@ -825,7 +939,7 @@ class _CryptoWithdrawEntryScreenState extends State<CryptoWithdrawEntryScreen> {
                           ),
                           InkResponse(onTap: _scan, radius: 18, child: Image.asset('$_exact/withdraw_address_book_exact.png', width: 20, height: 20)),
                           const SizedBox(width: 4),
-                          Container(width: 1, height: 18, color: const Color(0xFFD9DCE4)),
+                          Container(width: .5, height: 18, color: const Color(0xFFD9DCE4)),
                           const SizedBox(width: 4),
                           InkResponse(onTap: _scan, radius: 18, child: Image.asset('$_exact/withdraw_qr_exact.png', width: 20, height: 20)),
                         ],
@@ -845,7 +959,7 @@ class _CryptoWithdrawEntryScreenState extends State<CryptoWithdrawEntryScreen> {
                         children: [
                           Expanded(
                             child: Text(
-                              network ?? 'Please select withdrawal network',
+                              network == null ? 'Please select withdrawal network' : (network!.startsWith('Bitcoin') ? 'BTC' : network!),
                               style: TextStyle(
                                 fontFamily: network == null ? 'Open Sans' : 'Sora',
                                 fontSize: network == null ? 16 : 12,
@@ -934,7 +1048,7 @@ class _CryptoWithdrawEntryScreenState extends State<CryptoWithdrawEntryScreen> {
                             height: 13,
                             child: Text(_ready ? 'Network Fee \$5.27 BTC' : 'Network Fee 0 BTC', style: const TextStyle(fontFamily: 'Sora', fontSize: 10, height: 1.3, color: Color(0xFF686868))),
                           ),
-                          Positioned(left: 203, top: 22.5, width: 171, height: 48, child: _Button(label: 'Confirm', enabled: _ready, onTap: _confirm)),
+                          Positioned(left: 203, top: 22.5, width: 171, height: 48, child: _Button(label: 'Confirm', enabled: _ready, disabledColor: AppColors.mutedSoft, disabledTextColor: const Color(0xFF9D9EA2), onTap: _confirm)),
                         ],
                       ),
                     ),
@@ -998,11 +1112,13 @@ class _CryptoWithdrawEntryScreenState extends State<CryptoWithdrawEntryScreen> {
 }
 
 class _ExactWithdrawField extends StatelessWidget {
-  const _ExactWithdrawField({required this.label, required this.fill, required this.child, this.onTap});
+  const _ExactWithdrawField({required this.label, required this.fill, required this.child, this.onTap, this.borderColor, this.rightPadding = 16});
   final String label;
   final Color fill;
   final Widget child;
   final VoidCallback? onTap;
+  final Color? borderColor;
+  final double rightPadding;
 
   @override
   Widget build(BuildContext context) => Stack(
@@ -1015,11 +1131,15 @@ class _ExactWithdrawField extends StatelessWidget {
             height: 48,
             child: Material(
               color: fill,
-              borderRadius: BorderRadius.circular(4),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(4),
+                side: borderColor == null ? BorderSide.none : BorderSide(color: borderColor!, width: 1),
+              ),
+              clipBehavior: Clip.antiAlias,
               child: InkWell(
                 onTap: onTap,
                 borderRadius: BorderRadius.circular(4),
-                child: Padding(padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12), child: child),
+                child: Padding(padding: EdgeInsets.fromLTRB(16, 12, rightPadding, 12), child: child),
               ),
             ),
           ),
@@ -2367,19 +2487,21 @@ class _SheetRow extends StatelessWidget {
 }
 
 class _Button extends StatelessWidget {
-  const _Button({required this.label, this.enabled = true, required this.onTap, this.fontWeight = FontWeight.w600});
+  const _Button({required this.label, this.enabled = true, required this.onTap, this.fontWeight = FontWeight.w600, this.disabledColor = AppColors.primaryDisabled, this.disabledTextColor = Colors.white});
   final String label;
   final bool enabled;
   final VoidCallback onTap;
   final FontWeight fontWeight;
+  final Color disabledColor;
+  final Color disabledTextColor;
   @override
   Widget build(BuildContext context) => Material(
-        color: enabled ? AppColors.primary : AppColors.primaryDisabled,
+        color: enabled ? AppColors.primary : disabledColor,
         borderRadius: BorderRadius.circular(4),
         child: InkWell(
           onTap: enabled ? () { HapticFeedback.lightImpact(); onTap(); } : null,
           borderRadius: BorderRadius.circular(4),
-          child: SizedBox(height: 48, width: double.infinity, child: Center(child: Text(label, style: TextStyle(fontFamily: 'Sora', fontSize: 14, fontWeight: fontWeight, color: Colors.white)))),
+          child: SizedBox(height: 48, width: double.infinity, child: Center(child: Text(label, style: TextStyle(fontFamily: 'Sora', fontSize: 14, fontWeight: fontWeight, color: enabled ? Colors.white : disabledTextColor)))),
         ),
       );
 }
@@ -2470,8 +2592,67 @@ class _Choice extends StatelessWidget {
       );
 }
 
-class _DashboardHeader extends StatelessWidget{const _DashboardHeader();@override Widget build(BuildContext context)=>Row(children:[ClipOval(child:Image.asset('$_f/profile_avatar.png',width:40,height:40,fit:BoxFit.cover)),const SizedBox(width:12),const Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Text('Welcome,',style:TextStyle(fontFamily:'Sora',fontSize:12,color:AppColors.muted)),Text('Callie',style:TextStyle(fontFamily:'Sora',fontSize:14,fontWeight:FontWeight.w600,color:AppColors.body))]),const Spacer(),Container(padding:const EdgeInsets.symmetric(horizontal:12,vertical:7),decoration:BoxDecoration(color:const Color(0x80D0DEFD),borderRadius:BorderRadius.circular(100)),child:Row(children:[Image.asset('assets/figma_exact/earn_gift.png',width:20,height:20),const SizedBox(width:4),const Text('Earn \$5',style:TextStyle(fontFamily:'Sora',fontSize:12,color:AppColors.primary))]))]);}
-class _BalanceCard extends StatelessWidget{const _BalanceCard();@override Widget build(BuildContext context)=>Container(height:136,width:double.infinity,clipBehavior:Clip.antiAlias,decoration:BoxDecoration(color:AppColors.primary,borderRadius:BorderRadius.circular(16)),child:Stack(children:[Positioned(right:0,bottom:0,width:268,height:94,child:Image.asset('$_f/balance_wave.png',fit:BoxFit.fill)),const Positioned(left:16,top:28,child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Text('Available Balance',style:TextStyle(fontFamily:'Sora',fontSize:10,color:Color(0xFFEEF0F5))),SizedBox(height:8),Text('₦1,284,500.35',style:TextStyle(fontFamily:'Sora',fontSize:24,fontWeight:FontWeight.w700,color:Colors.white)),Text('≈ \$842.31 USD',style:TextStyle(fontFamily:'Sora',fontSize:14,color:Colors.white))]) )]));}
+class _DashboardHeader extends StatelessWidget {
+  const _DashboardHeader();
+  @override
+  Widget build(BuildContext context) => SizedBox(
+        height: 40,
+        child: Stack(
+          children: [
+            Positioned(left: 0, top: 0, width: 40, height: 40, child: ClipOval(child: Image.asset('$_f/profile_avatar.png', width: 40, height: 40, fit: BoxFit.cover))),
+            const Positioned(left: 52, top: 2, width: 61, height: 15, child: Text('Welcome,', style: TextStyle(fontFamily:'Sora',fontSize:12,height:1.25,color:AppColors.muted))),
+            const Positioned(left: 52, top: 19, width: 61, height: 19, child: Text('Callie', style: TextStyle(fontFamily:'Sora',fontSize:14,fontWeight:FontWeight.w600,height:1.35,color:AppColors.body))),
+            Positioned(
+              left: 225,
+              top: 4,
+              width: 89,
+              height: 32,
+              child: Container(
+                decoration: BoxDecoration(color: AppColors.primaryDisabled.withOpacity(.5), borderRadius: BorderRadius.circular(1000)),
+                child: Stack(
+                  children: [
+                    Positioned(left: 8, top: 4, width: 24, height: 24, child: Image.asset('$_exact/naira_earn_gift_exact.png', width: 24, height: 24, fit: BoxFit.contain)),
+                    const Positioned(left: 36, top: 8.5, width: 45, height: 15, child: Text('Earn \$5', style: TextStyle(fontFamily:'Sora',fontSize:12,height:1.25,color:AppColors.primary))),
+                  ],
+                ),
+              ),
+            ),
+            Positioned(
+              left: 326,
+              top: 4,
+              width: 32,
+              height: 32,
+              child: Container(
+                decoration: BoxDecoration(color: AppColors.primaryDisabled.withOpacity(.5), borderRadius: BorderRadius.circular(1000)),
+                alignment: Alignment.center,
+                child: Image.asset('$_exact/icon_notifications.png', width: 24, height: 24, fit: BoxFit.contain),
+              ),
+            ),
+          ],
+        ),
+      );
+}
+
+class _BalanceCard extends StatelessWidget {
+  const _BalanceCard();
+  @override
+  Widget build(BuildContext context) => Container(
+        height: 136,
+        width: double.infinity,
+        clipBehavior: Clip.antiAlias,
+        decoration: BoxDecoration(color: AppColors.primary, borderRadius: BorderRadius.circular(16)),
+        child: Stack(
+          children: [
+            Positioned(right: 0, bottom: 0, width: 268, height: 94, child: Image.asset('$_f/balance_wave.png', fit: BoxFit.fill)),
+            const Positioned(left: 16, top: 31, width: 90, height: 13, child: Text('Available Balance', style: TextStyle(fontFamily:'Sora',fontSize:10,fontWeight:FontWeight.w500,height:1.3,color:Color(0xFFEEF0F5)))),
+            Positioned(left: 110, top: 32.5, width: 10, height: 10, child: Image.asset('$_exact/crypto_eye_exact.png', width: 10, height: 10, fit: BoxFit.contain)),
+            const Positioned(left: 16, top: 52, width: 174, height: 32, child: Text('₦1,284,500.35', style: TextStyle(fontFamily:'Sora',fontSize:24,fontWeight:FontWeight.w700,height:1.35,color:Color(0xFFF8F9FB)))),
+            const Positioned(left: 16, top: 86, width: 100, height: 19, child: Text('≈ \$842.31 USD', style: TextStyle(fontFamily:'Sora',fontSize:14,height:1.35,color:Color(0xFFF8F9FB)))),
+          ],
+        ),
+      );
+}
+
 class _CryptoBalance extends StatelessWidget {
   const _CryptoBalance();
 
