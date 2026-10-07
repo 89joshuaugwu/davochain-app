@@ -2314,95 +2314,215 @@ class DepositStatusScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-        backgroundColor: const Color(0xFFF8F9FB),
+        backgroundColor: Colors.white,
         body: SafeArea(
           bottom: false,
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 27, 15, 0),
-            child: Column(
-              children: [
-                _TopBar(title: 'Deposit Details', onBack: () => Navigator.pop(context), height: 40, fontSize: 20, fontWeight: FontWeight.w400, backSize: 32, backShift: -12),
-                const SizedBox(height: 39),
-                const SizedBox(height: 22, child: Center(child: Text('Quantity', style: TextStyle(fontFamily: 'Sora', fontSize: 16, height: 1.35, color: Color(0xFF686868))))),
-                const SizedBox(height: 10),
-                const SizedBox(height: 22, child: Center(child: Text('0.0317934 BTC', style: TextStyle(fontFamily: 'Sora', fontSize: 16, fontWeight: FontWeight.w600, height: 1.35, color: AppColors.ink)))),
-                SizedBox(
-                  height: 21,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      if (success) ...[
-                        Image.asset('$_exact/check_mark.png', width: 16, height: 16, fit: BoxFit.contain),
-                        const SizedBox(width: 4),
-                      ],
-                      Text(success ? 'Deposit Successful' : 'Pending', style: TextStyle(fontFamily: 'Sora', fontSize: 14, height: 1.35, color: success ? const Color(0xFF1BA44D) : const Color(0xFFCC8408))),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 27),
-                const SizedBox(
-                  width: 338,
-                  height: 26,
-                  child: Text('Crypto has arrived in your davopay account. View your wallet account balance for more details', textAlign: TextAlign.center, style: TextStyle(fontFamily: 'Sora', fontSize: 10, height: 1.3, color: Color(0xFF686868))),
-                ),
-                const SizedBox(height: 27),
-                Container(
-                  height: 260,
-                  width: double.infinity,
-                  decoration: BoxDecoration(color: const Color(0xFFF5F6F9), borderRadius: BorderRadius.circular(8)),
-                  child: Stack(
-                    children: [
-                      const Positioned(left: 14, right: 13, top: 22, child: _DepositDetailLine(label: 'Network', value: 'BTC')),
-                      const Positioned(left: 14, right: 13, top: 49, child: _DepositDetailLine(label: 'Time', value: '2026-05-02 22:36:58')),
-                      Positioned(left: 14, right: 13, top: 76, child: _DepositDetailLine(label: 'Deposit Address', value: '1ChGMXGfgy2tdoE4rVQEqouRpBQaAA6zLZ', copy: true, valueWidth: 185)),
-                      Positioned(left: 14, right: 13, top: 118, child: _DepositDetailLine(label: 'Transaction Hash', value: '7c0d217aca078b46197d9283d7b818311de96eae39deddfea593303815d04c35', copy: true, valueWidth: 202)),
-                      Positioned(
-                        left: 14,
-                        right: 13,
-                        top: 175,
-                        child: InkWell(
-                          onTap: () {},
-                          child: Row(
-                            children: [
-                              const Text('View in Blockchain', style: TextStyle(fontFamily: 'Sora', fontSize: 12, height: 1.25, color: Color(0xFF686868))),
-                              const Spacer(),
-                              const Text('Blockchain Explorer', style: TextStyle(fontFamily: 'Sora', fontSize: 12, height: 1.25, color: Color(0xFF424242))),
-                              const SizedBox(width: 4),
-                              Image.asset('$_exact/icon_link.png', width: 24, height: 24),
-                            ],
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final scale = constraints.maxWidth < 390 ? constraints.maxWidth / 390 : 1.0;
+              return Align(
+                alignment: Alignment.topCenter,
+                child: SizedBox(
+                  width: 390 * scale,
+                  height: 800 * scale,
+                  child: Transform.scale(
+                    scale: scale,
+                    alignment: Alignment.topLeft,
+                    child: SizedBox(
+                      width: 390,
+                      height: 800,
+                      child: Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+                          Positioned(
+                            left: 6,
+                            top: 31,
+                            width: 32,
+                            height: 32,
+                            child: InkResponse(
+                              onTap: () => Navigator.pop(context),
+                              radius: 20,
+                              child: Image.asset('$_exact/deposit_details_back_exact.png', width: 32, height: 32),
+                            ),
                           ),
-                        ),
+                          const Positioned(
+                            left: 116,
+                            top: 33.5,
+                            width: 156,
+                            height: 27,
+                            child: Text(
+                              'Deposit Details',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(fontFamily: 'Sora', fontSize: 20, fontWeight: FontWeight.w400, height: 1.35, color: AppColors.ink),
+                            ),
+                          ),
+                          const Positioned(
+                            left: 103,
+                            top: 106,
+                            width: 186,
+                            height: 22,
+                            child: Text(
+                              'Quantity',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(fontFamily: 'Sora', fontSize: 16, fontWeight: FontWeight.w400, height: 1.35, color: Color(0xFF686868)),
+                            ),
+                          ),
+                          const Positioned(
+                            left: 134.5,
+                            top: 138,
+                            width: 123,
+                            height: 22,
+                            child: Text(
+                              '0.0317934 BTC',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(fontFamily: 'Sora', fontSize: 16, fontWeight: FontWeight.w600, height: 1.35, color: AppColors.ink),
+                            ),
+                          ),
+                          if (success) ...[
+                            Positioned(
+                              left: 103,
+                              top: 163.5,
+                              width: 16,
+                              height: 16,
+                              child: Image.asset('$_exact/deposit_success_status_exact.png', width: 16, height: 16),
+                            ),
+                            const Positioned(
+                              left: 123,
+                              top: 162,
+                              width: 137,
+                              height: 19,
+                              child: Text(
+                                'Deposit Successful',
+                                style: TextStyle(fontFamily: 'Sora', fontSize: 14, fontWeight: FontWeight.w400, height: 1.35, color: Color(0xFF1BA44D)),
+                              ),
+                            ),
+                          ] else ...[
+                            Positioned(
+                              left: 156.5,
+                              top: 163.5,
+                              width: 16,
+                              height: 16,
+                              child: Image.asset('$_exact/deposit_pending_status_exact.png', width: 16, height: 16),
+                            ),
+                            const Positioned(
+                              left: 176.5,
+                              top: 162,
+                              width: 59,
+                              height: 19,
+                              child: Text(
+                                'Pending',
+                                style: TextStyle(fontFamily: 'Sora', fontSize: 14, fontWeight: FontWeight.w400, height: 1.35, color: Color(0xFFCC8408)),
+                              ),
+                            ),
+                          ],
+                          // Figma uses the same message in both the successful and pending
+                          // frames. Keep that source copy unchanged for exact design fidelity.
+                          const Positioned(
+                            left: 27,
+                            top: 208,
+                            width: 338,
+                            height: 26,
+                            child: Text(
+                              'Crypto has arrived in your davopay account. View your wallet account balance for more details',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(fontFamily: 'Sora', fontSize: 10, fontWeight: FontWeight.w400, height: 1.3, color: Color(0xFF686868)),
+                            ),
+                          ),
+                          Positioned(
+                            left: 17,
+                            top: 261,
+                            width: 358,
+                            height: 260,
+                            child: Container(
+                              decoration: BoxDecoration(color: const Color(0xFFF5F6F9), borderRadius: BorderRadius.circular(8)),
+                              child: Stack(
+                                children: [
+                                  const Positioned(left: 14, top: 22, width: 53, height: 15, child: _DepositDetailText('Network', color: Color(0xFF686868))),
+                                  const Positioned(right: 13, top: 22, width: 25, height: 15, child: _DepositDetailText('BTC', textAlign: TextAlign.right)),
+                                  const Positioned(left: 14, top: 49, width: 30, height: 15, child: _DepositDetailText('Time', color: Color(0xFF686868))),
+                                  const Positioned(right: 13, top: 49, width: 131, height: 15, child: _DepositDetailText('2026-05-02 22:36:58', textAlign: TextAlign.right)),
+                                  const Positioned(left: 14, top: 76, width: 102, height: 15, child: _DepositDetailText('Deposit Address', color: Color(0xFF686868))),
+                                  const Positioned(
+                                    left: 160,
+                                    top: 76,
+                                    width: 162,
+                                    height: 30,
+                                    child: _DepositDetailText('1ChGMXGfgy2tdoE4rVQEqouRpBQaAA6zLZ', textAlign: TextAlign.right, maxLines: 2),
+                                  ),
+                                  Positioned(
+                                    left: 326,
+                                    top: 83,
+                                    width: 16,
+                                    height: 16,
+                                    child: GestureDetector(
+                                      onTap: () => Clipboard.setData(const ClipboardData(text: '1ChGMXGfgy2tdoE4rVQEqouRpBQaAA6zLZ')),
+                                      child: Image.asset('$_exact/deposit_details_copy_exact.png', width: 16, height: 16),
+                                    ),
+                                  ),
+                                  const Positioned(left: 14, top: 118, width: 113, height: 15, child: _DepositDetailText('Transaction Hash', color: Color(0xFF686868))),
+                                  const Positioned(
+                                    left: 143,
+                                    top: 118,
+                                    width: 182,
+                                    height: 45,
+                                    child: _DepositDetailText(
+                                      '7c0d217aca078b46197d9283d7b818311de96eae39deddfea593303815d04c35',
+                                      textAlign: TextAlign.right,
+                                      maxLines: 3,
+                                    ),
+                                  ),
+                                  Positioned(
+                                    left: 329,
+                                    top: 132.5,
+                                    width: 16,
+                                    height: 16,
+                                    child: GestureDetector(
+                                      onTap: () => Clipboard.setData(const ClipboardData(text: '7c0d217aca078b46197d9283d7b818311de96eae39deddfea593303815d04c35')),
+                                      child: Image.asset('$_exact/deposit_details_copy_exact.png', width: 16, height: 16),
+                                    ),
+                                  ),
+                                  const Positioned(left: 14, top: 175, width: 114, height: 15, child: _DepositDetailText('View in Blockchain', color: Color(0xFF686868))),
+                                  const Positioned(left: 194, top: 184.5, width: 121, height: 15, child: _DepositDetailText('Blockchain Explorer')),
+                                  Positioned(
+                                    left: 319,
+                                    top: 175,
+                                    width: 24,
+                                    height: 24,
+                                    child: InkResponse(
+                                      onTap: () {},
+                                      radius: 16,
+                                      child: Image.asset('$_exact/deposit_details_link_exact.png', width: 24, height: 24),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
                 ),
-              ],
-            ),
+              );
+            },
           ),
         ),
       );
 }
 
-class _DepositDetailLine extends StatelessWidget {
-  const _DepositDetailLine({required this.label, required this.value, this.copy = false, this.valueWidth});
-  final String label, value;
-  final bool copy;
-  final double? valueWidth;
+class _DepositDetailText extends StatelessWidget {
+  const _DepositDetailText(this.text, {this.color = const Color(0xFF424242), this.textAlign = TextAlign.left, this.maxLines = 1});
+  final String text;
+  final Color color;
+  final TextAlign textAlign;
+  final int maxLines;
+
   @override
-  Widget build(BuildContext context) => Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(label, style: const TextStyle(fontFamily: 'Sora', fontSize: 12, height: 1.25, color: Color(0xFF686868))),
-          const Spacer(),
-          SizedBox(
-            width: valueWidth,
-            child: Text(value, maxLines: valueWidth == null ? 1 : 3, textAlign: TextAlign.right, style: const TextStyle(fontFamily: 'Sora', fontSize: 12, height: 1.25, color: Color(0xFF424242))),
-          ),
-          if (copy) ...[
-            const SizedBox(width: 4),
-            GestureDetector(onTap: () => Clipboard.setData(ClipboardData(text: value)), child: Image.asset('$_exact/buy_copy.png', width: 16, height: 16)),
-          ],
-        ],
+  Widget build(BuildContext context) => Text(
+        text,
+        maxLines: maxLines,
+        textAlign: textAlign,
+        style: TextStyle(fontFamily: 'Sora', fontSize: 12, fontWeight: FontWeight.w400, height: 1.25, color: color),
       );
 }
 

@@ -1385,6 +1385,14 @@ class CryptoDepositScreen extends StatefulWidget {
 
 class _CryptoDepositScreenState extends State<CryptoDepositScreen> {
   bool _guidelinesOpen = false;
+  OverlayEntry? _copyToastEntry;
+
+  @override
+  void dispose() {
+    _copyToastEntry?.remove();
+    _copyToastEntry = null;
+    super.dispose();
+  }
 
   CryptoAsset get asset => widget.asset;
 
@@ -1550,22 +1558,63 @@ class _CryptoDepositScreenState extends State<CryptoDepositScreen> {
   void _copy(BuildContext context, String value) {
     Clipboard.setData(ClipboardData(text: value));
     HapticFeedback.selectionClick();
-    final messenger = ScaffoldMessenger.of(context);
-    messenger.hideCurrentSnackBar();
-    messenger.showSnackBar(
-      const SnackBar(
-        content: Text(
-          'Copied Successfully. Please check when pasting to avoid malicious tampering',
-          textAlign: TextAlign.center,
-          style: TextStyle(fontFamily: 'Sora', fontSize: 16, height: 1.375, color: Colors.white),
-        ),
-        backgroundColor: Color(0xFF1C1C1C),
-        behavior: SnackBarBehavior.floating,
-        margin: EdgeInsets.fromLTRB(62, 0, 62, 24),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(8))),
-        duration: Duration(seconds: 2),
-      ),
+
+    // Figma node 7319:55296 defines the toast itself (265 x 98, 8 px
+    // radius, 16 px padding), but it is stored beside the Deposit frame
+    // rather than as a positioned overlay. Keep the component pixel-exact
+    // and use a deterministic bottom-safe-area placement in the app.
+    final overlay = Overlay.maybeOf(context);
+    if (overlay == null) return;
+
+    _copyToastEntry?.remove();
+    _copyToastEntry = null;
+
+    late final OverlayEntry entry;
+    entry = OverlayEntry(
+      builder: (overlayContext) {
+        final bottomInset = MediaQuery.paddingOf(overlayContext).bottom;
+        return Positioned(
+          left: 0,
+          right: 0,
+          bottom: bottomInset + 24,
+          child: IgnorePointer(
+            child: Material(
+              color: Colors.transparent,
+              child: Center(
+                child: Container(
+                  width: 265,
+                  height: 98,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF1C1C1C),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Text(
+                    'Copied Successfully. Please check when pasting to avoid malicious tampering',
+                    maxLines: 3,
+                    style: TextStyle(
+                      fontFamily: 'Sora',
+                      fontSize: 16,
+                      fontWeight: FontWeight.w400,
+                      height: 1.375,
+                      color: Color(0xFFF8F9FB),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+      },
     );
+    _copyToastEntry = entry;
+    overlay.insert(entry);
+    Future<void>.delayed(const Duration(seconds: 2), () {
+      if (_copyToastEntry == entry) {
+        entry.remove();
+        _copyToastEntry = null;
+      }
+    });
   }
 
   void _openShareSheet(BuildContext context) {
