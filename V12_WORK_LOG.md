@@ -20,8 +20,8 @@ Purpose: preserve checkpoint status so later passes **do not redo completed work
   - [x] Copy toast exact component/placement decision — closed. See `DEPOSIT_DETAILS_TOAST_FINAL_V12.md`.
   - [x] Deposit Details successful/pending alignment — closed. See `DEPOSIT_DETAILS_TOAST_FINAL_V12.md`.
 - [x] Share Address final check. See `WIDER_AUDIT_SCAN_SHARE_V12.md`.
-- [ ] Transaction PIN 4-vs-5 digit inconsistency reconciliation.
-- [ ] Progress / success / detail / receipt final pixel pass.
+- [x] Transaction PIN 4-vs-5 digit inconsistency reconciliation — CLOSED. See `TRANSACTION_PIN_RECONCILIATION_V12.md`.
+- [x] Progress / success / detail / receipt final pixel pass — CLOSED. See `TRANSACTION_PROGRESS_SUCCESS_DETAIL_RECEIPT_V12.md`.
 - [ ] Transaction-flow CTA/back/cancel cleanup.
 - [ ] Cumulative QA / build checks and final v12 packaging.
 

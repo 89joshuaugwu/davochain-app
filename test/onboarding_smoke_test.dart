@@ -13,17 +13,16 @@ void main() {
     expect(find.text('Simple. Fast. Secure.'), findsNothing);
 
     await tester.tap(find.text('Next'));
+    // The illustration floats continuously; wait for the page transition only.
     await tester.pump();
-    await tester.pump(const Duration(milliseconds: 500));
-    await tester.pump(const Duration(milliseconds: 500));
+    await tester.pump(const Duration(milliseconds: 600));
 
     expect(find.text('Simple. Fast. Secure.'), findsOneWidget);
     expect(find.text('Trade Crypto, Your Way'), findsNothing);
 
     await tester.tap(find.text('Next'));
     await tester.pump();
-    await tester.pump(const Duration(milliseconds: 500));
-    await tester.pump(const Duration(milliseconds: 500));
+    await tester.pump(const Duration(milliseconds: 600));
 
     expect(find.text('Turn Gift Cards Into Cash'), findsOneWidget);
     expect(find.text('Create Account'), findsOneWidget);

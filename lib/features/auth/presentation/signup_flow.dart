@@ -256,7 +256,7 @@ class _CountryPickerSheet extends StatelessWidget {
 }
 
 class _AccountDetailsScreen extends StatefulWidget {
-  const _AccountDetailsScreen({super.key, required this.country});
+  const _AccountDetailsScreen({required this.country});
 
   final _CountryOption country;
 

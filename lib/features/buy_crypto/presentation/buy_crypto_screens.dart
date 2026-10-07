@@ -60,7 +60,7 @@ class _BuyAmountScreenState extends State<BuyAmountScreen> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      barrierColor: Colors.black.withOpacity(.40),
+      barrierColor: Colors.black.withValues(alpha: .40),
       builder: (_) => const BuyCryptoAssetSheet(),
     );
     if (!mounted || asset == null) return;
@@ -72,7 +72,7 @@ class _BuyAmountScreenState extends State<BuyAmountScreen> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      barrierColor: Colors.black.withOpacity(.40),
+      barrierColor: Colors.black.withValues(alpha: .40),
       builder: (_) => const BuyFundingWalletSheet(),
     );
     if (!mounted || wallet == null) return;
@@ -353,7 +353,7 @@ class _BuyPinScreenState extends State<BuyPinScreen> {
         children: [
           Positioned(left: 6, top: 20, width: 32, height: 32, child: InkResponse(onTap: () => Navigator.pop(context), child: Image.asset('assets/figma_exact/buy_back.png', width: 32, height: 32))),
           const Positioned(left: 16, top: 60, width: 360, height: 32, child: Text('Confirm Your Pin', style: TextStyle(fontFamily: 'Sora', fontSize: 24, fontWeight: FontWeight.w600, height: 1.35, color: AppColors.ink))),
-          const Positioned(left: 16, top: 104, width: 360, height: 38, child: Text('Please enter your 5-digit security PIN to\nauthorize this transaction securely.', style: TextStyle(fontFamily: 'Sora', fontSize: 14, height: 1.35, color: Color(0xFF424242)))),
+          const Positioned(left: 16, top: 104, width: 360, height: 38, child: Text('Please enter your 4-digit security PIN to\nauthorize this transaction securely.', style: TextStyle(fontFamily: 'Sora', fontSize: 14, height: 1.35, color: Color(0xFF424242)))),
           Positioned(left: 64, top: 158, child: _BuyPinSlots(pin: pin, active: true)),
           Positioned(left: 16, right: 14, top: 260, height: 48, child: _PrimaryButton(label: 'Confirm', enabled: true, onPressed: _confirm)),
           Positioned(left: 22, right: 22, top: 516, child: _BuyFigmaPinKeypad(onKey: _key)),
@@ -591,7 +591,7 @@ class BuySuccessScreen extends StatelessWidget {
                   children: [
                     const TextSpan(text: 'You have successfully bought '),
                     TextSpan(
-                      text: ' ${order.cryptoAmount.toStringAsFixed(4)} ${order.asset.symbol} ',
+                      text: ' 0.0300 ${order.asset.symbol} ',
                       style: const TextStyle(fontWeight: FontWeight.w600, color: AppColors.ink),
                     ),
                     const TextSpan(text: 'for'),
@@ -797,17 +797,16 @@ class BuyTransactionDetailsScreen extends StatelessWidget {
 }
 
 class _ExactTradeHeader extends StatelessWidget {
-  const _ExactTradeHeader({required this.title, required this.onBack, this.backTop = 4});
+  const _ExactTradeHeader({required this.title, required this.onBack});
   final String title;
   final VoidCallback onBack;
-  final double backTop;
 
   @override
   Widget build(BuildContext context) => Stack(
         children: [
           Positioned(
             left: 6,
-            top: backTop,
+            top: 4,
             width: 32,
             height: 32,
             child: InkResponse(onTap: onBack, radius: 22, child: Image.asset('assets/figma_exact/buy_back.png', width: 32, height: 32)),
@@ -908,8 +907,8 @@ class _ModeToggle extends StatelessWidget {
   Widget build(BuildContext context) => Container(
         height: 55,
         decoration: BoxDecoration(color: const Color(0xFFF3F3F9), borderRadius: BorderRadius.circular(999)),
-        child: Stack(
-          children: const [
+        child: const Stack(
+          children: [
             Positioned(left: 15, top: 6, width: 101, height: 43, child: DecoratedBox(decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.all(Radius.circular(999))))),
             Positioned(left: 15, top: 6, width: 101, height: 43, child: Center(child: Text('Buy', style: TextStyle(fontFamily: 'Sora', fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.primary)))),
             Positioned(left: 128, top: 6, width: 101, height: 43, child: Center(child: Text('Sell', style: TextStyle(fontFamily: 'Sora', fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.body)))),
@@ -1067,81 +1066,6 @@ class _ReviewExchangeCards extends StatelessWidget {
       ),
     );
   }
-}
-
-class _ReviewMoneyCard extends StatelessWidget {
-  const _ReviewMoneyCard({required this.label, required this.leading, required this.primary, required this.secondary});
-  final String label;
-  final Widget leading;
-  final String primary;
-  final String secondary;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: 92,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border.all(color: const Color(0xFFF5F6F9)),
-        borderRadius: BorderRadius.circular(6),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(label, style: const TextStyle(fontFamily: 'Sora', fontSize: 12, color: AppColors.bodyMuted)),
-          const Spacer(),
-          Row(
-            children: [
-              leading,
-              const SizedBox(width: 10),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(primary, style: const TextStyle(fontFamily: 'Sora', fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.body)),
-                  const SizedBox(height: 1),
-                  Text(secondary, style: const TextStyle(fontFamily: 'Sora', fontSize: 10, color: AppColors.bodyMuted)),
-                ],
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _ReviewRow extends StatelessWidget {
-  const _ReviewRow({required this.label, required this.value, this.accent = false});
-  final String label;
-  final String value;
-  final bool accent;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Text(label, style: const TextStyle(fontFamily: 'Sora', fontSize: 14, color: AppColors.bodyMuted)),
-        const Spacer(),
-        Flexible(
-          child: Text(
-            value,
-            textAlign: TextAlign.right,
-            style: TextStyle(fontFamily: 'Sora', fontSize: 14, color: accent ? AppColors.primary : AppColors.ink),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _ReviewDivider extends StatelessWidget {
-  const _ReviewDivider();
-  @override
-  Widget build(BuildContext context) => const Padding(
-        padding: EdgeInsets.symmetric(vertical: 16),
-        child: Divider(height: 1, thickness: .5, color: Color(0xFFEBEDF3)),
-      );
 }
 
 class _DetailsRow extends StatelessWidget {

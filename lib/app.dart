@@ -20,6 +20,7 @@ class DavochainApp extends StatelessWidget {
       title: 'Davochain',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
+      scrollBehavior: const MaterialScrollBehavior().copyWith(overscroll: false),
       home: const BrandSplashScreen(),
       onGenerateRoute: (settings) {
         WidgetBuilder? builder;

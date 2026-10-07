@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 
 import '../../../core/navigation/app_page_route.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../shared/widgets/inline_input_decoration.dart';
 
 const _g = 'assets/figma_exact';
 const _f = 'assets/figma_exact';
@@ -222,7 +223,7 @@ class _GiftCardBrandScreenState extends State<GiftCardBrandScreen> {
                     controller: controller,
                     onChanged: (_) => setState(() {}),
                     textInputAction: TextInputAction.search,
-                    decoration: const InputDecoration.collapsed(hintText: 'Search 50+ gift card brands...'),
+                    decoration: const DavoInlineInputDecoration(hintText: 'Search 50+ gift card brands...'),
                     style: _body14,
                   ),
                 ),
@@ -431,7 +432,7 @@ class _GiftCardSellReviewScreenState extends State<GiftCardSellReviewScreen> {
             ),
           ),
           const SizedBox(height: 12),
-          _InfoNote(
+          const _InfoNote(
             text: 'Please note that the payable amount may change if you upload the wrong subcategory. To avoid issues, kindly review the trade terms below carefully.',
           ),
           const SizedBox(height: 14),
@@ -1006,7 +1007,7 @@ class _GiftCardPinScreenState extends State<GiftCardPinScreen> {
           const SizedBox(height: 5),
           const Padding(
             padding: EdgeInsets.symmetric(horizontal: 24),
-            child: Text('Please enter your 6-digit security PIN to authorize this transaction securely.', textAlign: TextAlign.center, style: _caption),
+            child: Text('Please enter your 4-digit security PIN to authorize this transaction securely.', textAlign: TextAlign.center, style: _caption),
           ),
           const SizedBox(height: 22),
           Row(
@@ -1358,7 +1359,7 @@ class _AmountField extends StatelessWidget {
   final ValueChanged<String> onChanged;
 
   @override
-  Widget build(BuildContext context) => Container(height: 50, decoration: _fieldDecoration, child: TextField(controller: controller, keyboardType: const TextInputType.numberWithOptions(decimal: true), onChanged: onChanged, decoration: const InputDecoration(border: InputBorder.none, contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 14), hintText: 'Enter Gift Card Amount'), style: _body14));
+  Widget build(BuildContext context) => Container(height: 50, decoration: _fieldDecoration, child: TextField(controller: controller, keyboardType: const TextInputType.numberWithOptions(decimal: true), onChanged: onChanged, decoration: const DavoInlineInputDecoration(contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 14), hintText: 'Enter Gift Card Amount'), style: _body14));
 }
 
 class _RateOutput extends StatelessWidget {
@@ -1517,7 +1518,7 @@ class _IconTextField extends StatelessWidget {
   final String hint;
   final TextInputType keyboard;
   @override
-  Widget build(BuildContext context) => Container(height: 50, decoration: _fieldDecoration, child: Row(children: [const SizedBox(width: 12), Image.asset(asset, width: 20, height: 20), const SizedBox(width: 8), Expanded(child: TextField(controller: controller, keyboardType: keyboard, decoration: InputDecoration.collapsed(hintText: hint), style: _body14)), const SizedBox(width: 12)]));
+  Widget build(BuildContext context) => Container(height: 50, decoration: _fieldDecoration, child: Row(children: [const SizedBox(width: 12), Image.asset(asset, width: 20, height: 20), const SizedBox(width: 8), Expanded(child: TextField(controller: controller, keyboardType: keyboard, decoration: DavoInlineInputDecoration(hintText: hint), style: _body14)), const SizedBox(width: 12)]));
 }
 
 class _DeliveryChoice extends StatelessWidget {

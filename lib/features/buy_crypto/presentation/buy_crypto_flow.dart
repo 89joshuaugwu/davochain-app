@@ -13,7 +13,7 @@ Future<void> startBuyCryptoFlow(BuildContext context) async {
     isScrollControlled: true,
     useSafeArea: true,
     backgroundColor: Colors.transparent,
-    barrierColor: Colors.black.withOpacity(.40),
+    barrierColor: Colors.black.withValues(alpha: .40),
     builder: (_) => const BuyCryptoAssetSheet(),
   );
   if (!context.mounted || asset == null) return;
@@ -26,7 +26,7 @@ Future<void> startBuyCryptoFlow(BuildContext context) async {
     isScrollControlled: true,
     useSafeArea: true,
     backgroundColor: Colors.transparent,
-    barrierColor: Colors.black.withOpacity(.40),
+    barrierColor: Colors.black.withValues(alpha: .40),
     builder: (_) => const BuyFundingWalletSheet(),
   );
   if (!context.mounted || wallet == null) return;

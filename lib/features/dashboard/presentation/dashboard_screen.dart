@@ -1,4 +1,3 @@
-import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -412,11 +411,10 @@ class _BalanceCard extends StatelessWidget {
 class _BalanceActionButton extends StatelessWidget {
   const _BalanceActionButton({
     required this.light,
-    this.icon,
     this.assetPath,
     required this.label,
     required this.onTap,
-  });
+  }) : icon = null;
 
   final bool light;
   final IconData? icon;
@@ -525,10 +523,8 @@ class _QuickAction extends StatelessWidget {
     required this.bg,
     required this.fg,
     required this.onTap,
-    this.icon,
-    this.iconData,
     this.assetPath,
-  });
+  }) : icon = null, iconData = null;
 
   final String label;
   final Color bg;
@@ -559,7 +555,7 @@ class _QuickAction extends StatelessWidget {
                 child: assetPath != null
                     ? Padding(
                         padding: const EdgeInsets.all(3),
-                        child: Image.asset(assetPath!, fit: BoxFit.contain, filterQuality: FilterQuality.high),
+                        child: Image.asset(assetPath!, color: label == 'Buy Crypto' ? fg : null, fit: BoxFit.contain, filterQuality: FilterQuality.high),
                       )
                     : iconData != null
                         ? Icon(iconData, color: fg, size: 21)
@@ -943,6 +939,7 @@ class _RoundIconButton extends StatelessWidget {
                   assetPath!,
                   width: 18,
                   height: 18,
+                  color: AppColors.primary,
                   fit: BoxFit.contain,
                   filterQuality: FilterQuality.high,
                 ),
@@ -1410,6 +1407,31 @@ class _CryptoDepositScreenState extends State<CryptoDepositScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
+      bottomNavigationBar: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 18),
+          child: Row(
+            children: [
+              Expanded(child: _FooterButton(
+                label: 'Share or save',
+                background: const Color(0xFFEEF0F5),
+                foreground: const Color(0xFF424242),
+                fontWeight: FontWeight.w400,
+                onTap: () => _openShareSheet(context),
+              )),
+              const SizedBox(width: 16),
+              Expanded(child: _FooterButton(
+                label: 'Copy Address',
+                background: AppColors.primary,
+                foreground: const Color(0xFFEEF0F5),
+                fontWeight: FontWeight.w600,
+                onTap: () => _copy(context, _address),
+              )),
+            ],
+          ),
+        ),
+      ),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 18),
@@ -1520,30 +1542,6 @@ class _CryptoDepositScreenState extends State<CryptoDepositScreen> {
                               )
                             : const SizedBox.shrink(),
                       ),
-                      const SizedBox(height: 167),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _FooterButton(
-                              label: 'Share or save',
-                              background: const Color(0xFFEEF0F5),
-                              foreground: const Color(0xFF424242),
-                              fontWeight: FontWeight.w400,
-                              onTap: () => _openShareSheet(context),
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: _FooterButton(
-                              label: 'Copy Address',
-                              background: AppColors.primary,
-                              foreground: const Color(0xFFEEF0F5),
-                              fontWeight: FontWeight.w600,
-                              onTap: () => _copy(context, _address),
-                            ),
-                          ),
-                        ],
-                      ),
                     ],
                   ),
                 ),
@@ -1576,7 +1574,7 @@ class _CryptoDepositScreenState extends State<CryptoDepositScreen> {
         return Positioned(
           left: 0,
           right: 0,
-          bottom: bottomInset + 24,
+          bottom: bottomInset + 90,
           child: IgnorePointer(
             child: Material(
               color: Colors.transparent,
@@ -1622,7 +1620,7 @@ class _CryptoDepositScreenState extends State<CryptoDepositScreen> {
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
-      barrierColor: Colors.black.withOpacity(.40),
+      barrierColor: Colors.black.withValues(alpha: .40),
       builder: (_) => Container(
         height: 257,
         decoration: const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
@@ -1777,22 +1775,6 @@ class _ShareAction extends StatelessWidget {
   }
 }
 
-class _MiniDavochainLockup extends StatelessWidget {
-  const _MiniDavochainLockup();
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Image.asset('assets/images/brand/davochain_logo.png', width: 18, height: 12),
-        const SizedBox(width: 3),
-        const Text('Davochain', style: TextStyle(fontFamily: 'Sora', fontSize: 8, fontWeight: FontWeight.w700)),
-      ],
-    );
-  }
-}
-
 class _FooterButton extends StatelessWidget {
   const _FooterButton({required this.label, required this.background, required this.foreground, required this.onTap, this.fontWeight = FontWeight.w600});
 
@@ -1884,7 +1866,7 @@ class NairaDepositScreen extends StatelessWidget {
                           children: [
                             Image.asset('assets/figma_exact/crypto_info_exact.png', width: 17, height: 17, fit: BoxFit.contain),
                             const SizedBox(width: 15),
-                            Expanded(
+                            const Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [

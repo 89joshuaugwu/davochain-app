@@ -168,8 +168,12 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     _email.dispose();
     _password.dispose();
     _confirm.dispose();
-    for (final c in _otp) c.dispose();
-    for (final f in _otpFocus) f.dispose();
+    for (final c in _otp) {
+      c.dispose();
+    }
+    for (final f in _otpFocus) {
+      f.dispose();
+    }
     super.dispose();
   }
 
@@ -258,7 +262,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   }
 
   void _resendCode() {
-    for (final c in _otp) c.clear();
+    for (final c in _otp) {
+      c.clear();
+    }
     setState(() => _otpError = false);
     _otpFocus.first.requestFocus();
     ScaffoldMessenger.of(context).showSnackBar(

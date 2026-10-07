@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 
 import '../../../core/navigation/app_page_route.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../shared/widgets/inline_input_decoration.dart';
 import '../../buy_crypto/presentation/buy_crypto_models.dart';
 import '../../buy_crypto/presentation/buy_crypto_widgets.dart';
 
@@ -22,7 +23,7 @@ Future<void> startWithdrawFlow(BuildContext context) async {
     isScrollControlled: true,
     useSafeArea: true,
     backgroundColor: Colors.transparent,
-    barrierColor: Colors.black.withOpacity(.40),
+    barrierColor: Colors.black.withValues(alpha: .40),
     builder: (_) => const _WithdrawWalletSheet(),
   );
   if (!context.mounted || selected == null) return;
@@ -38,7 +39,7 @@ Future<void> startSellCryptoFlow(BuildContext context) async {
     isScrollControlled: true,
     useSafeArea: true,
     backgroundColor: Colors.transparent,
-    barrierColor: Colors.black.withOpacity(.40),
+    barrierColor: Colors.black.withValues(alpha: .40),
     builder: (_) => const BuyCryptoAssetSheet(),
   );
   if (!context.mounted || asset == null) return;
@@ -47,7 +48,7 @@ Future<void> startSellCryptoFlow(BuildContext context) async {
     isScrollControlled: true,
     useSafeArea: true,
     backgroundColor: Colors.transparent,
-    barrierColor: Colors.black.withOpacity(.40),
+    barrierColor: Colors.black.withValues(alpha: .40),
     builder: (_) => const _SellWalletSheet(),
   );
   if (!context.mounted || wallet != true) return;
@@ -194,7 +195,7 @@ class _NairaWithdrawScreenState extends State<NairaWithdrawScreen> {
                 controller: amount,
                 keyboardType: TextInputType.number,
                 onChanged:(_)=>setState((){}),
-                decoration: const InputDecoration.collapsed(
+                decoration: const DavoInlineInputDecoration(
                   hintText:'0',
                   hintStyle: TextStyle(fontFamily:'Sora',fontSize:16,height:1.35,color:Color(0xFF686868)),
                 ),
@@ -243,12 +244,12 @@ class _NairaWithdrawScreenState extends State<NairaWithdrawScreen> {
     );
   }
   Future<void> _payment() async {
-    final value=await showModalBottomSheet<BankAccount>(context:context,isScrollControlled:true,backgroundColor:Colors.transparent,barrierColor:Colors.black.withOpacity(.4),builder:(_)=>_PaymentSheet(current:account));
+    final value=await showModalBottomSheet<BankAccount>(context:context,isScrollControlled:true,backgroundColor:Colors.transparent,barrierColor:Colors.black.withValues(alpha: .4),builder:(_)=>_PaymentSheet(current:account));
     if(mounted&&value!=null)setState(()=>account=value);
   }
   Future<void> _review() async {
     if(account==null)return;
-    final ok=await showModalBottomSheet<bool>(context:context,isScrollControlled:true,backgroundColor:Colors.transparent,barrierColor:Colors.black.withOpacity(.4),builder:(_)=>_NairaConfirm(amount:amount.text,account:account!));
+    final ok=await showModalBottomSheet<bool>(context:context,isScrollControlled:true,backgroundColor:Colors.transparent,barrierColor:Colors.black.withValues(alpha: .4),builder:(_)=>_NairaConfirm(amount:amount.text,account:account!));
     if(!mounted||ok!=true)return;
     final pin=await Navigator.push<bool>(context,AppPageRoute<bool>(builder:(_)=>const CryptoPinScreen()));
     if(!mounted||pin!=true)return;
@@ -498,7 +499,7 @@ class _AddBankScreenState extends State<AddBankScreen> {
               controller: number,
               keyboardType: TextInputType.number,
               onChanged: (_) => setState(() {}),
-              decoration: const InputDecoration.collapsed(hintText: 'Enter account number'),
+              decoration: const DavoInlineInputDecoration(hintText: 'Enter account number'),
               style: const TextStyle(fontFamily: 'Sora', fontSize: 12, height: 1.25, color: Color(0xFF424242)),
             ),
           ),
@@ -528,7 +529,7 @@ class _AddBankScreenState extends State<AddBankScreen> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      barrierColor: Colors.black.withOpacity(.4),
+      barrierColor: Colors.black.withValues(alpha: .4),
       builder: (_) => const _BankSheet(),
     );
     if (mounted && b != null) setState(() => bank = b);
@@ -636,7 +637,7 @@ class _BankSheetState extends State<_BankSheet> {
                 children: [
                   Image.asset('$_exact/crypto_search_exact.png', width: 24, height: 24),
                   const SizedBox(width: 16),
-                  Expanded(child: TextField(controller: search, onChanged: (_) => setState(() {}), decoration: const InputDecoration.collapsed(hintText: 'Search for a bank'), style: const TextStyle(fontFamily: 'Sora', fontSize: 14, height: 1.35, color: AppColors.ink))),
+                  Expanded(child: TextField(controller: search, onChanged: (_) => setState(() {}), decoration: const DavoInlineInputDecoration(hintText: 'Search for a bank'), style: const TextStyle(fontFamily: 'Sora', fontSize: 14, height: 1.35, color: AppColors.ink))),
                 ],
               ),
             ),
@@ -842,7 +843,7 @@ class _CryptoWithdrawEntryScreenState extends State<CryptoWithdrawEntryScreen> {
                   child: TextField(
                     controller: target,
                     onChanged: (_) => setState(() {}),
-                    decoration: const InputDecoration.collapsed(
+                    decoration: const DavoInlineInputDecoration(
                       hintText: 'Enter Davochain username',
                       hintStyle: TextStyle(fontFamily: 'Sora', fontSize: 12, height: 1.25, color: Color(0xFF686868)),
                     ),
@@ -869,7 +870,7 @@ class _CryptoWithdrawEntryScreenState extends State<CryptoWithdrawEntryScreen> {
                           controller: amount,
                           keyboardType: const TextInputType.numberWithOptions(decimal: true),
                           onChanged: (_) => setState(() {}),
-                          decoration: const InputDecoration.collapsed(
+                          decoration: const DavoInlineInputDecoration(
                             hintText: 'Enter BTC amount',
                             hintStyle: TextStyle(fontFamily: 'Sora', fontSize: 12, height: 1.25, color: Color(0xFF686868)),
                           ),
@@ -930,7 +931,7 @@ class _CryptoWithdrawEntryScreenState extends State<CryptoWithdrawEntryScreen> {
                             child: TextField(
                               controller: target,
                               onChanged: (_) => setState(() {}),
-                              decoration: const InputDecoration.collapsed(
+                              decoration: const DavoInlineInputDecoration(
                                 hintText: 'Paste the wallet address',
                                 hintStyle: TextStyle(fontFamily: 'Open Sans', fontSize: 16, height: 1.35, color: Color(0xFF686868)),
                               ),
@@ -988,7 +989,7 @@ class _CryptoWithdrawEntryScreenState extends State<CryptoWithdrawEntryScreen> {
                               controller: amount,
                               keyboardType: const TextInputType.numberWithOptions(decimal: true),
                               onChanged: (_) => setState(() {}),
-                              decoration: const InputDecoration.collapsed(
+                              decoration: const DavoInlineInputDecoration(
                                 hintText: 'Please enter the withdrawal quantity',
                                 hintStyle: TextStyle(fontFamily: 'Sora', fontSize: 16, height: 1.35, color: Color(0xFF686868)),
                               ),
@@ -1027,7 +1028,7 @@ class _CryptoWithdrawEntryScreenState extends State<CryptoWithdrawEntryScreen> {
                     top: 761,
                     height: 114,
                     child: Container(
-                      color: Colors.white.withOpacity(.10),
+                      color: Colors.white.withValues(alpha: .10),
                       child: Stack(
                         children: [
                           const Positioned(left: 16, top: 10, width: 116, height: 15, child: Text('Receiving', style: TextStyle(fontFamily: 'Sora', fontSize: 12, height: 1.25, color: Color(0xFF424242)))),
@@ -1065,7 +1066,7 @@ class _CryptoWithdrawEntryScreenState extends State<CryptoWithdrawEntryScreen> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      barrierColor: Colors.black.withOpacity(.4),
+      barrierColor: Colors.black.withValues(alpha: .4),
       builder: (_) => const CancelReminderSheet(),
     );
     if (mounted && c == true) Navigator.pop(context);
@@ -1081,7 +1082,7 @@ class _CryptoWithdrawEntryScreenState extends State<CryptoWithdrawEntryScreen> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      barrierColor: Colors.black.withOpacity(.4),
+      barrierColor: Colors.black.withValues(alpha: .4),
       builder: (_) => const SelectNetworkSheet(),
     );
     if (!mounted || n == null) return;
@@ -1089,7 +1090,7 @@ class _CryptoWithdrawEntryScreenState extends State<CryptoWithdrawEntryScreen> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      barrierColor: Colors.black.withOpacity(.4),
+      barrierColor: Colors.black.withValues(alpha: .4),
       builder: (_) => const SanctionWarningSheet(),
     );
     if (mounted && understood == true) setState(() => network = n);
@@ -1101,7 +1102,7 @@ class _CryptoWithdrawEntryScreenState extends State<CryptoWithdrawEntryScreen> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      barrierColor: Colors.black.withOpacity(.4),
+      barrierColor: Colors.black.withValues(alpha: .4),
       builder: (_) => widget.external ? _ExternalWithdrawConfirmSheet(target: target.text, amount: n) : _InternalWithdrawConfirmSheet(target: target.text, amount: n),
     );
     if (!mounted || ok != true) return;
@@ -1390,7 +1391,7 @@ class _CryptoPinScreenState extends State<CryptoPinScreen> {
         children: [
           Positioned(left: 3, top: 14, child: _AssetButton(asset: '$_f/buy_back.png', size: 24, onTap: () => Navigator.pop(context))),
           const Positioned(left: 16, top: 60, width: 360, height: 32, child: Text('Confirm Your Pin', style: TextStyle(fontFamily: 'Sora', fontSize: 24, fontWeight: FontWeight.w600, height: 1.35, color: AppColors.ink))),
-          const Positioned(left: 16, top: 104, width: 360, height: 38, child: Text('Please enter your 5-digit security PIN to\nauthorize this transaction securely.', style: TextStyle(fontFamily: 'Sora', fontSize: 14, height: 1.35, color: Color(0xFF424242)))),
+          const Positioned(left: 16, top: 104, width: 360, height: 38, child: Text('Please enter your 4-digit security PIN to\nauthorize this transaction securely.', style: TextStyle(fontFamily: 'Sora', fontSize: 14, height: 1.35, color: Color(0xFF424242)))),
           Positioned(left: 64, top: 158, child: _PinSlots(pin: pin, active: true)),
           Positioned(left: 16, right: 14, top: 260, child: _Button(label: 'Confirm', onTap: () => Navigator.pop(context, true))),
           Positioned(left: 22, right: 22, top: 516, child: _FigmaPinKeypad(onKey: key)),
@@ -1511,6 +1512,7 @@ class _TransactionProgressScreenState extends State<TransactionProgressScreen> {
             ? 'Selling ${widget.amount.toStringAsFixed(5)} BTC'
             : 'Converting';
     final sub = switch (widget.kind) { TxKind.internal => 'to ${widget.target}', TxKind.external => 'to ${_short(widget.target)}', _ => '' };
+    final subColor = widget.kind == TxKind.external ? const Color(0xFF686868) : const Color(0xFF424242);
     return _FigmaFullScaffold(
       child: Column(
         children: [
@@ -1521,7 +1523,7 @@ class _TransactionProgressScreenState extends State<TransactionProgressScreen> {
           SizedBox(height: 22, child: Text(title, textAlign: TextAlign.center, style: const TextStyle(fontFamily: 'Sora', fontSize: 16, fontWeight: FontWeight.w600, height: 1.35, color: AppColors.ink))),
           if (sub.isNotEmpty) ...[
             const SizedBox(height: 4),
-            SizedBox(height: 19, child: Text(sub, textAlign: TextAlign.center, style: const TextStyle(fontFamily: 'Sora', fontSize: 14, height: 1.35, color: Color(0xFF424242)))),
+            SizedBox(height: 19, child: Text(sub, textAlign: TextAlign.center, style: TextStyle(fontFamily: 'Sora', fontSize: 14, height: 1.35, color: subColor))),
           ],
           SizedBox(height: sub.isNotEmpty ? 8 : 8),
           Text(
@@ -1544,12 +1546,11 @@ class TransactionSuccessScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final transfer = kind == TxKind.internal || kind == TxKind.external;
-    final data = switch (kind) {
-      TxKind.internal => ('Transfer Successful', 'You have sent ${amount.toStringAsFixed(4)} BTC to $target'),
-      TxKind.external => ('Transfer Successful', 'You have sent ${amount.toStringAsFixed(4)} BTC to ${_short(target)}'),
-      TxKind.sell => ('Sold  Successful', 'You have successfully Sell  ${amount.toStringAsFixed(4)} BTC for ₦731,540.00'),
-      TxKind.conversion => ('Conversion  Successful', 'You have successfully converted  ${amount.toStringAsFixed(4)} BTC to \$500 USDT'),
-    };
+    final title = transfer
+        ? 'Transfer Successful'
+        : kind == TxKind.sell
+            ? 'Sold  Successful'
+            : 'Conversion  Successful';
     final twoLine = kind != TxKind.internal;
     return _FigmaFullScaffold(
       child: Column(
@@ -1558,12 +1559,12 @@ class TransactionSuccessScreen extends StatelessWidget {
           const SizedBox(height: 47),
           Image.asset('$_exact/dashboard_crypto_gifs__dashbardandcryptgifs_4d6e1474ce658d29d4eaabd043e0c07fe0db035c.gif', width: 150, height: 150, fit: BoxFit.contain),
           const SizedBox(height: 16),
-          SizedBox(height: 27, child: Center(child: Text(data.$1, textAlign: TextAlign.center, style: const TextStyle(fontFamily: 'Sora', fontSize: 20, fontWeight: FontWeight.w700, height: 1.35, color: AppColors.ink)))),
+          SizedBox(height: 27, child: Center(child: Text(title, textAlign: TextAlign.center, style: const TextStyle(fontFamily: 'Sora', fontSize: 20, fontWeight: FontWeight.w700, height: 1.35, color: AppColors.ink)))),
           const SizedBox(height: 8),
           SizedBox(
             width: 287,
             height: twoLine ? 38 : 19,
-            child: Text(data.$2, textAlign: TextAlign.center, style: const TextStyle(fontFamily: 'Sora', fontSize: 14, height: 1.35, color: Color(0xFF424242))),
+            child: _TransactionSuccessMessage(kind: kind, target: target, amount: amount),
           ),
           const SizedBox(height: 314),
           _Button(label: 'View Details', onTap: () => Navigator.push(context, AppPageRoute<void>(builder: (_) => TransactionDetailsScreen(kind: kind, target: target, amount: amount)))),
@@ -1572,6 +1573,50 @@ class TransactionSuccessScreen extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+class _TransactionSuccessMessage extends StatelessWidget {
+  const _TransactionSuccessMessage({required this.kind, required this.target, required this.amount});
+  final TxKind kind;
+  final String target;
+  final double amount;
+
+  @override
+  Widget build(BuildContext context) {
+    const muted = Color(0xFF686868);
+    const ink = AppColors.ink;
+    const base = TextStyle(fontFamily: 'Sora', fontSize: 14, height: 1.35, color: muted);
+    const dark = TextStyle(fontFamily: 'Sora', fontSize: 14, height: 1.35, color: ink);
+    const strong = TextStyle(fontFamily: 'Sora', fontSize: 14, height: 1.35, fontWeight: FontWeight.w600, color: ink);
+    final amountText = (kind == TxKind.sell || kind == TxKind.conversion) ? '0.0300 BTC' : '${amount.toStringAsFixed(4)} BTC';
+    final spans = switch (kind) {
+      TxKind.internal => <InlineSpan>[
+          const TextSpan(text: 'You have sent', style: base),
+          TextSpan(text: ' $amountText ', style: dark),
+          const TextSpan(text: 'to', style: base),
+          TextSpan(text: ' $target', style: dark),
+        ],
+      TxKind.external => <InlineSpan>[
+          const TextSpan(text: 'You have sent ', style: base),
+          TextSpan(text: amountText, style: strong),
+          const TextSpan(text: ' to ', style: base),
+          TextSpan(text: _short(target), style: strong),
+        ],
+      TxKind.conversion => <InlineSpan>[
+          const TextSpan(text: 'You have successfully converted  ', style: base),
+          TextSpan(text: amountText, style: strong),
+          const TextSpan(text: ' to ', style: base),
+          const TextSpan(text: r'$500 USDT', style: strong),
+        ],
+      TxKind.sell => <InlineSpan>[
+          const TextSpan(text: 'You have successfully Sell  ', style: base),
+          TextSpan(text: '$amountText ', style: strong),
+          const TextSpan(text: 'for ', style: base),
+          const TextSpan(text: '₦731,540.00', style: strong),
+        ],
+    };
+    return Text.rich(TextSpan(children: spans), textAlign: TextAlign.center);
   }
 }
 
@@ -1586,7 +1631,6 @@ class TransactionDetailsScreen extends StatelessWidget {
   Widget build(BuildContext context) => receipt ? _buildReceipt(context) : _buildDetails(context);
 
   Widget _buildDetails(BuildContext context) {
-    final ext = kind == TxKind.external;
     final conv = kind == TxKind.conversion;
     final sell = kind == TxKind.sell;
     final amountTopGap = (conv || sell) ? 12.0 : 59.0;
@@ -1599,7 +1643,7 @@ class TransactionDetailsScreen extends StatelessWidget {
         children: [
           _TopBar(title: 'Transaction Details', onBack: () => Navigator.pop(context), height: 40, fontSize: 14, fontWeight: FontWeight.w600),
           SizedBox(height: amountTopGap),
-          SizedBox(height: 32, child: Center(child: Text('${amount.toStringAsFixed(4)} BTC', style: const TextStyle(fontFamily: 'Sora', fontSize: 24, fontWeight: FontWeight.w700, height: 1.35, color: AppColors.ink)))),
+          SizedBox(height: 32, child: Center(child: Text((conv || sell) ? '0.0300 BTC' : '${amount.toStringAsFixed(4)} BTC', style: const TextStyle(fontFamily: 'Sora', fontSize: 24, fontWeight: FontWeight.w700, height: 1.35, color: AppColors.ink)))),
           const SizedBox(height: 2),
           const SizedBox(height: 19, child: Center(child: Text(r'$500.00 USD', style: TextStyle(fontFamily: 'Sora', fontSize: 14, height: 1.35, color: Color(0xFF424242))))),
           const SizedBox(height: 16),
@@ -1618,8 +1662,8 @@ class TransactionDetailsScreen extends StatelessWidget {
   }
 
   Widget _buildReceipt(BuildContext context) {
-    final ext = kind == TxKind.external;
     final conv = kind == TxKind.conversion;
+    final ext = kind == TxKind.external;
     final cardHeight = conv ? 502.0 : ext ? 468.0 : 379.0;
     return _FigmaFullScaffold(
       child: Column(
@@ -1631,8 +1675,8 @@ class TransactionDetailsScreen extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Image.asset('$_exact/crypto_davochain_32_exact.png', width: 28, height: 28, fit: BoxFit.contain),
-                const SizedBox(width: 6),
+                Image.asset('$_exact/receipt_davochain_26_exact.png', width: 26, height: 26, fit: BoxFit.contain),
+                const SizedBox(width: 8),
                 const Text('Davochain', style: TextStyle(fontFamily: 'Sora', fontSize: 20, fontWeight: FontWeight.w700, height: 1.35, color: AppColors.ink)),
               ],
             ),
@@ -1656,73 +1700,237 @@ class _TransactionDetailCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ext = kind == TxKind.external;
-    final specs = <({double top, String label, String value, bool copy, Color? valueColor, double fontSize})>[];
-    if (kind == TxKind.internal) {
-      specs.addAll([
-        (top: 22, label: 'To', value: target, copy: false, valueColor: null, fontSize: 14),
-        (top: 71.5, label: 'Asset', value: 'Bitcoin (BTC)', copy: false, valueColor: null, fontSize: 14),
-        (top: 121, label: 'Date', value: 'Sep 16, 2026, 14:26', copy: false, valueColor: null, fontSize: 14),
-        (top: 168, label: 'Network Fee', value: 'Free', copy: false, valueColor: AppColors.primary, fontSize: 14),
-        (top: 215, label: 'Transaction ID', value: '0x3a4f...9c7d', copy: true, valueColor: null, fontSize: 14),
-      ]);
-    } else if (kind == TxKind.external) {
-      specs.addAll([
-        (top: 24, label: 'To', value: _short(target), copy: false, valueColor: null, fontSize: 14),
-        (top: 73.5, label: 'Asset', value: 'Bitcoin (BTC)', copy: false, valueColor: null, fontSize: 14),
-        (top: 123, label: 'Date', value: 'Sep 16, 2026, 14:26', copy: false, valueColor: null, fontSize: 14),
-        (top: 170, label: 'Network Fee', value: '0.00002 BTC', copy: false, valueColor: null, fontSize: 14),
-        (top: 217, label: 'Transaction ID', value: '0x3a4f...9c7d', copy: true, valueColor: null, fontSize: 14),
-        (top: 264, label: 'Transaction Hash', value: '7c0d217a...15d04c35', copy: true, valueColor: null, fontSize: 12),
-      ]);
-    } else if (kind == TxKind.conversion) {
-      specs.addAll([
-        (top: 24.5, label: 'From', value: '0.03048 BTC', copy: false, valueColor: null, fontSize: 14),
-        (top: 86.5, label: 'To', value: '500.00 USDT', copy: false, valueColor: null, fontSize: 14),
-        (top: 141, label: 'Date', value: 'Sep 16, 2026, 14:26', copy: false, valueColor: null, fontSize: 14),
-        (top: 188, label: 'Network Fee', value: 'Free', copy: false, valueColor: AppColors.primary, fontSize: 14),
-        (top: 235, label: 'Exchange Rate', value: '1 USDT ≈ 0.0000345 BTC', copy: false, valueColor: null, fontSize: 14),
-        (top: 282, label: 'Transaction ID', value: '0x3a4f...9c7d', copy: true, valueColor: null, fontSize: 14),
-      ]);
-    } else {
-      specs.addAll([
-        (top: 28.5, label: 'From', value: '0.0304800 BTC', copy: false, valueColor: null, fontSize: 14),
-        (top: 90.5, label: 'To', value: '₦731,540.00', copy: false, valueColor: null, fontSize: 14),
-        (top: 145, label: 'Asset', value: 'BTC', copy: false, valueColor: null, fontSize: 14),
-        (top: 239, label: 'Date', value: 'Sep 16, 2026, 14:26', copy: false, valueColor: null, fontSize: 14),
-        (top: 286, label: 'Network Fee', value: 'Free', copy: false, valueColor: AppColors.primary, fontSize: 14),
-        (top: 333, label: 'Exchange Rate', value: '1 USDT ≈ ₦1,540.00', copy: false, valueColor: null, fontSize: 14),
-        (top: 380, label: 'Total Received', value: '₦731,540.00', copy: false, valueColor: null, fontSize: 14),
-        (top: 427, label: 'Transaction ID', value: '0x3a4f...9c7d', copy: true, valueColor: null, fontSize: 14),
-      ]);
+    final internal = kind == TxKind.internal;
+    final left = internal ? 15.0 : 16.0;
+    final right = internal ? 15.0 : 14.0;
+    final children = <Widget>[];
+
+    void row(
+      double top,
+      String label,
+      String value, {
+      bool copy = false,
+      Color? valueColor,
+      double fontSize = 14,
+      int maxLines = 1,
+      double copyGap = 8,
+      Widget? valueLeading,
+    }) {
+      children.add(Positioned(
+        left: left,
+        right: right,
+        top: top,
+        child: _ExactTransactionRow(
+          label: label,
+          value: value,
+          copy: copy,
+          valueColor: valueColor,
+          fontSize: fontSize,
+          maxLines: maxLines,
+          copyGap: copyGap,
+          valueLeading: valueLeading,
+        ),
+      ));
     }
+
+    void rate(double top) {
+      children.add(Positioned(
+        left: left,
+        right: right,
+        top: top,
+        child: const _ExactRateRow(),
+      ));
+    }
+
+    if (kind == TxKind.internal) {
+      row(22, 'To', target);
+      row(71.5, 'Asset', 'Bitcoin (BTC)', valueLeading: const _TxBtc24());
+      row(121, 'Date', 'Sep 16, 2026, 14:26');
+      row(168, 'Network Fee', 'Free', valueColor: AppColors.primary);
+      row(215, 'Transaction ID', '0x3a4f...9c7d', copy: true);
+    } else if (kind == TxKind.external) {
+      row(24, 'To', _short(target), copy: true);
+      row(73.5, 'Asset', 'Bitcoin (BTC)', valueLeading: const _TxBtc24());
+      row(123, 'Date', 'Sep 16, 2026, 14:26');
+      row(170, 'Network Fee', 'Free', valueColor: AppColors.primary);
+      row(217, 'Transaction ID', '0x3a4f...9c7d', copy: true);
+      row(
+        264,
+        'Transaction Hash',
+        '7c0d217aca078b46197d9283d7b818311de96eae39deddfea593303815d04c35',
+        copy: true,
+        fontSize: 12,
+        maxLines: 3,
+        copyGap: 4,
+      );
+      children.add(const Positioned(left: 16, right: 14, top: 321, child: _BlockchainExplorerRow()));
+    } else if (kind == TxKind.conversion) {
+      children.addAll(const [
+        Positioned(left: 16, top: 24.5, child: _TxLabel('From')),
+        Positioned(left: 250, top: 22, width: 24, height: 24, child: _TxWrappedBtc24()),
+        Positioned(left: 282, top: 17, width: 63, height: 19, child: _TxValue('0.03048')),
+        Positioned(left: 282, top: 38.5, width: 12, height: 12, child: _ApproxMark()),
+        Positioned(left: 296, top: 38, width: 46, height: 13, child: _TxSecondary(r'$500.00')),
+        Positioned(left: 16, top: 86.5, child: _TxLabel('To')),
+        Positioned(left: 255, top: 84, width: 24, height: 24, child: _TxUsdt24()),
+        Positioned(left: 287, top: 79, width: 56, height: 19, child: _TxValue('500.00')),
+        Positioned(left: 287, top: 100.5, width: 12, height: 12, child: _ApproxMark()),
+        Positioned(left: 301, top: 100, width: 44, height: 13, child: _TxSecondary(r'$498.00')),
+      ]);
+      row(141, 'Date', 'Sep 16, 2026, 14:26');
+      row(188, 'Network Fee', 'Free', valueColor: AppColors.primary);
+      rate(235);
+      row(282, 'Transaction ID', '0x3a4f...9c7d', copy: true);
+      children.add(const Positioned(left: 16, right: 14, top: 329, child: _BlockchainExplorerRow()));
+    } else {
+      children.addAll(const [
+        Positioned(left: 16, top: 28.5, child: _TxLabel('From')),
+        Positioned(left: 220, top: 26, width: 24, height: 24, child: _TxWrappedBtc24()),
+        Positioned(left: 252, top: 21, width: 83, height: 19, child: _TxValue('0.0304800')),
+        Positioned(left: 252, top: 42.5, width: 12, height: 12, child: _ApproxMark()),
+        Positioned(left: 266, top: 42, width: 46, height: 13, child: _TxSecondary(r'$500.00')),
+        Positioned(left: 16, top: 90.5, child: _TxLabel('To')),
+        Positioned(left: 220, top: 88, width: 24, height: 24, child: _TxNigeria24()),
+        Positioned(left: 252, top: 83, width: 87, height: 19, child: _TxValue('₦731,540.00')),
+        Positioned(left: 252, top: 104, width: 90, height: 13, child: _TxSecondary('Nigerian Naira')),
+      ]);
+      row(145, 'Asset', 'BTC');
+      row(192, 'Amount', '0.0304800');
+      row(239, 'Date', 'Sep 16, 2026, 14:26');
+      row(286, 'Network Fee', 'Free', valueColor: AppColors.primary);
+      rate(333);
+      row(380, 'Total Received', '₦731,540.00');
+      row(427, 'Transaction ID', '0x3a4f...9c7d', copy: true);
+    }
+
     return Container(
       height: height,
       width: double.infinity,
       decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8)),
-      child: Stack(children: specs.map((e) => Positioned(left: 15, right: 15, top: e.top, child: _ExactTransactionRow(label: e.label, value: e.value, copy: e.copy, valueColor: e.valueColor, fontSize: e.fontSize))).toList()),
+      child: Stack(children: children),
     );
   }
 }
 
 class _ExactTransactionRow extends StatelessWidget {
-  const _ExactTransactionRow({required this.label, required this.value, this.copy = false, this.valueColor, this.fontSize = 14});
+  const _ExactTransactionRow({
+    required this.label,
+    required this.value,
+    this.copy = false,
+    this.valueColor,
+    this.fontSize = 14,
+    this.maxLines = 1,
+    this.copyGap = 8,
+    this.valueLeading,
+  });
   final String label, value;
   final bool copy;
   final Color? valueColor;
   final double fontSize;
+  final int maxLines;
+  final double copyGap;
+  final Widget? valueLeading;
+
   @override
   Widget build(BuildContext context) => Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Text(label, style: TextStyle(fontFamily: 'Sora', fontSize: fontSize, height: fontSize == 12 ? 1.25 : 1.35, color: const Color(0xFF686868))),
           const Spacer(),
-          Flexible(child: Text(value, textAlign: TextAlign.right, maxLines: 2, style: TextStyle(fontFamily: 'Sora', fontSize: fontSize, height: fontSize == 12 ? 1.25 : 1.35, color: valueColor ?? AppColors.ink))),
-          if (copy) ...[
+          if (valueLeading != null) ...[
+            SizedBox(
+              width: 24,
+              height: 19,
+              child: OverflowBox(
+                minHeight: 24,
+                maxHeight: 24,
+                alignment: Alignment.center,
+                child: Transform.translate(offset: const Offset(0, -2.5), child: valueLeading!),
+              ),
+            ),
             const SizedBox(width: 8),
-            GestureDetector(onTap: () => Clipboard.setData(ClipboardData(text: value)), child: Image.asset('$_exact/buy_copy.png', width: 16, height: 16)),
+          ],
+          Flexible(
+            child: Text(
+              value,
+              textAlign: TextAlign.right,
+              maxLines: maxLines,
+              overflow: TextOverflow.visible,
+              style: TextStyle(fontFamily: 'Sora', fontSize: fontSize, height: fontSize == 12 ? 1.25 : 1.35, color: valueColor ?? AppColors.ink),
+            ),
+          ),
+          if (copy) ...[
+            SizedBox(width: copyGap),
+            GestureDetector(onTap: () => Clipboard.setData(ClipboardData(text: value)), child: Image.asset('$_exact/tx_copy_16_exact.png', width: 16, height: 16)),
           ],
         ],
+      );
+}
+
+class _TxLabel extends StatelessWidget {
+  const _TxLabel(this.text);
+  final String text;
+  @override
+  Widget build(BuildContext context) => Text(text, style: const TextStyle(fontFamily: 'Sora', fontSize: 14, height: 1.35, color: Color(0xFF686868)));
+}
+
+class _TxValue extends StatelessWidget {
+  const _TxValue(this.text);
+  final String text;
+  @override
+  Widget build(BuildContext context) => Text(text, textAlign: TextAlign.right, style: const TextStyle(fontFamily: 'Sora', fontSize: 14, height: 1.35, color: AppColors.ink));
+}
+
+class _TxSecondary extends StatelessWidget {
+  const _TxSecondary(this.text);
+  final String text;
+  @override
+  Widget build(BuildContext context) => Text(text, textAlign: TextAlign.right, style: const TextStyle(fontFamily: 'Sora', fontSize: 10, height: 1.3, color: Color(0xFF686868)));
+}
+
+class _TxBtc24 extends StatelessWidget {
+  const _TxBtc24();
+  @override
+  Widget build(BuildContext context) => Image.asset('$_exact/tx_btc_24_exact.png', width: 24, height: 24, fit: BoxFit.contain);
+}
+
+class _TxWrappedBtc24 extends StatelessWidget {
+  const _TxWrappedBtc24();
+  @override
+  Widget build(BuildContext context) => Image.asset('$_exact/tx_wrapped_btc_24_exact.png', width: 24, height: 24, fit: BoxFit.contain);
+}
+
+class _TxUsdt24 extends StatelessWidget {
+  const _TxUsdt24();
+  @override
+  Widget build(BuildContext context) => Image.asset('$_exact/tx_usdt_24_exact.png', width: 24, height: 24, fit: BoxFit.contain);
+}
+
+class _TxNigeria24 extends StatelessWidget {
+  const _TxNigeria24();
+  @override
+  Widget build(BuildContext context) => Image.asset('$_exact/tx_nigeria_24_exact.png', width: 24, height: 24, fit: BoxFit.contain);
+}
+
+class _ApproxMark extends StatelessWidget {
+  const _ApproxMark();
+  @override
+  Widget build(BuildContext context) => Image.asset('$_exact/tx_approx_12_exact.png', width: 12, height: 12, fit: BoxFit.contain);
+}
+
+class _ExactRateRow extends StatelessWidget {
+  const _ExactRateRow();
+  @override
+  Widget build(BuildContext context) => const SizedBox(
+        height: 19,
+        child: Stack(
+          children: [
+            Positioned(left: 0, top: 0, child: _TxLabel('Exchange Rate')),
+            Positioned(left: 145, top: 0, width: 49, height: 19, child: Text('1 USDT', style: TextStyle(fontFamily: 'Sora', fontSize: 14, height: 1.35, color: AppColors.ink))),
+            Positioned(left: 198, top: 3.5, width: 12, height: 12, child: _ApproxMark()),
+            Positioned(left: 214, top: 0, width: 114, height: 19, child: Text('0.0000345 BTC', textAlign: TextAlign.right, style: TextStyle(fontFamily: 'Sora', fontSize: 14, height: 1.35, color: AppColors.ink))),
+          ],
+        ),
       );
 }
 
@@ -1735,64 +1943,104 @@ class _TransactionReceiptCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ext = kind == TxKind.external;
     final conv = kind == TxKind.conversion;
-    final specs = <({double top, String label, String value, bool copy, Color? color, double size})>[];
-    if (conv) {
-      specs.addAll([
-        (top: 86.5, label: 'From', value: '0.03048 BTC', copy: false, color: null, size: 14),
-        (top: 148.5, label: 'To', value: '500.00 USDT', copy: false, color: null, size: 14),
-        (top: 203, label: 'Date', value: 'Sep 16, 2026, 14:26', copy: false, color: null, size: 14),
-        (top: 250, label: 'Network Fee', value: 'Free', copy: false, color: AppColors.primary, size: 14),
-        (top: 297, label: 'Exchange Rate', value: '1 USDT ≈ 0.0000345 BTC', copy: false, color: null, size: 14),
-        (top: 344, label: 'Transaction ID', value: '0x3a4f...9c7d', copy: true, color: null, size: 14),
-      ]);
-    } else {
-      specs.addAll([
-        (top: 79, label: 'To', value: ext ? _short(target) : target, copy: false, color: null, size: 14),
-        (top: 128.5, label: 'Asset', value: 'Bitcoin (BTC)', copy: false, color: null, size: 14),
-        (top: 178, label: 'Date', value: 'Sep 16, 2026, 14:26', copy: false, color: null, size: 14),
-        (top: 225, label: 'Network Fee', value: ext ? '0.00002 BTC' : 'Free', copy: false, color: ext ? null : AppColors.primary, size: 14),
-        (top: 272, label: 'Transaction ID', value: '0x3a4f...9c7d', copy: true, color: null, size: 14),
-        if (ext) (top: 319, label: 'Transaction Hash', value: '7c0d217a...15d04c35', copy: true, color: null, size: 12),
-      ]);
+    final ext = kind == TxKind.external;
+    final children = <Widget>[
+      Positioned(left: 15, top: 27.5, width: 32, height: 32, child: Image.asset('$_exact/receipt_btc_32_exact.png', width: 32, height: 32, fit: BoxFit.contain)),
+      Positioned(left: 51, top: 24, child: Text(conv ? '0.0300 BTC' : '${amount.toStringAsFixed(4)} BTC', style: const TextStyle(fontFamily: 'Sora', fontSize: 16, fontWeight: FontWeight.w600, height: 1.35, color: AppColors.ink))),
+      const Positioned(left: 51, top: 48, child: Text(r'$500.00 USD', style: TextStyle(fontFamily: 'Sora', fontSize: 12, height: 1.25, color: Color(0xFF424242)))),
+      const Positioned(left: 261, top: 36, child: Text('Completed', style: TextStyle(fontFamily: 'Sora', fontSize: 12, fontWeight: FontWeight.w600, height: 1.25, color: Color(0xFF1BA44D)))),
+    ];
+
+    void row(
+      double top,
+      String label,
+      String value, {
+      bool copy = false,
+      Color? valueColor,
+      double fontSize = 14,
+      int maxLines = 1,
+      double copyGap = 8,
+      Widget? valueLeading,
+    }) {
+      children.add(Positioned(
+        left: 15,
+        right: 15,
+        top: top,
+        child: _ExactTransactionRow(
+          label: label,
+          value: value,
+          copy: copy,
+          valueColor: valueColor,
+          fontSize: fontSize,
+          maxLines: maxLines,
+          copyGap: copyGap,
+          valueLeading: valueLeading,
+        ),
+      ));
     }
-    final thanksTop = conv ? 437.0 : ext ? 410.0 : 321.0;
+
+    void rate(double top) {
+      children.add(Positioned(left: 15, right: 15, top: top, child: const _ExactRateRow()));
+    }
+
+    List<Widget> receiptThanks(double top) => [
+          Positioned(left: 85, top: top, width: 188, height: 15, child: const Text('Thank you for using Davochain', textAlign: TextAlign.center, style: TextStyle(fontFamily: 'Sora', fontSize: 12, fontWeight: FontWeight.w600, height: 1.25, color: Colors.black))),
+          Positioned(left: 113.5, top: top + 19, child: const Text('Build.', style: TextStyle(fontFamily: 'Sora', fontSize: 12, height: 1.25, color: Color(0xFF686868)))),
+          Positioned(left: 154.5, top: top + 19, child: const Text('Trade.', style: TextStyle(fontFamily: 'Sora', fontSize: 12, height: 1.25, color: Color(0xFF686868)))),
+          Positioned(left: 198.5, top: top + 19, child: const Text('Belong.', style: TextStyle(fontFamily: 'Sora', fontSize: 12, height: 1.25, color: Color(0xFF686868)))),
+        ];
+
+    if (conv) {
+      children.addAll(const [
+        Positioned(left: 15, top: 86.5, child: _TxLabel('From')),
+        Positioned(left: 249, top: 84, width: 24, height: 24, child: _TxWrappedBtc24()),
+        Positioned(left: 281, top: 79, width: 62, height: 19, child: _TxValue('0.03048')),
+        Positioned(left: 281, top: 100.5, width: 12, height: 12, child: _ApproxMark()),
+        Positioned(left: 295, top: 100, width: 46, height: 13, child: _TxSecondary(r'$500.00')),
+        Positioned(left: 15, top: 148.5, child: _TxLabel('To')),
+        Positioned(left: 254, top: 146, width: 24, height: 24, child: _TxUsdt24()),
+        Positioned(left: 286, top: 141, width: 55, height: 19, child: _TxValue('500.00')),
+        Positioned(left: 286, top: 162.5, width: 12, height: 12, child: _ApproxMark()),
+        Positioned(left: 300, top: 162, width: 44, height: 13, child: _TxSecondary(r'$498.00')),
+      ]);
+      row(203, 'Date', 'Sep 16, 2026, 14:26');
+      row(250, 'Network Fee', 'Free', valueColor: AppColors.primary);
+      rate(297);
+      row(344, 'Transaction ID', '0x3a4f...9c7d', copy: true);
+      children.add(const Positioned(left: 15, right: 15, top: 391, child: _BlockchainExplorerRow()));
+      children.addAll(receiptThanks(437));
+    } else if (ext) {
+      row(79, 'To', _short(target), copy: true);
+      row(128.5, 'Asset', 'Bitcoin (BTC)', valueLeading: const _TxBtc24());
+      row(178, 'Date', 'Sep 16, 2026, 14:26');
+      row(225, 'Network Fee', 'Free', valueColor: AppColors.primary);
+      row(272, 'Transaction ID', '0x3a4f...9c7d', copy: true);
+      row(
+        319,
+        'Transaction Hash',
+        '7c0d217aca078b46197d9283d7b818311de96eae39deddfea593303815d04c35',
+        copy: true,
+        fontSize: 12,
+        maxLines: 3,
+        copyGap: 4,
+      );
+      children.add(const Positioned(left: 15, right: 15, top: 376, child: _BlockchainExplorerRow()));
+      children.addAll(receiptThanks(410));
+    } else {
+      row(79, 'Username', target);
+      row(128.5, 'Asset', 'Bitcoin (BTC)', valueLeading: const _TxBtc24());
+      row(178, 'Date', 'Sep 16, 2026, 14:26');
+      row(225, 'Network Fee', 'Free', valueColor: AppColors.primary);
+      row(272, 'Transaction ID', '0x3a4f...9c7d', copy: true);
+      children.addAll(receiptThanks(321));
+    }
+
     return Container(
       height: height,
       width: double.infinity,
       decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8)),
-      child: Stack(
-        children: [
-          Positioned(
-            left: 15,
-            right: 15,
-            top: 24,
-            child: Row(
-              children: [
-                Image.asset('$_f/btc.png', width: 24, height: 24),
-                const SizedBox(width: 12),
-                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Text('${amount.toStringAsFixed(4)} BTC', style: const TextStyle(fontFamily: 'Sora', fontSize: 16, fontWeight: FontWeight.w600, height: 1.35, color: AppColors.ink)),
-                  const Text(r'$500.00 USD', style: TextStyle(fontFamily: 'Sora', fontSize: 12, height: 1.25, color: Color(0xFF424242))),
-                ]),
-                const Spacer(),
-                const Text('Completed', style: TextStyle(fontFamily: 'Sora', fontSize: 12, fontWeight: FontWeight.w600, height: 1.25, color: Color(0xFF1BA44D))),
-              ],
-            ),
-          ),
-          ...specs.map((e) => Positioned(left: 15, right: 15, top: e.top, child: _ExactTransactionRow(label: e.label, value: e.value, copy: e.copy, valueColor: e.color, fontSize: e.size))),
-          if (ext || conv)
-            Positioned(
-              left: 15,
-              right: 15,
-              top: conv ? 391 : 376,
-              child: const _BlockchainExplorerRow(),
-            ),
-          Positioned(left: 0, right: 0, top: thanksTop, child: const Text('Thank you for using Davochain', textAlign: TextAlign.center, style: TextStyle(fontFamily: 'Sora', fontSize: 12, fontWeight: FontWeight.w600, height: 1.25, color: Colors.black))),
-          Positioned(left: 0, right: 0, top: thanksTop + 19, child: const Text('Build.     Trade.     Belong.', textAlign: TextAlign.center, style: TextStyle(fontFamily: 'Sora', fontSize: 12, height: 1.25, color: Color(0xFF686868)))),
-        ],
-      ),
+      child: Stack(children: children),
     );
   }
 }
@@ -1803,16 +2051,11 @@ class _BlockchainExplorerRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) => SizedBox(
         height: 24,
-        child: Row(
+        child: Stack(
           children: [
-            const Text('View in Blockchain', style: TextStyle(fontFamily: 'Sora', fontSize: 12, height: 1.25, color: Color(0xFF686868))),
-            const Spacer(),
-            const Padding(
-              padding: EdgeInsets.only(top: 4.8),
-              child: Text('Blockchain Explorer', style: TextStyle(fontFamily: 'Sora', fontSize: 12, height: 1.25, color: Color(0xFF424242))),
-            ),
-            const SizedBox(width: 4),
-            Image.asset('$_exact/icon_link.png', width: 24, height: 24, fit: BoxFit.contain),
+            const Positioned(left: 0, top: 0, child: Text('View in Blockchain', style: TextStyle(fontFamily: 'Sora', fontSize: 12, height: 1.25, color: Color(0xFF686868)))),
+            const Positioned(left: 168, top: 4.8, width: 121, height: 15, child: Text('Blockchain Explorer', style: TextStyle(fontFamily: 'Sora', fontSize: 12, height: 1.25, color: Color(0xFF424242)))),
+            Positioned(left: 303.4, top: 0, width: 24, height: 24, child: Image.asset('$_exact/tx_link_24_exact.png', width: 24, height: 24, fit: BoxFit.contain)),
           ],
         ),
       );
@@ -2012,8 +2255,8 @@ class SelectNetworkSheet extends StatelessWidget {
                 ),
               ),
             ),
-            Positioned(left: 23, right: 118, top: 163, child: _ExactNetworkRow(asset: '$_f/btc.png', title: 'Bitcoin (BTC)', eta: '10m 14s', fee: '0.00002 BTC', usd: r'($1.57)', onTap: () => Navigator.pop(context, 'Bitcoin (BTC)'))),
-            Positioned(left: 23, right: 118, top: 250, child: _ExactNetworkRow(asset: '$_exact/crypto_bnb_exact.png', title: 'BNB Smart Chain (BEP20)', eta: '2m 2s', fee: '0.00000025 BTC', usd: r'($0.019)', onTap: () => Navigator.pop(context, 'BNB Smart Chain (BEP20)'))),
+            Positioned(left: 23, right: 118, top: 163, child: _ExactNetworkRow(asset: '$_f/btc.png', title: 'Bitcoin (BTC)', eta: '10m 14s', fee: '0.00002 BTC', usd: r'(\$1.57)', onTap: () => Navigator.pop(context, 'Bitcoin (BTC)'))),
+            Positioned(left: 23, right: 118, top: 250, child: _ExactNetworkRow(asset: '$_exact/crypto_bnb_exact.png', title: 'BNB Smart Chain (BEP20)', eta: '2m 2s', fee: '0.00000025 BTC', usd: r'(\$0.019)', onTap: () => Navigator.pop(context, 'BNB Smart Chain (BEP20)'))),
           ],
         ),
       );
@@ -2142,8 +2385,8 @@ class _TradeAmountScreenState extends State<TradeAmountScreen> {
         Positioned(left: 16, right: 16, top: 80, height: 55, child: _Tabs(active: 2, onBuy: () => Navigator.pop(context), onSell: () => Navigator.pushReplacement(context, AppPageRoute<void>(builder: (_) => const TradeAmountScreen(mode: TradeMode.sell, asset: BuyCryptoAsset.bitcoin))), onConvert: () {})),
         Positioned(left: 16, right: 16, top: 158, height: 55, child: _SwapTopAmount(active: active, amount: n)),
         Positioned(left: 16, right: 16, top: 237, height: 93, child: _ExactSwapBox(from: true, active: active, controller: amount, onChanged: () => setState(() {}))),
-        Positioned(left: 175, top: 315, width: 40, height: 40, child: Container(alignment: Alignment.center, decoration: const BoxDecoration(color: Color(0xFFF4F7FF), shape: BoxShape.circle), child: Image.asset('$_cf/swap.png', width: 24, height: 24))),
         Positioned(left: 16, right: 16, top: 338, height: 93, child: _ExactSwapBox(from: false, active: active)),
+        Positioned(left: 0, right: 0, top: 315, height: 40, child: Center(child: Container(width: 40, alignment: Alignment.center, decoration: const BoxDecoration(color: Color(0xFFF4F7FF), shape: BoxShape.circle), child: Image.asset('$_cf/swap.png', width: 24, height: 24)))),
         const Positioned(left: 16, top: 447, height: 15, child: Text('Fee: 0', style: TextStyle(fontFamily: 'Sora', fontSize: 12, height: 1.25, color: AppColors.bodyMuted))),
         Positioned(left: 16, right: 16, top: 478, height: 25, child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: ['10%', '25%', '50%', '75%', 'Max'].map((v) => _Percent(label: v, onTap: () { amount.text = '.03048'; setState(() {}); })).toList())),
         Positioned(left: 16, right: 16, top: 676, height: 48, child: _Button(label: 'Preview', enabled: active, onTap: () => Navigator.push(context, AppPageRoute<void>(builder: (_) => TradeReviewScreen(kind: TxKind.conversion, amount: n == 0 ? .03048 : n))))),
@@ -2259,7 +2502,7 @@ class _ExactSwapBox extends StatelessWidget {
                   onChanged: (_) => onChanged?.call(),
                   keyboardType: const TextInputType.numberWithOptions(decimal: true),
                   textAlign: TextAlign.right,
-                  decoration: const InputDecoration.collapsed(hintText: '0.00', hintStyle: TextStyle(fontFamily: 'Sora', fontSize: 14, color: AppColors.body)),
+                  decoration: const DavoInlineInputDecoration(hintText: '0.00', hintStyle: TextStyle(fontFamily: 'Sora', fontSize: 14, color: AppColors.body)),
                   style: const TextStyle(fontFamily: 'Sora', fontSize: 14, height: 1.35, color: AppColors.body),
                 ),
               )
@@ -2423,7 +2666,7 @@ class DepositStatusScreen extends StatelessWidget {
                             width: 338,
                             height: 26,
                             child: Text(
-                              'Crypto has arrived in your davopay account. View your wallet account balance for more details',
+                              'Crypto has arrived in your Davochain account. View your wallet account balance for more details',
                               textAlign: TextAlign.center,
                               style: TextStyle(fontFamily: 'Sora', fontSize: 10, fontWeight: FontWeight.w400, height: 1.3, color: Color(0xFF686868)),
                             ),
@@ -2553,9 +2796,7 @@ class _TopBar extends StatelessWidget {
     this.height = 40,
     this.fontSize = 16,
     this.fontWeight = FontWeight.w500,
-    this.backSize = 24,
-    this.backShift = -14,
-  });
+  }) : backSize = 24, backShift = -14;
   final String title;
   final VoidCallback onBack;
   final double height, fontSize, backSize, backShift;
@@ -2584,66 +2825,6 @@ class _AssetButton extends StatelessWidget {
         onTap: () { HapticFeedback.selectionClick(); onTap(); },
         radius: 24,
         child: SizedBox(width: 36, height: 36, child: Center(child: Image.asset(asset, width: size, height: size))),
-      );
-}
-
-class _Sheet extends StatelessWidget {
-  const _Sheet({required this.title, required this.height, required this.child});
-  final String title;
-  final double height;
-  final Widget child;
-  @override
-  Widget build(BuildContext context) => Container(
-        height: height,
-        decoration: const BoxDecoration(color: Color(0xFFF8F9FB), borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-          child: Column(
-            children: [
-              Container(width: 85, height: 4, decoration: BoxDecoration(color: const Color(0xFF686868), borderRadius: BorderRadius.circular(100))),
-              const SizedBox(height: 10),
-              SizedBox(
-                height: 38,
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    Padding(padding: const EdgeInsets.symmetric(horizontal: 40), child: Text(title, textAlign: TextAlign.center, style: const TextStyle(fontFamily: 'Sora', fontSize: 14, color: AppColors.ink))),
-                    Align(alignment: Alignment.centerRight, child: _AssetButton(asset: '$_f/buy_close.png', size: 24, onTap: () => Navigator.pop(context))),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 8),
-              Expanded(child: child),
-            ],
-          ),
-        ),
-      );
-}
-
-class _SheetRow extends StatelessWidget {
-  const _SheetRow({this.leading, this.asset, required this.title, this.subtitle, this.trailing, this.bold = false, required this.onTap});
-  final Widget? leading;
-  final String? asset;
-  final String title;
-  final String? subtitle;
-  final Widget? trailing;
-  final bool bold;
-  final VoidCallback onTap;
-  @override
-  Widget build(BuildContext context) => InkWell(
-        onTap: () { HapticFeedback.selectionClick(); onTap(); },
-        child: Container(
-          height: 63,
-          decoration: const BoxDecoration(border: Border(bottom: BorderSide(color: Color(0xFFEBEDF3), width: .4))),
-          child: Row(
-            children: [
-              leading ?? Image.asset(asset!, width: 32, height: 32, fit: BoxFit.contain),
-              const SizedBox(width: 12),
-              Expanded(child: Column(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.start, children: [Text(title, style: TextStyle(fontFamily: 'Sora', fontSize: 14, fontWeight: bold ? FontWeight.w600 : FontWeight.w400, color: AppColors.ink)), if (subtitle != null) ...[const SizedBox(height: 2), Text(subtitle!, style: const TextStyle(fontFamily: 'Sora', fontSize: 12, color: AppColors.body))]])),
-              if (trailing != null) trailing!,
-            ],
-          ),
-        ),
       );
 }
 
@@ -2681,40 +2862,7 @@ class _Secondary extends StatelessWidget {
       );
 }
 
-class _Field extends StatelessWidget {
-  const _Field({required this.label, required this.child, this.trailing, this.onTap});
-  final String label;
-  final Widget child;
-  final Widget? trailing;
-  final VoidCallback? onTap;
-  @override
-  Widget build(BuildContext context) => Material(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(4),
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(4),
-          child: Container(
-            width: double.infinity,
-            constraints: const BoxConstraints(minHeight: 74),
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-            decoration: BoxDecoration(border: Border.all(color: AppColors.mutedSoft), borderRadius: BorderRadius.circular(4)),
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(label, style: const TextStyle(fontFamily: 'Sora', fontSize: 14, color: AppColors.body)), const SizedBox(height: 8), Row(children: [Expanded(child: child), if (trailing != null) trailing!])]),
-          ),
-        ),
-      );
-}
-
-class _ValueField extends StatelessWidget {
-  const _ValueField({required this.label, required this.value, this.muted = false, this.onTap});
-  final String label, value;
-  final bool muted;
-  final VoidCallback? onTap;
-  @override
-  Widget build(BuildContext context) => _Field(label: label, onTap: onTap, trailing: onTap != null ? Image.asset('$_cf/chevron_right.png', width: 16) : null, child: Text(value, style: TextStyle(fontFamily: 'Sora', fontSize: 14, color: muted ? AppColors.muted : AppColors.ink)));
-}
-
-class _Row extends StatelessWidget{const _Row({required this.label,required this.value,this.valueColor,this.copy=false,this.last=false});final String label,value;final Color? valueColor;final bool copy,last;@override Widget build(BuildContext context)=>Container(constraints:const BoxConstraints(minHeight:47),decoration:last?null:const BoxDecoration(border:Border(bottom:BorderSide(color:Color(0xFFF2F2F2),width:.6))),child:Row(children:[Text(label,style:const TextStyle(fontFamily:'Sora',fontSize:14,color:AppColors.bodyMuted)),const Spacer(),Flexible(child:Text(value,textAlign:TextAlign.right,style:TextStyle(fontFamily:'Sora',fontSize:14,color:valueColor??AppColors.ink))),if(copy)...[const SizedBox(width:8),GestureDetector(onTap:()=>Clipboard.setData(ClipboardData(text:value)),child:Image.asset('$_f/buy_copy.png',width:16,height:16))]]));}
+class _Row extends StatelessWidget{const _Row({required this.label,required this.value,this.valueColor,this.last=false}) : copy = false;final String label,value;final Color? valueColor;final bool copy,last;@override Widget build(BuildContext context)=>Container(constraints:const BoxConstraints(minHeight:47),decoration:last?null:const BoxDecoration(border:Border(bottom:BorderSide(color:Color(0xFFF2F2F2),width:.6))),child:Row(children:[Text(label,style:const TextStyle(fontFamily:'Sora',fontSize:14,color:AppColors.bodyMuted)),const Spacer(),Flexible(child:Text(value,textAlign:TextAlign.right,style:TextStyle(fontFamily:'Sora',fontSize:14,color:valueColor??AppColors.ink))),if(copy)...[const SizedBox(width:8),GestureDetector(onTap:()=>Clipboard.setData(ClipboardData(text:value)),child:Image.asset('$_f/buy_copy.png',width:16,height:16))]]));}
 class _Summary extends StatelessWidget{const _Summary({required this.children});final List<Widget> children;@override Widget build(BuildContext context)=>Container(width:double.infinity,padding:const EdgeInsets.symmetric(horizontal:16,vertical:10),decoration:BoxDecoration(color:Colors.white,borderRadius:BorderRadius.circular(8)),child:Column(children:children));}
 class _Choice extends StatelessWidget {
   const _Choice({required this.asset, required this.title, required this.subtitle, required this.onTap});
@@ -2769,7 +2917,7 @@ class _DashboardHeader extends StatelessWidget {
               width: 89,
               height: 32,
               child: Container(
-                decoration: BoxDecoration(color: AppColors.primaryDisabled.withOpacity(.5), borderRadius: BorderRadius.circular(1000)),
+                decoration: BoxDecoration(color: AppColors.primaryDisabled.withValues(alpha: .5), borderRadius: BorderRadius.circular(1000)),
                 child: Stack(
                   children: [
                     Positioned(left: 8, top: 4, width: 24, height: 24, child: Image.asset('$_exact/naira_earn_gift_exact.png', width: 24, height: 24, fit: BoxFit.contain)),
@@ -2784,7 +2932,7 @@ class _DashboardHeader extends StatelessWidget {
               width: 32,
               height: 32,
               child: Container(
-                decoration: BoxDecoration(color: AppColors.primaryDisabled.withOpacity(.5), borderRadius: BorderRadius.circular(1000)),
+                decoration: BoxDecoration(color: AppColors.primaryDisabled.withValues(alpha: .5), borderRadius: BorderRadius.circular(1000)),
                 alignment: Alignment.center,
                 child: Image.asset('$_exact/icon_notifications.png', width: 24, height: 24, fit: BoxFit.contain),
               ),
@@ -2847,8 +2995,6 @@ class _CryptoBalance extends StatelessWidget {
       );
 }
 
-class _Network extends StatelessWidget{const _Network({required this.title,required this.eta,required this.fee,required this.onTap});final String title,eta,fee;final VoidCallback onTap;@override Widget build(BuildContext context)=>InkWell(onTap:onTap,child:Container(padding:const EdgeInsets.symmetric(vertical:14),decoration:const BoxDecoration(border:Border(bottom:BorderSide(color:AppColors.mutedSoft,width:.5))),child:Row(children:[Image.asset('$_f/btc.png',width:36,height:36),const SizedBox(width:12),Expanded(child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Text(title,style:const TextStyle(fontFamily:'Sora',fontSize:12,fontWeight:FontWeight.w600)),Text('Expected Arrival  $eta',style:const TextStyle(fontFamily:'Sora',fontSize:9,color:AppColors.bodyMuted)),Text('Fee: $fee',style:const TextStyle(fontFamily:'Sora',fontSize:9,color:AppColors.bodyMuted))]))])));}
-class _Segment extends StatelessWidget{const _Segment({required this.label,required this.active,required this.onTap});final String label;final bool active;final VoidCallback onTap;@override Widget build(BuildContext context)=>Material(color:active?AppColors.primary:const Color(0xFFEAF0FB),borderRadius:BorderRadius.circular(4),child:InkWell(onTap:onTap,child:SizedBox(height:42,child:Center(child:Text(label,style:TextStyle(fontFamily:'Sora',fontSize:12,fontWeight:FontWeight.w600,color:active?Colors.white:AppColors.primary))))));}
 class _Tabs extends StatelessWidget {
   const _Tabs({required this.active, required this.onBuy, required this.onSell, required this.onConvert});
   final int active;
@@ -2934,7 +3080,7 @@ class _Amount extends StatelessWidget {
                   controller: controller,
                   keyboardType: const TextInputType.numberWithOptions(decimal: true),
                   onChanged: (_) => onChanged(),
-                  decoration: const InputDecoration.collapsed(hintText: '0.00', hintStyle: TextStyle(fontFamily: 'Sora', fontSize: 20, fontWeight: FontWeight.w600, color: AppColors.ink)),
+                  decoration: const DavoInlineInputDecoration(hintText: '0.00', hintStyle: TextStyle(fontFamily: 'Sora', fontSize: 20, fontWeight: FontWeight.w600, color: AppColors.ink)),
                   textAlign: TextAlign.center,
                   style: const TextStyle(fontFamily: 'Sora', fontSize: 20, fontWeight: FontWeight.w600, height: 1.35, color: AppColors.ink),
                 ),
@@ -2945,8 +3091,6 @@ class _Amount extends StatelessWidget {
         ),
       );
 }
-class _SwapEntry extends StatelessWidget{const _SwapEntry({required this.label,required this.asset,required this.controller,required this.onChanged});final String label;final BuyCryptoAsset asset;final TextEditingController controller;final VoidCallback onChanged;@override Widget build(BuildContext context)=>Container(padding:const EdgeInsets.all(14),decoration:BoxDecoration(color:Colors.white,borderRadius:BorderRadius.circular(8)),child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Text(label,style:const TextStyle(fontFamily:'Sora',fontSize:12,color:AppColors.bodyMuted)),const SizedBox(height:10),Row(children:[Image.asset(_asset(asset),width:24,height:24),const SizedBox(width:8),Text(asset.symbol,style:const TextStyle(fontFamily:'Sora',fontSize:14,fontWeight:FontWeight.w600)),const Spacer(),SizedBox(width:120,child:TextField(controller:controller,onChanged:(_)=>onChanged(),keyboardType:const TextInputType.numberWithOptions(decimal:true),textAlign:TextAlign.right,decoration:const InputDecoration.collapsed(hintText:'0.00'),style:const TextStyle(fontFamily:'Sora',fontSize:16,fontWeight:FontWeight.w600)))]) ]));}
-class _SwapReceive extends StatelessWidget{const _SwapReceive({required this.active});final bool active;@override Widget build(BuildContext context)=>Container(padding:const EdgeInsets.all(14),decoration:BoxDecoration(color:Colors.white,borderRadius:BorderRadius.circular(8)),child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[const Text('To',style:TextStyle(fontFamily:'Sora',fontSize:12,color:AppColors.bodyMuted)),const SizedBox(height:10),Row(children:[Image.asset('$_f/usdt.png',width:24,height:24),const SizedBox(width:8),const Text('USDT',style:TextStyle(fontFamily:'Sora',fontSize:14,fontWeight:FontWeight.w600)),const Spacer(),Text(active?'500.00':'0.00',style:const TextStyle(fontFamily:'Sora',fontSize:16,fontWeight:FontWeight.w600))]) ]));}
 class _Percent extends StatelessWidget{const _Percent({required this.label,required this.onTap});final String label;final VoidCallback onTap;@override Widget build(BuildContext context)=>InkWell(onTap:onTap,child:Container(width:46,height:25,alignment:Alignment.center,decoration:BoxDecoration(border:Border.all(color:const Color(0xFFEEF0F5)),borderRadius:BorderRadius.circular(4)),child:Text(label,style:TextStyle(fontFamily:'Sora',fontSize:12,color:label=='Max'?AppColors.primary:AppColors.body))));}
 class _Pair extends StatelessWidget {
   const _Pair({

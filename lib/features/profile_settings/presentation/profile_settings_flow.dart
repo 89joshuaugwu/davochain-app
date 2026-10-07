@@ -3,13 +3,13 @@ import 'package:flutter/services.dart';
 
 import '../../../core/navigation/app_page_route.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../shared/widgets/inline_input_decoration.dart';
 
 const _avatar = 'assets/figma_exact/profile_avatar_exact.png';
 const _notificationEmpty = 'assets/figma_exact/notification_empty_exact.gif';
 const _supportLogo = 'assets/figma_exact/support_brand_exact.png';
 const _profileIcons = 'assets/figma_exact';
 const _kycAssets = 'assets/figma_exact';
-const _supportAssets = 'assets/figma_exact';
 const _exactAssets = 'assets/figma_exact';
 const _rankPortrait = 'assets/figma_exact/leaderboard_row_portrait_exact.png';
 
@@ -156,11 +156,11 @@ class KycOverviewScreen extends StatelessWidget {
     const SizedBox(height:24),
     const Text('Identity Verification',style:_t20),const SizedBox(height:6),
     const Text('To continue, click on any incomplete stage and complete the remaining steps.',style:_t12),const SizedBox(height:28),
-    _StatusRow('Identity verification','Not verified',false,()=>_push(context,const KycMethodScreen())),
-    _StatusRow('Address verification','Not verified',false,()=>_push(context,const AddressUpgradeScreen())),
-    _StatusRow('Phone Verification','Verified',true,null),
-    _StatusRow('Email verification','Verified',true,null),
-    _StatusRow('Profile information','Completed',true,null),
+    _statusRow('Identity verification','Not verified',false,()=>_push(context,const KycMethodScreen())),
+    _statusRow('Address verification','Not verified',false,()=>_push(context,const AddressUpgradeScreen())),
+    _statusRow('Phone Verification','Verified',true,null),
+    _statusRow('Email verification','Verified',true,null),
+    _statusRow('Profile information','Completed',true,null),
   ]));
 }
 
@@ -178,9 +178,9 @@ class KycMethodScreen extends StatelessWidget {
 class GovernmentIdScreen extends StatefulWidget { const GovernmentIdScreen({super.key}); @override State<GovernmentIdScreen> createState()=>_GovernmentIdScreenState(); }
 class _GovernmentIdScreenState extends State<GovernmentIdScreen>{ int selected=0; @override Widget build(BuildContext context)=>_Shell(title:'KYC Verification',titleStyle:_navInter20,child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[
   const SizedBox(height:24),const Text('Upload a valid government ID to ensure the safety and security of the Errandy community.',style:_t14),const SizedBox(height:28),
-  _IdTile('$_kycAssets/national_id.png','National ID','Tap to upload front & back',selected==0,(){setState(()=>selected=0);_uploadSheet(context,'Upload ID');}),
-  _IdTile('$_kycAssets/passport.png','Passport','Scan biometric page',selected==1,(){setState(()=>selected=1);_uploadSheet(context,'Upload ID');}),
-  _IdTile('$_kycAssets/driver.png',"Driver's License",'Scan current license',selected==2,(){setState(()=>selected=2);_uploadSheet(context,'Upload ID');}),
+  _idTile('$_kycAssets/national_id.png','National ID','Tap to upload front & back',selected==0,(){setState(()=>selected=0);_uploadSheet(context,'Upload ID');}),
+  _idTile('$_kycAssets/passport.png','Passport','Scan biometric page',selected==1,(){setState(()=>selected=1);_uploadSheet(context,'Upload ID');}),
+  _idTile('$_kycAssets/driver.png',"Driver's License",'Scan current license',selected==2,(){setState(()=>selected=2);_uploadSheet(context,'Upload ID');}),
 ])); }
 
 class SelfieScreen extends StatelessWidget { const SelfieScreen({super.key}); @override Widget build(BuildContext context)=>_Shell(title:'KYC Verification',titleStyle:_navInter20,child:Column(children:[
@@ -201,22 +201,22 @@ class _FaceDetectionScreenState extends State<FaceDetectionScreen> with SingleTi
 
 class TransactionLimitsScreen extends StatelessWidget { const TransactionLimitsScreen({super.key}); @override Widget build(BuildContext context)=>_Shell(title:'Transaction Limits',child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[
  const SizedBox(height:24),const Text('Choose an account to view transaction limits',style:_t16b),const SizedBox(height:4),const Text('Limits may vary based on account type and verification level',style:_t12),const SizedBox(height:24),
- _AccountLimitTile(flag:'🇺🇸',title:'US Currency',subtitle:'USD Account Limits',onTap:()=>_push(context,const LimitDetailScreen(kind:_LimitKind.usd))),
- const SizedBox(height:12),_AccountLimitTile(flag:'🇳🇬',title:'Nigeria Currency (NG)',subtitle:'NGN Account Limits',onTap:()=>_push(context,const LimitDetailScreen(kind:_LimitKind.ngn))),
- const SizedBox(height:12),_AccountLimitTile(flag:'₿',title:'Crypto Currency',subtitle:'Manage Crypto currency Limits',onTap:()=>_push(context,const LimitDetailScreen(kind:_LimitKind.crypto))),
+ _AccountLimitTile(flag:'🇺🇸',title:'US Currency',subtitle:'USD Account Limits',onTap:()=>_push(context,const _LimitDetailScreen(kind:_LimitKind.usd))),
+ const SizedBox(height:12),_AccountLimitTile(flag:'🇳🇬',title:'Nigeria Currency (NG)',subtitle:'NGN Account Limits',onTap:()=>_push(context,const _LimitDetailScreen(kind:_LimitKind.ngn))),
+ const SizedBox(height:12),_AccountLimitTile(flag:'₿',title:'Crypto Currency',subtitle:'Manage Crypto currency Limits',onTap:()=>_push(context,const _LimitDetailScreen(kind:_LimitKind.crypto))),
 ])); }
 
 enum _LimitKind{usd,ngn,crypto}
-class LimitDetailScreen extends StatefulWidget{ const LimitDetailScreen({super.key,required this.kind}); final _LimitKind kind; @override State<LimitDetailScreen> createState()=>_LimitDetailScreenState(); }
-class _LimitDetailScreenState extends State<LimitDetailScreen>{bool second=false; @override Widget build(BuildContext context){final isUsd=widget.kind==_LimitKind.usd,isNgn=widget.kind==_LimitKind.ngn; final title=isUsd?'USD Limits':isNgn?'NGN Limits':'Crypto Currency'; final single=isUsd?'\$2,500.00':isNgn?'₦1,000,000.00':'\$1,000,000.00'; final daily=isUsd?'\$2,500.00':isNgn?'₦3,000,000.00':'\$3,000,000.00'; final weekly=isUsd?'\$10,500.00':isNgn?'₦5,000,000.00':'\$5,000,000.00'; final monthly=isUsd?'\$50,000.00':isNgn?'₦40,000,000.00':'\$40,000,000.00'; return _Shell(title:'Transaction Limits',child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[
- const SizedBox(height:22),Row(children:[Text(widget.kind==_LimitKind.ngn?'🇳🇬':widget.kind==_LimitKind.usd?'🇺🇸':'₿',style:const TextStyle(fontSize:28)),const SizedBox(width:10),Text(title,style:_t16b),const SizedBox(width:10),_Pill('Tier 1')]),const SizedBox(height:20),
+class _LimitDetailScreen extends StatefulWidget{ const _LimitDetailScreen({required this.kind}); final _LimitKind kind; @override State<_LimitDetailScreen> createState()=>_LimitDetailScreenState(); }
+class _LimitDetailScreenState extends State<_LimitDetailScreen>{bool second=false; @override Widget build(BuildContext context){final isUsd=widget.kind==_LimitKind.usd,isNgn=widget.kind==_LimitKind.ngn; final title=isUsd?'USD Limits':isNgn?'NGN Limits':'Crypto Currency'; final single=isUsd?'\$2,500.00':isNgn?'₦1,000,000.00':'\$1,000,000.00'; final daily=isUsd?'\$2,500.00':isNgn?'₦3,000,000.00':'\$3,000,000.00'; final weekly=isUsd?'\$10,500.00':isNgn?'₦5,000,000.00':'\$5,000,000.00'; final monthly=isUsd?'\$50,000.00':isNgn?'₦40,000,000.00':'\$40,000,000.00'; return _Shell(title:'Transaction Limits',child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[
+ const SizedBox(height:22),Row(children:[Text(widget.kind==_LimitKind.ngn?'🇳🇬':widget.kind==_LimitKind.usd?'🇺🇸':'₿',style:const TextStyle(fontSize:28)),const SizedBox(width:10),Text(title,style:_t16b),const SizedBox(width:10),const _Pill('Tier 1')]),const SizedBox(height:20),
  _Segment(left:widget.kind==_LimitKind.crypto?'Limits on Withdrawal':'Limits on Send',right:widget.kind==_LimitKind.crypto?'Limits on Deposit':'Limits on receive',rightSelected:second,onChanged:(v)=>setState(()=>second=v)),const SizedBox(height:24),
- _LimitBanner('Single Transaction Limits of $single'),const SizedBox(height:18),_ProgressLimit('Daily Limit of $daily',daily),const SizedBox(height:16),_ProgressLimit('Weekly Limit of $weekly',weekly),const SizedBox(height:16),_ProgressLimit('Monthly Limit of $monthly',monthly),
+ _limitBanner('Single Transaction Limits of $single'),const SizedBox(height:18),_ProgressLimit('Daily Limit of $daily',daily),const SizedBox(height:16),_ProgressLimit('Weekly Limit of $weekly',weekly),const SizedBox(height:16),_ProgressLimit('Monthly Limit of $monthly',monthly),
  const Spacer(),_PrimaryButton('Increase Transfer Limits',onTap:()=>_push(context,const IncreaseLimitsScreen())),const SizedBox(height:28)
 ]));}}
 
 class IncreaseLimitsScreen extends StatelessWidget {const IncreaseLimitsScreen({super.key});@override Widget build(BuildContext context)=>_Shell(title:'Transaction Limits',child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[const SizedBox(height:20),const Text('Increase Transfer Limits',style:_t20),const SizedBox(height:4),const Text('Complete the sections below to unlock higher account limits. Approval typically takes 2–3 days.',style:_t12),const SizedBox(height:28),_ActionCard('$_exactAssets/profile_location_exact.png','Verify Address','Face to face verification at your address',()=>_push(context,const AddressUpgradeScreen())),const SizedBox(height:14),_ActionCard('$_exactAssets/profile_document_exact.png','Proof of Address','Upload electricity bill, water bill',()=>_push(context,const AddressUpgradeScreen()))]));}
-class AddressUpgradeScreen extends StatelessWidget{const AddressUpgradeScreen({super.key});@override Widget build(BuildContext context)=>_Shell(title:'Transaction Limits',scroll:true,child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[const SizedBox(height:18),const Text('Confirm Your Address',style:_t20),const SizedBox(height:18),const _Bullet('Your document should be dated within the last 3 months and clearly show your name and address'),const _Bullet('Take a clear, full photo of your document, no cropped edges or blurry shots'),const _Bullet('Upload it as-is — no edits, filters, or photos taken from a screen'),const SizedBox(height:24),_DocOption('Utility Bill','Dated within the last 3 months'),_DocOption('Bank Statement','From a different bank, showing your current address, dated within the last 6 months'),_DocOption('Tenancy Agreement','Renting? Upload your tenancy agreement along with a utility bill from your landlord confirming your address'),const SizedBox(height:28),_PrimaryButton('Choose document to upload',onTap:()=>_uploadSheet(context,'Upload ID')),const SizedBox(height:24)]));}
+class AddressUpgradeScreen extends StatelessWidget{const AddressUpgradeScreen({super.key});@override Widget build(BuildContext context)=>_Shell(title:'Transaction Limits',scroll:true,child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[const SizedBox(height:18),const Text('Confirm Your Address',style:_t20),const SizedBox(height:18),const _Bullet('Your document should be dated within the last 3 months and clearly show your name and address'),const _Bullet('Take a clear, full photo of your document, no cropped edges or blurry shots'),const _Bullet('Upload it as-is — no edits, filters, or photos taken from a screen'),const SizedBox(height:24),_docOption('Utility Bill','Dated within the last 3 months'),_docOption('Bank Statement','From a different bank, showing your current address, dated within the last 6 months'),_docOption('Tenancy Agreement','Renting? Upload your tenancy agreement along with a utility bill from your landlord confirming your address'),const SizedBox(height:28),_PrimaryButton('Choose document to upload',onTap:()=>_uploadSheet(context,'Upload ID')),const SizedBox(height:24)]));}
 
 class ChangePasswordScreen extends StatefulWidget{const ChangePasswordScreen({super.key});@override State<ChangePasswordScreen> createState()=>_ChangePasswordScreenState();}
 class _ChangePasswordScreenState extends State<ChangePasswordScreen>{final old=TextEditingController(),n=TextEditingController(),c=TextEditingController();@override Widget build(BuildContext context)=>_Shell(title:'Change Password',child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[const SizedBox(height:28),const Text('Change your password',style:_t20),const SizedBox(height:24),_Input(label:'Old Password',hint:'Enter your old password',controller:old,obscure:true),const SizedBox(height:16),_Input(label:'New Password',hint:'Enter password',controller:n,obscure:true),const SizedBox(height:16),_Input(label:'Confirm Password',hint:'Confirm password',controller:c,obscure:true),const Spacer(),_PrimaryButton('Change your password',onTap:()=>_snack(context,'Password updated')),const SizedBox(height:28)]));}
@@ -349,9 +349,9 @@ class NotificationSettingsScreen extends StatelessWidget {
             const SizedBox(height: 17),
             const Text('Alert Preferences', style: _t16b),
             const SizedBox(height: 24),
-            _SettingsAssetRow('$_exactAssets/icon_transaction.png', 'Transaction Alerts', '', () => _push(context, const NotificationChannelScreen(type: 0))),
-            _SettingsAssetRow('$_exactAssets/icon_security.png', 'Security Alerts', '', () => _push(context, const NotificationChannelScreen(type: 1))),
-            _SettingsAssetRow('$_exactAssets/icon_campaign.png', 'Marketing & News', '', () => _push(context, const NotificationChannelScreen(type: 2))),
+            _settingsAssetRow('$_exactAssets/icon_transaction.png', 'Transaction Alerts', '', () => _push(context, const NotificationChannelScreen(type: 0))),
+            _settingsAssetRow('$_exactAssets/icon_security.png', 'Security Alerts', '', () => _push(context, const NotificationChannelScreen(type: 1))),
+            _settingsAssetRow('$_exactAssets/icon_campaign.png', 'Marketing & News', '', () => _push(context, const NotificationChannelScreen(type: 2))),
           ],
         ),
       );
@@ -388,9 +388,9 @@ class _NotificationChannelScreenState extends State<NotificationChannelScreen> {
           const SizedBox(height: 17),
           Text(title, style: _t16b),
           const SizedBox(height: 26),
-          _ToggleRow('Push Notification', pushSub, push, (v) => setState(() => push = v)),
-          _ToggleRow('Email', emailSub, email, (v) => setState(() => email = v)),
-          if (widget.type == 0) _ToggleRow('SMS', 'Standard Rates Apply', sms, (v) => setState(() => sms = v)),
+          _toggleRow('Push Notification', pushSub, push, (v) => setState(() => push = v)),
+          _toggleRow('Email', emailSub, email, (v) => setState(() => email = v)),
+          if (widget.type == 0) _toggleRow('SMS', 'Standard Rates Apply', sms, (v) => setState(() => sms = v)),
         ],
       ),
     );
@@ -398,7 +398,7 @@ class _NotificationChannelScreenState extends State<NotificationChannelScreen> {
 }
 
 class ResetPinStartScreen extends StatefulWidget{const ResetPinStartScreen({super.key});@override State<ResetPinStartScreen> createState()=>_ResetPinStartScreenState();}
-class _ResetPinStartScreenState extends State<ResetPinStartScreen>{int method=0;@override Widget build(BuildContext context)=>_Shell(title:'Reset Transaction PIN',child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[const SizedBox(height:26),const Text('To reset your transaction PIN, you’ll need to verify with a verification code sent to you.',style:_t14),const SizedBox(height:24),const Text('Choose how you want to get code',style:_t14m),const SizedBox(height:12),_RadioChoice('Send via SMS',method==0,()=>setState(()=>method=0)),const SizedBox(height:12),_RadioChoice('Send via Email',method==1,()=>setState(()=>method=1)),const Spacer(),_PrimaryButton('Next',onTap:()=>_push(context,VerifyPinCodeScreen(email:method==1))),const SizedBox(height:28)]));}
+class _ResetPinStartScreenState extends State<ResetPinStartScreen>{int method=0;@override Widget build(BuildContext context)=>_Shell(title:'Reset Transaction PIN',child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[const SizedBox(height:26),const Text('To reset your transaction PIN, you’ll need to verify with a verification code sent to you.',style:_t14),const SizedBox(height:24),const Text('Choose how you want to get code',style:_t14m),const SizedBox(height:12),_radioChoice('Send via SMS',method==0,()=>setState(()=>method=0)),const SizedBox(height:12),_radioChoice('Send via Email',method==1,()=>setState(()=>method=1)),const Spacer(),_PrimaryButton('Next',onTap:()=>_push(context,VerifyPinCodeScreen(email:method==1))),const SizedBox(height:28)]));}
 class VerifyPinCodeScreen extends StatefulWidget{const VerifyPinCodeScreen({super.key,required this.email});final bool email;@override State<VerifyPinCodeScreen> createState()=>_VerifyPinCodeScreenState();}
 class _VerifyPinCodeScreenState extends State<VerifyPinCodeScreen>{
   final c=TextEditingController();
@@ -413,7 +413,7 @@ class _NewTransactionPinScreenState extends State<NewTransactionPinScreen>{
   @override void initState(){super.initState();a.addListener(_refresh);b.addListener(_refresh);}
   void _refresh()=>setState((){});
   @override void dispose(){a.removeListener(_refresh);b.removeListener(_refresh);a.dispose();b.dispose();super.dispose();}
-  @override Widget build(BuildContext context){final av=a.text.replaceAll(RegExp(r'\D'),'');final bv=b.text.replaceAll(RegExp(r'\D'),'');final enabled=av.length==4&&bv.length==4&&av==bv;return _Shell(title:'Transaction PIN',child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[const SizedBox(height:26),const Text('Your 4-digit transaction PIN secures your transactions. It is important that you do not share this PIN with anyone',style:_t14),const SizedBox(height:24),_Input(label:'New PIN',hint:'****',controller:a,obscure:true,keyboard:TextInputType.number,labelSize:16,hintSize:14,hintFontFamily:'Poppins'),const SizedBox(height:16),_Input(label:'Confirm New PIN',hint:'****',controller:b,obscure:true,keyboard:TextInputType.number,labelSize:16,hintSize:14,hintFontFamily:'Poppins'),const Spacer(),_PrimaryButton('Save',enabled:enabled,disabledBackgroundColor:const Color(0xFF89ADFB),onTap:()=>_push(context,const PinSuccessScreen())),const SizedBox(height:28)]));}
+  @override Widget build(BuildContext context){final av=a.text.replaceAll(RegExp(r'\D'),'');final bv=b.text.replaceAll(RegExp(r'\D'),'');final enabled=av.length==4&&bv.length==4&&av==bv;return _Shell(title:'Transaction PIN',child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[const SizedBox(height:26),const Text('Your 4-digit transaction PIN secures your transactions. It is important that you do not share this PIN with anyone',style:_t14),const SizedBox(height:24),_Input(label:'New PIN',hint:'****',controller:a,obscure:true,keyboard:TextInputType.number,labelSize:16,hintSize:14,hintFontFamily:'Poppins',maxLength:4,inputFormatters:[FilteringTextInputFormatter.digitsOnly]),const SizedBox(height:16),_Input(label:'Confirm New PIN',hint:'****',controller:b,obscure:true,keyboard:TextInputType.number,labelSize:16,hintSize:14,hintFontFamily:'Poppins',maxLength:4,inputFormatters:[FilteringTextInputFormatter.digitsOnly]),const Spacer(),_PrimaryButton('Save',enabled:enabled,disabledBackgroundColor:const Color(0xFF89ADFB),onTap:()=>_push(context,const PinSuccessScreen())),const SizedBox(height:28)]));}
 }
 class PinSuccessScreen extends StatefulWidget{const PinSuccessScreen({super.key});@override State<PinSuccessScreen> createState()=>_PinSuccessScreenState();}
 class _PinSuccessScreenState extends State<PinSuccessScreen> with SingleTickerProviderStateMixin{late final AnimationController c;@override void initState(){super.initState();c=AnimationController(vsync:this,duration:const Duration(milliseconds:700))..forward();}@override void dispose(){c.dispose();super.dispose();}@override Widget build(BuildContext context)=>Scaffold(backgroundColor:Colors.white,body:SafeArea(child:Padding(padding:const EdgeInsets.fromLTRB(16,70,16,28),child:Column(children:[ScaleTransition(scale:CurvedAnimation(parent:c,curve:Curves.elasticOut),child:Image.asset('$_exactAssets/status_animation_exact.gif',width:150,height:150,fit:BoxFit.contain)),const SizedBox(height:16),const Text('Success!',style:_t24b),const SizedBox(height:4),const Text('You’ve successfully reset your Transaction PIN',textAlign:TextAlign.center,style:_t14),const Spacer(),_PrimaryButton('Okay',onTap:()=>Navigator.of(context).popUntil((r)=>r.isFirst))]))));}
@@ -432,27 +432,27 @@ class CustomerSupportScreen extends StatelessWidget {
             const SizedBox(height: 31),
             const Text('Chat', style: _t16b),
             const SizedBox(height: 16),
-            _SupportTile('$_exactAssets/icon_chat.png', 'Live Chat', 'Start a conversation on live chat', () => _push(context, const SupportHubScreen())),
+            _supportTile('$_exactAssets/icon_chat.png', 'Live Chat', 'Start a conversation on live chat', () => _push(context, const SupportHubScreen())),
             const SizedBox(height: 16),
-            _SupportTile('$_exactAssets/icon_email.png', 'Email', 'We aim to respond in a day', () => _push(context, const EmailSupportScreen())),
+            _supportTile('$_exactAssets/icon_email.png', 'Email', 'We aim to respond in a day', () => _push(context, const EmailSupportScreen())),
             const SizedBox(height: 16),
-            _SupportTile('$_exactAssets/icon_request.png', 'Submit a Request', 'Tell us what went wrong', () => _push(context, const EmailSupportScreen())),
+            _supportTile('$_exactAssets/icon_request.png', 'Submit a Request', 'Tell us what went wrong', () => _push(context, const EmailSupportScreen())),
             const SizedBox(height: 36),
             const Text('Social Media', style: _t16b),
             const SizedBox(height: 16),
-            _SupportTile('$_exactAssets/icon_instagram.png', 'Instagram', '', () => _socialDialog(context, 'Instagram')),
+            _supportTile('$_exactAssets/icon_instagram.png', 'Instagram', '', () => _socialDialog(context, 'Instagram')),
             const SizedBox(height: 16),
-            _SupportTile('$_exactAssets/icon_linkedin.png', 'Linkedln', '', () => _socialDialog(context, 'Linkedln')),
+            _supportTile('$_exactAssets/icon_linkedin.png', 'Linkedln', '', () => _socialDialog(context, 'Linkedln')),
             const SizedBox(height: 16),
-            _SupportTile('$_exactAssets/icon_twitter.png', 'Twitter', '', () => _socialDialog(context, 'X')),
+            _supportTile('$_exactAssets/icon_twitter.png', 'Twitter', '', () => _socialDialog(context, 'X')),
             const SizedBox(height: 28),
           ],
         ),
       );
 }
 
-class SupportHubScreen extends StatelessWidget{const SupportHubScreen({super.key});@override Widget build(BuildContext context)=>Scaffold(backgroundColor:const Color(0xFFF7F7F7),body:SafeArea(child:SingleChildScrollView(child:Column(children:[Container(width:double.infinity,padding:const EdgeInsets.fromLTRB(12,12,12,10),decoration:const BoxDecoration(gradient:LinearGradient(begin:Alignment.topCenter,end:Alignment.bottomCenter,colors:[Color(0xFF1260FF),Color(0xFF3B7CFF)]),borderRadius:BorderRadius.vertical(bottom:Radius.circular(14))),child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Row(children:[Image.asset(_supportLogo,height:28,fit:BoxFit.contain),const Spacer(),InkWell(onTap:()=>Navigator.pop(context),child:Container(width:24,height:24,alignment:Alignment.center,color:Colors.white12,child:Image.asset('$_exactAssets/icon_close.png',width:18,height:18)))]),const SizedBox(height:28),const Text('Hi Chukwu 👋\nHow can we help?',style:TextStyle(fontFamily:'Sora',fontSize:16,fontWeight:FontWeight.w600,color:Colors.white,height:1.35)),const SizedBox(height:22),Container(decoration:BoxDecoration(color:Colors.white,borderRadius:BorderRadius.circular(7)),child:Column(children:[_HubAssetRow('Messages','$_exactAssets/icon_message.png',onTap:()=>_push(context,const SupportMessagesScreen())),const Divider(height:1),_HubAssetRow('Help','$_exactAssets/icon_help.png',onTap:()=>_push(context,const HelpCenterScreen()))])),const SizedBox(height:10),InkWell(onTap:()=>_push(context,const SupportMessagesScreen()),child:Container(height:38,padding:const EdgeInsets.symmetric(horizontal:12),decoration:BoxDecoration(color:Colors.white,borderRadius:BorderRadius.circular(7)),child:Row(children:[const Expanded(child:Text('Send us a messages',style:TextStyle(fontFamily:'Sora',fontSize:10,color:AppColors.body))),Image.asset('$_exactAssets/icon_send.png',width:16,height:16)]))),const SizedBox(height:10),Container(padding:const EdgeInsets.symmetric(horizontal:12,vertical:7),decoration:BoxDecoration(color:Colors.white,borderRadius:BorderRadius.circular(7)),child:Column(children:['Explore Rewards: Key Details You Should Know','Unlock More Earnings with Every Referral','Everything You Need to Know About Your Virtual Dollar Card','Join Our community Channel'].map((t)=>Padding(padding:const EdgeInsets.symmetric(vertical:5),child:Row(children:[Expanded(child:Text(t,style:const TextStyle(fontFamily:'Sora',fontSize:9,color:AppColors.body))),Image.asset('$_exactAssets/icon_external_link.png',width:11,height:11)]) )).toList()))])),Padding(padding:const EdgeInsets.all(12),child:Container(padding:const EdgeInsets.all(10),decoration:BoxDecoration(color:Colors.white,borderRadius:BorderRadius.circular(7)),child:Column(children:[Container(height:30,padding:const EdgeInsets.symmetric(horizontal:10),decoration:BoxDecoration(color:const Color(0xFFF4F5F8),borderRadius:BorderRadius.circular(4)),child:Row(children:[const Expanded(child:Text('Search for help',style:TextStyle(fontFamily:'Sora',fontSize:9))),Image.asset('$_exactAssets/icon_search.png',width:14,height:14)])),...['Receiving International Payments with Davopay','About Your USD Account','Verifying your Davopay Account: Step-by-Step Guide','Bank Accounts Deposit Charges on Davopay','How do I Buy/Sell Gift Card On Davopay','How do I Crypto Assets On Davopay'].map((t)=>Padding(padding:const EdgeInsets.symmetric(vertical:6),child:Row(children:[Expanded(child:Text(t,style:const TextStyle(fontFamily:'Sora',fontSize:9,color:AppColors.body))),Image.asset('$_exactAssets/icon_arrow_right.png',width:14,height:14)]))).toList()]))) ]))));}
-Widget _SupportTile(String asset, String title, String subtitle, VoidCallback tap) {
+class SupportHubScreen extends StatelessWidget{const SupportHubScreen({super.key});@override Widget build(BuildContext context)=>Scaffold(backgroundColor:const Color(0xFFF7F7F7),body:SafeArea(child:SingleChildScrollView(child:Column(children:[Container(width:double.infinity,padding:const EdgeInsets.fromLTRB(12,12,12,10),decoration:const BoxDecoration(gradient:LinearGradient(begin:Alignment.topCenter,end:Alignment.bottomCenter,colors:[Color(0xFF1260FF),Color(0xFF3B7CFF)]),borderRadius:BorderRadius.vertical(bottom:Radius.circular(14))),child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Row(children:[Image.asset(_supportLogo,height:28,fit:BoxFit.contain),const Spacer(),InkWell(onTap:()=>Navigator.pop(context),child:Container(width:24,height:24,alignment:Alignment.center,color:Colors.white12,child:Image.asset('$_exactAssets/icon_close.png',width:18,height:18)))]),const SizedBox(height:28),const Text('Hi Chukwu 👋\nHow can we help?',style:TextStyle(fontFamily:'Sora',fontSize:16,fontWeight:FontWeight.w600,color:Colors.white,height:1.35)),const SizedBox(height:22),Container(decoration:BoxDecoration(color:Colors.white,borderRadius:BorderRadius.circular(7)),child:Column(children:[_HubAssetRow('Messages','$_exactAssets/icon_message.png',onTap:()=>_push(context,const SupportMessagesScreen())),const Divider(height:1),_HubAssetRow('Help','$_exactAssets/icon_help.png',onTap:()=>_push(context,const HelpCenterScreen()))])),const SizedBox(height:10),InkWell(onTap:()=>_push(context,const SupportMessagesScreen()),child:Container(height:38,padding:const EdgeInsets.symmetric(horizontal:12),decoration:BoxDecoration(color:Colors.white,borderRadius:BorderRadius.circular(7)),child:Row(children:[const Expanded(child:Text('Send us a messages',style:TextStyle(fontFamily:'Sora',fontSize:10,color:AppColors.body))),Image.asset('$_exactAssets/icon_send.png',width:16,height:16)]))),const SizedBox(height:10),Container(padding:const EdgeInsets.symmetric(horizontal:12,vertical:7),decoration:BoxDecoration(color:Colors.white,borderRadius:BorderRadius.circular(7)),child:Column(children:['Explore Rewards: Key Details You Should Know','Unlock More Earnings with Every Referral','Everything You Need to Know About Your Virtual Dollar Card','Join Our community Channel'].map((t)=>Padding(padding:const EdgeInsets.symmetric(vertical:5),child:Row(children:[Expanded(child:Text(t,style:const TextStyle(fontFamily:'Sora',fontSize:9,color:AppColors.body))),Image.asset('$_exactAssets/icon_external_link.png',width:11,height:11)]) )).toList()))])),Padding(padding:const EdgeInsets.all(12),child:Container(padding:const EdgeInsets.all(10),decoration:BoxDecoration(color:Colors.white,borderRadius:BorderRadius.circular(7)),child:Column(children:[Container(height:30,padding:const EdgeInsets.symmetric(horizontal:10),decoration:BoxDecoration(color:const Color(0xFFF4F5F8),borderRadius:BorderRadius.circular(4)),child:Row(children:[const Expanded(child:Text('Search for help',style:TextStyle(fontFamily:'Sora',fontSize:9))),Image.asset('$_exactAssets/icon_search.png',width:14,height:14)])),...['Receiving International Payments with Davochain','About Your USD Account','Verifying your Davochain Account: Step-by-Step Guide','Bank Accounts Deposit Charges on Davochain','How do I Buy/Sell Gift Card On Davochain','How do I Crypto Assets On Davochain'].map((t)=>Padding(padding:const EdgeInsets.symmetric(vertical:6),child:Row(children:[Expanded(child:Text(t,style:const TextStyle(fontFamily:'Sora',fontSize:9,color:AppColors.body))),Image.asset('$_exactAssets/icon_arrow_right.png',width:14,height:14)])))]))) ]))));}
+Widget _supportTile(String asset, String title, String subtitle, VoidCallback tap) {
   final hasSubtitle = subtitle.isNotEmpty;
   return InkWell(
     onTap: tap,
@@ -486,8 +486,6 @@ Widget _SupportTile(String asset, String title, String subtitle, VoidCallback ta
   );
 }
 
-class _HubRow extends StatelessWidget{const _HubRow(this.text,this.icon,{required this.color,required this.onTap});final String text;final IconData icon;final Color color;final VoidCallback onTap;@override Widget build(BuildContext context)=>InkWell(onTap:onTap,child:SizedBox(height:32,child:Row(children:[const SizedBox(width:10),Expanded(child:Text(text,style:TextStyle(fontFamily:'Sora',fontSize:10,color:AppColors.body))),Icon(icon,size:12,color:color),const SizedBox(width:10)])));}
-
 class _HubAssetRow extends StatelessWidget{const _HubAssetRow(this.text,this.asset,{required this.onTap});final String text,asset;final VoidCallback onTap;@override Widget build(BuildContext context)=>InkWell(onTap:onTap,child:SizedBox(height:32,child:Row(children:[const SizedBox(width:10),Expanded(child:Text(text,style:const TextStyle(fontFamily:'Sora',fontSize:10,color:AppColors.body))),Image.asset(asset,width:14,height:14,filterQuality:FilterQuality.high),const SizedBox(width:10)])));}
 
 class SupportMessagesScreen extends StatelessWidget{const SupportMessagesScreen({super.key});@override Widget build(BuildContext context)=>_Shell(title:'Messages',titleStyle:_navSora16SemiBold,child:Column(children:[const Spacer(),Image.asset('$_exactAssets/icon_message.png',width:46,height:46),const SizedBox(height:14),const Text('No Messages',style:_t16b),const SizedBox(height:6),const Text('Messages from the team will be shown here',textAlign:TextAlign.center,style:_t12),const SizedBox(height:20),SizedBox(width:150,child:_PrimaryButton('Ask a question',onTap:()=>_push(context,const SupportChatScreen()))),const Spacer()]));}
@@ -505,14 +503,14 @@ class _SupportChatScreenState extends State<SupportChatScreen>{
         const SizedBox(height:14),
         const _AgentHeader(),
         const SizedBox(height:16),
-        const _ChatBubble(text:"Hi there,\nThank you for choosing Davopay.\nWe're currently handling a high volume of requests, so responses might take a bit longer than usual.\nThanks for your patience, we'll get to you as soon as possible."),
+        const _ChatBubble(text:"Hi there,\nThank you for choosing Davochain.\nWe're currently handling a high volume of requests, so responses might take a bit longer than usual.\nThanks for your patience, we'll get to you as soon as possible."),
         const SizedBox(height:12),
         const _AgentHeader(small:true),
         const SizedBox(height:8),
-        const _ChatBubble(text:'Hello Chukwu, this is Bella from Davopay.\nPlease choose the option below that best matches your request.'),
+        const _ChatBubble(text:'Hello Chukwu, this is Bella from Davochain.\nPlease choose the option below that best matches your request.'),
         const SizedBox(height:12),
         if(choice==null)
-          ...['Account Management & Verification','Virtual Cards (Creation, Funding, refundd)','Gift Cards, Crypto','Deposits and Funding','Bank Accounts (Creation & Management)','Withdrawals from Davopay to Bank Account','Account Suspension, Issues & Restrictions','Something Else'].map(
+          ...['Account Management & Verification','Virtual Cards (Creation, Funding, refundd)','Gift Cards, Crypto','Deposits and Funding','Bank Accounts (Creation & Management)','Withdrawals from Davochain to Bank Account','Account Suspension, Issues & Restrictions','Something Else'].map(
             (e)=>Padding(
               padding:const EdgeInsets.only(bottom:8),
               child:OutlinedButton(
@@ -663,9 +661,9 @@ class HelpCenterScreen extends StatefulWidget{const HelpCenterScreen({super.key}
 class _HelpCenterScreenState extends State<HelpCenterScreen>{final q=TextEditingController();@override Widget build(BuildContext context){final cats=_helpCats.where((e)=>e.$1.toLowerCase().contains(q.text.toLowerCase())).toList();return _Shell(title:'Help',titleStyle:_navSora16SemiBold,scroll:true,child:Column(children:[TextField(controller:q,onChanged:(_)=>setState((){}),decoration:InputDecoration(hintText:'Search for help',prefixIcon:Padding(padding:const EdgeInsets.all(14),child:Image.asset('$_exactAssets/icon_search.png',width:16,height:16,filterQuality:FilterQuality.high)),border:OutlineInputBorder(borderRadius:BorderRadius.circular(8)))),const SizedBox(height:16),...cats.map((e)=>_HelpCategory(e.$1,e.$2,e.$3)),const SizedBox(height:30)]));}}
 
 // ---- Rewards / Ambassador ----
-class ReferralDashboardScreen extends StatelessWidget{const ReferralDashboardScreen({super.key});@override Widget build(BuildContext context)=>_Shell(title:'Rewards',titleStyle:_navSora16Medium,scroll:true,child:Column(children:[Container(width:double.infinity,padding:const EdgeInsets.all(18),decoration:BoxDecoration(color:AppColors.primary,borderRadius:BorderRadius.circular(8)),child:const Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Text('Referral Program',style:TextStyle(fontFamily:'Sora',fontSize:12,color:Colors.white70)),SizedBox(height:10),Text('Earn ₦2,000 For\nevery friend Referred',style:TextStyle(fontFamily:'Sora',fontSize:24,fontWeight:FontWeight.w700,color:Colors.white,height:1.25)),SizedBox(height:8),Text('Invite your friends to Davopay and get rewarded when they make their first successful transaction.',style:TextStyle(fontFamily:'Sora',fontSize:12,color:Colors.white,height:1.4))])),const SizedBox(height:18),_ReferralBox(),const SizedBox(height:18),_SectionLink('Manage your earnings','Referral Analytics',()=>_push(context,const ReferralAnalyticsScreen())),const SizedBox(height:18),_PrimaryButton('Davo Points',onTap:()=>_push(context,const DavoPointsScreen())),const SizedBox(height:22),_HowItWorks(),const SizedBox(height:30)]));}
-class ReferralAnalyticsScreen extends StatelessWidget{const ReferralAnalyticsScreen({super.key});@override Widget build(BuildContext context)=>_Shell(title:'',scroll:true,bodyTopPadding:12,child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[const Text('Performance Hub',style:TextStyle(fontFamily:'Sora',fontSize:14,fontWeight:FontWeight.w500,color:AppColors.primary,height:1.35)),const SizedBox(height:8),const Text('Referral Analytics',style:_navSora20),const SizedBox(height:18),_StatsGrid(const [('My invitees','128'),('Rewarded','84'),('KYC Done','53'),('Deposited','34')]),const SizedBox(height:20),const Text('Manage your earnings:',style:_t14m),const SizedBox(height:10),_PrimaryButton('Rewards',onTap:()=>_push(context,const DavoPointsScreen())),const SizedBox(height:22),const Text('Referrals',style:_t16b),const SizedBox(height:4),const Text('Track your network and earned rewards.',style:_t12),const SizedBox(height:14),..._people.map((e)=>_PersonRow(e.$1,e.$2,e.$3)),const SizedBox(height:28)]));}
-class DavoPointsScreen extends StatelessWidget{const DavoPointsScreen({super.key});@override Widget build(BuildContext context)=>_Shell(title:'',scroll:true,bodyTopPadding:7,child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[const Text('Davo points Dashboard',style:_navSora20),const SizedBox(height:16),_StatsGrid(const [('Earned Points','Đ15.00'),('Redeemed Points','Đ0.00'),('Available Points','Đ15.00'),('Rate','Đ20.00 = NGN 1.00')]),const SizedBox(height:18),_PrimaryButton('Redeem',onTap:()=>_snack(context,'Points redeemed')),const SizedBox(height:14),const Text('Your Davo point rewards will be credited to your NGN Wallet After Redeeming it.',style:_t12),const SizedBox(height:22),const Align(alignment:Alignment.centerLeft,child:Text('Recent Activity',style:_t16b)),const SizedBox(height:10),...['Referral: Jane Doe','Cashback Reward: Milestone NGN 10','Cashback Reward: Milestone NGN 10','Referral: Elena Rodriguez'].map((e)=>_ActivityRow(e,'+Đ5.00')),const SizedBox(height:26)]));}
+class ReferralDashboardScreen extends StatelessWidget{const ReferralDashboardScreen({super.key});@override Widget build(BuildContext context)=>_Shell(title:'Rewards',titleStyle:_navSora16Medium,scroll:true,child:Column(children:[Container(width:double.infinity,padding:const EdgeInsets.all(18),decoration:BoxDecoration(color:AppColors.primary,borderRadius:BorderRadius.circular(8)),child:const Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Text('Referral Program',style:TextStyle(fontFamily:'Sora',fontSize:12,color:Colors.white70)),SizedBox(height:10),Text('Earn ₦2,000 For\nevery friend Referred',style:TextStyle(fontFamily:'Sora',fontSize:24,fontWeight:FontWeight.w700,color:Colors.white,height:1.25)),SizedBox(height:8),Text('Invite your friends to Davochain and get rewarded when they make their first successful transaction.',style:TextStyle(fontFamily:'Sora',fontSize:12,color:Colors.white,height:1.4))])),const SizedBox(height:18),_referralBox(),const SizedBox(height:18),_sectionLink('Manage your earnings','Referral Analytics',()=>_push(context,const ReferralAnalyticsScreen())),const SizedBox(height:18),_PrimaryButton('Davo Points',onTap:()=>_push(context,const DavoPointsScreen())),const SizedBox(height:22),const _HowItWorks(),const SizedBox(height:30)]));}
+class ReferralAnalyticsScreen extends StatelessWidget{const ReferralAnalyticsScreen({super.key});@override Widget build(BuildContext context)=>_Shell(title:'',scroll:true,bodyTopPadding:12,child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[const Text('Performance Hub',style:TextStyle(fontFamily:'Sora',fontSize:14,fontWeight:FontWeight.w500,color:AppColors.primary,height:1.35)),const SizedBox(height:8),const Text('Referral Analytics',style:_navSora20),const SizedBox(height:18),const _StatsGrid([('My invitees','128'),('Rewarded','84'),('KYC Done','53'),('Deposited','34')]),const SizedBox(height:20),const Text('Manage your earnings:',style:_t14m),const SizedBox(height:10),_PrimaryButton('Rewards',onTap:()=>_push(context,const DavoPointsScreen())),const SizedBox(height:22),const Text('Referrals',style:_t16b),const SizedBox(height:4),const Text('Track your network and earned rewards.',style:_t12),const SizedBox(height:14),..._people.map((e)=>_PersonRow(e.$1,e.$2,e.$3)),const SizedBox(height:28)]));}
+class DavoPointsScreen extends StatelessWidget{const DavoPointsScreen({super.key});@override Widget build(BuildContext context)=>_Shell(title:'',scroll:true,bodyTopPadding:7,child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[const Text('Davo points Dashboard',style:_navSora20),const SizedBox(height:16),const _StatsGrid([('Earned Points','Đ15.00'),('Redeemed Points','Đ0.00'),('Available Points','Đ15.00'),('Rate','Đ20.00 = NGN 1.00')]),const SizedBox(height:18),_PrimaryButton('Redeem',onTap:()=>_snack(context,'Points redeemed')),const SizedBox(height:14),const Text('Your Davo point rewards will be credited to your NGN Wallet After Redeeming it.',style:_t12),const SizedBox(height:22),const Align(alignment:Alignment.centerLeft,child:Text('Recent Activity',style:_t16b)),const SizedBox(height:10),...['Referral: Jane Doe','Cashback Reward: Milestone NGN 10','Cashback Reward: Milestone NGN 10','Referral: Elena Rodriguez'].map((e)=>_ActivityRow(e,'+Đ5.00')),const SizedBox(height:26)]));}
 class StudentAmbassadorScreen extends StatefulWidget {
   const StudentAmbassadorScreen({super.key});
   @override
@@ -739,7 +737,7 @@ class _StudentAmbassadorScreenState extends State<StudentAmbassadorScreen> {
   }
 }
 
-class AmbassadorDashboardScreen extends StatelessWidget{const AmbassadorDashboardScreen({super.key});@override Widget build(BuildContext context)=>_Shell(title:'',scroll:true,bodyTopPadding:8,child:Column(children:[Row(children:[ClipOval(child:Image.asset('$_exactAssets/ambassador_avatar_exact.png',width:40,height:40,fit:BoxFit.cover,filterQuality:FilterQuality.high)),const SizedBox(width:10),const Expanded(child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Text('Hi, Callie',style:TextStyle(fontFamily:'Sora',fontSize:14,fontWeight:FontWeight.w400,color:AppColors.primary,height:1.35)),Text('Ambassador',style:TextStyle(fontFamily:'Sora',fontSize:16,fontWeight:FontWeight.w600,color:AppColors.primary,height:1.35))])),IconButton(onPressed:(){},icon:Image.asset('$_exactAssets/icon_notification_bell.png',width:22,height:22))]),const SizedBox(height:14),Container(padding:const EdgeInsets.all(16),decoration:BoxDecoration(color:AppColors.primary,borderRadius:BorderRadius.circular(10)),child:const Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Text('Ambassador Program',style:TextStyle(fontFamily:'Sora',fontSize:20,fontWeight:FontWeight.w700,color:Colors.white)),SizedBox(height:4),Text('Empower your campus. Refer friends and earn rewards for every successful signup.',style:TextStyle(fontFamily:'Sora',fontSize:11,color:Colors.white)),SizedBox(height:14),Text('Silver Ambassador                         18/25',style:TextStyle(fontFamily:'Sora',fontSize:12,color:Colors.white)),SizedBox(height:6),LinearProgressIndicator(value:.72,minHeight:7,backgroundColor:Colors.white24,valueColor:AlwaysStoppedAnimation(Colors.white)),SizedBox(height:5),Text('7 more referrals to unlock Gold Tier',style:TextStyle(fontFamily:'Sora',fontSize:10,color:Colors.white70))])),const SizedBox(height:18),_ReferralBox(),const SizedBox(height:18),_StatsGrid(const [('Students Referred','345'),('Students Verified','205'),('Pending','140'),('Earned','Đ400.00')]),const SizedBox(height:18),Row(children:[Expanded(child:_QuickAssetAction('$_exactAssets/icon_share.png','Share Link',(){})),Expanded(child:_QuickAssetAction('$_exactAssets/icon_qr.png','QR Code',(){})),Expanded(child:_QuickAssetAction('$_exactAssets/icon_trophy.png','Rewards',()=>_push(context,const DavoPointsScreen()))),Expanded(child:_QuickAssetAction('$_exactAssets/icon_leaderboard.png','Leaderboard',()=>_push(context,const AmbassadorLeaderboardScreen())))]),const SizedBox(height:22),const Align(alignment:Alignment.centerLeft,child:Text('Referrals',style:_t16b)),const SizedBox(height:8),..._people.take(4).map((e)=>_PersonRow(e.$1,e.$2,e.$3)),const SizedBox(height:24)]));}
+class AmbassadorDashboardScreen extends StatelessWidget{const AmbassadorDashboardScreen({super.key});@override Widget build(BuildContext context)=>_Shell(title:'',scroll:true,bodyTopPadding:8,child:Column(children:[Row(children:[ClipOval(child:Image.asset('$_exactAssets/ambassador_avatar_exact.png',width:40,height:40,fit:BoxFit.cover,filterQuality:FilterQuality.high)),const SizedBox(width:10),const Expanded(child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Text('Hi, Callie',style:TextStyle(fontFamily:'Sora',fontSize:14,fontWeight:FontWeight.w400,color:AppColors.primary,height:1.35)),Text('Ambassador',style:TextStyle(fontFamily:'Sora',fontSize:16,fontWeight:FontWeight.w600,color:AppColors.primary,height:1.35))])),IconButton(onPressed:(){},icon:Image.asset('$_exactAssets/icon_notification_bell.png',width:22,height:22))]),const SizedBox(height:14),Container(padding:const EdgeInsets.all(16),decoration:BoxDecoration(color:AppColors.primary,borderRadius:BorderRadius.circular(10)),child:const Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Text('Ambassador Program',style:TextStyle(fontFamily:'Sora',fontSize:20,fontWeight:FontWeight.w700,color:Colors.white)),SizedBox(height:4),Text('Empower your campus. Refer friends and earn rewards for every successful signup.',style:TextStyle(fontFamily:'Sora',fontSize:11,color:Colors.white)),SizedBox(height:14),Text('Silver Ambassador                         18/25',style:TextStyle(fontFamily:'Sora',fontSize:12,color:Colors.white)),SizedBox(height:6),LinearProgressIndicator(value:.72,minHeight:7,backgroundColor:Colors.white24,valueColor:AlwaysStoppedAnimation(Colors.white)),SizedBox(height:5),Text('7 more referrals to unlock Gold Tier',style:TextStyle(fontFamily:'Sora',fontSize:10,color:Colors.white70))])),const SizedBox(height:18),_referralBox(),const SizedBox(height:18),const _StatsGrid([('Students Referred','345'),('Students Verified','205'),('Pending','140'),('Earned','Đ400.00')]),const SizedBox(height:18),Row(children:[Expanded(child:_QuickAssetAction('$_exactAssets/icon_share.png','Share Link',(){})),Expanded(child:_QuickAssetAction('$_exactAssets/icon_qr.png','QR Code',(){})),Expanded(child:_QuickAssetAction('$_exactAssets/icon_trophy.png','Rewards',()=>_push(context,const DavoPointsScreen()))),Expanded(child:_QuickAssetAction('$_exactAssets/icon_leaderboard.png','Leaderboard',()=>_push(context,const AmbassadorLeaderboardScreen())))]),const SizedBox(height:22),const Align(alignment:Alignment.centerLeft,child:Text('Referrals',style:_t16b)),const SizedBox(height:8),..._people.take(4).map((e)=>_PersonRow(e.$1,e.$2,e.$3)),const SizedBox(height:24)]));}
 class AmbassadorLeaderboardScreen extends StatelessWidget {
   const AmbassadorLeaderboardScreen({super.key});
 
@@ -776,7 +774,7 @@ class AmbassadorLeaderboardScreen extends StatelessWidget {
                   child: _RankRow(e.key + 4, e.value.$1, e.value.$2, e.value.$3),
                 )),
             const SizedBox(height: 24),
-            _CurrentRankCard(),
+            const _CurrentRankCard(),
             const SizedBox(height: 26),
           ],
         ),
@@ -800,7 +798,58 @@ class _PersonalInformationV12ScreenState extends State<PersonalInformationV12Scr
     const SizedBox(height:20),
   ]));
 }
-class PersonalInformationSuccessScreen extends StatelessWidget{const PersonalInformationSuccessScreen({super.key});@override Widget build(BuildContext context)=>_StatusFullScreen(title:'Information Updated',body:'Your personal information has been updated successfully',button:'Done',onTap:()=>Navigator.of(context).popUntil((r)=>r.isFirst));}
+class PersonalInformationSuccessScreen extends StatelessWidget {
+  const PersonalInformationSuccessScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) => Scaffold(
+        backgroundColor: Colors.white,
+        appBar: AppBar(backgroundColor: Colors.white, surfaceTintColor: Colors.white, leading: const BackButton()),
+        body: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 28),
+            child: Column(
+              children: [
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: Column(
+                      children: [
+                        const SizedBox(height: 64),
+                        Semantics(
+                          label: 'Personal information updated successfully',
+                          child: Container(
+                            width: 112,
+                            height: 112,
+                            alignment: Alignment.center,
+                            decoration: const BoxDecoration(color: Color(0xFF16A34A), shape: BoxShape.circle),
+                            child: Container(
+                              width: 56,
+                              height: 56,
+                              alignment: Alignment.center,
+                              decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+                              child: const Icon(Icons.check_rounded, size: 36, color: Color(0xFF16A34A)),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+                        const Text('Information Updated', style: _t20sb, textAlign: TextAlign.center),
+                        const SizedBox(height: 8),
+                        ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 280),
+                          child: const Text('Your personal information has been updated successfully', style: _t14, textAlign: TextAlign.center),
+                        ),
+                        const SizedBox(height: 24),
+                      ],
+                    ),
+                  ),
+                ),
+                _PrimaryButton('Done', onTap: () => Navigator.of(context).popUntil((route) => route.isFirst)),
+              ],
+            ),
+          ),
+        ),
+      );
+}
 
 class KycTierOverviewScreen extends StatelessWidget {
   const KycTierOverviewScreen({super.key, this.completedTier = 0});
@@ -820,7 +869,7 @@ class KycTierOverviewScreen extends StatelessWidget {
         children: [
           const SizedBox(height: 24),
           const Text(
-            'Complete verification to increase your limits and enjoy all Davopay features',
+            'Complete verification to increase your limits and enjoy all Davochain features',
             style: _t16b,
           ),
           const SizedBox(height: 26),
@@ -1100,10 +1149,10 @@ class _BvnEntryV12ScreenState extends State<BvnEntryV12Screen> {
             enabled: enabled,
             onTap: () => _push(
               context,
-              VerificationProcessingV12Screen(
+              const VerificationProcessingV12Screen(
                 title: 'Verifying your BVN',
                 body: 'This may take a few seconds\nPlease do not leave this page',
-                next: const TierCompletionV12Screen(tier: 1),
+                next: TierCompletionV12Screen(tier: 1),
               ),
             ),
           ),
@@ -1173,10 +1222,10 @@ class _NinEntryV12ScreenState extends State<NinEntryV12Screen> {
             enabled: enabled,
             onTap: () => _push(
               context,
-              VerificationProcessingV12Screen(
+              const VerificationProcessingV12Screen(
                 title: 'Verifying your NIN',
                 body: 'We’re retrieving your identity infomation\nfrom NIMC. This may take a few seconds',
-                next: const KycSelfieV12Screen(),
+                next: KycSelfieV12Screen(),
               ),
             ),
           ),
@@ -1255,7 +1304,7 @@ class TierCompletionV12Screen extends StatelessWidget {
   Widget build(BuildContext context) {
     final title = tier == 1 ? 'Tier 1 Completed' : 'Tier 2 Completed';
     final body = tier == 1
-        ? 'Your BVN has been successfully verified.\nYou can now access more features \non Davopay'
+        ? 'Your BVN has been successfully verified.\nYou can now access more features \non Davochain'
         : 'Your NIN has been successfully verified and your identity matches. You can now access higher transaction limits';
     final next = tier == 1 ? 'Continue to Tier 2' : 'Continue to Tier 3';
     return Scaffold(
@@ -1480,10 +1529,10 @@ class FaceReviewV12Screen extends StatelessWidget {
               'Submit photo',
               onTap: () => _push(
                 context,
-                VerificationProcessingV12Screen(
+                const VerificationProcessingV12Screen(
                   title: 'Matching your identity',
                   body: 'We’re comparing your live selfie with your\nNIN records. this may take a few seconds',
-                  next: const TierCompletionV12Screen(tier: 2),
+                  next: TierCompletionV12Screen(tier: 2),
                 ),
               ),
             ),
@@ -1838,10 +1887,10 @@ class Tier3FaceSubmitScreen extends StatelessWidget {
 class Tier3VerificationProcessingScreen extends StatelessWidget {
   const Tier3VerificationProcessingScreen({super.key});
   @override
-  Widget build(BuildContext context) => VerificationProcessingV12Screen(
+  Widget build(BuildContext context) => const VerificationProcessingV12Screen(
         title: 'Verifying your ID and address',
         body: 'We are checking the ID and documents details\nThis may take a few minutes',
-        next: const FullyVerifiedV12Screen(),
+        next: FullyVerifiedV12Screen(),
       );
 }
 
@@ -1850,7 +1899,7 @@ class FullyVerifiedV12Screen extends StatelessWidget {
   @override
   Widget build(BuildContext context) => _StatusFullScreen(
         title: 'Your Account is Fully Verified',
-        body: 'You now have access to all Davopay features\nand higher limits',
+        body: 'You now have access to all Davochain features\nand higher limits',
         button: 'Back to Home',
         onTap: () => Navigator.of(context).popUntil((r) => r.isFirst),
       );
@@ -1861,11 +1910,11 @@ class AddBankAccountScreen extends StatefulWidget{const AddBankAccountScreen({su
 class _AddBankAccountScreenState extends State<AddBankAccountScreen>{final q=TextEditingController();final banks=['AAA Finance','AB Microfinance Bank','Access Bank','Kuda Bank','Bank Of Agriculture','Carbon','Ecobank Bank','Fcmb','Fidelity Bank'];@override Widget build(BuildContext context){final filtered=banks.where((b)=>b.toLowerCase().contains(q.text.toLowerCase())).toList();return _Shell(title:'Add Bank Account',titleStyle:_navSora16SemiBold,scroll:true,child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[const SizedBox(height:18),const Text('Select your bank to link your acount',style:_t16b),const SizedBox(height:14),TextField(controller:q,onChanged:(_)=>setState((){}),decoration:InputDecoration(hintText:'Search for a bank',prefixIcon:Padding(padding:const EdgeInsets.all(14),child:Image.asset('$_exactAssets/icon_search.png',width:16,height:16)),border:OutlineInputBorder(borderRadius:BorderRadius.circular(6)))),const SizedBox(height:14),...filtered.map((b)=>ListTile(contentPadding:EdgeInsets.zero,leading:Image.asset('$_exactAssets/icon_bank.png',width:32,height:32),title:Text(b,style:_t14),trailing:Image.asset('$_exactAssets/icon_arrow_right.png',width:16,height:16),onTap:()=>Navigator.pop(context))),const SizedBox(height:20)]));}}
 
 class CryptoSecurityScreen extends StatefulWidget{const CryptoSecurityScreen({super.key});@override State<CryptoSecurityScreen> createState()=>_CryptoSecurityScreenState();}
-class _CryptoSecurityScreenState extends State<CryptoSecurityScreen>{bool withdraw=true,address=true,network=true;@override Widget build(BuildContext context)=>_Shell(title:'Crypto Security',child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[const SizedBox(height:20),const Text('Extra protection for your digital assets',style:_t14),const SizedBox(height:18),_ToggleRow('Withdrawal Confirmation','Require PIN before every withdraw',withdraw,(v)=>setState(()=>withdraw=v)),_ToggleRow('New Address Verification','Require additional confirmation when sending to a new address',address,(v)=>setState(()=>address=v)),_ToggleRow('Network Warning','Show network warning before every external withdrawal',network,(v)=>setState(()=>network=v))]));}
+class _CryptoSecurityScreenState extends State<CryptoSecurityScreen>{bool withdraw=true,address=true,network=true;@override Widget build(BuildContext context)=>_Shell(title:'Crypto Security',child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[const SizedBox(height:20),const Text('Extra protection for your digital assets',style:_t14),const SizedBox(height:18),_toggleRow('Withdrawal Confirmation','Require PIN before every withdraw',withdraw,(v)=>setState(()=>withdraw=v)),_toggleRow('New Address Verification','Require additional confirmation when sending to a new address',address,(v)=>setState(()=>address=v)),_toggleRow('Network Warning','Show network warning before every external withdrawal',network,(v)=>setState(()=>network=v))]));}
 class NotificationsPreferencesScreen extends StatefulWidget{const NotificationsPreferencesScreen({super.key});@override State<NotificationsPreferencesScreen> createState()=>_NotificationsPreferencesScreenState();}
-class _NotificationsPreferencesScreenState extends State<NotificationsPreferencesScreen>{final vals=List<bool>.filled(10,true);@override Widget build(BuildContext context){final items=<({String group,String title,String sub})>[(group:'Transaction Alerts',title:'Crypto purchases',sub:'Get notification When you buy crypto'),(group:'',title:'Crypto Sales',sub:'Get notified when you sell crypto'),(group:'',title:'Crypto Swaps',sub:'Get notified when you swap crypto'),(group:'',title:'Deposits',sub:'Get notified when you receive crypto'),(group:'',title:'Withdrawals',sub:'Get notified when you send crypto'),(group:'',title:'Gift card transaction',sub:'Get notified about gift card activity'),(group:'Account Alerts',title:'Security alerts',sub:'Important security notifications'),(group:'',title:'Login activity',sub:'Get notified about new logins'),(group:'Marketing & Updates',title:'Promotion & Offers',sub:'Receive special offers and discounts'),(group:'',title:'Product updates',sub:'Get the latest news and features')];return _Shell(title:'Notifications',scroll:true,child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[const SizedBox(height:10),...items.asMap().entries.expand((e)=><Widget>[if(e.value.group.isNotEmpty)...[if(e.key>0)const SizedBox(height:20),Text(e.value.group,style:_t16b),const SizedBox(height:6)],_ToggleRow(e.value.title,e.value.sub,vals[e.key],(v)=>setState(()=>vals[e.key]=v))]),const SizedBox(height:18),_ToggleRow('Tips & Education','Learn about crypto and gift cards',true,(_){ }),const SizedBox(height:20)]));}}
+class _NotificationsPreferencesScreenState extends State<NotificationsPreferencesScreen>{final vals=List<bool>.filled(10,true);@override Widget build(BuildContext context){final items=<({String group,String title,String sub})>[(group:'Transaction Alerts',title:'Crypto purchases',sub:'Get notification When you buy crypto'),(group:'',title:'Crypto Sales',sub:'Get notified when you sell crypto'),(group:'',title:'Crypto Swaps',sub:'Get notified when you swap crypto'),(group:'',title:'Deposits',sub:'Get notified when you receive crypto'),(group:'',title:'Withdrawals',sub:'Get notified when you send crypto'),(group:'',title:'Gift card transaction',sub:'Get notified about gift card activity'),(group:'Account Alerts',title:'Security alerts',sub:'Important security notifications'),(group:'',title:'Login activity',sub:'Get notified about new logins'),(group:'Marketing & Updates',title:'Promotion & Offers',sub:'Receive special offers and discounts'),(group:'',title:'Product updates',sub:'Get the latest news and features')];return _Shell(title:'Notifications',scroll:true,child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[const SizedBox(height:10),...items.asMap().entries.expand((e)=><Widget>[if(e.value.group.isNotEmpty)...[if(e.key>0)const SizedBox(height:20),Text(e.value.group,style:_t16b),const SizedBox(height:6)],_toggleRow(e.value.title,e.value.sub,vals[e.key],(v)=>setState(()=>vals[e.key]=v))]),const SizedBox(height:18),_toggleRow('Tips & Education','Learn about crypto and gift cards',true,(_){ }),const SizedBox(height:20)]));}}
 class PrivacyScreen extends StatefulWidget{const PrivacyScreen({super.key});@override State<PrivacyScreen> createState()=>_PrivacyScreenState();}
-class _PrivacyScreenState extends State<PrivacyScreen>{bool contacts=true,personalized=true,marketing=false,analytics=true;@override Widget build(BuildContext context)=>_Shell(title:'Privacy',scroll:true,child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[const SizedBox(height:10),_ToggleRow('Contact Access','Allow Davochain to access your contacts to help you find people you may want to transact with',contacts,(v)=>setState(()=>contacts=v)),_ToggleRow('Personalized Experience','Allow personalized recommendation based on your activity',personalized,(v)=>setState(()=>personalized=v)),_ToggleRow('Markets Communications','Receive promotional emails and app notification',marketing,(v)=>setState(()=>marketing=v)),const SizedBox(height:18),_SettingsAssetRow('$_exactAssets/icon_analytics.png','Data & Permissions','Manage how your data is used',(){}),_SettingsAssetRow('$_exactAssets/icon_user_block.png','Block Users','Manage block contacts',(){}),_ToggleRow('App Analytics','Help improve Davochain by sharing anonymous usage data',analytics,(v)=>setState(()=>analytics=v)),const SizedBox(height:20)]));}
+class _PrivacyScreenState extends State<PrivacyScreen>{bool contacts=true,personalized=true,marketing=false,analytics=true;@override Widget build(BuildContext context)=>_Shell(title:'Privacy',scroll:true,child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[const SizedBox(height:10),_toggleRow('Contact Access','Allow Davochain to access your contacts to help you find people you may want to transact with',contacts,(v)=>setState(()=>contacts=v)),_toggleRow('Personalized Experience','Allow personalized recommendation based on your activity',personalized,(v)=>setState(()=>personalized=v)),_toggleRow('Markets Communications','Receive promotional emails and app notification',marketing,(v)=>setState(()=>marketing=v)),const SizedBox(height:18),_settingsAssetRow('$_exactAssets/icon_analytics.png','Data & Permissions','Manage how your data is used',(){}),_settingsAssetRow('$_exactAssets/icon_user_block.png','Block Users','Manage block contacts',(){}),_toggleRow('App Analytics','Help improve Davochain by sharing anonymous usage data',analytics,(v)=>setState(()=>analytics=v)),const SizedBox(height:20)]));}
 class AppearanceScreen extends StatefulWidget {
   const AppearanceScreen({super.key});
   @override
@@ -1886,23 +1935,31 @@ class _AppearanceScreenState extends State<AppearanceScreen> {
               height: 180,
               child: Row(
                 children: [
-                  _AppearanceChoice('Light', '$_exactAssets/icon_sun.png', 0, selected, () => setState(() => selected = 0)),
+                  Expanded(child: _AppearanceChoice('Light', '$_exactAssets/icon_sun.png', 0, selected, () => setState(() => selected = 0))),
                   const SizedBox(width: 11),
-                  _AppearanceChoice('Dark', '$_exactAssets/icon_moon.png', 1, selected, () => setState(() => selected = 1)),
+                  Expanded(child: _AppearanceChoice('Dark', '$_exactAssets/icon_moon.png', 1, selected, () => setState(() => selected = 1))),
                   const SizedBox(width: 11),
-                  _AppearanceChoice('System', '$_exactAssets/appearance_system_exact.png', 2, selected, () => setState(() => selected = 2)),
+                  Expanded(child: _AppearanceChoice('System', '$_exactAssets/appearance_system_exact.png', 2, selected, () => setState(() => selected = 2))),
                 ],
               ),
             ),
             const SizedBox(height: 24),
             ClipRRect(
               borderRadius: BorderRadius.circular(6),
-              child: Image.asset(
-                '$_exactAssets/appearance_preview_exact.png',
-                width: 358,
-                height: 384,
-                fit: BoxFit.cover,
-                filterQuality: FilterQuality.high,
+              child: AspectRatio(
+                aspectRatio: 358 / 384,
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    Image.asset('$_exactAssets/appearance_preview_exact.png', fit: BoxFit.cover, filterQuality: FilterQuality.high),
+                    Positioned.fill(
+                      top: 64,
+                      left: 24,
+                      right: 24,
+                      child: Image.asset('$_exactAssets/settings_profile_images__Davopay_and_Davochain_3__Profile_Image.png', fit: BoxFit.contain, alignment: Alignment.bottomCenter, filterQuality: FilterQuality.high),
+                    ),
+                  ],
+                ),
               ),
             ),
             const SizedBox(height: 24),
@@ -1921,7 +1978,7 @@ class _HelpTopicRow extends StatelessWidget {
   final String asset, title, subtitle;
 
   @override
-  Widget build(BuildContext context) => Container(
+  Widget build(BuildContext context) => ConstrainedBox(
         constraints: const BoxConstraints(minHeight: 67),
         child: Row(
           children: [
@@ -1980,11 +2037,7 @@ class _EditableInfoField extends StatelessWidget {
                     child: TextFormField(
                       initialValue: value,
                       style: _t14,
-                      decoration: const InputDecoration(
-                        isDense: true,
-                        border: InputBorder.none,
-                        enabledBorder: InputBorder.none,
-                        focusedBorder: InputBorder.none,
+                      decoration: const DavoInlineInputDecoration(
                         contentPadding: EdgeInsets.zero,
                       ),
                     ),
@@ -2003,31 +2056,6 @@ class _EditableInfoField extends StatelessWidget {
             ),
           ],
         ),
-      );
-}
-class _ReadOnlyValue extends StatelessWidget {
-  const _ReadOnlyValue({required this.label, required this.value});
-  final String label, value;
-
-  @override
-  Widget build(BuildContext context) => Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(label, style: _t14m),
-          const SizedBox(height: 6),
-          Container(
-            width: double.infinity,
-            height: 48,
-            alignment: Alignment.centerLeft,
-            padding: const EdgeInsets.symmetric(horizontal: 14),
-            decoration: BoxDecoration(
-              color: const Color(0xFFF8F9FB),
-              border: Border.all(color: const Color(0xFFEBEDF3)),
-              borderRadius: BorderRadius.circular(4),
-            ),
-            child: Text(value, style: _t14),
-          ),
-        ],
       );
 }
 class _BvnHintPill extends StatelessWidget {
@@ -2234,7 +2262,6 @@ class _KycRequirementLine extends StatelessWidget {
       );
 }
 
-class _CheckLine extends StatelessWidget{const _CheckLine(this.text);final String text;@override Widget build(BuildContext context)=>Padding(padding:const EdgeInsets.only(bottom:12),child:Row(crossAxisAlignment:CrossAxisAlignment.start,children:[Image.asset('$_exactAssets/icon_check.png',width:18,height:18,filterQuality:FilterQuality.high),const SizedBox(width:10),Expanded(child:Text(text,style:_t14))]));}
 class _TierCard extends StatelessWidget {
   const _TierCard({
     required this.tier,
@@ -2701,58 +2728,12 @@ class _Tier3DocumentNotice extends StatelessWidget {
       );
 }
 
-class _UploadCard extends StatelessWidget {
-  const _UploadCard({required this.title, required this.subtitle, required this.done, required this.onTap});
-  final String title, subtitle;
-  final bool done;
-  final VoidCallback onTap;
-  @override
-  Widget build(BuildContext context) => InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(8),
-        child: Container(
-          padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(
-            border: Border.all(color: done ? AppColors.primary : const Color(0xFFEBEDF3)),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Row(
-            children: [
-              Container(
-                width: 40,
-                height: 40,
-                alignment: Alignment.center,
-                decoration: const BoxDecoration(color: Color(0xFFEAF2FF), shape: BoxShape.circle),
-                child: Image.asset(
-                  done ? '$_exactAssets/icon_shield_check.png' : '$_exactAssets/icon_upload.png',
-                  width: 22,
-                  height: 22,
-                  filterQuality: FilterQuality.high,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(title, style: _t14b),
-                    if (subtitle.isNotEmpty) Text(subtitle, style: _t12),
-                  ],
-                ),
-              ),
-              Image.asset('$_exactAssets/icon_arrow_right.png', width: 16, height: 16),
-            ],
-          ),
-        ),
-      );
-}
-
 class _BankAccountCard extends StatelessWidget{const _BankAccountCard({required this.logo,required this.name,required this.bank,required this.number});final String logo,name,bank,number;@override Widget build(BuildContext context)=>Container(padding:const EdgeInsets.all(14),decoration:BoxDecoration(color:AppColors.offWhite,borderRadius:BorderRadius.circular(8)),child:Row(children:[Image.asset(logo,width:40,height:40,fit:BoxFit.contain,filterQuality:FilterQuality.high),const SizedBox(width:12),Expanded(child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Text(name,style:_t14b),Text(bank,style:_t12),Text(number,style:_t12)])),const _Pill('Verified')]));}
-Widget _SettingsAssetRow(String asset, String title, String subtitle, VoidCallback tap) =>
-    SizedBox(
-      height: 56,
+Widget _settingsAssetRow(String asset, String title, String subtitle, VoidCallback tap) =>
+    ConstrainedBox(
+      constraints: const BoxConstraints(minHeight: 56),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         child: InkWell(
           onTap: tap,
           child: Row(
@@ -2770,6 +2751,7 @@ Widget _SettingsAssetRow(String asset, String title, String subtitle, VoidCallba
               const SizedBox(width: 16),
               Expanded(
                 child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -3245,7 +3227,7 @@ class _ProfileActionRow extends StatelessWidget {
         ),
       );
 }
-class _DavoSwitch extends StatelessWidget{const _DavoSwitch({required this.value,required this.onChanged});final bool value;final ValueChanged<bool> onChanged;@override Widget build(BuildContext context)=>GestureDetector(onTap:()=>onChanged(!value),child:AnimatedContainer(duration:const Duration(milliseconds:220),width:48,height:26,padding:const EdgeInsets.all(3),decoration:BoxDecoration(color:value?const Color(0xFF1FAF5A):const Color(0xFFF5F6F9),borderRadius:BorderRadius.circular(52)),child:AnimatedAlign(duration:const Duration(milliseconds:220),alignment:value?Alignment.centerRight:Alignment.centerLeft,child:Container(width:20,height:20,decoration:BoxDecoration(shape:BoxShape.circle,color:Colors.white,boxShadow:[BoxShadow(color:Colors.black.withOpacity(.12),blurRadius:3)])))));}
+class _DavoSwitch extends StatelessWidget{const _DavoSwitch({required this.value,required this.onChanged});final bool value;final ValueChanged<bool> onChanged;@override Widget build(BuildContext context)=>GestureDetector(onTap:()=>onChanged(!value),child:AnimatedContainer(duration:const Duration(milliseconds:220),width:48,height:26,padding:const EdgeInsets.all(3),decoration:BoxDecoration(color:value?const Color(0xFF1FAF5A):const Color(0xFFF5F6F9),borderRadius:BorderRadius.circular(52)),child:AnimatedAlign(duration:const Duration(milliseconds:220),alignment:value?Alignment.centerRight:Alignment.centerLeft,child:Container(width:20,height:20,decoration:BoxDecoration(shape:BoxShape.circle,color:Colors.white,boxShadow:[BoxShadow(color:Colors.black.withValues(alpha: .12),blurRadius:3)])))));}
 class _InfoField extends StatelessWidget {
   const _InfoField({required this.label, required this.value});
   final String label, value;
@@ -3270,9 +3252,9 @@ class _InfoField extends StatelessWidget {
         ),
       );
 }
-Widget _StatusRow(String title,String status,bool good,VoidCallback? tap)=>InkWell(onTap:tap,child:Container(height:58,margin:const EdgeInsets.only(bottom:10),padding:const EdgeInsets.symmetric(horizontal:12),decoration:BoxDecoration(color:AppColors.offWhite,borderRadius:BorderRadius.circular(6)),child:Row(children:[Expanded(child:Text(title,style:_t14)),Text(status,style:TextStyle(fontFamily:'Sora',fontSize:11,color:good?const Color(0xFF1FAF5A):const Color(0xFF8D8D8D))),if(tap!=null) Padding(padding:const EdgeInsets.only(left:8),child:Image.asset('$_exactAssets/profile_chevron_exact.png',width:16,height:16,filterQuality:FilterQuality.high))])));
+Widget _statusRow(String title,String status,bool good,VoidCallback? tap)=>InkWell(onTap:tap,child:Container(height:58,margin:const EdgeInsets.only(bottom:10),padding:const EdgeInsets.symmetric(horizontal:12),decoration:BoxDecoration(color:AppColors.offWhite,borderRadius:BorderRadius.circular(6)),child:Row(children:[Expanded(child:Text(title,style:_t14)),Text(status,style:TextStyle(fontFamily:'Sora',fontSize:11,color:good?const Color(0xFF1FAF5A):const Color(0xFF8D8D8D))),if(tap!=null) Padding(padding:const EdgeInsets.only(left:8),child:Image.asset('$_exactAssets/profile_chevron_exact.png',width:16,height:16,filterQuality:FilterQuality.high))])));
 class _ChoiceTile extends StatelessWidget{const _ChoiceTile({required this.asset,required this.title,required this.subtitle,this.selected=false,required this.onTap});final String asset;final String title,subtitle;final bool selected;final VoidCallback onTap;@override Widget build(BuildContext context)=>InkWell(onTap:onTap,borderRadius:BorderRadius.circular(8),child:Container(height:70,padding:const EdgeInsets.symmetric(horizontal:14),decoration:BoxDecoration(border:Border.all(color:selected?AppColors.primary:const Color(0xFFEBEDF3)),borderRadius:BorderRadius.circular(8)),child:Row(children:[Image.asset(asset,width:24,height:24,fit:BoxFit.contain,filterQuality:FilterQuality.high),const SizedBox(width:14),Expanded(child:Column(mainAxisAlignment:MainAxisAlignment.center,crossAxisAlignment:CrossAxisAlignment.start,children:[Text(title,style:_t14b),Text(subtitle,style:_t12)])),Image.asset('$_profileIcons/profile_chevron.png',width:16,height:16)])));}
-Widget _IdTile(String asset,String title,String sub,bool selected,VoidCallback tap)=>Padding(padding:const EdgeInsets.only(bottom:14),child:_ChoiceTile(asset:asset,title:title,subtitle:sub,selected:selected,onTap:tap));
+Widget _idTile(String asset,String title,String sub,bool selected,VoidCallback tap)=>Padding(padding:const EdgeInsets.only(bottom:14),child:_ChoiceTile(asset:asset,title:title,subtitle:sub,selected:selected,onTap:tap));
 class _Bullet extends StatelessWidget{const _Bullet(this.text);final String text;@override Widget build(BuildContext context)=>Padding(padding:const EdgeInsets.only(bottom:12),child:Row(crossAxisAlignment:CrossAxisAlignment.start,children:[const Padding(padding:EdgeInsets.only(top:5),child:Icon(Icons.circle,size:6,color:AppColors.primary)),const SizedBox(width:10),Expanded(child:Text(text,style:_t12))]));}
 List<Widget> _cornerFrames()=>[const Positioned(left:30,top:30,child:_Corner()),const Positioned(right:30,top:30,child:RotatedBox(quarterTurns:1,child:_Corner())),const Positioned(right:30,bottom:30,child:RotatedBox(quarterTurns:2,child:_Corner())),const Positioned(left:30,bottom:30,child:RotatedBox(quarterTurns:3,child:_Corner()))];
 class _Corner extends StatelessWidget{const _Corner();@override Widget build(BuildContext context)=>Container(width:32,height:32,decoration:const BoxDecoration(border:Border(top:BorderSide(color:Colors.white,width:2),left:BorderSide(color:Colors.white,width:2))));}
@@ -3280,10 +3262,10 @@ class _AccountLimitTile extends StatelessWidget{const _AccountLimitTile({require
 class _Pill extends StatelessWidget{const _Pill(this.t);final String t;@override Widget build(BuildContext context)=>Container(padding:const EdgeInsets.symmetric(horizontal:9,vertical:4),decoration:BoxDecoration(color:const Color(0xFFE8EEFC),borderRadius:BorderRadius.circular(20)),child:Text(t,style:const TextStyle(fontFamily:'Sora',fontSize:10,color:AppColors.primary)));}
 class _Segment extends StatelessWidget{const _Segment({required this.left,required this.right,required this.rightSelected,required this.onChanged});final String left,right;final bool rightSelected;final ValueChanged<bool> onChanged;@override Widget build(BuildContext context)=>Container(height:55,padding:const EdgeInsets.all(6),decoration:BoxDecoration(color:const Color(0xFFEEF0F5),borderRadius:BorderRadius.circular(8)),child:Row(children:[Expanded(child:_SegButton(left,!rightSelected,()=>onChanged(false))),Expanded(child:_SegButton(right,rightSelected,()=>onChanged(true)))]));}
 class _SegButton extends StatelessWidget{const _SegButton(this.text,this.sel,this.tap);final String text;final bool sel;final VoidCallback tap;@override Widget build(BuildContext context)=>InkWell(onTap:tap,child:AnimatedContainer(duration:const Duration(milliseconds:200),alignment:Alignment.center,decoration:BoxDecoration(color:sel?Colors.white:Colors.transparent,borderRadius:BorderRadius.circular(7)),child:Text(text,style:TextStyle(fontFamily:'Sora',fontSize:12,fontWeight:sel?FontWeight.w600:FontWeight.w400,color:sel?AppColors.primary:AppColors.body))));}
-Widget _LimitBanner(String t)=>Container(height:51,padding:const EdgeInsets.symmetric(horizontal:16),alignment:Alignment.centerLeft,decoration:BoxDecoration(color:AppColors.offWhite,borderRadius:BorderRadius.circular(6)),child:Text(t,style:_t14));
+Widget _limitBanner(String t)=>Container(height:51,padding:const EdgeInsets.symmetric(horizontal:16),alignment:Alignment.centerLeft,decoration:BoxDecoration(color:AppColors.offWhite,borderRadius:BorderRadius.circular(6)),child:Text(t,style:_t14));
 class _ProgressLimit extends StatelessWidget{const _ProgressLimit(this.title,this.max);final String title,max;@override Widget build(BuildContext context)=>Container(padding:const EdgeInsets.all(16),decoration:BoxDecoration(color:AppColors.offWhite,borderRadius:BorderRadius.circular(6)),child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Text(title,style:_t14),const SizedBox(height:14),TweenAnimationBuilder<double>(duration:const Duration(milliseconds:600),tween:Tween(begin:0,end:.06),builder:(_,v,__)=>LinearProgressIndicator(value:v,minHeight:7,borderRadius:BorderRadius.circular(8),backgroundColor:const Color(0xFFE5E8EE),valueColor:const AlwaysStoppedAnimation(AppColors.primary))),const SizedBox(height:10),Row(children:[const Text('0.00 Spent',style:_t12),const Spacer(),Text('$max Spent',style:_t12)])]));}
 class _ActionCard extends StatelessWidget{const _ActionCard(this.asset,this.title,this.sub,this.tap);final String asset,title,sub;final VoidCallback tap;@override Widget build(BuildContext context)=>InkWell(onTap:tap,child:Container(padding:const EdgeInsets.all(14),decoration:BoxDecoration(color:AppColors.offWhite,borderRadius:BorderRadius.circular(8)),child:Row(children:[Container(width:42,height:42,alignment:Alignment.center,decoration:BoxDecoration(color:const Color(0xFFEAF2FF),borderRadius:BorderRadius.circular(8)),child:Image.asset(asset,width:22,height:22,filterQuality:FilterQuality.high)),const SizedBox(width:12),Expanded(child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Text(title,style:_t14b),Text(sub,style:_t12)])),Image.asset('$_exactAssets/profile_chevron_exact.png',width:16,height:16,filterQuality:FilterQuality.high)])));}
-Widget _DocOption(String a,String b)=>Container(width:double.infinity,margin:const EdgeInsets.only(bottom:12),padding:const EdgeInsets.all(14),decoration:BoxDecoration(border:Border.all(color:const Color(0xFFEBEDF3)),borderRadius:BorderRadius.circular(8)),child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Text(a,style:_t14b),const SizedBox(height:4),Text(b,style:_t12)]));
+Widget _docOption(String a,String b)=>Container(width:double.infinity,margin:const EdgeInsets.only(bottom:12),padding:const EdgeInsets.all(14),decoration:BoxDecoration(border:Border.all(color:const Color(0xFFEBEDF3)),borderRadius:BorderRadius.circular(8)),child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Text(a,style:_t14b),const SizedBox(height:4),Text(b,style:_t12)]));
 class _Input extends StatelessWidget {
   const _Input({
     required this.label,
@@ -3295,6 +3277,8 @@ class _Input extends StatelessWidget {
     this.labelSize = 14,
     this.hintSize = 14,
     this.hintFontFamily = 'Sora',
+    this.maxLength,
+    this.inputFormatters,
   });
 
   final String label, hint;
@@ -3303,6 +3287,8 @@ class _Input extends StatelessWidget {
   final TextInputType? keyboard;
   final double labelSize, hintSize;
   final String hintFontFamily;
+  final int? maxLength;
+  final List<TextInputFormatter>? inputFormatters;
 
   @override
   Widget build(BuildContext context) {
@@ -3329,6 +3315,8 @@ class _Input extends StatelessWidget {
             controller: controller,
             obscureText: obscure,
             keyboardType: keyboard,
+            maxLength: maxLength,
+            inputFormatters: inputFormatters,
             style: TextStyle(
               fontFamily: hintFontFamily,
               fontSize: hintSize,
@@ -3339,6 +3327,7 @@ class _Input extends StatelessWidget {
               filled: figmaFilled,
               fillColor: figmaFilled ? const Color(0xFFF8F9FB) : Colors.white,
               hintText: hint,
+              counterText: maxLength == null ? null : '',
               hintStyle: TextStyle(
                 fontFamily: hintFontFamily,
                 fontSize: hintSize,
@@ -3428,24 +3417,15 @@ class _NotifAssetItem extends StatelessWidget {
         ),
       );
 }
-class _NotifItem extends StatelessWidget{const _NotifItem(this.icon,this.title,this.sub,this.time,this.color);final IconData icon;final String title,sub,time;final Color color;@override Widget build(BuildContext context)=>Container(padding:const EdgeInsets.symmetric(vertical:12),decoration:const BoxDecoration(border:Border(bottom:BorderSide(color:Color(0xFFF2F3F7)))),child:Row(crossAxisAlignment:CrossAxisAlignment.start,children:[Container(width:34,height:34,decoration:BoxDecoration(color:color.withOpacity(.12),borderRadius:BorderRadius.circular(8)),child:Icon(icon,color:color,size:18)),const SizedBox(width:11),Expanded(child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Text(title,style:_t14b),const SizedBox(height:3),Text(sub,style:_t12)])),const SizedBox(width:8),Text(time,style:const TextStyle(fontFamily:'Sora',fontSize:10,color:Color(0xFF8D8D8D)))]));}
-Widget _SettingsRow(IconData i,String t,VoidCallback tap)=>InkWell(onTap:tap,child:Container(height:58,decoration:const BoxDecoration(border:Border(bottom:BorderSide(color:Color(0xFFF2F3F7)))),child:Row(children:[Container(width:32,height:32,decoration:BoxDecoration(color:const Color(0xFFEAF2FF),borderRadius:BorderRadius.circular(8)),child:Icon(i,color:AppColors.primary,size:17)),const SizedBox(width:12),Expanded(child:Text(t,style:_t14)),Image.asset('$_exactAssets/profile_chevron_exact.png',width:16,height:16,filterQuality:FilterQuality.high)])));
-Widget _ToggleRow(String t, String s, bool v, ValueChanged<bool> on) {
-  final tall = s.length > 48;
-  final totalHeight = tall ? 76.0 : 59.0;
-  return SizedBox(
-    height: totalHeight,
-    child: Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12),
-      child: Align(
-        alignment: Alignment.topCenter,
-        child: SizedBox(
-          height: tall ? 59 : 42,
+Widget _toggleRow(String t, String s, bool v, ValueChanged<bool> on) {
+  return Padding(
+      padding: const EdgeInsets.fromLTRB(12, 0, 12, 17),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(
                 child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(t, style: _t14b),
@@ -3457,16 +3437,13 @@ Widget _ToggleRow(String t, String s, bool v, ValueChanged<bool> on) {
               const SizedBox(width: 10),
               Padding(
                 padding: const EdgeInsets.only(top: 8),
-                child: _DavoSwitch(value: v, onChanged: on),
+                child: Semantics(label: t, toggled: v, child: _DavoSwitch(value: v, onChanged: on)),
               ),
             ],
           ),
-        ),
-      ),
-    ),
   );
 }
-Widget _RadioChoice(String t, bool sel, VoidCallback tap) => InkWell(
+Widget _radioChoice(String t, bool sel, VoidCallback tap) => InkWell(
       onTap: tap,
       child: Container(
         height: 58,
@@ -3489,8 +3466,6 @@ Widget _RadioChoice(String t, bool sel, VoidCallback tap) => InkWell(
         ),
       ),
     );
-class _HubAction extends StatelessWidget{const _HubAction(this.t,this.s,this.tap);final String t,s;final VoidCallback tap;@override Widget build(BuildContext context)=>Padding(padding:const EdgeInsets.only(bottom:10),child:InkWell(onTap:tap,child:Container(padding:const EdgeInsets.all(12),decoration:BoxDecoration(color:Colors.white,borderRadius:BorderRadius.circular(8)),child:Row(children:[Expanded(child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Text(t,style:_t14b),Text(s,style:_t12)])),Image.asset('$_exactAssets/profile_chevron_exact.png',width:16,height:16,filterQuality:FilterQuality.high)]))));}
-class _ArticleLink extends StatelessWidget{const _ArticleLink(this.t);final String t;@override Widget build(BuildContext context)=>Container(padding:const EdgeInsets.symmetric(vertical:13),decoration:const BoxDecoration(border:Border(bottom:BorderSide(color:Color(0xFFF2F3F7)))),child:Row(children:[Expanded(child:Text(t,style:_t14)),Image.asset('$_exactAssets/profile_chevron_exact.png',width:16,height:16,filterQuality:FilterQuality.high)]));}
 class _AgentHeader extends StatelessWidget {
   const _AgentHeader({this.small = false});
   final bool small;
@@ -3519,8 +3494,8 @@ class _AgentHeader extends StatelessWidget {
       );
 }
 class _ChatBubble extends StatelessWidget{const _ChatBubble({required this.text});final String text;@override Widget build(BuildContext context)=>Container(padding:const EdgeInsets.all(13),decoration:BoxDecoration(color:AppColors.offWhite,borderRadius:BorderRadius.circular(12)),child:Text(text,style:_t12));}
-Widget _ReferralBox()=>Container(padding:const EdgeInsets.all(14),decoration:BoxDecoration(color:AppColors.offWhite,borderRadius:BorderRadius.circular(8)),child:Column(children:[const Row(children:[Expanded(child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Text('manish1',style:_t14b),Text('Your referral code',style:_t12)])),Icon(Icons.copy,size:18,color:AppColors.primary)]),const Divider(height:24),Row(children:[const Expanded(child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Text('https://davopay.com/...',style:TextStyle(fontFamily:'Sora',fontSize:12,color:AppColors.primary)),Text('Your referral link',style:_t12)])),OutlinedButton(onPressed:(){},child:const Text('Share'))]) ]));
-Widget _SectionLink(String a,String b,VoidCallback tap)=>Container(padding:const EdgeInsets.all(14),decoration:BoxDecoration(color:AppColors.offWhite,borderRadius:BorderRadius.circular(8)),child:Row(children:[Expanded(child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Text(a,style:_t12),Text(b,style:_t14b)])),IconButton(onPressed:tap,icon:Image.asset('$_exactAssets/profile_chevron_exact.png',width:16,height:16,filterQuality:FilterQuality.high))]));
+Widget _referralBox()=>Container(padding:const EdgeInsets.all(14),decoration:BoxDecoration(color:AppColors.offWhite,borderRadius:BorderRadius.circular(8)),child:Column(children:[const Row(children:[Expanded(child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Text('manish1',style:_t14b),Text('Your referral code',style:_t12)])),Icon(Icons.copy,size:18,color:AppColors.primary)]),const Divider(height:24),Row(children:[const Expanded(child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Text('https://davochain.com/...',style:TextStyle(fontFamily:'Sora',fontSize:12,color:AppColors.primary)),Text('Your referral link',style:_t12)])),OutlinedButton(onPressed:(){},child:const Text('Share'))]) ]));
+Widget _sectionLink(String a,String b,VoidCallback tap)=>Container(padding:const EdgeInsets.all(14),decoration:BoxDecoration(color:AppColors.offWhite,borderRadius:BorderRadius.circular(8)),child:Row(children:[Expanded(child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Text(a,style:_t12),Text(b,style:_t14b)])),IconButton(onPressed:tap,icon:Image.asset('$_exactAssets/profile_chevron_exact.png',width:16,height:16,filterQuality:FilterQuality.high))]));
 class _HowItWorks extends StatelessWidget{const _HowItWorks();@override Widget build(BuildContext context)=>Container(padding:const EdgeInsets.all(16),decoration:BoxDecoration(color:AppColors.offWhite,borderRadius:BorderRadius.circular(8)),child:const Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Text('How it works',style:_t16b),SizedBox(height:14),_Step('1','Send Invite','Share your unique link or code with your friends via social media or direct message.'),_Step('2','Friend Joins','Your friend signs up and completes a successful transaction of NGN50,000'),_Step('3','Get Paid','You and your friend get credited with Đ2,000 Davo Points.') ]));}
 class _Step extends StatelessWidget{const _Step(this.n,this.t,this.s);final String n,t,s;@override Widget build(BuildContext context)=>Padding(padding:const EdgeInsets.only(bottom:16),child:Row(crossAxisAlignment:CrossAxisAlignment.start,children:[CircleAvatar(radius:12,backgroundColor:Colors.white,child:Text(n,style:const TextStyle(fontFamily:'Sora',fontSize:10,color:AppColors.primary))),const SizedBox(width:10),Expanded(child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Text(t,style:_t14b),Text(s,style:_t12)]))]));}
 class _StatsGrid extends StatelessWidget{const _StatsGrid(this.items);final List<(String,String)> items;@override Widget build(BuildContext context)=>GridView.count(crossAxisCount:2,shrinkWrap:true,physics:const NeverScrollableScrollPhysics(),mainAxisSpacing:10,crossAxisSpacing:10,childAspectRatio:2.15,children:items.map((e)=>Container(padding:const EdgeInsets.all(12),decoration:BoxDecoration(color:AppColors.offWhite,borderRadius:BorderRadius.circular(8)),child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Text(e.$1,style:_t12),const Spacer(),Text(e.$2,style:const TextStyle(fontFamily:'Sora',fontSize:17,fontWeight:FontWeight.w700,color:AppColors.primary))]))).toList());}
@@ -3528,7 +3503,6 @@ class _PersonRow extends StatelessWidget{const _PersonRow(this.name,this.date,th
 class _ActivityRow extends StatelessWidget{const _ActivityRow(this.t,this.v);final String t,v;@override Widget build(BuildContext context)=>Container(padding:const EdgeInsets.symmetric(vertical:12),decoration:const BoxDecoration(border:Border(bottom:BorderSide(color:Color(0xFFF2F3F7)))),child:Row(children:[CircleAvatar(radius:18,backgroundColor:const Color(0xFFEAF2FF),child:Padding(padding:const EdgeInsets.all(9),child:Image.asset('$_exactAssets/icon_gift.png'))),const SizedBox(width:10),Expanded(child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Text(t,style:_t14b),const Text('Oct 24, 2023 • 14:32',style:_t12)])),Text(v,style:const TextStyle(fontFamily:'Sora',fontSize:12,color:Color(0xFF1FAF5A),fontWeight:FontWeight.w600))]));}
 
 class _QuickAssetAction extends StatelessWidget{const _QuickAssetAction(this.asset,this.t,this.tap);final String asset,t;final VoidCallback tap;@override Widget build(BuildContext context)=>InkWell(onTap:tap,child:Column(children:[CircleAvatar(radius:20,backgroundColor:const Color(0xFFEAF2FF),child:Padding(padding:const EdgeInsets.all(10),child:Image.asset(asset,fit:BoxFit.contain,filterQuality:FilterQuality.high))),const SizedBox(height:6),Text(t,textAlign:TextAlign.center,style:const TextStyle(fontFamily:'Sora',fontSize:9,color:AppColors.body))]));}
-class _QuickAction extends StatelessWidget{const _QuickAction(this.i,this.t,this.tap);final IconData i;final String t;final VoidCallback tap;@override Widget build(BuildContext context)=>InkWell(onTap:tap,child:Column(children:[CircleAvatar(radius:20,backgroundColor:const Color(0xFFEAF2FF),child:Icon(i,size:18,color:AppColors.primary)),const SizedBox(height:6),Text(t,textAlign:TextAlign.center,style:const TextStyle(fontFamily:'Sora',fontSize:9,color:AppColors.body))]));}
 class _Podium extends StatelessWidget {
   const _Podium(this.rank, this.name, this.refs, this.h);
   final String rank, name, refs;
@@ -3695,7 +3669,7 @@ class _RankRow extends StatelessWidget {
 class _HelpCategory extends StatelessWidget{const _HelpCategory(this.t,this.s,this.c);final String t,s,c;@override Widget build(BuildContext context)=>ExpansionTile(tilePadding:EdgeInsets.zero,childrenPadding:const EdgeInsets.only(bottom:12),title:Text(t,style:_t14b),subtitle:Text(s,maxLines:2,overflow:TextOverflow.ellipsis,style:_t12),trailing:Column(mainAxisAlignment:MainAxisAlignment.center,children:[Image.asset('$_exactAssets/profile_chevron_exact.png',width:16,height:16,filterQuality:FilterQuality.high),Text(c,style:const TextStyle(fontFamily:'Sora',fontSize:9,color:AppColors.primary))]),children:[Align(alignment:Alignment.centerLeft,child:Text(s,style:_t12))]);}
 
 const _helpCats=<(String,String,String)>[
-('Getting Started','Everything you need to create your Davopay account, verify your identity, and start using the app.','10 Articles'),('Wallets & Balances','Learn how your NGN Wallet, USD Wallet, and other balances work, including funding and withdrawals.','12 Articles'),('Crypto Trading','Everything about buying, selling, depositing, withdrawing, and managing cryptocurrency on Davopay.','15 Articles'),('Gift Card Trading','Learn how to sell gift cards, supported brands, trade processing times, and payment settlements.','14 Articles'),('Virtual Cards','Everything you need to know about creating, funding, freezing, and using your Davopay Virtual Card.','13 Articles'),('USD Accounts','Learn how to create your USD account, receive international payments, and manage your USD balance.','11 Articles'),('Send Money','Learn how to transfer money to Nigerian bank accounts, other Davopay users, and supported destinations.','9 Articles'),('Receive Money','Everything about receiving payments into your NGN wallet, USD account, and crypto wallets.','8 Articles'),('Bill Payments','Learn how to pay for airtime, data, electricity, cable TV, betting, and other utility bills.','9 Articles'),('Rewards & Referrals','Everything about inviting friends, earning referral rewards, campaign bonuses, and reward withdrawals.','7 Articles'),('Fees & Transaction Limits','Understand transaction fees, withdrawal fees, trading fees, spending limits, and account limits.','8 Articles'),('Verification (KYC)','Everything about identity verification, accepted documents, verification levels, and account limits.','10 Articles'),('Security & Account Protection','Learn how to secure your account, reset your password, manage your PIN, enable biometrics, and report suspicious activity.','12 Articles'),('Transactions & Receipts','Understand transaction statuses, download receipts, track transfers, and resolve failed transactions.','9 Articles'),('Promotions & Campaigns','Stay informed about cashback offers, referral campaigns, seasonal promotions, and eligibility requirements.','6 Articles'),('Troubleshooting','Solutions for common issues such as login problems, OTP delays, failed payments, app performance, and wallet errors.','15 Articles'),('Contact Support','Find out how to reach the Davopay support team through live chat, email, or by submitting a support ticket.','5 Articles'),('Legal & Compliance',"Read Davopay's Terms of Service, Privacy Policy, AML policy, prohibited transactions, and regulatory compliance information.",'8 Articles')];
+('Getting Started','Everything you need to create your Davochain account, verify your identity, and start using the app.','10 Articles'),('Wallets & Balances','Learn how your NGN Wallet, USD Wallet, and other balances work, including funding and withdrawals.','12 Articles'),('Crypto Trading','Everything about buying, selling, depositing, withdrawing, and managing cryptocurrency on Davochain.','15 Articles'),('Gift Card Trading','Learn how to sell gift cards, supported brands, trade processing times, and payment settlements.','14 Articles'),('Virtual Cards','Everything you need to know about creating, funding, freezing, and using your Davochain Virtual Card.','13 Articles'),('USD Accounts','Learn how to create your USD account, receive international payments, and manage your USD balance.','11 Articles'),('Send Money','Learn how to transfer money to Nigerian bank accounts, other Davochain users, and supported destinations.','9 Articles'),('Receive Money','Everything about receiving payments into your NGN wallet, USD account, and crypto wallets.','8 Articles'),('Bill Payments','Learn how to pay for airtime, data, electricity, cable TV, betting, and other utility bills.','9 Articles'),('Rewards & Referrals','Everything about inviting friends, earning referral rewards, campaign bonuses, and reward withdrawals.','7 Articles'),('Fees & Transaction Limits','Understand transaction fees, withdrawal fees, trading fees, spending limits, and account limits.','8 Articles'),('Verification (KYC)','Everything about identity verification, accepted documents, verification levels, and account limits.','10 Articles'),('Security & Account Protection','Learn how to secure your account, reset your password, manage your PIN, enable biometrics, and report suspicious activity.','12 Articles'),('Transactions & Receipts','Understand transaction statuses, download receipts, track transfers, and resolve failed transactions.','9 Articles'),('Promotions & Campaigns','Stay informed about cashback offers, referral campaigns, seasonal promotions, and eligibility requirements.','6 Articles'),('Troubleshooting','Solutions for common issues such as login problems, OTP delays, failed payments, app performance, and wallet errors.','15 Articles'),('Contact Support','Find out how to reach the Davochain support team through live chat, email, or by submitting a support ticket.','5 Articles'),('Legal & Compliance',"Read Davochain's Terms of Service, Privacy Policy, AML policy, prohibited transactions, and regulatory compliance information.",'8 Articles')];
 const _people=<(String,String,String)>[('Jane Doe','Oct 24, 2023 • 14:32','Rewarded'),('Marcus Kane','Oct 24, 2023 • 14:32','Pending'),('Sarah Lim','Oct 24, 2023 • 14:32','Pending'),('Elena Rodriguez','Oct 24, 2023 • 14:32','Rewarded'),('Julian Smith','Oct 24, 2023 • 14:32','Pending'),('Lila Vance','Oct 24, 2023 • 14:32','Pending'),('Marcus Thorne','Oct 24, 2023 • 14:32','Rewarded')];
 const _rankings=<(String,String,String)>[('Jordan Smith','University of Nigeria Nsukka','32'),('Elena Rodriguez','Obafemi Awolowo University','30'),('Confidence Malik','University of Abuja','28'),('Samuel Meshack','Enugu State University','25'),('ELite Divine','Oko Poly','22'),('Chidera Favour','Akanu Ibiam Federal Poly','20'),('Success Chidinma','Akanu Ibiam Federal Poly','18')];
 
@@ -3703,10 +3677,9 @@ Future<void> _push(BuildContext c,Widget w)=>pushAppPage<void>(c,(_)=>w);
 void _snack(BuildContext c,String s)=>ScaffoldMessenger.of(c).showSnackBar(SnackBar(content:Text(s),behavior:SnackBarBehavior.floating));
 void _simple(BuildContext c,String title)=>_push(c,_Shell(title:title,child:Center(child:Text('$title\nDavochain',textAlign:TextAlign.center,style:_t16b))));
 Future<void> _uploadSheet(BuildContext context,String title)=>showModalBottomSheet(context:context,showDragHandle:true,builder:(c)=>SafeArea(child:Padding(padding:const EdgeInsets.fromLTRB(16,0,16,20),child:Column(mainAxisSize:MainAxisSize.min,children:[Align(alignment:Alignment.centerLeft,child:Text(title,style:_t16b)),const SizedBox(height:18),_PrimaryButton('Take a Photo',onTap:()=>Navigator.pop(c)),const SizedBox(height:10),OutlinedButton(onPressed:()=>Navigator.pop(c),style:OutlinedButton.styleFrom(minimumSize:const Size.fromHeight(48),side:const BorderSide(color:AppColors.primary)),child:const Text('Choose From Gallery')),const SizedBox(height:10),TextButton(onPressed:()=>Navigator.pop(c),child:const Text('Choose a file'))]))));
-Future<void> _socialDialog(BuildContext c,String s)=>showDialog(context:c,barrierColor:Colors.black.withOpacity(.35),builder:(d)=>Dialog(backgroundColor:Colors.white,shape:RoundedRectangleBorder(borderRadius:BorderRadius.circular(16)),insetPadding:const EdgeInsets.symmetric(horizontal:77),child:SizedBox(width:236,height:123,child:Padding(padding:const EdgeInsets.all(16),child:Column(mainAxisAlignment:MainAxisAlignment.center,crossAxisAlignment:CrossAxisAlignment.start,children:[Text('“Davopay” Wants to open “$s”',style:_t14),const SizedBox(height:19),Row(children:[Expanded(child:SizedBox(height:36,child:TextButton(onPressed:()=>Navigator.pop(d),style:TextButton.styleFrom(backgroundColor:const Color(0xFFF2F3F7),shape:RoundedRectangleBorder(borderRadius:BorderRadius.circular(4))),child:const Text('Cancel',style:TextStyle(fontFamily:'Sora',fontSize:14,color:AppColors.ink))))),const SizedBox(width:12),Expanded(child:SizedBox(height:36,child:TextButton(onPressed:()=>Navigator.pop(d),style:TextButton.styleFrom(backgroundColor:AppColors.primary,shape:RoundedRectangleBorder(borderRadius:BorderRadius.circular(4))),child:const Text('Open',style:TextStyle(fontFamily:'Sora',fontSize:14,color:Colors.white)))))])])))));
+Future<void> _socialDialog(BuildContext c,String s)=>showDialog(context:c,barrierColor:Colors.black.withValues(alpha: .35),builder:(d)=>Dialog(backgroundColor:Colors.white,shape:RoundedRectangleBorder(borderRadius:BorderRadius.circular(16)),insetPadding:const EdgeInsets.symmetric(horizontal:77),child:SizedBox(width:236,height:123,child:Padding(padding:const EdgeInsets.all(16),child:Column(mainAxisAlignment:MainAxisAlignment.center,crossAxisAlignment:CrossAxisAlignment.start,children:[Text('“Davochain” Wants to open “$s”',style:_t14),const SizedBox(height:19),Row(children:[Expanded(child:SizedBox(height:36,child:TextButton(onPressed:()=>Navigator.pop(d),style:TextButton.styleFrom(backgroundColor:const Color(0xFFF2F3F7),shape:RoundedRectangleBorder(borderRadius:BorderRadius.circular(4))),child:const Text('Cancel',style:TextStyle(fontFamily:'Sora',fontSize:14,color:AppColors.ink))))),const SizedBox(width:12),Expanded(child:SizedBox(height:36,child:TextButton(onPressed:()=>Navigator.pop(d),style:TextButton.styleFrom(backgroundColor:AppColors.primary,shape:RoundedRectangleBorder(borderRadius:BorderRadius.circular(4))),child:const Text('Open',style:TextStyle(fontFamily:'Sora',fontSize:14,color:Colors.white)))))])])))));
 Future<void> _logoutDialog(BuildContext c)=>showDialog(context:c,builder:(d)=>AlertDialog(title:const Text('Logout'),content:const Text('Are you sure you want to logout?'),actions:[TextButton(onPressed:()=>Navigator.pop(d),child:const Text('Cancel')),TextButton(onPressed:()=>Navigator.pop(d),child:const Text('Logout',style:TextStyle(color:Color(0xFFF44336))))]));
 Future<void> _deleteAccountDialog(BuildContext c)=>showDialog(context:c,builder:(d)=>AlertDialog(title:const Text('Delete Account'),content:const Text('Are you sure you want to delete your account?'),actions:[TextButton(onPressed:()=>Navigator.pop(d),child:const Text('Cancel')),TextButton(onPressed:()=>Navigator.pop(d),child:const Text('Delete Account',style:TextStyle(color:Color(0xFFF44336))))]));
-Future<void> _themeSheet(BuildContext c)=>showModalBottomSheet(context:c,builder:(x)=>SafeArea(child:Padding(padding:const EdgeInsets.all(18),child:Column(mainAxisSize:MainAxisSize.min,crossAxisAlignment:CrossAxisAlignment.start,children:[const Text('Theme',style:_t20),const SizedBox(height:12),ListTile(leading:const Icon(Icons.light_mode_outlined),title:const Text('Light'),trailing:const Icon(Icons.check,color:AppColors.primary),onTap:()=>Navigator.pop(x)),ListTile(leading:const Icon(Icons.dark_mode_outlined),title:const Text('Dark'),onTap:()=>Navigator.pop(x))]))));
 
 const _navSora20 = TextStyle(fontFamily:'Sora',fontSize:20,fontWeight:FontWeight.w400,color:Color(0xFF424242),height:1.35);
 const _navInter20 = TextStyle(fontFamily:'Inter',fontSize:20,fontWeight:FontWeight.w500,color:AppColors.ink,height:1.35);
@@ -3729,4 +3702,3 @@ const _t14m=TextStyle(fontFamily:'Sora',fontSize:14,fontWeight:FontWeight.w500,c
 const _t14b=TextStyle(fontFamily:'Sora',fontSize:14,fontWeight:FontWeight.w600,color:AppColors.ink,height:1.35);
 const _t12=TextStyle(fontFamily:'Sora',fontSize:12,fontWeight:FontWeight.w400,color:Color(0xFF686868),height:1.35);
 const _t12b=TextStyle(fontFamily:'Sora',fontSize:12,fontWeight:FontWeight.w600,color:AppColors.ink,height:1.35);
-const _cap=TextStyle(fontFamily:'Sora',fontSize:11,fontWeight:FontWeight.w600,color:Color(0xFF686868),letterSpacing:.4);
