@@ -1586,10 +1586,10 @@ class _CryptoDepositScreenState extends State<CryptoDepositScreen> {
               height: 30,
               child: Text('Share your wallet Address or save to use', style: TextStyle(fontFamily: 'Sora', fontSize: 12, height: 1.25, color: Color(0xFF424242))),
             ),
-            const Positioned(left: 137, top: 124.2, child: _ShareAction(assetPath: 'assets/figma_exact/share_download_exact.png', label: 'Download', color: AppColors.primary)),
-            const Positioned(left: 206, top: 124.2, child: _ShareAction(assetPath: 'assets/figma_exact/share_x_exact.png', label: 'X', color: Color(0xFF1C1C1C))),
-            const Positioned(left: 263, top: 124.2, child: _ShareAction(assetPath: 'assets/figma_exact/share_telegram_exact.png', label: 'Telegram', color: Color(0xFF29A9EA), iconSize: 26)),
-            const Positioned(left: 327, top: 124.2, child: _ShareAction(assetPath: 'assets/figma_exact/share_more_exact.png', label: 'More', color: Color(0xFFEEF0F5))),
+            const Positioned(left: 137, top: 124.2, child: _ShareAction(assetPath: 'assets/figma_exact/share_download_native_exact.png', label: 'Download', color: AppColors.primary)),
+            const Positioned(left: 206, top: 124.2, child: _ShareAction(assetPath: 'assets/figma_exact/share_x_native_exact.png', label: 'X', color: Color(0xFF1C1C1C))),
+            const Positioned(left: 263, top: 124.2, child: _ShareAction(assetPath: 'assets/figma_exact/share_telegram_native_exact.png', label: 'Telegram', color: Color(0xFF29A9EA), iconWidth: 23, iconHeight: 26)),
+            const Positioned(left: 327, top: 124.2, child: _ShareAction(assetPath: 'assets/figma_exact/share_more_native_exact.png', label: 'More', color: Color(0xFFEEF0F5))),
           ],
         ),
       ),
@@ -1650,7 +1650,7 @@ class _SharePreview extends StatelessWidget {
     return Container(
       width: 84.6,
       height: 124.4,
-      decoration: BoxDecoration(color: Colors.white, border: Border.all(color: const Color(0xFFEBEDF3), width: .5), borderRadius: BorderRadius.circular(4)),
+      decoration: BoxDecoration(color: Colors.white, border: Border.all(color: const Color(0xFFB3B3B3), width: 1), borderRadius: BorderRadius.circular(4)),
       child: Stack(
         children: [
           Positioned(left: 9.6, top: 8.2, child: Text('Deposit ${asset.symbol}', style: const TextStyle(fontFamily: 'Sora', fontSize: 3.21, fontWeight: FontWeight.w500, height: 1.25, color: Colors.black))),
@@ -1673,9 +1673,9 @@ class _SharePreview extends StatelessWidget {
           Positioned(
             left: 29.8,
             top: 110,
-            width: 25,
+            width: 24.9,
             height: 5,
-            child: FittedBox(fit: BoxFit.contain, child: Row(mainAxisSize: MainAxisSize.min, children: [Image.asset('assets/images/brand/davochain_logo.png', width: 18, height: 12), const SizedBox(width: 3), const Text('Davochain', style: TextStyle(fontFamily: 'Sora', fontSize: 8, fontWeight: FontWeight.w700))])),
+            child: Image.asset('assets/figma_exact/share_preview_lockup_exact.png', width: 24.9, height: 5, fit: BoxFit.fill, filterQuality: FilterQuality.high),
           ),
         ],
       ),
@@ -1688,13 +1688,15 @@ class _ShareAction extends StatelessWidget {
     required this.assetPath,
     required this.label,
     required this.color,
-    this.iconSize = 24,
+    this.iconWidth = 24,
+    this.iconHeight = 24,
   });
 
   final String assetPath;
   final String label;
   final Color color;
-  final double iconSize;
+  final double iconWidth;
+  final double iconHeight;
 
   @override
   Widget build(BuildContext context) {
@@ -1708,7 +1710,7 @@ class _ShareAction extends StatelessWidget {
           height: 40,
           alignment: Alignment.center,
           decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-          child: Image.asset(assetPath, width: iconSize, height: iconSize, fit: BoxFit.contain, filterQuality: FilterQuality.high),
+          child: Image.asset(assetPath, width: iconWidth, height: iconHeight, fit: BoxFit.fill, filterQuality: FilterQuality.high),
         ),
         const SizedBox(height: 6),
         Text(label, textAlign: TextAlign.center, style: const TextStyle(fontFamily: 'Sora', fontSize: 10, height: 1.3, color: Color(0xFF424242))),

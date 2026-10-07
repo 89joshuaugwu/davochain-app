@@ -13,9 +13,9 @@ Purpose: preserve checkpoint status so later passes **do not redo completed work
 
 - [x] Naira Withdraw **full-screen** alignment (separate from `_NairaConfirm`, which was already closed). See `WIDER_AUDIT_WITHDRAW_ALIGNMENT_V12.md`.
 - [x] Final internal/external Crypto Withdraw **full-screen** polish. See `WIDER_AUDIT_WITHDRAW_ALIGNMENT_V12.md`.
-- [ ] Scan/Paste Address final verification.
+- [x] Scan/Paste Address final verification. See `WIDER_AUDIT_SCAN_SHARE_V12.md`.
 - [ ] Deposit final verification.
-- [ ] Share Address final check.
+- [x] Share Address final check. See `WIDER_AUDIT_SCAN_SHARE_V12.md`.
 - [ ] Transaction PIN 4-vs-5 digit inconsistency reconciliation.
 - [ ] Progress / success / detail / receipt final pixel pass.
 - [ ] Transaction-flow CTA/back/cancel cleanup.

@@ -1826,11 +1826,27 @@ class ScanPasteAddressScreen extends StatefulWidget {
 
 class _ScanPasteAddressScreenState extends State<ScanPasteAddressScreen> {
   int mode = 0;
+  final TextEditingController _addressController = TextEditingController();
+
+  @override
+  void dispose() {
+    _addressController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _pasteAddress() async {
+    final data = await Clipboard.getData(Clipboard.kTextPlain);
+    final value = data?.text?.trim() ?? '';
+    if (!mounted || value.isEmpty) return;
+    _addressController.text = value;
+    _addressController.selection = TextSelection.collapsed(offset: value.length);
+    setState(() {});
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFFF8F9FB),
       body: SafeArea(
         bottom: false,
         child: Stack(
@@ -1902,24 +1918,49 @@ class _ScanPasteAddressScreenState extends State<ScanPasteAddressScreen> {
                     ],
                   ),
                 ),
-              )
-            else
+              ),
+            if (mode == 1) ...[
               Positioned(
                 left: 16,
-                right: 16,
                 top: 141,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    const _Field(
-                      label: 'Wallet Address',
-                      child: Text('bc1qctsh702f0vsh76juj2whathjyt74dffc0nj6t9', style: TextStyle(fontFamily: 'Sora', fontSize: 12, color: AppColors.ink)),
+                width: 358,
+                height: 48,
+                child: TextField(
+                  controller: _addressController,
+                  onChanged: (_) => setState(() {}),
+                  textInputAction: TextInputAction.done,
+                  style: const TextStyle(fontFamily: 'Open Sans', fontSize: 16, height: 1.375, color: AppColors.ink),
+                  decoration: InputDecoration(
+                    hintText: 'Paste the wallet address',
+                    hintStyle: const TextStyle(fontFamily: 'Open Sans', fontSize: 16, height: 1.375, color: Color(0xFF686868)),
+                    filled: true,
+                    fillColor: const Color(0xFFF5F6F9),
+                    contentPadding: const EdgeInsets.fromLTRB(16, 13, 72, 13),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(4), borderSide: BorderSide.none),
+                    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(4), borderSide: BorderSide.none),
+                    focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(4), borderSide: const BorderSide(color: AppColors.primary, width: 1)),
+                    suffixIcon: SizedBox(
+                      width: 64,
+                      child: TextButton(
+                        onPressed: _pasteAddress,
+                        style: TextButton.styleFrom(padding: EdgeInsets.zero, foregroundColor: AppColors.primary),
+                        child: const Text('Paste', style: TextStyle(fontFamily: 'Sora', fontSize: 12, fontWeight: FontWeight.w600, height: 1.25)),
+                      ),
                     ),
-                    const SizedBox(height: 20),
-                    _Button(label: 'Use Address', onTap: () => Navigator.pop(context, 'bc1qctsh702f0vsh76juj2whathjyt74dffc0nj6t9')),
-                  ],
+                  ),
                 ),
               ),
+              Positioned(
+                left: 16,
+                top: 209,
+                width: 358,
+                child: _Button(
+                  label: 'Use Address',
+                  enabled: _addressController.text.trim().isNotEmpty,
+                  onTap: () => Navigator.pop(context, _addressController.text.trim()),
+                ),
+              ),
+            ],
           ],
         ),
       ),
