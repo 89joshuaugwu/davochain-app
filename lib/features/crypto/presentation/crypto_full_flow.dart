@@ -1,3 +1,6 @@
+import '../../../shared/widgets/trade_form_layout.dart';
+import '../../buy_crypto/presentation/buy_crypto_screens.dart';
+import '../../../shared/widgets/transaction_pin_entry.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -75,26 +78,26 @@ class _WithdrawWalletSheet extends StatelessWidget {
           children: [
             Positioned(left: 0, right: 0, top: 6, child: Center(child: Container(width: 85, height: 4, decoration: BoxDecoration(color: const Color(0xFF686868), borderRadius: BorderRadius.circular(100))))),
             const Positioned(left: 0, right: 0, top: 32, child: Text('Select Wallet', textAlign: TextAlign.center, style: TextStyle(fontFamily: 'Sora', fontSize: 14, height: 1.35, color: AppColors.ink))),
-            Positioned(left: 342, top: 20, width: 32, height: 32, child: InkResponse(onTap: () => Navigator.pop(context), radius: 20, child: Image.asset('$_exact/crypto_close_exact.png', width: 32, height: 32))),
+            Positioned(right: 16, top: 20, width: 32, height: 32, child: InkResponse(onTap: () => Navigator.pop(context), radius: 20, child: Image.asset('$_exact/crypto_close_exact.png', width: 32, height: 32))),
             Positioned(
               left: 16,
               top: 67,
+              right: 16,
               child: InkWell(
                 onTap: () => Navigator.pop(context, _WithdrawWallet.crypto),
                 child: SizedBox(
-                  width: 175,
-                  height: 34,
+                  height: 48,
                   child: Row(
                     children: [
                       Container(width: 34, height: 34, alignment: Alignment.center, decoration: const BoxDecoration(color: Color(0xFFD8E9FE), shape: BoxShape.circle), child: Image.asset('$_exact/crypto_plus_circle_exact.png', width: 24, height: 24)),
                       const SizedBox(width: 18),
-                      const Text('Add crypto asset', style: TextStyle(fontFamily: 'Sora', fontSize: 14, fontWeight: FontWeight.w600, height: 1.35, color: AppColors.ink)),
+                      const Expanded(child: Text('Add crypto asset', style: TextStyle(fontFamily: 'Sora', fontSize: 14, fontWeight: FontWeight.w600, height: 1.35, color: AppColors.ink))),
                     ],
                   ),
                 ),
               ),
             ),
-            Positioned(left: 16, right: 16, top: 125, child: _WalletSelectRow(asset: 'assets/images/brand/naira_coin.png', title: 'Nigeria Naira', symbol: 'NGN', iconSize: 40, onTap: () => Navigator.pop(context, _WithdrawWallet.naira))),
+            Positioned(left: 16, right: 16, top: 125, child: _WalletSelectRow(asset: '$_f/buy_nigeria.png', title: 'Nigeria Naira', symbol: 'NGN', iconSize: 40, onTap: () => Navigator.pop(context, _WithdrawWallet.naira))),
             Positioned(left: 16, right: 16, top: 188, child: _WalletSelectRow(asset: '$_f/btc.png', title: 'Bitcoin', symbol: 'BTC', onTap: () => Navigator.pop(context, _WithdrawWallet.crypto))),
             Positioned(left: 16, right: 16, top: 251, child: _WalletSelectRow(asset: '$_f/eth.png', title: 'Ethereum', symbol: 'ETH', onTap: () => Navigator.pop(context, _WithdrawWallet.crypto))),
             Positioned(left: 16, right: 16, top: 314, child: _WalletSelectRow(asset: '$_f/sol.png', title: 'Solana', symbol: 'SOL', onTap: () => Navigator.pop(context, _WithdrawWallet.crypto))),
@@ -152,7 +155,7 @@ class _SellWalletSheet extends StatelessWidget {
                 onTap: () => Navigator.pop(context, true),
                 child: Stack(
                   children: [
-                    Positioned(left: 0, top: 9, width: 32, height: 32, child: Image.asset('assets/images/brand/naira_coin.png', width: 32, height: 32, fit: BoxFit.contain)),
+                    Positioned(left: 0, top: 9, width: 32, height: 32, child: Image.asset('$_f/buy_nigeria.png', width: 32, height: 32, fit: BoxFit.contain)),
                     const Positioned(left: 44, top: 7, child: Text('Nigerian Naira', style: TextStyle(fontFamily: 'Sora', fontSize: 14, height: 1.35, color: AppColors.ink))),
                     const Positioned(left: 44, top: 28, child: Text('NGN', style: TextStyle(fontFamily: 'Sora', fontSize: 12, height: 1.25, color: AppColors.body))),
                     const Positioned(right: 0, top: 8, child: Text('0.00 USD', style: TextStyle(fontFamily: 'Sora', fontSize: 14, height: 1.35, color: AppColors.body))),
@@ -1316,164 +1319,10 @@ class TransferReviewScreen extends StatelessWidget { const TransferReviewScreen(
   Future<void> _pin(BuildContext context) async{final ok=await Navigator.push<bool>(context,AppPageRoute<bool>(builder:(_)=>const CryptoPinScreen()));if(!context.mounted||ok!=true)return;Navigator.pushReplacement(context,AppPageRoute<void>(builder:(_)=>TransactionProgressScreen(kind:kind,target:target,amount:amount)));}
 }
 
-class CryptoPinScreen extends StatefulWidget {
-  const CryptoPinScreen({super.key});
-  @override
-  State<CryptoPinScreen> createState() => _CryptoPinScreenState();
-}
-
-class _CryptoPinScreenState extends State<CryptoPinScreen> {
-  String pin = '';
-
-  void key(String value) {
-    HapticFeedback.selectionClick();
-    if (value == '⌫') {
-      if (pin.isNotEmpty) setState(() => pin = pin.substring(0, pin.length - 1));
-    } else if (pin.length < 4) {
-      setState(() => pin += value);
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final active = pin.length == 4;
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: SafeArea(
-        bottom: false,
-        child: AnimatedSwitcher(
-          duration: const Duration(milliseconds: 180),
-          child: active ? _buildActive(context) : _buildInactive(context),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildInactive(BuildContext context) => Stack(
-        key: const ValueKey('pin-inactive'),
-        children: [
-          Positioned(left: 3, top: 10, child: _AssetButton(asset: '$_f/buy_back.png', size: 24, onTap: () => Navigator.pop(context))),
-          Positioned(
-            left: 147,
-            top: 56,
-            child: Container(
-              width: 96,
-              height: 96,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.white, border: Border.all(color: const Color(0x4DC4C6CF)), boxShadow: const [BoxShadow(color: Color(0x1A000000), blurRadius: 8, offset: Offset(0, 2))]),
-              child: Image.asset('$_f/buy_pin_shield.png', width: 32, height: 40),
-            ),
-          ),
-          const Positioned(left: 54, top: 176, width: 282, height: 32, child: Text('Confirm Your Pin', textAlign: TextAlign.center, style: TextStyle(fontFamily: 'Sora', fontSize: 24, fontWeight: FontWeight.w600, height: 1.35, color: AppColors.ink))),
-          const Positioned(left: 54, top: 220, width: 282, height: 38, child: Text('Please enter your 4-digit security PIN to\nauthorize this transaction securely.', textAlign: TextAlign.center, style: TextStyle(fontFamily: 'Sora', fontSize: 14, height: 1.35, color: Color(0xFF424242)))),
-          Positioned(left: 63, top: 298, child: _PinSlots(pin: pin, active: false)),
-          const Positioned(left: 16, right: 16, top: 394, height: 19, child: Text('Enter Secure PIN', textAlign: TextAlign.center, style: TextStyle(fontFamily: 'Sora', fontSize: 14, height: 1.35, color: Color(0xFF424242)))),
-          Positioned(left: 22, right: 22, top: 443, child: _FigmaPinKeypad(onKey: key)),
-          const Positioned(left: 76, top: 743, width: 238, height: 15, child: Text('Authentication is required', textAlign: TextAlign.center, style: TextStyle(fontFamily: 'Sora', fontSize: 12, height: 1.25, color: Color(0xFF686868)))),
-          Positioned(
-            left: 104,
-            top: 774,
-            child: Row(
-              children: [
-                Image.asset('$_f/buy_lock.png', width: 11, height: 14),
-                const SizedBox(width: 8),
-                const Text('ENCRYPTED END-TO-END', style: TextStyle(fontFamily: 'Inter', fontSize: 11, fontWeight: FontWeight.w700, height: 1.5, letterSpacing: .1, color: Color(0xFF424242))),
-              ],
-            ),
-          ),
-        ],
-      );
-
-  Widget _buildActive(BuildContext context) => Stack(
-        key: const ValueKey('pin-active'),
-        children: [
-          Positioned(left: 3, top: 14, child: _AssetButton(asset: '$_f/buy_back.png', size: 24, onTap: () => Navigator.pop(context))),
-          const Positioned(left: 16, top: 60, width: 360, height: 32, child: Text('Confirm Your Pin', style: TextStyle(fontFamily: 'Sora', fontSize: 24, fontWeight: FontWeight.w600, height: 1.35, color: AppColors.ink))),
-          const Positioned(left: 16, top: 104, width: 360, height: 38, child: Text('Please enter your 4-digit security PIN to\nauthorize this transaction securely.', style: TextStyle(fontFamily: 'Sora', fontSize: 14, height: 1.35, color: Color(0xFF424242)))),
-          Positioned(left: 64, top: 158, child: _PinSlots(pin: pin, active: true)),
-          Positioned(left: 16, right: 14, top: 260, child: _Button(label: 'Confirm', onTap: () => Navigator.pop(context, true))),
-          Positioned(left: 22, right: 22, top: 516, child: _FigmaPinKeypad(onKey: key)),
-        ],
-      );
-}
-
-class _PinSlots extends StatelessWidget {
-  const _PinSlots({required this.pin, required this.active});
-  final String pin;
-  final bool active;
-
-  @override
-  Widget build(BuildContext context) => Row(
-        children: List.generate(4, (i) {
-          final filled = i < pin.length;
-          return Container(
-            width: 60,
-            height: 70,
-            margin: EdgeInsets.only(right: i == 3 ? 0 : 8),
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              color: active ? Colors.white : const Color(0xFFF5F6F9),
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: active ? AppColors.primary : const Color(0xFFEBEDF3)),
-              boxShadow: active ? const [BoxShadow(color: Color(0x26135CF7), blurRadius: 5, offset: Offset(0, 1))] : null,
-            ),
-            child: filled ? Text(pin[i], style: const TextStyle(fontFamily: 'Poppins', fontSize: 40, fontWeight: FontWeight.w500, height: .9, color: Color(0xFF555555))) : null,
-          );
-        }),
-      );
-}
-
-class _FigmaPinKeypad extends StatelessWidget {
-  const _FigmaPinKeypad({required this.onKey});
-  final ValueChanged<String> onKey;
-
-  static const keys = [
-    ('1', ''), ('2', 'ABC'), ('3', 'DEF'),
-    ('4', 'GHI'), ('5', 'JKL'), ('6', 'MNO'),
-    ('7', 'PQRS'), ('8', 'TUV'), ('9', 'WXYZ'),
-    ('', ''), ('0', ''), ('⌫', ''),
-  ];
-
-  @override
-  Widget build(BuildContext context) => SizedBox(
-        height: 205,
-        child: Column(
-          children: List.generate(4, (row) => Padding(
-            padding: EdgeInsets.only(bottom: row == 3 ? 0 : 7),
-            child: SizedBox(
-              height: 46,
-              child: Row(
-                children: List.generate(3, (col) {
-                  final data = keys[row * 3 + col];
-                  if (data.$1.isEmpty) return const SizedBox(width: 112);
-                  return Padding(
-                    padding: EdgeInsets.only(right: col == 2 ? 0 : 5),
-                    child: InkWell(
-                      onTap: () => onKey(data.$1),
-                      borderRadius: BorderRadius.circular(4.6),
-                      child: Container(
-                        width: 112,
-                        height: 46,
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(4.6), boxShadow: const [BoxShadow(color: Color(0x22000000), blurRadius: 2, offset: Offset(0, 1))]),
-                        child: data.$1 == '⌫'
-                            ? Image.asset('$_f/buy_backspace.png', width: 28, height: 20)
-                            : Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Text(data.$1, style: const TextStyle(fontSize: 25, height: 1.0, color: Colors.black)),
-                                  if (data.$2.isNotEmpty) Text(data.$2, style: const TextStyle(fontSize: 10, height: 1.1, color: Colors.black)),
-                                ],
-                              ),
-                      ),
-                    ),
-                  );
-                }),
-              ),
-            ),
-          )),
-        ),
-      );
+class CryptoPinScreen extends StatelessWidget {
+ const CryptoPinScreen({super.key});
+ @override
+ Widget build(BuildContext context) => TransactionPinEntryScreen(onConfirm: () => Navigator.pop(context, true));
 }
 
 class TransactionProgressScreen extends StatefulWidget {
@@ -1629,64 +1478,53 @@ class TransactionDetailsScreen extends StatelessWidget {
   Widget build(BuildContext context) => receipt ? _buildReceipt(context) : _buildDetails(context);
 
   Widget _buildDetails(BuildContext context) {
-    final conv = kind == TxKind.conversion;
-    final sell = kind == TxKind.sell;
-    final amountTopGap = (conv || sell) ? 12.0 : 59.0;
-    final cardTopGap = (kind == TxKind.internal) ? 40.0 : 32.0;
-    final cardHeight = switch (kind) { TxKind.internal => 287.0, TxKind.external => 375.0, TxKind.conversion => 385.0, TxKind.sell => 483.0 };
-    final afterCard = switch (kind) { TxKind.internal => 102.0, TxKind.external => 42.0, TxKind.conversion => 42.0, TxKind.sell => 55.0 };
-
-    return _FigmaFullScaffold(
-      child: Column(
-        children: [
-          _TopBar(title: 'Transaction Details', onBack: () => Navigator.pop(context), height: 40, fontSize: 14, fontWeight: FontWeight.w600),
-          SizedBox(height: amountTopGap),
-          SizedBox(height: 32, child: Center(child: Text((conv || sell) ? '0.0300 BTC' : '${amount.toStringAsFixed(4)} BTC', style: const TextStyle(fontFamily: 'Sora', fontSize: 24, fontWeight: FontWeight.w700, height: 1.35, color: AppColors.ink)))),
-          const SizedBox(height: 2),
-          const SizedBox(height: 19, child: Center(child: Text(r'$500.00 USD', style: TextStyle(fontFamily: 'Sora', fontSize: 14, height: 1.35, color: Color(0xFF424242))))),
-          const SizedBox(height: 16),
-          const SizedBox(height: 15, child: Center(child: Text('Completed', style: TextStyle(fontFamily: 'Sora', fontSize: 12, fontWeight: FontWeight.w600, height: 1.25, color: Color(0xFF1BA44D))))),
-          SizedBox(height: cardTopGap),
-          _TransactionDetailCard(kind: kind, target: target, amount: amount, height: cardHeight),
-          SizedBox(height: afterCard),
-          _Button(label: 'Done', onTap: () => Navigator.of(context).popUntil((r) => r.isFirst)),
-          if (!sell) ...[
-            const SizedBox(height: 13),
-            _Secondary(label: 'Share Receipt', onTap: () => Navigator.push(context, AppPageRoute<void>(builder: (_) => TransactionDetailsScreen(kind: kind, target: target, amount: amount, receipt: true)))),
-          ],
-        ],
-      ),
+    return Scaffold(
+      backgroundColor:const Color(0xFFF8F9FB),
+      body:SafeArea(child:Column(children:[
+        _TopBar(title:'Transaction Details',onBack:()=>Navigator.pop(context),height:48,fontSize:14,fontWeight:FontWeight.w600),
+        Expanded(child:SingleChildScrollView(padding:const EdgeInsets.all(16),child:Column(children:[
+          const SizedBox(height:24),
+          Text('${amount.toStringAsFixed(4)} BTC',style:const TextStyle(fontSize:24,fontWeight:FontWeight.w700)),
+          const SizedBox(height:6),
+          const Text(r'$500.00 USD',style:TextStyle(fontSize:14,color:AppColors.body)),
+          const SizedBox(height:16),
+          const Text('Completed',style:TextStyle(fontSize:12,color:Color(0xFF1BA44D),fontWeight:FontWeight.w600)),
+          const SizedBox(height:28),
+          _TransactionDetailCard(kind:kind,target:target,amount:amount,height:0),
+        ]))),
+        Padding(padding:const EdgeInsets.fromLTRB(16,12,16,16),child:Column(mainAxisSize:MainAxisSize.min,children:[
+          _Button(label:'Done',onTap:()=>Navigator.of(context).popUntil((r)=>r.isFirst)),
+          const SizedBox(height:12),
+          _Secondary(label:'Share Receipt',onTap:()=>Navigator.push(context,AppPageRoute<void>(builder:(_)=>TransactionDetailsScreen(kind:kind,target:target,amount:amount,receipt:true)))),
+        ])),
+      ])),
     );
   }
 
-  Widget _buildReceipt(BuildContext context) {
-    final conv = kind == TxKind.conversion;
-    final ext = kind == TxKind.external;
-    final cardHeight = conv ? 502.0 : ext ? 468.0 : 379.0;
-    return _FigmaFullScaffold(
-      child: Column(
-        children: [
-          _TopBar(title: 'Transaction Details', onBack: () => Navigator.pop(context), height: 40, fontSize: 14, fontWeight: FontWeight.w600),
-          const SizedBox(height: 41),
-          SizedBox(
-            height: 27,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Image.asset('assets/images/brand/davochain_logo.png', width: 26, height: 26, fit: BoxFit.contain),
-                const SizedBox(width: 8),
-                const Text('Davochain', style: TextStyle(fontFamily: 'Sora', fontSize: 20, fontWeight: FontWeight.w700, height: 1.35, color: AppColors.ink)),
-              ],
-            ),
-          ),
-          const SizedBox(height: 5),
-          SizedBox(height: 19, child: Center(child: Text(conv ? 'Conversion  Receipt' : 'Transfer Receipt', style: const TextStyle(fontFamily: 'Sora', fontSize: 14, height: 1.35, color: Color(0xFF424242))))),
-          const SizedBox(height: 24),
-          _TransactionReceiptCard(kind: kind, target: target, amount: amount, height: cardHeight),
-        ],
-      ),
-    );
-  }
+  Widget _buildReceipt(BuildContext context) => Scaffold(
+    backgroundColor: const Color(0xFFF8F9FB),
+    body: SafeArea(child: Column(children: [
+      _TopBar(title: 'Transaction Receipt', onBack: () => Navigator.pop(context), height: 48, fontSize: 14, fontWeight: FontWeight.w600),
+      Expanded(child: SingleChildScrollView(padding: const EdgeInsets.all(16), child: Column(children: [
+        const SizedBox(height: 24),
+        Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+          Image.asset('assets/images/brand/davochain_logo.png', width: 32, height: 32),
+          const SizedBox(width: 8),
+          const Flexible(child: Text('Davochain', style: TextStyle(fontSize: 24, fontWeight: FontWeight.w700))),
+        ]),
+        const SizedBox(height: 24),
+        Text('${amount.toStringAsFixed(4)} BTC', style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w700)),
+        const SizedBox(height: 12),
+        const Text('Completed', style: TextStyle(color: Color(0xFF1BA44D), fontWeight: FontWeight.w600)),
+        const SizedBox(height: 24),
+        _TransactionDetailCard(kind: kind, target: target, amount: amount, height: 0),
+        const SizedBox(height: 24),
+        const Text('Thank you for using Davochain', textAlign: TextAlign.center, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+        const SizedBox(height: 6),
+        const Text('Build. Trade. Belong.', style: TextStyle(fontSize: 12, color: AppColors.bodyMuted)),
+      ]))),
+    ])),
+  );
 }
 
 class _TransactionDetailCard extends StatelessWidget {
@@ -1698,114 +1536,28 @@ class _TransactionDetailCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final internal = kind == TxKind.internal;
-    final left = internal ? 15.0 : 16.0;
-    final right = internal ? 15.0 : 14.0;
-    final children = <Widget>[];
-
-    void row(
-      double top,
-      String label,
-      String value, {
-      bool copy = false,
-      Color? valueColor,
-      double fontSize = 14,
-      int maxLines = 1,
-      double copyGap = 8,
-      Widget? valueLeading,
-    }) {
-      children.add(Positioned(
-        left: left,
-        right: right,
-        top: top,
-        child: _ExactTransactionRow(
-          label: label,
-          value: value,
-          copy: copy,
-          valueColor: valueColor,
-          fontSize: fontSize,
-          maxLines: maxLines,
-          copyGap: copyGap,
-          valueLeading: valueLeading,
-        ),
-      ));
-    }
-
-    void rate(double top) {
-      children.add(Positioned(
-        left: left,
-        right: right,
-        top: top,
-        child: const _ExactRateRow(),
-      ));
-    }
-
-    if (kind == TxKind.internal) {
-      row(22, 'To', target);
-      row(71.5, 'Asset', 'Bitcoin (BTC)', valueLeading: const _TxBtc24());
-      row(121, 'Date', 'Sep 16, 2026, 14:26');
-      row(168, 'Network Fee', 'Free', valueColor: AppColors.primary);
-      row(215, 'Transaction ID', '0x3a4f...9c7d', copy: true);
-    } else if (kind == TxKind.external) {
-      row(24, 'To', _short(target), copy: true);
-      row(73.5, 'Asset', 'Bitcoin (BTC)', valueLeading: const _TxBtc24());
-      row(123, 'Date', 'Sep 16, 2026, 14:26');
-      row(170, 'Network Fee', 'Free', valueColor: AppColors.primary);
-      row(217, 'Transaction ID', '0x3a4f...9c7d', copy: true);
-      row(
-        264,
-        'Transaction Hash',
-        '7c0d217aca078b46197d9283d7b818311de96eae39deddfea593303815d04c35',
-        copy: true,
-        fontSize: 12,
-        maxLines: 3,
-        copyGap: 4,
-      );
-      children.add(const Positioned(left: 16, right: 14, top: 321, child: _BlockchainExplorerRow()));
-    } else if (kind == TxKind.conversion) {
-      children.addAll(const [
-        Positioned(left: 16, top: 24.5, child: _TxLabel('From')),
-        Positioned(left: 250, top: 22, width: 24, height: 24, child: _TxWrappedBtc24()),
-        Positioned(left: 282, top: 17, width: 63, height: 19, child: _TxValue('0.03048')),
-        Positioned(left: 282, top: 38.5, width: 12, height: 12, child: _ApproxMark()),
-        Positioned(left: 296, top: 38, width: 46, height: 13, child: _TxSecondary(r'$500.00')),
-        Positioned(left: 16, top: 86.5, child: _TxLabel('To')),
-        Positioned(left: 255, top: 84, width: 24, height: 24, child: _TxUsdt24()),
-        Positioned(left: 287, top: 79, width: 56, height: 19, child: _TxValue('500.00')),
-        Positioned(left: 287, top: 100.5, width: 12, height: 12, child: _ApproxMark()),
-        Positioned(left: 301, top: 100, width: 44, height: 13, child: _TxSecondary(r'$498.00')),
-      ]);
-      row(141, 'Date', 'Sep 16, 2026, 14:26');
-      row(188, 'Network Fee', 'Free', valueColor: AppColors.primary);
-      rate(235);
-      row(282, 'Transaction ID', '0x3a4f...9c7d', copy: true);
-      children.add(const Positioned(left: 16, right: 14, top: 329, child: _BlockchainExplorerRow()));
-    } else {
-      children.addAll(const [
-        Positioned(left: 16, top: 28.5, child: _TxLabel('From')),
-        Positioned(left: 220, top: 26, width: 24, height: 24, child: _TxWrappedBtc24()),
-        Positioned(left: 252, top: 21, width: 83, height: 19, child: _TxValue('0.0304800')),
-        Positioned(left: 252, top: 42.5, width: 12, height: 12, child: _ApproxMark()),
-        Positioned(left: 266, top: 42, width: 46, height: 13, child: _TxSecondary(r'$500.00')),
-        Positioned(left: 16, top: 90.5, child: _TxLabel('To')),
-        Positioned(left: 220, top: 88, width: 24, height: 24, child: _TxNigeria24()),
-        Positioned(left: 252, top: 83, width: 87, height: 19, child: _TxValue('₦731,540.00')),
-        Positioned(left: 252, top: 104, width: 90, height: 13, child: _TxSecondary('Nigerian Naira')),
-      ]);
-      row(145, 'Asset', 'BTC');
-      row(192, 'Amount', '0.0304800');
-      row(239, 'Date', 'Sep 16, 2026, 14:26');
-      row(286, 'Network Fee', 'Free', valueColor: AppColors.primary);
-      rate(333);
-      row(380, 'Total Received', '₦731,540.00');
-      row(427, 'Transaction ID', '0x3a4f...9c7d', copy: true);
-    }
-
-    return Container(
-      height: height,
-      width: double.infinity,
-      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8)),
-      child: Stack(children: children),
+    final trading = kind == TxKind.sell || kind == TxKind.conversion;
+    Widget row(String label, String value, {bool copy = false, Widget? icon, Color? color}) => Padding(
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      child: _ExactTransactionRow(label:label,value:value,copy:copy,valueLeading:icon,valueColor:color,maxLines:3),
+    );
+    return Container(padding: const EdgeInsets.symmetric(horizontal:16,vertical:8),
+      decoration: BoxDecoration(color:Colors.white,borderRadius:BorderRadius.circular(8)),
+      child: Column(children:[
+        if(trading) ...[
+          row('From', '${amount.toStringAsFixed(5)} BTC',icon:const _TxWrappedBtc24()),
+          row('To',kind==TxKind.sell ? '\u20a6731,540.00' : '500.00 USDT',icon:kind==TxKind.sell ? const _TxNigeria24() : const _TxUsdt24()),
+        ] else ...[
+          row('To',target,copy:kind==TxKind.external),
+          row('Asset','Bitcoin (BTC)',icon:const _TxBtc24()),
+        ],
+        row('Date','Sep 16, 2026, 14:26'),
+        row('Network Fee','Free',color:AppColors.primary),
+        if(trading) const Padding(padding:EdgeInsets.symmetric(vertical:12),child:_ExactRateRow()),
+        row('Transaction ID','0x3a4f...9c7d',copy:true),
+        if(kind==TxKind.external) row('Transaction Hash','7c0d217aca078b46197d9283d7b818311de96eae39deddfea593303815d04c35',copy:true),
+        if(kind==TxKind.external || kind==TxKind.conversion) const Padding(padding:EdgeInsets.symmetric(vertical:12),child:_BlockchainExplorerRow()),
+      ]),
     );
   }
 }
@@ -1816,25 +1568,25 @@ class _ExactTransactionRow extends StatelessWidget {
     required this.value,
     this.copy = false,
     this.valueColor,
-    this.fontSize = 14,
+
     this.maxLines = 1,
-    this.copyGap = 8,
+
     this.valueLeading,
   });
   final String label, value;
   final bool copy;
   final Color? valueColor;
-  final double fontSize;
+  final double fontSize = 14;
   final int maxLines;
-  final double copyGap;
+  final double copyGap = 8;
   final Widget? valueLeading;
 
   @override
   Widget build(BuildContext context) => Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Text(label, style: TextStyle(fontFamily: 'Sora', fontSize: fontSize, height: fontSize == 12 ? 1.25 : 1.35, color: const Color(0xFF686868))),
-          const Spacer(),
+          Expanded(child: Text(label, style: TextStyle(fontFamily: 'Sora', fontSize: fontSize, height: 1.35, color: const Color(0xFF686868)))),
+          const SizedBox(width: 12),
           if (valueLeading != null) ...[
             SizedBox(
               width: 24,
@@ -1853,7 +1605,7 @@ class _ExactTransactionRow extends StatelessWidget {
               value,
               textAlign: TextAlign.right,
               maxLines: maxLines,
-              overflow: TextOverflow.visible,
+              overflow: TextOverflow.ellipsis,
               style: TextStyle(fontFamily: 'Sora', fontSize: fontSize, height: fontSize == 12 ? 1.25 : 1.35, color: valueColor ?? AppColors.ink),
             ),
           ),
@@ -1863,27 +1615,6 @@ class _ExactTransactionRow extends StatelessWidget {
           ],
         ],
       );
-}
-
-class _TxLabel extends StatelessWidget {
-  const _TxLabel(this.text);
-  final String text;
-  @override
-  Widget build(BuildContext context) => Text(text, style: const TextStyle(fontFamily: 'Sora', fontSize: 14, height: 1.35, color: Color(0xFF686868)));
-}
-
-class _TxValue extends StatelessWidget {
-  const _TxValue(this.text);
-  final String text;
-  @override
-  Widget build(BuildContext context) => Text(text, textAlign: TextAlign.right, style: const TextStyle(fontFamily: 'Sora', fontSize: 14, height: 1.35, color: AppColors.ink));
-}
-
-class _TxSecondary extends StatelessWidget {
-  const _TxSecondary(this.text);
-  final String text;
-  @override
-  Widget build(BuildContext context) => Text(text, textAlign: TextAlign.right, style: const TextStyle(fontFamily: 'Sora', fontSize: 10, height: 1.3, color: Color(0xFF686868)));
 }
 
 class _TxBtc24 extends StatelessWidget {
@@ -1907,156 +1638,21 @@ class _TxUsdt24 extends StatelessWidget {
 class _TxNigeria24 extends StatelessWidget {
   const _TxNigeria24();
   @override
-  Widget build(BuildContext context) => Image.asset('assets/images/brand/naira_coin.png', width: 24, height: 24, fit: BoxFit.contain);
-}
-
-class _ApproxMark extends StatelessWidget {
-  const _ApproxMark();
-  @override
-  Widget build(BuildContext context) => Image.asset('$_exact/tx_approx_12_exact.png', width: 12, height: 12, fit: BoxFit.contain);
+  Widget build(BuildContext context) => Image.asset('$_f/buy_nigeria.png', width: 24, height: 24, fit: BoxFit.contain);
 }
 
 class _ExactRateRow extends StatelessWidget {
   const _ExactRateRow();
   @override
-  Widget build(BuildContext context) => const SizedBox(
-        height: 19,
-        child: Stack(
-          children: [
-            Positioned(left: 0, top: 0, child: _TxLabel('Exchange Rate')),
-            Positioned(left: 145, top: 0, width: 49, height: 19, child: Text('1 USDT', style: TextStyle(fontFamily: 'Sora', fontSize: 14, height: 1.35, color: AppColors.ink))),
-            Positioned(left: 198, top: 3.5, width: 12, height: 12, child: _ApproxMark()),
-            Positioned(left: 214, top: 0, width: 114, height: 19, child: Text('0.0000345 BTC', textAlign: TextAlign.right, style: TextStyle(fontFamily: 'Sora', fontSize: 14, height: 1.35, color: AppColors.ink))),
-          ],
-        ),
-      );
-}
-
-class _TransactionReceiptCard extends StatelessWidget {
-  const _TransactionReceiptCard({required this.kind, required this.target, required this.amount, required this.height});
-  final TxKind kind;
-  final String target;
-  final double amount;
-  final double height;
-
-  @override
-  Widget build(BuildContext context) {
-    final conv = kind == TxKind.conversion;
-    final ext = kind == TxKind.external;
-    final children = <Widget>[
-      Positioned(left: 15, top: 27.5, width: 32, height: 32, child: Image.asset('$_exact/receipt_btc_32_exact.png', width: 32, height: 32, fit: BoxFit.contain)),
-      Positioned(left: 51, top: 24, child: Text(conv ? '0.0300 BTC' : '${amount.toStringAsFixed(4)} BTC', style: const TextStyle(fontFamily: 'Sora', fontSize: 16, fontWeight: FontWeight.w600, height: 1.35, color: AppColors.ink))),
-      const Positioned(left: 51, top: 48, child: Text(r'$500.00 USD', style: TextStyle(fontFamily: 'Sora', fontSize: 12, height: 1.25, color: Color(0xFF424242)))),
-      const Positioned(left: 261, top: 36, child: Text('Completed', style: TextStyle(fontFamily: 'Sora', fontSize: 12, fontWeight: FontWeight.w600, height: 1.25, color: Color(0xFF1BA44D)))),
-    ];
-
-    void row(
-      double top,
-      String label,
-      String value, {
-      bool copy = false,
-      Color? valueColor,
-      double fontSize = 14,
-      int maxLines = 1,
-      double copyGap = 8,
-      Widget? valueLeading,
-    }) {
-      children.add(Positioned(
-        left: 15,
-        right: 15,
-        top: top,
-        child: _ExactTransactionRow(
-          label: label,
-          value: value,
-          copy: copy,
-          valueColor: valueColor,
-          fontSize: fontSize,
-          maxLines: maxLines,
-          copyGap: copyGap,
-          valueLeading: valueLeading,
-        ),
-      ));
-    }
-
-    void rate(double top) {
-      children.add(Positioned(left: 15, right: 15, top: top, child: const _ExactRateRow()));
-    }
-
-    List<Widget> receiptThanks(double top) => [
-          Positioned(left: 85, top: top, width: 188, height: 15, child: const Text('Thank you for using Davochain', textAlign: TextAlign.center, style: TextStyle(fontFamily: 'Sora', fontSize: 12, fontWeight: FontWeight.w600, height: 1.25, color: Colors.black))),
-          Positioned(left: 113.5, top: top + 19, child: const Text('Build.', style: TextStyle(fontFamily: 'Sora', fontSize: 12, height: 1.25, color: Color(0xFF686868)))),
-          Positioned(left: 154.5, top: top + 19, child: const Text('Trade.', style: TextStyle(fontFamily: 'Sora', fontSize: 12, height: 1.25, color: Color(0xFF686868)))),
-          Positioned(left: 198.5, top: top + 19, child: const Text('Belong.', style: TextStyle(fontFamily: 'Sora', fontSize: 12, height: 1.25, color: Color(0xFF686868)))),
-        ];
-
-    if (conv) {
-      children.addAll(const [
-        Positioned(left: 15, top: 86.5, child: _TxLabel('From')),
-        Positioned(left: 249, top: 84, width: 24, height: 24, child: _TxWrappedBtc24()),
-        Positioned(left: 281, top: 79, width: 62, height: 19, child: _TxValue('0.03048')),
-        Positioned(left: 281, top: 100.5, width: 12, height: 12, child: _ApproxMark()),
-        Positioned(left: 295, top: 100, width: 46, height: 13, child: _TxSecondary(r'$500.00')),
-        Positioned(left: 15, top: 148.5, child: _TxLabel('To')),
-        Positioned(left: 254, top: 146, width: 24, height: 24, child: _TxUsdt24()),
-        Positioned(left: 286, top: 141, width: 55, height: 19, child: _TxValue('500.00')),
-        Positioned(left: 286, top: 162.5, width: 12, height: 12, child: _ApproxMark()),
-        Positioned(left: 300, top: 162, width: 44, height: 13, child: _TxSecondary(r'$498.00')),
-      ]);
-      row(203, 'Date', 'Sep 16, 2026, 14:26');
-      row(250, 'Network Fee', 'Free', valueColor: AppColors.primary);
-      rate(297);
-      row(344, 'Transaction ID', '0x3a4f...9c7d', copy: true);
-      children.add(const Positioned(left: 15, right: 15, top: 391, child: _BlockchainExplorerRow()));
-      children.addAll(receiptThanks(437));
-    } else if (ext) {
-      row(79, 'To', _short(target), copy: true);
-      row(128.5, 'Asset', 'Bitcoin (BTC)', valueLeading: const _TxBtc24());
-      row(178, 'Date', 'Sep 16, 2026, 14:26');
-      row(225, 'Network Fee', 'Free', valueColor: AppColors.primary);
-      row(272, 'Transaction ID', '0x3a4f...9c7d', copy: true);
-      row(
-        319,
-        'Transaction Hash',
-        '7c0d217aca078b46197d9283d7b818311de96eae39deddfea593303815d04c35',
-        copy: true,
-        fontSize: 12,
-        maxLines: 3,
-        copyGap: 4,
-      );
-      children.add(const Positioned(left: 15, right: 15, top: 376, child: _BlockchainExplorerRow()));
-      children.addAll(receiptThanks(410));
-    } else {
-      row(79, 'Username', target);
-      row(128.5, 'Asset', 'Bitcoin (BTC)', valueLeading: const _TxBtc24());
-      row(178, 'Date', 'Sep 16, 2026, 14:26');
-      row(225, 'Network Fee', 'Free', valueColor: AppColors.primary);
-      row(272, 'Transaction ID', '0x3a4f...9c7d', copy: true);
-      children.addAll(receiptThanks(321));
-    }
-
-    return Container(
-      height: height,
-      width: double.infinity,
-      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8)),
-      child: Stack(children: children),
-    );
-  }
+  Widget build(BuildContext context) => const _ExactTransactionRow(
+    label: 'Exchange Rate', value: '1 USDT ≈ 0.0000345 BTC', maxLines: 3);
 }
 
 class _BlockchainExplorerRow extends StatelessWidget {
   const _BlockchainExplorerRow();
-
   @override
-  Widget build(BuildContext context) => SizedBox(
-        height: 24,
-        child: Stack(
-          children: [
-            const Positioned(left: 0, top: 0, child: Text('View in Blockchain', style: TextStyle(fontFamily: 'Sora', fontSize: 12, height: 1.25, color: Color(0xFF686868)))),
-            const Positioned(left: 168, top: 4.8, width: 121, height: 15, child: Text('Blockchain Explorer', style: TextStyle(fontFamily: 'Sora', fontSize: 12, height: 1.25, color: Color(0xFF424242)))),
-            Positioned(left: 303.4, top: 0, width: 24, height: 24, child: Image.asset('$_exact/tx_link_24_exact.png', width: 24, height: 24, fit: BoxFit.contain)),
-          ],
-        ),
-      );
+  Widget build(BuildContext context) => const _ExactTransactionRow(
+    label: 'View in Blockchain', value: 'Blockchain Explorer', maxLines: 2);
 }
 
 class ScanPasteAddressScreen extends StatefulWidget {
@@ -2350,45 +1946,68 @@ class _TradeAmountScreenState extends State<TradeAmountScreen> {
   @override
   void dispose() { amount.dispose(); super.dispose(); }
   bool get convert => widget.mode == TradeMode.convert;
+  double get balance => widget.asset == BuyCryptoAsset.bitcoin ? .33048 : 5;
+  double get enteredAmount => double.tryParse(amount.text) ?? 0;
+
+  void _switchMode(TradeMode mode) {
+    FocusScope.of(context).unfocus();
+    Navigator.pushReplacement(context, AppPageRoute<void>(builder: (_) =>
+      TradeAmountScreen(mode: mode, asset: widget.asset)));
+  }
+
+  void _pickPercent(String label) {
+    final fraction = label == 'Max' ? 1.0 : double.parse(label.replaceAll('%', '')) / 100;
+    HapticFeedback.selectionClick();
+    amount.text = (balance * fraction).toStringAsFixed(8).replaceFirst(RegExp(r'0+$'), '').replaceFirst(RegExp(r'\.$'), '');
+    amount.selection = TextSelection.collapsed(offset: amount.text.length);
+    setState(() {});
+  }
 
   @override
   Widget build(BuildContext context) {
-    final active = amount.text.isNotEmpty && amount.text != '0.00' && (double.tryParse(amount.text) ?? 0) > 0;
-    final n = double.tryParse(amount.text) ?? 0;
-    return Scaffold(
-      resizeToAvoidBottomInset: false,
-      backgroundColor: const Color(0xFFF8F9FB),
-      body: SafeArea(
-        bottom: false,
-        child: Stack(
-          children: convert ? _convertChildren(context, active, n) : _sellChildren(context, active, n),
-        ),
-      ),
+    final n = enteredAmount;
+    final active = n > 0 && n <= balance;
+    final ngn = n * widget.asset.ngnPerUnit;
+    return TradeFormLayout(
+      header: _ExactCryptoTradeHeader(title: convert ? 'Swap' : 'Sell', onBack: () => Navigator.pop(context)),
+      tabs: _Tabs(active: convert ? 2 : 1,
+        onBuy: () {
+          FocusScope.of(context).unfocus();
+          Navigator.pushReplacement(context, AppPageRoute<void>(builder: (_) =>
+            BuyAmountScreen(initialOrder: BuyCryptoOrder(asset: widget.asset, wallet: BuyFundingWallet.ngd, ngnAmount: 0))));
+        },
+        onSell: () { if (convert) _switchMode(TradeMode.sell); },
+        onConvert: () { if (!convert) _switchMode(TradeMode.convert); }),
+      content: Column(children: [
+        if (convert) ...[
+          _ExactSwapBox(from: true, asset: widget.asset, balance: balance, value: n, controller: amount, onChanged: () => setState(() {})),
+          const Padding(padding: EdgeInsets.symmetric(vertical: 8), child: Icon(Icons.arrow_downward_rounded, color: AppColors.primary)),
+          _ExactSwapBox(from: false, asset: widget.asset == BuyCryptoAsset.tether ? BuyCryptoAsset.bitcoin : BuyCryptoAsset.tether, balance: widget.asset == BuyCryptoAsset.tether ? .33048 : 25040.27, value: ngn / (widget.asset == BuyCryptoAsset.tether ? BuyCryptoAsset.bitcoin.ngnPerUnit : BuyCryptoAsset.tether.ngnPerUnit)),
+          const SizedBox(height: 16),
+          const Align(alignment: Alignment.centerLeft, child: Text('Estimated fee: Free', style: TextStyle(fontSize: 12, color: AppColors.bodyMuted))),
+        ] else ...[
+          _AssetBalance(asset: widget.asset),
+          const SizedBox(height: 24),
+          _Amount(controller: amount, suffix: widget.asset.symbol, onChanged: () => setState(() {})),
+          const SizedBox(height: 20),
+          Text('₦${ngn.toStringAsFixed(2)}', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.ink)),
+        ],
+        const SizedBox(height: 12),
+        Text('1 ${widget.asset.symbol} ≈ ₦${widget.asset.ngnPerUnit.toStringAsFixed(2)}', textAlign: TextAlign.center,
+          style: const TextStyle(fontSize: 12, color: AppColors.bodyMuted)),
+        const SizedBox(height: 24),
+        Wrap(spacing: 12, runSpacing: 8, alignment: WrapAlignment.center,
+          children: ['10%', '25%', '50%', '75%', 'Max'].map((v) => _Percent(label: v, onTap: () => _pickPercent(v))).toList()),
+        if (n > balance) const Padding(padding: EdgeInsets.only(top: 16), child:
+          Text('Amount exceeds your available balance.', style: TextStyle(color: AppColors.danger))),
+      ]),
+      action: _Button(label: convert ? 'Preview' : 'Continue', enabled: active, onTap: () {
+        FocusScope.of(context).unfocus();
+        Navigator.push(context, AppPageRoute<void>(builder: (_) =>
+          TradeReviewScreen(kind: convert ? TxKind.conversion : TxKind.sell, amount: n)));
+      }),
     );
   }
-
-  List<Widget> _sellChildren(BuildContext context, bool active, double n) => [
-        Positioned(left: 0, right: 0, top: 16, height: 40, child: _ExactCryptoTradeHeader(title: 'Sell', onBack: () => Navigator.pop(context))),
-        Positioned(left: 16, right: 16, top: 76, height: 55, child: _Tabs(active: 1, onBuy: () => Navigator.pop(context), onSell: () {}, onConvert: () => Navigator.pushReplacement(context, AppPageRoute<void>(builder: (_) => const TradeAmountScreen(mode: TradeMode.convert, asset: BuyCryptoAsset.bitcoin))))),
-        Positioned(left: 89.5, top: 147, width: 211, height: 90, child: _AssetBalance(asset: widget.asset)),
-        Positioned(left: 16, right: 16, top: 261, height: 77, child: _Amount(controller: amount, suffix: widget.asset.symbol, onChanged: () => setState(() {}))),
-        Positioned(left: 32, right: 32, top: 362, height: 19, child: Center(child: Text(active ? '₦731,540.00' : '₦0.00', style: const TextStyle(fontFamily: 'Sora', fontSize: 14, fontWeight: FontWeight.w600, height: 1.35, color: AppColors.body)))),
-        const Positioned(left: 32, right: 32, top: 393, height: 19, child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [Text('1 USDT', style: TextStyle(fontFamily: 'Sora', fontSize: 14, fontWeight: FontWeight.w600, height: 1.35, color: AppColors.ink)), SizedBox(width: 12), Text('≈', style: TextStyle(fontFamily: 'Sora', fontSize: 14, color: AppColors.bodyMuted)), SizedBox(width: 4), Text('(₦1,540.00)', style: TextStyle(fontFamily: 'Sora', fontSize: 14, height: 1.35, color: AppColors.bodyMuted))])),
-        Positioned(left: 32, right: 32, top: 444, height: 25, child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: ['10%', '25%', '50%', '75%', 'Max'].map((v) => _Percent(label: v, onTap: () { amount.text = '.03048'; setState(() {}); })).toList())),
-        Positioned(left: 16, right: 16, top: 661, height: 48, child: _Button(label: 'Continue', enabled: active, onTap: () => Navigator.push(context, AppPageRoute<void>(builder: (_) => TradeReviewScreen(kind: TxKind.sell, amount: n == 0 ? .03048 : n))))),
-      ];
-
-  List<Widget> _convertChildren(BuildContext context, bool active, double n) => [
-        Positioned(left: 0, right: 0, top: 20, height: 40, child: _ExactCryptoTradeHeader(title: 'Swap', onBack: () => Navigator.pop(context))),
-        Positioned(left: 16, right: 16, top: 80, height: 55, child: _Tabs(active: 2, onBuy: () => Navigator.pop(context), onSell: () => Navigator.pushReplacement(context, AppPageRoute<void>(builder: (_) => const TradeAmountScreen(mode: TradeMode.sell, asset: BuyCryptoAsset.bitcoin))), onConvert: () {})),
-        Positioned(left: 16, right: 16, top: 158, height: 55, child: _SwapTopAmount(active: active, amount: n)),
-        Positioned(left: 16, right: 16, top: 237, height: 93, child: _ExactSwapBox(from: true, active: active, controller: amount, onChanged: () => setState(() {}))),
-        Positioned(left: 16, right: 16, top: 338, height: 93, child: _ExactSwapBox(from: false, active: active)),
-        Positioned(left: 0, right: 0, top: 315, height: 40, child: Center(child: Container(width: 40, alignment: Alignment.center, decoration: const BoxDecoration(color: Color(0xFFF4F7FF), shape: BoxShape.circle), child: Image.asset('$_cf/swap.png', width: 24, height: 24)))),
-        const Positioned(left: 16, top: 447, height: 15, child: Text('Fee: 0', style: TextStyle(fontFamily: 'Sora', fontSize: 12, height: 1.25, color: AppColors.bodyMuted))),
-        Positioned(left: 16, right: 16, top: 478, height: 25, child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: ['10%', '25%', '50%', '75%', 'Max'].map((v) => _Percent(label: v, onTap: () { amount.text = '.03048'; setState(() {}); })).toList())),
-        Positioned(left: 16, right: 16, top: 676, height: 48, child: _Button(label: 'Preview', enabled: active, onTap: () => Navigator.push(context, AppPageRoute<void>(builder: (_) => TradeReviewScreen(kind: TxKind.conversion, amount: n == 0 ? .03048 : n))))),
-      ];
 }
 
 class TradeReviewScreen extends StatelessWidget {
@@ -2458,57 +2077,37 @@ class _ExactCryptoTradeHeader extends StatelessWidget {
       );
 }
 
-class _SwapTopAmount extends StatelessWidget {
-  const _SwapTopAmount({required this.active, required this.amount});
-  final bool active;
-  final double amount;
-  @override
-  Widget build(BuildContext context) => Stack(
-        children: [
-          Positioned(left: 0, top: 0, child: Text(active ? amount.toStringAsFixed(5) : '0.00', style: const TextStyle(fontFamily: 'Sora', fontSize: 24, fontWeight: FontWeight.w600, height: 1.35, color: AppColors.ink))),
-          Positioned(left: active ? 105 : 65, top: 12, child: const Text('BTC', style: TextStyle(fontFamily: 'Sora', fontSize: 14, height: 1.35, color: AppColors.body))),
-          Positioned(left: active ? 138 : 98, top: 12, child: Image.asset('$_cf/chevron_down.png', width: 20, height: 20)),
-          Positioned(left: 18, top: 36, child: Text(active ? '≈ 500.00 USD' : '≈ 0.00 USD', style: const TextStyle(fontFamily: 'Sora', fontSize: 14, height: 1.35, color: AppColors.body))),
-        ],
-      );
-}
-
 class _ExactSwapBox extends StatelessWidget {
-  const _ExactSwapBox({required this.from, required this.active, this.controller, this.onChanged});
-  final bool from, active;
+  const _ExactSwapBox({required this.from, required this.asset, required this.balance, required this.value, this.controller, this.onChanged});
+  final bool from;
+  final BuyCryptoAsset asset;
+  final double balance, value;
   final TextEditingController? controller;
   final VoidCallback? onChanged;
   @override
   Widget build(BuildContext context) => Container(
-        height: 93,
-        padding: const EdgeInsets.fromLTRB(16, 13, 16, 12),
-        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(4), border: Border.all(color: const Color(0xFFEBEDF3))),
-        child: Stack(
-          children: [
-            Positioned(left: 0, top: 0, child: Text(from ? 'From' : 'To', style: const TextStyle(fontFamily: 'Sora', fontSize: 12, height: 1.25, color: AppColors.bodyMuted))),
-            Positioned(right: 0, top: 4, child: Text(from ? 'Available: \$5040.27' : 'Available: \$25,040.27', style: const TextStyle(fontFamily: 'Sora', fontSize: 12, height: 1.25, color: AppColors.bodyMuted))),
-            Positioned(left: 7, top: 40, width: 15, height: 15, child: Image.asset(from ? '$_f/btc.png' : '$_f/usdt.png', width: 15, height: 15)),
-            Positioned(left: 24, top: 36, child: Text(from ? 'BTC' : 'USDT', style: const TextStyle(fontFamily: 'Sora', fontSize: 14, height: 1.35, color: AppColors.body))),
-            if (from)
-              Positioned(
-                right: 0,
-                top: 32,
-                width: 130,
-                height: 28,
-                child: TextField(
-                  controller: controller,
-                  onChanged: (_) => onChanged?.call(),
-                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                  textAlign: TextAlign.right,
-                  decoration: const DavoInlineInputDecoration(hintText: '0.00', hintStyle: TextStyle(fontFamily: 'Sora', fontSize: 14, color: AppColors.body)),
-                  style: const TextStyle(fontFamily: 'Sora', fontSize: 14, height: 1.35, color: AppColors.body),
-                ),
-              )
-            else
-              Positioned(right: 0, top: 36, child: Text(active ? '500.00' : '0.00', style: const TextStyle(fontFamily: 'Sora', fontSize: 14, height: 1.35, color: AppColors.body))),
-          ],
-        ),
-      );
+    padding: const EdgeInsets.all(16),
+    decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), border: Border.all(color: AppColors.mutedSoft)),
+    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Text(from ? 'From' : 'To', style: const TextStyle(fontSize: 12, color: AppColors.bodyMuted)),
+      const SizedBox(height: 8),
+      Row(children: [
+        Image.asset(_asset(asset), width: 24, height: 24), const SizedBox(width: 8),
+        Text(asset.symbol, style: const TextStyle(fontWeight: FontWeight.w600)),
+        const SizedBox(width: 16),
+        Expanded(child: from ? TextField(
+          controller: controller, onChanged: (_) => onChanged?.call(),
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))],
+          textAlign: TextAlign.right,
+          decoration: const DavoInlineInputDecoration(hintText: '0.00'),
+          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+        ) : Text(value.toStringAsFixed(2), textAlign: TextAlign.right, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600))),
+      ]),
+      const SizedBox(height: 8),
+      Text('Available: $balance ${asset.symbol}', style: const TextStyle(fontSize: 12, color: AppColors.bodyMuted)),
+    ]),
+  );
 }
 
 class _ExactTradeSummary extends StatelessWidget {
@@ -2555,216 +2154,35 @@ class DepositStatusScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-        backgroundColor: Colors.white,
-        body: SafeArea(
-          bottom: false,
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              final scale = constraints.maxWidth < 390 ? constraints.maxWidth / 390 : 1.0;
-              return Align(
-                alignment: Alignment.topCenter,
-                child: SizedBox(
-                  width: 390 * scale,
-                  height: 800 * scale,
-                  child: Transform.scale(
-                    scale: scale,
-                    alignment: Alignment.topLeft,
-                    child: SizedBox(
-                      width: 390,
-                      height: 800,
-                      child: Stack(
-                        clipBehavior: Clip.none,
-                        children: [
-                          Positioned(
-                            left: 6,
-                            top: 31,
-                            width: 32,
-                            height: 32,
-                            child: InkResponse(
-                              onTap: () => Navigator.pop(context),
-                              radius: 20,
-                              child: Image.asset('$_exact/deposit_details_back_exact.png', width: 32, height: 32),
-                            ),
-                          ),
-                          const Positioned(
-                            left: 116,
-                            top: 33.5,
-                            width: 156,
-                            height: 27,
-                            child: Text(
-                              'Deposit Details',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(fontFamily: 'Sora', fontSize: 20, fontWeight: FontWeight.w400, height: 1.35, color: AppColors.ink),
-                            ),
-                          ),
-                          const Positioned(
-                            left: 103,
-                            top: 106,
-                            width: 186,
-                            height: 22,
-                            child: Text(
-                              'Quantity',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(fontFamily: 'Sora', fontSize: 16, fontWeight: FontWeight.w400, height: 1.35, color: Color(0xFF686868)),
-                            ),
-                          ),
-                          const Positioned(
-                            left: 134.5,
-                            top: 138,
-                            width: 123,
-                            height: 22,
-                            child: Text(
-                              '0.0317934 BTC',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(fontFamily: 'Sora', fontSize: 16, fontWeight: FontWeight.w600, height: 1.35, color: AppColors.ink),
-                            ),
-                          ),
-                          if (success) ...[
-                            Positioned(
-                              left: 103,
-                              top: 163.5,
-                              width: 16,
-                              height: 16,
-                              child: Image.asset('$_exact/deposit_success_status_exact.png', width: 16, height: 16),
-                            ),
-                            const Positioned(
-                              left: 123,
-                              top: 162,
-                              width: 137,
-                              height: 19,
-                              child: Text(
-                                'Deposit Successful',
-                                style: TextStyle(fontFamily: 'Sora', fontSize: 14, fontWeight: FontWeight.w400, height: 1.35, color: Color(0xFF1BA44D)),
-                              ),
-                            ),
-                          ] else ...[
-                            Positioned(
-                              left: 156.5,
-                              top: 163.5,
-                              width: 16,
-                              height: 16,
-                              child: Image.asset('$_exact/deposit_pending_status_exact.png', width: 16, height: 16),
-                            ),
-                            const Positioned(
-                              left: 176.5,
-                              top: 162,
-                              width: 59,
-                              height: 19,
-                              child: Text(
-                                'Pending',
-                                style: TextStyle(fontFamily: 'Sora', fontSize: 14, fontWeight: FontWeight.w400, height: 1.35, color: Color(0xFFCC8408)),
-                              ),
-                            ),
-                          ],
-                          // Figma uses the same message in both the successful and pending
-                          // frames. Keep that source copy unchanged for exact design fidelity.
-                          const Positioned(
-                            left: 27,
-                            top: 208,
-                            width: 338,
-                            height: 26,
-                            child: Text(
-                              'Crypto has arrived in your Davochain account. View your wallet account balance for more details',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(fontFamily: 'Sora', fontSize: 10, fontWeight: FontWeight.w400, height: 1.3, color: Color(0xFF686868)),
-                            ),
-                          ),
-                          Positioned(
-                            left: 17,
-                            top: 261,
-                            width: 358,
-                            height: 260,
-                            child: Container(
-                              decoration: BoxDecoration(color: const Color(0xFFF5F6F9), borderRadius: BorderRadius.circular(8)),
-                              child: Stack(
-                                children: [
-                                  const Positioned(left: 14, top: 22, width: 53, height: 15, child: _DepositDetailText('Network', color: Color(0xFF686868))),
-                                  const Positioned(right: 13, top: 22, width: 25, height: 15, child: _DepositDetailText('BTC', textAlign: TextAlign.right)),
-                                  const Positioned(left: 14, top: 49, width: 30, height: 15, child: _DepositDetailText('Time', color: Color(0xFF686868))),
-                                  const Positioned(right: 13, top: 49, width: 131, height: 15, child: _DepositDetailText('2026-05-02 22:36:58', textAlign: TextAlign.right)),
-                                  const Positioned(left: 14, top: 76, width: 102, height: 15, child: _DepositDetailText('Deposit Address', color: Color(0xFF686868))),
-                                  const Positioned(
-                                    left: 160,
-                                    top: 76,
-                                    width: 162,
-                                    height: 30,
-                                    child: _DepositDetailText('1ChGMXGfgy2tdoE4rVQEqouRpBQaAA6zLZ', textAlign: TextAlign.right, maxLines: 2),
-                                  ),
-                                  Positioned(
-                                    left: 326,
-                                    top: 83,
-                                    width: 16,
-                                    height: 16,
-                                    child: GestureDetector(
-                                      onTap: () => Clipboard.setData(const ClipboardData(text: '1ChGMXGfgy2tdoE4rVQEqouRpBQaAA6zLZ')),
-                                      child: Image.asset('$_exact/deposit_details_copy_exact.png', width: 16, height: 16),
-                                    ),
-                                  ),
-                                  const Positioned(left: 14, top: 118, width: 113, height: 15, child: _DepositDetailText('Transaction Hash', color: Color(0xFF686868))),
-                                  const Positioned(
-                                    left: 143,
-                                    top: 118,
-                                    width: 182,
-                                    height: 45,
-                                    child: _DepositDetailText(
-                                      '7c0d217aca078b46197d9283d7b818311de96eae39deddfea593303815d04c35',
-                                      textAlign: TextAlign.right,
-                                      maxLines: 3,
-                                    ),
-                                  ),
-                                  Positioned(
-                                    left: 329,
-                                    top: 132.5,
-                                    width: 16,
-                                    height: 16,
-                                    child: GestureDetector(
-                                      onTap: () => Clipboard.setData(const ClipboardData(text: '7c0d217aca078b46197d9283d7b818311de96eae39deddfea593303815d04c35')),
-                                      child: Image.asset('$_exact/deposit_details_copy_exact.png', width: 16, height: 16),
-                                    ),
-                                  ),
-                                  const Positioned(left: 14, top: 175, width: 114, height: 15, child: _DepositDetailText('View in Blockchain', color: Color(0xFF686868))),
-                                  const Positioned(left: 194, top: 184.5, width: 121, height: 15, child: _DepositDetailText('Blockchain Explorer')),
-                                  Positioned(
-                                    left: 319,
-                                    top: 175,
-                                    width: 24,
-                                    height: 24,
-                                    child: InkResponse(
-                                      onTap: () {},
-                                      radius: 16,
-                                      child: Image.asset('$_exact/deposit_details_link_exact.png', width: 24, height: 24),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              );
-            },
-          ),
-        ),
-      );
-}
-
-class _DepositDetailText extends StatelessWidget {
-  const _DepositDetailText(this.text, {this.color = const Color(0xFF424242), this.textAlign = TextAlign.left, this.maxLines = 1});
-  final String text;
-  final Color color;
-  final TextAlign textAlign;
-  final int maxLines;
-
-  @override
-  Widget build(BuildContext context) => Text(
-        text,
-        maxLines: maxLines,
-        textAlign: textAlign,
-        style: TextStyle(fontFamily: 'Sora', fontSize: 12, fontWeight: FontWeight.w400, height: 1.25, color: color),
-      );
+    backgroundColor: Colors.white,
+    body: SafeArea(child: Column(children: [
+      _TopBar(title: 'Deposit Details', onBack: () => Navigator.pop(context), height: 48, fontSize: 20),
+      Expanded(child: SingleChildScrollView(padding: const EdgeInsets.all(16), child: Column(children: [
+        const SizedBox(height: 24),
+        const Text('Quantity', style: TextStyle(fontSize: 16, color: AppColors.bodyMuted)),
+        const SizedBox(height: 8),
+        const Text('0.0317934 BTC', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600)),
+        const SizedBox(height: 8),
+        Text(success ? 'Deposit Successful' : 'Pending', style: TextStyle(color: success ? const Color(0xFF1BA44D) : const Color(0xFFCC8408))),
+        const SizedBox(height: 24),
+        Text(success ? 'Crypto has arrived in your Davochain account. View your wallet balance for more details.' : 'Your deposit is awaiting network confirmation.',
+          textAlign: TextAlign.center, style: const TextStyle(fontSize: 12, color: AppColors.bodyMuted)),
+        const SizedBox(height: 24),
+        Container(padding: const EdgeInsets.all(16), decoration: BoxDecoration(color: const Color(0xFFF5F6F9), borderRadius: BorderRadius.circular(12)),
+          child: const Column(children: [
+            _ExactTransactionRow(label: 'Network', value: 'BTC'),
+            SizedBox(height: 20),
+            _ExactTransactionRow(label: 'Time', value: '2026-05-02 22:36:58', maxLines: 2),
+            SizedBox(height: 20),
+            _ExactTransactionRow(label: 'Deposit Address', value: '1ChGMXGfgy2tdoE4rVQEqouRpBQaAA6zLZ', maxLines: 4, copy: true),
+            SizedBox(height: 20),
+            _ExactTransactionRow(label: 'Transaction Hash', value: '7c0d217aca078b46197d9283d7b818311de96eae39deddfea593303815d04c35', maxLines: 6, copy: true),
+            SizedBox(height: 20),
+            _BlockchainExplorerRow(),
+          ])),
+      ]))),
+    ])),
+  );
 }
 
 class _Scaffold extends StatelessWidget {
@@ -2794,10 +2212,10 @@ class _TopBar extends StatelessWidget {
     this.height = 40,
     this.fontSize = 16,
     this.fontWeight = FontWeight.w500,
-  }) : backSize = 24, backShift = -14;
+  });
   final String title;
   final VoidCallback onBack;
-  final double height, fontSize, backSize, backShift;
+  final double height, fontSize;
   final FontWeight fontWeight;
   @override
   Widget build(BuildContext context) => SizedBox(
@@ -2806,8 +2224,8 @@ class _TopBar extends StatelessWidget {
           alignment: Alignment.center,
           clipBehavior: Clip.none,
           children: [
-            Align(alignment: Alignment.centerLeft, child: Transform.translate(offset: Offset(backShift, 0), child: _AssetButton(asset: '$_f/buy_back.png', size: backSize, onTap: onBack))),
-            if (title.isNotEmpty) Text(title, style: TextStyle(fontFamily: 'Sora', fontSize: fontSize, fontWeight: fontWeight, height: 1.35, color: AppColors.ink)),
+            Align(alignment: Alignment.centerLeft, child: IconButton(tooltip: 'Back', onPressed: onBack, icon: Image.asset('$_f/buy_back.png', width: 24, height: 24))),
+            if (title.isNotEmpty) Padding(padding: const EdgeInsets.symmetric(horizontal: 48), child: Text(title, textAlign: TextAlign.center, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontFamily: 'Sora', fontSize: fontSize, fontWeight: fontWeight, height: 1.35, color: AppColors.ink))),
           ],
         ),
       );
@@ -2951,10 +2369,10 @@ class _BalanceCard extends StatelessWidget {
         child: Stack(
           children: [
             Positioned(right: 0, bottom: 0, width: 268, height: 94, child: Image.asset('$_f/balance_wave.png', fit: BoxFit.fill)),
-            const Positioned(left: 16, top: 31, width: 90, height: 13, child: Text('Available Balance', style: TextStyle(fontFamily:'Sora',fontSize:10,fontWeight:FontWeight.w500,height:1.3,color:Color(0xFFEEF0F5)))),
-            Positioned(left: 110, top: 32.5, width: 10, height: 10, child: Image.asset('$_exact/crypto_eye_exact.png', width: 10, height: 10, fit: BoxFit.contain)),
-            const Positioned(left: 16, top: 52, width: 174, height: 32, child: Text('₦1,284,500.35', style: TextStyle(fontFamily:'Sora',fontSize:24,fontWeight:FontWeight.w700,height:1.35,color:Color(0xFFF8F9FB)))),
-            const Positioned(left: 16, top: 86, width: 100, height: 19, child: Text('≈ \$842.31 USD', style: TextStyle(fontFamily:'Sora',fontSize:14,height:1.35,color:Color(0xFFF8F9FB)))),
+            const Positioned(left: 16, top: 31, width: 140, height: 16, child: Text('Available Balance', style: TextStyle(fontFamily:'Sora',fontSize:10,fontWeight:FontWeight.w500,height:1.3,color:Color(0xFFEEF0F5)))),
+            Positioned(left: 155, top: 32.5, width: 10, height: 10, child: Image.asset('$_exact/crypto_eye_exact.png', width: 10, height: 10, fit: BoxFit.contain)),
+            const Positioned(left: 16, top: 52, width: 300, height: 36, child: Text('₦1,284,500.35', style: TextStyle(fontFamily:'Sora',fontSize:24,fontWeight:FontWeight.w700,height:1.35,color:Color(0xFFF8F9FB)))),
+            const Positioned(left: 16, top: 86, width: 200, height: 22, child: Text('≈ \$842.31 USD', style: TextStyle(fontFamily:'Sora',fontSize:14,height:1.35,color:Color(0xFFF8F9FB)))),
           ],
         ),
       );
@@ -2997,99 +2415,63 @@ class _Tabs extends StatelessWidget {
   const _Tabs({required this.active, required this.onBuy, required this.onSell, required this.onConvert});
   final int active;
   final VoidCallback onBuy, onSell, onConvert;
-
   @override
   Widget build(BuildContext context) {
     final callbacks = [onBuy, onSell, onConvert];
-    const labels = ['Buy', 'Sell', 'Convert'];
-    const lefts = [15.0, 128.0, 241.0];
-    return Container(
-      height: 55,
-      decoration: BoxDecoration(color: const Color(0xFFF3F3F9), borderRadius: BorderRadius.circular(999)),
-      child: Stack(
-        children: List.generate(3, (i) => Positioned(
-          left: lefts[i],
-          top: 6,
-          width: 101,
-          height: 43,
-          child: Material(
-            color: active == i ? Colors.white : Colors.transparent,
-            borderRadius: BorderRadius.circular(999),
-            child: InkWell(
-              onTap: callbacks[i],
-              borderRadius: BorderRadius.circular(999),
-              child: Center(child: Text(labels[i], style: TextStyle(fontFamily: 'Sora', fontSize: 14, fontWeight: FontWeight.w600, height: 1.35, color: active == i ? AppColors.primary : AppColors.body))),
-            ),
-          ),
-        )),
-      ),
-    );
+    const labels = ['Buy', 'Sell', 'Swap'];
+    return Container(padding: const EdgeInsets.all(6), decoration: BoxDecoration(color: const Color(0xFFF3F3F9), borderRadius: BorderRadius.circular(999)),
+      child: Row(children: List.generate(3, (i) => Expanded(child: Semantics(selected: active == i,
+        child: Material(color: active == i ? Colors.white : Colors.transparent, borderRadius: BorderRadius.circular(999),
+          child: InkWell(onTap: callbacks[i], borderRadius: BorderRadius.circular(999),
+            child: Padding(padding: const EdgeInsets.symmetric(vertical: 12), child: Center(child: Text(labels[i],
+              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: active == i ? AppColors.primary : AppColors.body)))))))))));
   }
 }
 class _AssetBalance extends StatelessWidget {
   const _AssetBalance({required this.asset});
   final BuyCryptoAsset asset;
-
   @override
-  Widget build(BuildContext context) => SizedBox(
-        width: 211,
-        height: 90,
-        child: Stack(
-          children: [
-            Positioned(
-              left: 85.5,
-              top: 0,
-              width: 40,
-              height: 40,
-              child: Container(
-                alignment: Alignment.center,
-                decoration: const BoxDecoration(shape: BoxShape.circle),
-                child: Image.asset(_asset(asset), width: 32, height: 32, fit: BoxFit.contain),
-              ),
-            ),
-            const Positioned(left: 0, right: 0, top: 52, height: 15, child: Text('Available Balance', textAlign: TextAlign.center, style: TextStyle(fontFamily: 'Sora', fontSize: 12, fontWeight: FontWeight.w600, height: 1.25, color: AppColors.body))),
-            if (asset == BuyCryptoAsset.bitcoin) ...[
-              const Positioned(left: 0, top: 71, height: 19, child: Text('0.33048 BTC', style: TextStyle(fontFamily: 'Sora', fontSize: 14, fontWeight: FontWeight.w600, height: 1.35, color: AppColors.ink))),
-              const Positioned(left: 105, top: 72.5, width: 16, height: 16, child: Text('≈', textAlign: TextAlign.center, style: TextStyle(fontFamily: 'Sora', fontSize: 14, height: 1.0, color: AppColors.bodyMuted))),
-              const Positioned(left: 123, top: 71, child: Text('(\$5,000.00)', style: TextStyle(fontFamily: 'Sora', fontSize: 14, height: 1.35, color: AppColors.bodyMuted))),
-            ] else
-              Positioned(left: 0, right: 0, top: 71, height: 19, child: Text('5.00 ${asset.symbol}', textAlign: TextAlign.center, style: const TextStyle(fontFamily: 'Sora', fontSize: 14, fontWeight: FontWeight.w600, height: 1.35, color: AppColors.ink))),
-          ],
-        ),
-      );
+  Widget build(BuildContext context) => Column(children: [
+    Image.asset(_asset(asset), width: 40, height: 40),
+    const SizedBox(height: 12),
+    const Text('Available Balance', style: TextStyle(fontSize: 12, color: AppColors.body)),
+    const SizedBox(height: 4),
+    Text('${asset == BuyCryptoAsset.bitcoin ? '0.33048' : '5.00'} ${asset.symbol}',
+      textAlign: TextAlign.center, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+  ]);
 }
 class _Amount extends StatelessWidget {
   const _Amount({required this.controller, required this.suffix, required this.onChanged});
   final TextEditingController controller;
   final String suffix;
   final VoidCallback onChanged;
-
   @override
   Widget build(BuildContext context) => Container(
-        height: 77,
-        decoration: BoxDecoration(color: Colors.white, border: Border.all(color: AppColors.mutedSoft), borderRadius: BorderRadius.circular(4)),
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            Positioned.fill(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 52),
-                child: TextField(
-                  controller: controller,
-                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                  onChanged: (_) => onChanged(),
-                  decoration: const DavoInlineInputDecoration(hintText: '0.00', hintStyle: TextStyle(fontFamily: 'Sora', fontSize: 20, fontWeight: FontWeight.w600, color: AppColors.ink)),
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(fontFamily: 'Sora', fontSize: 20, fontWeight: FontWeight.w600, height: 1.35, color: AppColors.ink),
-                ),
-              ),
-            ),
-            Positioned(right: 16, top: 24, child: Text(suffix, style: const TextStyle(fontFamily: 'Sora', fontSize: 14, height: 1.35, color: AppColors.body))),
-          ],
-        ),
-      );
+    height: 77, padding: const EdgeInsets.symmetric(horizontal: 16),
+    decoration: BoxDecoration(color: Colors.white, border: Border.all(color: AppColors.mutedSoft), borderRadius: BorderRadius.circular(8)),
+    child: Row(children: [
+      Expanded(child: TextField(controller: controller,
+        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+        inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))],
+        onChanged: (_) => onChanged(),
+        decoration: const DavoInlineInputDecoration(hintText: '0.00'),
+        textAlign: TextAlign.center,
+        style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w600, color: AppColors.ink))),
+      const SizedBox(width: 12),
+      Text(suffix, style: const TextStyle(fontSize: 14, color: AppColors.body)),
+    ]),
+  );
 }
-class _Percent extends StatelessWidget{const _Percent({required this.label,required this.onTap});final String label;final VoidCallback onTap;@override Widget build(BuildContext context)=>InkWell(onTap:onTap,child:Container(width:46,height:25,alignment:Alignment.center,decoration:BoxDecoration(border:Border.all(color:const Color(0xFFEEF0F5)),borderRadius:BorderRadius.circular(4)),child:Text(label,style:TextStyle(fontFamily:'Sora',fontSize:12,color:label=='Max'?AppColors.primary:AppColors.body))));}
+class _Percent extends StatelessWidget {
+  const _Percent({required this.label, required this.onTap});
+  final String label;
+  final VoidCallback onTap;
+  @override
+  Widget build(BuildContext context) => InkWell(onTap: onTap, borderRadius: BorderRadius.circular(8),
+    child: Container(width: 48, height: 44, alignment: Alignment.center,
+      decoration: BoxDecoration(border: Border.all(color: const Color(0xFFEEF0F5)), borderRadius: BorderRadius.circular(8)),
+      child: Text(label, style: TextStyle(fontSize: 12, color: label == 'Max' ? AppColors.primary : AppColors.body))));
+}
 class _Pair extends StatelessWidget {
   const _Pair({
     required this.conversion,
@@ -3131,7 +2513,7 @@ class _Pair extends StatelessWidget {
               label: secondLabel,
               primary: secondPrimary,
               secondary: secondSecondary,
-              asset: conversion ? '$_f/usdt.png' : 'assets/images/brand/naira_coin.png',
+              asset: conversion ? '$_f/usdt.png' : '$_f/buy_nigeria.png',
               rightSymbol: conversion ? 'USDT' : null,
               radius: conversion ? 4 : 6,
               conversion: conversion,

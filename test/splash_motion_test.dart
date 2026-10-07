@@ -30,7 +30,7 @@ void main() {
     await tester.pump(const Duration(milliseconds: 100));
     expect(find.text('Davochain'), findsOneWidget);
     expect(tester.binding.transientCallbackCount, 0);
-    await tester.pump(const Duration(milliseconds: 151));
+    await tester.pump(const Duration(milliseconds: 1101));
     await tester.pump();
     expect(find.byType(OnboardingScreen), findsOneWidget);
     expect(
@@ -44,10 +44,12 @@ void main() {
     await tester.pumpWidget(
         MaterialApp(theme: AppTheme.light, home: const BrandSplashScreen()));
     await tester.pump(const Duration(milliseconds: 700));
+    expect(find.byKey(const ValueKey('welcome-oval')), findsOneWidget);
+    expect(find.byKey(const ValueKey('welcome-currencies')), findsOneWidget);
     expect(find.byType(BrandSplashScreen), findsOneWidget);
-    await tester.pump(const Duration(milliseconds: 501));
+    await tester.pump(const Duration(milliseconds: 2601));
     await tester.pump();
-    await tester.pump(const Duration(milliseconds: 301));
+    await tester.pump(const Duration(milliseconds: 501));
     expect(find.byType(BrandSplashScreen), findsNothing);
     expect(find.byType(OnboardingScreen), findsOneWidget);
     expect(tester.takeException(), isNull);

@@ -56,17 +56,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     if (mounted) _opening = false;
   }
 
-  void _preview() {
-    if (_opening) return;
-    _opening = true;
-    Navigator.of(context)
-        .pushNamedAndRemoveUntil(AppRoutes.dashboard, (_) => false);
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-      content: Text('Demo balances and transactions. No real money moves.'),
-      behavior: SnackBarBehavior.floating,
-    ));
-  }
-
   @override
   Widget build(BuildContext context) {
     final reduced = MediaQuery.disableAnimationsOf(context);
@@ -112,13 +101,15 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                   logoColor: Colors.white,
                                   logoWidth: 29,
                                   fontSize: 20)))),
-                  TextButton(
-                    onPressed: _index < 2 ? () => _goTo(2) : () => _goTo(0),
-                    style: TextButton.styleFrom(
-                        foregroundColor: Colors.white,
-                        minimumSize: const Size(64, 48)),
-                    child: Text(_index < 2 ? 'Skip' : 'Replay'),
-                  ),
+                  if (_index == 2) const SizedBox(height: 48, width: 64),
+                  if (_index < 2)
+                    TextButton(
+                      onPressed: () => _goTo(2),
+                      style: TextButton.styleFrom(
+                          foregroundColor: Colors.white,
+                          minimumSize: const Size(64, 48)),
+                      child: const Text('Skip'),
+                    ),
                 ]),
               ),
               Expanded(
@@ -180,23 +171,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         : () => _goTo(_index + 1),
                   ),
                   const SizedBox(height: 8),
-                  Row(children: [
-                    Expanded(
-                        child: TextButton(
-                            onPressed: () => _open(AppRoutes.login),
-                            style: TextButton.styleFrom(
-                                minimumSize: const Size(48, 48)),
-                            child: const Text('Login'))),
-                    const SizedBox(
-                        height: 16, child: VerticalDivider(width: 16)),
-                    Expanded(
-                        child: TextButton(
-                            onPressed: _preview,
-                            style: TextButton.styleFrom(
-                                minimumSize: const Size(48, 48)),
-                            child: const Text('Explore demo',
-                                textAlign: TextAlign.center))),
-                  ]),
+                  SizedBox(
+                      width: double.infinity,
+                      child: TextButton(
+                        onPressed: () => _open(AppRoutes.login),
+                        style: TextButton.styleFrom(
+                            minimumSize: const Size(48, 48)),
+                        child: const Text('Login'),
+                      )),
                 ]),
               ),
             ])),

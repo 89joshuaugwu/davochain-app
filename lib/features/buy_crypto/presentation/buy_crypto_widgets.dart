@@ -191,9 +191,7 @@ class _ExactWalletSheetRow extends StatelessWidget {
                 top: 7,
                 width: 32,
                 height: 32,
-                child: wallet.isDavochain
-                    ? Image.asset('assets/images/brand/davochain_logo.png', width: 32, height: 32, fit: BoxFit.contain)
-                    : const NairaCoinMark(width: 32),
+                child: Image.asset(wallet.iconAsset, width: 32, height: 32, fit: BoxFit.contain),
               ),
               Positioned(left: 44, top: 7, child: Text(wallet.name, style: const TextStyle(fontFamily: 'Sora', fontSize: 14, height: 1.35, color: AppColors.ink))),
               Positioned(left: 44, top: 28, child: Text(wallet.symbol, style: const TextStyle(fontFamily: 'Sora', fontSize: 12, height: 1.25, color: AppColors.body))),

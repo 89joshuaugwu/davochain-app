@@ -1,3 +1,6 @@
+import '../../../shared/widgets/trade_form_layout.dart';
+import '../../crypto/presentation/crypto_full_flow.dart';
+import '../../../shared/widgets/transaction_pin_entry.dart';
 import 'dart:async';
 import 'dart:math' as math;
 
@@ -87,21 +90,11 @@ class _BuyAmountScreenState extends State<BuyAmountScreen> {
   @override
   Widget build(BuildContext context) {
     final crypto = _amount / _order.asset.ngnPerUnit;
-    return Scaffold(
-      resizeToAvoidBottomInset: false,
-      backgroundColor: const Color(0xFFF8F9FB),
-      body: SafeArea(
-        bottom: false,
-        child: Stack(
-          children: [
-            Positioned(left: 0, right: 0, top: 16, height: 40, child: _ExactTradeHeader(title: 'Sell', onBack: () => Navigator.pop(context))),
-            const Positioned(left: 16, right: 16, top: 76, height: 55, child: _ModeToggle()),
-            Positioned(
-              left: 89.5,
-              top: 147,
-              width: 211,
-              height: 82,
-              child: InkWell(
+    return TradeFormLayout(
+      header: _ExactTradeHeader(title: 'Buy', onBack: () => Navigator.pop(context)),
+      tabs: _ModeToggle(asset:_order.asset),
+      content: Column(children: [
+        InkWell(
                 onTap: _changeWallet,
                 borderRadius: BorderRadius.circular(16),
                 child: Column(
@@ -120,13 +113,8 @@ class _BuyAmountScreenState extends State<BuyAmountScreen> {
                   ],
                 ),
               ),
-            ),
-            Positioned(
-              left: 16,
-              right: 16,
-              top: 253,
-              height: 77,
-              child: AnimatedContainer(
+        const SizedBox(height: 24),
+        AnimatedContainer(
                 duration: const Duration(milliseconds: 180),
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 decoration: BoxDecoration(
@@ -134,6 +122,7 @@ class _BuyAmountScreenState extends State<BuyAmountScreen> {
                   border: Border.all(color: _focusNode.hasFocus ? AppColors.primary : const Color(0xFFEBEDF3), width: _focusNode.hasFocus ? 1.2 : 1),
                   borderRadius: BorderRadius.circular(4),
                 ),
+                height: 77,
                 child: Row(
                   children: [
                     if (_amountController.text.isNotEmpty)
@@ -161,52 +150,41 @@ class _BuyAmountScreenState extends State<BuyAmountScreen> {
                   ],
                 ),
               ),
-            ),
-            Positioned(
-              left: 32,
-              right: 32,
-              top: 354,
-              height: 19,
-              child: InkWell(
+        const SizedBox(height: 20),
+        InkWell(
                 onTap: _changeAsset,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                child: Wrap(
+                  alignment: WrapAlignment.center,
+                  crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
                     const Text('≈', style: TextStyle(fontFamily: 'Sora', fontSize: 16, height: 1.2, color: AppColors.bodyMuted)),
                     const SizedBox(width: 4),
                     Text(
-                      _amount == 0 ? r'$0.00' : '${crypto.toStringAsFixed(5)} ${_order.asset.symbol}',
+                      '${crypto.toStringAsFixed(5)} ${_order.asset.symbol}',
                       style: const TextStyle(fontFamily: 'Sora', fontSize: 14, fontWeight: FontWeight.w600, height: 1.35, color: AppColors.body),
                     ),
                   ],
                 ),
               ),
-            ),
-            Positioned(
-              left: 32,
-              right: 32,
-              top: 385,
-              height: 19,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+        const SizedBox(height: 12),
+        Wrap(
+                alignment: WrapAlignment.center,
+                crossAxisAlignment: WrapCrossAlignment.center,
                 children: [
-                  const Text('1 USDT', style: TextStyle(fontFamily: 'Sora', fontSize: 14, fontWeight: FontWeight.w600, height: 1.35, color: AppColors.ink)),
+                  Text('1 ${_order.asset.symbol}', style: const TextStyle(fontFamily: 'Sora', fontSize: 14, fontWeight: FontWeight.w600, height: 1.35, color: AppColors.ink)),
                   const SizedBox(width: 12),
                   const Text('≈', style: TextStyle(fontFamily: 'Sora', fontSize: 14, color: AppColors.bodyMuted)),
                   const SizedBox(width: 4),
-                  Text('(₦${_formatNgn(BuyCryptoOrder.usdtNgnRate)})', style: const TextStyle(fontFamily: 'Sora', fontSize: 14, height: 1.35, color: AppColors.bodyMuted)),
+                  Text('(₦${_formatNgn(_order.asset.ngnPerUnit)})', style: const TextStyle(fontFamily: 'Sora', fontSize: 14, height: 1.35, color: AppColors.bodyMuted)),
                 ],
               ),
-            ),
-            Positioned(left: 32, right: 32, top: 436, height: 25, child: _PercentageButtons(balance: _order.wallet.balance, onPick: _setAmount)),
-            if (_amount > _order.wallet.balance)
-              const Positioned(left: 16, right: 16, top: 480, child: Text('Amount exceeds your selected wallet balance.', textAlign: TextAlign.center, style: TextStyle(fontFamily: 'Sora', fontSize: 12, color: AppColors.danger))),
-            Positioned(
-              left: 16,
-              right: 16,
-              top: 653,
-              height: 48,
-              child: _PrimaryButton(
+        const SizedBox(height: 24),
+        _PercentageButtons(balance: _order.wallet.balance, onPick: _setAmount),
+        if (_amount > _order.wallet.balance) ...[
+          const SizedBox(height: 16), const Text('Amount exceeds your selected wallet balance.', textAlign: TextAlign.center, style: TextStyle(fontFamily: 'Sora', fontSize: 12, color: AppColors.danger)),
+        ],
+      ]),
+      action: _PrimaryButton(
                 label: 'Continue',
                 enabled: _canContinue,
                 onPressed: () {
@@ -215,10 +193,6 @@ class _BuyAmountScreenState extends State<BuyAmountScreen> {
                   Navigator.of(context).push<void>(AppPageRoute<void>(builder: (_) => BuyReviewScreen(order: order)));
                 },
               ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 
@@ -236,7 +210,7 @@ class BuyReviewScreen extends StatelessWidget {
         bottom: false,
         child: Stack(
           children: [
-            Positioned(left: 0, right: 0, top: 16, height: 40, child: _ExactTradeHeader(title: 'Sell', onBack: () => Navigator.pop(context))),
+            Positioned(left: 0, right: 0, top: 16, height: 40, child: _ExactTradeHeader(title: 'Buy', onBack: () => Navigator.pop(context))),
             Positioned(left: 16, right: 16, top: 76, height: 193, child: _ReviewExchangeCards(order: order)),
             Positioned(
               left: 16,
@@ -272,153 +246,13 @@ class BuyReviewScreen extends StatelessWidget {
   }
 }
 
-class BuyPinScreen extends StatefulWidget {
-  const BuyPinScreen({super.key, required this.order});
-  final BuyCryptoOrder order;
-
-  @override
-  State<BuyPinScreen> createState() => _BuyPinScreenState();
-}
-
-class _BuyPinScreenState extends State<BuyPinScreen> {
-  String pin = '';
-
-  void _key(String value) {
-    HapticFeedback.selectionClick();
-    if (value == '⌫') {
-      if (pin.isNotEmpty) setState(() => pin = pin.substring(0, pin.length - 1));
-    } else if (pin.length < 4) {
-      setState(() => pin += value);
-    }
-  }
-
-  void _confirm() {
-    if (pin.length != 4) return;
-    HapticFeedback.mediumImpact();
-    Navigator.of(context).pushReplacement<void, void>(AppPageRoute<void>(builder: (_) => BuyProgressScreen(order: widget.order)));
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final active = pin.length == 4;
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: SafeArea(
-        bottom: false,
-        child: AnimatedSwitcher(
-          duration: const Duration(milliseconds: 180),
-          child: active ? _active(context) : _inactive(context),
-        ),
-      ),
-    );
-  }
-
-  Widget _inactive(BuildContext context) => Stack(
-        key: const ValueKey('buy-pin-inactive'),
-        children: [
-          Positioned(left: 6, top: 16, width: 32, height: 32, child: InkResponse(onTap: () => Navigator.pop(context), child: Image.asset('assets/figma_exact/buy_back.png', width: 32, height: 32))),
-          Positioned(
-            left: 147,
-            top: 56,
-            child: Container(
-              width: 96,
-              height: 96,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.white, border: Border.all(color: const Color(0x4DC4C6CF)), boxShadow: const [BoxShadow(color: Color(0x1A000000), blurRadius: 8, offset: Offset(0, 2))]),
-              child: Image.asset('assets/figma_exact/buy_pin_shield.png', width: 32, height: 40),
-            ),
-          ),
-          const Positioned(left: 54, top: 176, width: 282, height: 32, child: Text('Confirm Your Pin', textAlign: TextAlign.center, style: TextStyle(fontFamily: 'Sora', fontSize: 24, fontWeight: FontWeight.w600, height: 1.35, color: AppColors.ink))),
-          const Positioned(left: 54, top: 220, width: 282, height: 38, child: Text('Please enter your 4-digit security PIN to\nauthorize this transaction securely.', textAlign: TextAlign.center, style: TextStyle(fontFamily: 'Sora', fontSize: 14, height: 1.35, color: Color(0xFF424242)))),
-          Positioned(left: 63, top: 298, child: _BuyPinSlots(pin: pin, active: false)),
-          const Positioned(left: 16, right: 16, top: 394, height: 19, child: Text('Enter Secure PIN', textAlign: TextAlign.center, style: TextStyle(fontFamily: 'Sora', fontSize: 14, height: 1.35, color: Color(0xFF424242)))),
-          Positioned(left: 22, right: 22, top: 443, child: _BuyFigmaPinKeypad(onKey: _key)),
-          const Positioned(left: 76, top: 743, width: 238, height: 15, child: Text('Authentication is required', textAlign: TextAlign.center, style: TextStyle(fontFamily: 'Sora', fontSize: 12, height: 1.25, color: Color(0xFF686868)))),
-          Positioned(
-            left: 104,
-            top: 774,
-            child: Row(
-              children: [
-                Image.asset('assets/figma_exact/buy_lock.png', width: 11, height: 14),
-                const SizedBox(width: 8),
-                const Text('ENCRYPTED END-TO-END', style: TextStyle(fontFamily: 'Inter', fontSize: 11, fontWeight: FontWeight.w700, height: 1.5, letterSpacing: .1, color: Color(0xFF424242))),
-              ],
-            ),
-          ),
-        ],
-      );
-
-  Widget _active(BuildContext context) => Stack(
-        key: const ValueKey('buy-pin-active'),
-        children: [
-          Positioned(left: 6, top: 20, width: 32, height: 32, child: InkResponse(onTap: () => Navigator.pop(context), child: Image.asset('assets/figma_exact/buy_back.png', width: 32, height: 32))),
-          const Positioned(left: 16, top: 60, width: 360, height: 32, child: Text('Confirm Your Pin', style: TextStyle(fontFamily: 'Sora', fontSize: 24, fontWeight: FontWeight.w600, height: 1.35, color: AppColors.ink))),
-          const Positioned(left: 16, top: 104, width: 360, height: 38, child: Text('Please enter your 4-digit security PIN to\nauthorize this transaction securely.', style: TextStyle(fontFamily: 'Sora', fontSize: 14, height: 1.35, color: Color(0xFF424242)))),
-          Positioned(left: 64, top: 158, child: _BuyPinSlots(pin: pin, active: true)),
-          Positioned(left: 16, right: 14, top: 260, height: 48, child: _PrimaryButton(label: 'Confirm', enabled: true, onPressed: _confirm)),
-          Positioned(left: 22, right: 22, top: 516, child: _BuyFigmaPinKeypad(onKey: _key)),
-        ],
-      );
-}
-
-class _BuyPinSlots extends StatelessWidget {
-  const _BuyPinSlots({required this.pin, required this.active});
-  final String pin;
-  final bool active;
-
-  @override
-  Widget build(BuildContext context) => Row(
-        children: List.generate(4, (i) {
-          final filled = i < pin.length;
-          return Container(
-            width: 60,
-            height: 70,
-            margin: EdgeInsets.only(right: i == 3 ? 0 : 8),
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              color: active ? Colors.white : const Color(0xFFF5F6F9),
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: active ? AppColors.primary : const Color(0xFFEBEDF3)),
-              boxShadow: active ? const [BoxShadow(color: Color(0x26135CF7), blurRadius: 5, offset: Offset(0, 1))] : null,
-            ),
-            child: filled ? Text(pin[i], style: const TextStyle(fontFamily: 'Poppins', fontSize: 40, fontWeight: FontWeight.w500, height: .9, color: Color(0xFF555555))) : null,
-          );
-        }),
-      );
-}
-
-class _BuyFigmaPinKeypad extends StatelessWidget {
-  const _BuyFigmaPinKeypad({required this.onKey});
-  final ValueChanged<String> onKey;
-  static const keys = [('1', ''), ('2', 'ABC'), ('3', 'DEF'), ('4', 'GHI'), ('5', 'JKL'), ('6', 'MNO'), ('7', 'PQRS'), ('8', 'TUV'), ('9', 'WXYZ'), ('', ''), ('0', ''), ('⌫', '')];
-
-  @override
-  Widget build(BuildContext context) => SizedBox(
-        height: 205,
-        child: Column(
-          children: List.generate(4, (row) => SizedBox(
-                height: row == 3 ? 46 : 53,
-                child: Row(
-                  children: List.generate(3, (col) {
-                    final item = keys[(row * 3) + col];
-                    if (item.$1.isEmpty) return const Expanded(child: SizedBox());
-                    return Expanded(
-                      child: InkWell(
-                        onTap: () => onKey(item.$1),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(item.$1, style: TextStyle(fontSize: item.$1 == '⌫' ? 22 : 25, height: 1, color: Colors.black)),
-                            if (item.$2.isNotEmpty) Text(item.$2, style: const TextStyle(fontSize: 10, height: 1.3, fontWeight: FontWeight.w700, letterSpacing: 1.5, color: Colors.black)),
-                          ],
-                        ),
-                      ),
-                    );
-                  }),
-                ),
-              )),
-        ),
-      );
+class BuyPinScreen extends StatelessWidget {
+ const BuyPinScreen({super.key, required this.order});
+ final BuyCryptoOrder order;
+ @override
+ Widget build(BuildContext context) => TransactionPinEntryScreen(onConfirm: () {
+  Navigator.of(context).pushReplacement<void, void>(AppPageRoute<void>(builder: (_) => BuyProgressScreen(order: order)));
+ });
 }
 
 class BuyProgressScreen extends StatefulWidget {
@@ -901,21 +735,20 @@ class _TradeTopBar extends StatelessWidget {
 }
 
 class _ModeToggle extends StatelessWidget {
-  const _ModeToggle();
-
-  @override
-  Widget build(BuildContext context) => Container(
-        height: 55,
-        decoration: BoxDecoration(color: const Color(0xFFF3F3F9), borderRadius: BorderRadius.circular(999)),
-        child: const Stack(
-          children: [
-            Positioned(left: 15, top: 6, width: 101, height: 43, child: DecoratedBox(decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.all(Radius.circular(999))))),
-            Positioned(left: 15, top: 6, width: 101, height: 43, child: Center(child: Text('Buy', style: TextStyle(fontFamily: 'Sora', fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.primary)))),
-            Positioned(left: 128, top: 6, width: 101, height: 43, child: Center(child: Text('Sell', style: TextStyle(fontFamily: 'Sora', fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.body)))),
-            Positioned(left: 241, top: 6, width: 101, height: 43, child: Center(child: Text('Convert', style: TextStyle(fontFamily: 'Sora', fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.body)))),
-          ],
-        ),
-      );
+ const _ModeToggle({required this.asset});
+ final BuyCryptoAsset asset;
+ @override
+ Widget build(BuildContext context) => Container(
+  padding:const EdgeInsets.all(6),
+  decoration:BoxDecoration(color:const Color(0xFFF3F3F9),borderRadius:BorderRadius.circular(999)),
+  child:Row(children:List.generate(3,(index)=>Expanded(child:Material(
+   color:index==0 ? Colors.white : Colors.transparent,
+   borderRadius:BorderRadius.circular(999),
+   child:InkWell(borderRadius:BorderRadius.circular(999),onTap:index==0 ? null : ()=>Navigator.pushReplacement(context,AppPageRoute<void>(builder:(_)=>TradeAmountScreen(mode:index==1 ? TradeMode.sell : TradeMode.convert,asset:asset))),
+    child:Padding(padding:const EdgeInsets.symmetric(vertical:12),child:Center(child:Text(['Buy','Sell','Swap'][index],style:TextStyle(fontSize:14,fontWeight:FontWeight.w600,color:index==0 ? AppColors.primary : AppColors.body)))),
+   ),
+  )))),
+ );
 }
 
 class _WalletBadge extends StatelessWidget {
@@ -924,10 +757,7 @@ class _WalletBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (wallet.isDavochain) {
-      return Image.asset('assets/images/brand/davochain_logo.png', width: 32, height: 32, fit: BoxFit.contain, filterQuality: FilterQuality.high);
-    }
-    return const NairaCoinMark(width: 32);
+    return Image.asset(wallet.iconAsset, width: 32, height: 32, fit: BoxFit.contain, filterQuality: FilterQuality.high);
   }
 }
 
@@ -940,15 +770,15 @@ class _PercentageButtons extends StatelessWidget {
   Widget build(BuildContext context) {
     const values = [0.10, 0.25, 0.50, 0.75, 1.0];
     const labels = ['10%', '25%', '50%', '75%', 'Max'];
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return Wrap(
+      alignment: WrapAlignment.center, spacing: 12, runSpacing: 8,
       children: List.generate(values.length, (index) {
         return InkWell(
           onTap: () => onPick(balance * values[index]),
           borderRadius: BorderRadius.circular(4),
           child: Container(
-            width: 46,
-            height: 25,
+            width: 48,
+            height: 44,
             alignment: Alignment.center,
             decoration: BoxDecoration(
               color: const Color(0xFFF8F9FB),
@@ -986,8 +816,8 @@ class _PrimaryButton extends StatelessWidget {
         style: FilledButton.styleFrom(
           elevation: 0,
           backgroundColor: AppColors.primary,
-          disabledBackgroundColor: const Color(0xFFC4C5CA),
-          disabledForegroundColor: AppColors.body,
+          disabledBackgroundColor: AppColors.primaryDisabled,
+          disabledForegroundColor: Colors.white,
           foregroundColor: Colors.white,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
           textStyle: const TextStyle(fontFamily: 'Sora', fontSize: 14, fontWeight: FontWeight.w600),

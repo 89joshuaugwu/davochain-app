@@ -1,3 +1,4 @@
+import '../../../shared/widgets/davo_date_picker.dart';
 import '../../../core/preview/preview_account_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -1030,7 +1031,12 @@ class _CompleteProfileV12ScreenState extends State<CompleteProfileV12Screen>{
   @override void initState(){super.initState();for(final c in [first,middle,last,dob]){c.addListener(_refresh);}}
   void _refresh()=>setState((){});
   @override void dispose(){for(final c in [first,middle,last,dob]){c.removeListener(_refresh);c.dispose();}super.dispose();}
-  @override Widget build(BuildContext context){final enabled=[first,middle,last,dob].every((c)=>c.text.trim().isNotEmpty);return _Shell(title:'Verify your identity',titleStyle:_navSora16,bodyTopPadding:0,child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[const SizedBox(height:39),const Text('Complete your profile',style:_t16b),const SizedBox(height:8),const Text('Fill in your personal information to get started with verification',style:_t14),const SizedBox(height:24),_Input(label:'First name',hint:'Enter first name',controller:first,figmaFilled:true,labelSize:16,hintSize:12),const SizedBox(height:24),_Input(label:'Middle name',hint:'Enter Middle name',controller:middle,figmaFilled:true,labelSize:16,hintSize:12),const SizedBox(height:22),_Input(label:'Last name',hint:'Enter last name',controller:last,figmaFilled:true,labelSize:16,hintSize:12),const SizedBox(height:24),_Input(label:'Date of  birth',hint:'Select date of birth',controller:dob,figmaFilled:true,labelSize:16,hintSize:12),const Spacer(),_PrimaryButton('Continue',enabled:enabled,onTap:()=>_push(context,const CompleteProfileContactV12Screen())),const SizedBox(height:28)]));}
+  Future<void> _pickDate() async {
+    final now = DateTime.now();
+    final date = await showDavoDatePicker(context, title:'Date of birth', firstDate:DateTime(1900), lastDate:DateTime(now.year,now.month,now.day), initialDate:DateTime.tryParse(dob.text) ?? DateTime(2000,1,1));
+    if(mounted && date != null) dob.text = '${date.year}-${date.month.toString().padLeft(2,"0")}-${date.day.toString().padLeft(2,"0")}';
+  }
+  @override Widget build(BuildContext context){final enabled=[first,middle,last,dob].every((c)=>c.text.trim().isNotEmpty);return _Shell(title:'Verify your identity',titleStyle:_navSora16,bodyTopPadding:0,scroll:true,child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[const SizedBox(height:39),const Text('Complete your profile',style:_t16b),const SizedBox(height:8),const Text('Fill in your personal information to get started with verification',style:_t14),const SizedBox(height:24),_Input(label:'First name',hint:'Enter first name',controller:first,figmaFilled:true,labelSize:16,hintSize:12),const SizedBox(height:24),_Input(label:'Middle name',hint:'Enter Middle name',controller:middle,figmaFilled:true,labelSize:16,hintSize:12),const SizedBox(height:22),_Input(label:'Last name',hint:'Enter last name',controller:last,figmaFilled:true,labelSize:16,hintSize:12),const SizedBox(height:24),GestureDetector(onTap:_pickDate,child:AbsorbPointer(child:_Input(label:'Date of birth',hint:'Select date of birth',controller:dob,figmaFilled:true,labelSize:16,hintSize:12))),const SizedBox(height:32),_PrimaryButton('Continue',enabled:enabled,onTap:()=>_push(context,const CompleteProfileContactV12Screen())),const SizedBox(height:28)]));}
 }
 class CompleteProfileContactV12Screen extends StatefulWidget {
   const CompleteProfileContactV12Screen({super.key});
@@ -1069,6 +1075,7 @@ class _CompleteProfileContactV12ScreenState extends State<CompleteProfileContact
         state.text.trim().isNotEmpty;
     return _Shell(
       title: 'Verify your identity',
+      scroll: true,
       titleStyle: _navSora16,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1078,17 +1085,17 @@ class _CompleteProfileContactV12ScreenState extends State<CompleteProfileContact
           const SizedBox(height: 24),
           _ContactAddressField(controller: address),
           const SizedBox(height: 24),
-          _Input(
-            label: 'State',
-            hint: 'Select State',
-            controller: state,
-            figmaFilled: true,
-            labelSize: 16,
-            hintSize: 12,
+          const Text('State', style: _t16),
+          const SizedBox(height: 8),
+          DropdownButtonFormField<String>(
+            initialValue: state.text.isEmpty ? null : state.text,
+            isExpanded: true, hint: const Text('Select State'),
+            items: _nigerianStates.map((name)=>DropdownMenuItem(value:name,child:Text(name))).toList(),
+            onChanged:(value)=>state.text=value ?? '',
           ),
           const SizedBox(height: 24),
           const _CountryField(),
-          const Spacer(),
+          const SizedBox(height: 28),
           _PrimaryButton(
             'Continue',
             enabled: enabled,
@@ -2154,7 +2161,7 @@ class _ContactPhoneField extends StatelessWidget {
           Row(
             children: [
               Container(
-                width: 67,
+                width: 86,
                 height: 48,
                 padding: const EdgeInsets.symmetric(horizontal: 8),
                 decoration: BoxDecoration(
@@ -3522,9 +3529,9 @@ Widget _referralBox()=>Container(padding:const EdgeInsets.all(14),decoration:Box
 Widget _sectionLink(String a,String b,VoidCallback tap)=>Container(padding:const EdgeInsets.all(14),decoration:BoxDecoration(color:AppColors.offWhite,borderRadius:BorderRadius.circular(8)),child:Row(children:[Expanded(child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Text(a,style:_t12),Text(b,style:_t14b)])),IconButton(onPressed:tap,icon:Image.asset('$_exactAssets/profile_chevron_exact.png',width:16,height:16,filterQuality:FilterQuality.high))]));
 class _HowItWorks extends StatelessWidget{const _HowItWorks();@override Widget build(BuildContext context)=>Container(padding:const EdgeInsets.all(16),decoration:BoxDecoration(color:AppColors.offWhite,borderRadius:BorderRadius.circular(8)),child:const Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Text('How it works',style:_t16b),SizedBox(height:14),_Step('1','Send Invite','Share your unique link or code with your friends via social media or direct message.'),_Step('2','Friend Joins','Your friend signs up and completes a successful transaction of NGN50,000'),_Step('3','Get Paid','You and your friend get credited with Đ2,000 Davo Points.') ]));}
 class _Step extends StatelessWidget{const _Step(this.n,this.t,this.s);final String n,t,s;@override Widget build(BuildContext context)=>Padding(padding:const EdgeInsets.only(bottom:16),child:Row(crossAxisAlignment:CrossAxisAlignment.start,children:[CircleAvatar(radius:12,backgroundColor:Colors.white,child:Text(n,style:const TextStyle(fontFamily:'Sora',fontSize:10,color:AppColors.primary))),const SizedBox(width:10),Expanded(child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Text(t,style:_t14b),Text(s,style:_t12)]))]));}
-class _StatsGrid extends StatelessWidget{const _StatsGrid(this.items);final List<(String,String)> items;@override Widget build(BuildContext context)=>GridView.count(crossAxisCount:2,shrinkWrap:true,physics:const NeverScrollableScrollPhysics(),mainAxisSpacing:10,crossAxisSpacing:10,childAspectRatio:2.15,children:items.map((e)=>Container(padding:const EdgeInsets.all(12),decoration:BoxDecoration(color:AppColors.offWhite,borderRadius:BorderRadius.circular(8)),child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Text(e.$1,style:_t12),const Spacer(),Text(e.$2,style:const TextStyle(fontFamily:'Sora',fontSize:17,fontWeight:FontWeight.w700,color:AppColors.primary))]))).toList());}
+class _StatsGrid extends StatelessWidget{const _StatsGrid(this.items);final List<(String,String)> items;@override Widget build(BuildContext context)=>GridView.count(crossAxisCount:2,shrinkWrap:true,physics:const NeverScrollableScrollPhysics(),mainAxisSpacing:10,crossAxisSpacing:10,childAspectRatio:1.8,children:items.map((e)=>Container(padding:const EdgeInsets.all(12),decoration:BoxDecoration(color:AppColors.offWhite,borderRadius:BorderRadius.circular(8)),child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Text(e.$1,style:_t12),const Spacer(),Text(e.$2,style:const TextStyle(fontFamily:'Sora',fontSize:17,fontWeight:FontWeight.w700,color:AppColors.primary))]))).toList());}
 class _PersonRow extends StatelessWidget{const _PersonRow(this.name,this.date,this.status);final String name,date,status;@override Widget build(BuildContext context)=>Container(padding:const EdgeInsets.symmetric(vertical:11),decoration:const BoxDecoration(border:Border(bottom:BorderSide(color:Color(0xFFF2F3F7)))),child:Row(children:[CircleAvatar(radius:18,backgroundColor:const Color(0xFFEAF2FF),child:Text(name.split(' ').map((e)=>e[0]).take(2).join(),style:const TextStyle(fontFamily:'Sora',fontSize:10,color:AppColors.primary))),const SizedBox(width:10),Expanded(child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Text(name,style:_t14b),Text(date,style:_t12)])),_Pill(status)]));}
-class _ActivityRow extends StatelessWidget{const _ActivityRow(this.t,this.v);final String t,v;@override Widget build(BuildContext context)=>Container(padding:const EdgeInsets.symmetric(vertical:12),decoration:const BoxDecoration(border:Border(bottom:BorderSide(color:Color(0xFFF2F3F7)))),child:Row(children:[CircleAvatar(radius:18,backgroundColor:const Color(0xFFEAF2FF),child:Padding(padding:const EdgeInsets.all(9),child:Image.asset('$_exactAssets/icon_gift.png'))),const SizedBox(width:10),Expanded(child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Text(t,style:_t14b),const Text('Oct 24, 2023 • 14:32',style:_t12)])),Text(v,style:const TextStyle(fontFamily:'Sora',fontSize:12,color:Color(0xFF1FAF5A),fontWeight:FontWeight.w600))]));}
+class _ActivityRow extends StatelessWidget{const _ActivityRow(this.t,this.v);final String t,v;@override Widget build(BuildContext context)=>Container(padding:const EdgeInsets.symmetric(vertical:12),decoration:const BoxDecoration(border:Border(bottom:BorderSide(color:Color(0xFFF2F3F7)))),child:Row(children:[CircleAvatar(radius:18,backgroundColor:const Color(0xFFEAF2FF),child:Padding(padding:const EdgeInsets.all(9),child:Image.asset('$_exactAssets/icon_gift.png'))),const SizedBox(width:10),Expanded(child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Text(t,style:_t14b),const Text('Oct 24, 2023 • 14:32',style:_t12)])),Row(mainAxisSize:MainAxisSize.min,children:[Image.asset('assets/images/brand/naira_coin.png',width:16,height:16),const SizedBox(width:4),Text(v.replaceAll('\u0110',''),style:const TextStyle(fontFamily:'Sora',fontSize:12,color:Color(0xFF1FAF5A),fontWeight:FontWeight.w600))])]));}
 
 class _QuickAssetAction extends StatelessWidget{const _QuickAssetAction(this.asset,this.t,this.tap);final String asset,t;final VoidCallback tap;@override Widget build(BuildContext context)=>InkWell(onTap:tap,child:Column(children:[CircleAvatar(radius:20,backgroundColor:const Color(0xFFEAF2FF),child:Padding(padding:const EdgeInsets.all(10),child:Image.asset(asset,fit:BoxFit.contain,filterQuality:FilterQuality.high))),const SizedBox(height:6),Text(t,textAlign:TextAlign.center,style:const TextStyle(fontFamily:'Sora',fontSize:9,color:AppColors.body))]));}
 class _Podium extends StatelessWidget {
@@ -3726,3 +3733,5 @@ const _t14m=TextStyle(fontFamily:'Sora',fontSize:14,fontWeight:FontWeight.w500,c
 const _t14b=TextStyle(fontFamily:'Sora',fontSize:14,fontWeight:FontWeight.w600,color:AppColors.ink,height:1.35);
 const _t12=TextStyle(fontFamily:'Sora',fontSize:12,fontWeight:FontWeight.w400,color:Color(0xFF686868),height:1.35);
 const _t12b=TextStyle(fontFamily:'Sora',fontSize:12,fontWeight:FontWeight.w600,color:AppColors.ink,height:1.35);
+
+const _nigerianStates = ['Abia','Adamawa','Akwa Ibom','Anambra','Bauchi','Bayelsa','Benue','Borno','Cross River','Delta','Ebonyi','Edo','Ekiti','Enugu','FCT','Gombe','Imo','Jigawa','Kaduna','Kano','Katsina','Kebbi','Kogi','Kwara','Lagos','Nasarawa','Niger','Ogun','Ondo','Osun','Oyo','Plateau','Rivers','Sokoto','Taraba','Yobe','Zamfara'];

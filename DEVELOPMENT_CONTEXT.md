@@ -121,3 +121,49 @@ alignment, dark login status icons, rounded input borders, Login/back, Skip/Repl
 Android Back between introduction pages and Explore demo into the dashboard. Scoped
 Flutter/AndroidRuntime error log was empty. Recorded a local walkthrough at
 `../tmp/emulator-review/davochain-mobile-preview.mp4`. Emulator left on the dashboard.
+
+## Screenshot repair pass - 2026-10-07
+
+Removed Explore demo and Replay from onboarding as requested. Welcome restores the
+oval logo/name composition and offscreen currency artwork with a finite1.7s sequence
+and3.2s handoff; reduced-motion shows the static composition for1.2s. Native OS splash
+still briefly shows the brand mark before Flutter renders.
+
+NGN wallet imagery uses the Nigerian flag; NGD uses supplied naira_coin.png.
+Buy/crypto/gift PIN screens share TransactionPinEntryScreen: masked digits, lettered
+keypad, reserved Confirm area, stable heading/keypad, scrolling fallback.
+Fixed withdraw Add crypto asset row width, balance label/value widths, deposit share
+sheet content wrapping/receipt brand mark width. Copy notification now appears below
+the status bar; other snackbars are not globally migrated yet.
+
+Shared showDavoDatePicker offers a branded native date wheel with cancel/confirm and
+bounds; identity DOB uses it. Identity name/contact forms scroll above the keyboard.
+State is a selector with36 states+FCT, phone prefix wider, reward rate cards taller,
+activity currency marks use the supplied Davochain Naira logo.
+
+Transaction-details rows use consistent label/value alignment, bounded wrapping,
+copy icons, scrollable content and pinned Done/Share Receipt actions. Receipt previews
+reuse these rows and scroll naturally; deposit-status address/hash rows now wrap with
+copy controls. Their alignment is checked at 320x568 with 1.3x text.
+
+Buy/Sell/Swap tab handlers now replace the current trade mode rather than popping the
+flow or displaying decorative labels. Headings match the active mode, and switching
+preserves the selected asset. A shared TradeFormLayout scrolls content above the
+keyboard and anchors the action to the available bottom edge. Percentage amounts use
+available asset units; input estimates use the existing local mock rates. Review and
+transaction records remain sample frontend data pending the backend integration.
+
+Verification: 54 tests passed and flutter analyze reported no issues. This covers
+short-screen trade forms with keyboard insets, mode changes, receipt/deposit variants,
+stable shared PIN layout, wallet branding, onboarding controls and the date picker.
+
+## Approved next motion pass (deferred by user)
+
+Reference: https://dribbble.com/shots/25193732-Logo-Animation-on-Splash-Screen
+User approved the following direction but explicitly requested completing fixes first:
+dot enters; two D components assemble with a soft spring; logo shifts left as Davochain
+reveals and the oval expands; currency artwork rises partly offscreen; brief settle
+then onboarding fade. About three seconds, static reduced-motion alternative. Do not
+treat this proposal as already implemented. Native Android launch splash currently
+shows the mark before the Flutter oval welcome screen. Plan their visual handoff
+together in the next motion pass.

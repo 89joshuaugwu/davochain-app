@@ -1,3 +1,4 @@
+import '../../../shared/widgets/transaction_pin_entry.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -893,7 +894,7 @@ class _GiftCardPaymentScreenState extends State<GiftCardPaymentScreen> {
                     height: 56,
                     decoration: const BoxDecoration(color: Color(0xFFF0F4FD), shape: BoxShape.circle),
                     alignment: Alignment.center,
-                    child: Image.asset('assets/images/brand/naira_coin.png', width: 24, height: 24, fit: BoxFit.contain),
+                    child: Image.asset('$_f/buy_nigeria.png', width: 24, height: 24, fit: BoxFit.contain),
                   ),
                   const SizedBox(width: 14),
                   Expanded(
@@ -973,80 +974,10 @@ class _GiftCardPaymentScreenState extends State<GiftCardPaymentScreen> {
   }
 }
 
-class GiftCardPinScreen extends StatefulWidget {
-  const GiftCardPinScreen({super.key});
-
-  @override
-  State<GiftCardPinScreen> createState() => _GiftCardPinScreenState();
-}
-
-class _GiftCardPinScreenState extends State<GiftCardPinScreen> {
-  String pin = '';
-
-  void key(String value) {
-    HapticFeedback.selectionClick();
-    setState(() {
-      if (value == 'back') {
-        if (pin.isNotEmpty) pin = pin.substring(0, pin.length - 1);
-      } else if (pin.length < 4) {
-        pin += value;
-      }
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return _GiftScaffold(
-      child: Column(
-        children: [
-          Align(alignment: Alignment.centerLeft, child: _BackButton(onTap: () => Navigator.pop(context, false))),
-          const SizedBox(height: 24),
-          Image.asset('$_f/buy_pin_shield.png', width: 56, height: 56),
-          const SizedBox(height: 14),
-          const Text('Confirm Your Pin', style: _title20),
-          const SizedBox(height: 5),
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 24),
-            child: Text('Please enter your 4-digit security PIN to authorize this transaction securely.', textAlign: TextAlign.center, style: _caption),
-          ),
-          const SizedBox(height: 22),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: List.generate(4, (index) {
-              final filled = index < pin.length;
-              return AnimatedContainer(
-                duration: const Duration(milliseconds: 160),
-                width: 42,
-                height: 48,
-                margin: const EdgeInsets.symmetric(horizontal: 5),
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  color: filled ? Colors.white : const Color(0xFFF8F9FB),
-                  border: Border.all(color: filled ? AppColors.primary : AppColors.mutedSoft),
-                  borderRadius: BorderRadius.circular(4),
-                  boxShadow: filled ? const [BoxShadow(color: Color(0x22135CF7), blurRadius: 8)] : null,
-                ),
-                child: filled ? Text(pin[index], style: const TextStyle(fontFamily: 'Sora', fontSize: 22, color: AppColors.ink)) : null,
-              );
-            }),
-          ),
-          const SizedBox(height: 16),
-          AnimatedSwitcher(
-            duration: const Duration(milliseconds: 180),
-            child: pin.length == 4
-                ? SizedBox(width: double.infinity, child: _PrimaryButton(label: 'Confirm', onTap: () => Navigator.pop(context, true)))
-                : const Text('Enter Secure PIN', style: _body14),
-          ),
-          const Spacer(),
-          _NumericKeyboard(onKey: key),
-          const SizedBox(height: 12),
-          const Text('Authentication is required', style: _caption),
-          const SizedBox(height: 8),
-          Row(mainAxisAlignment: MainAxisAlignment.center, children: [Image.asset('$_f/buy_lock.png', width: 11, height: 14), const SizedBox(width: 7), const Text('ENCRYPTED END-TO-END', style: _eyebrow)]),
-        ],
-      ),
-    );
-  }
+class GiftCardPinScreen extends StatelessWidget {
+ const GiftCardPinScreen({super.key});
+ @override
+ Widget build(BuildContext context) => TransactionPinEntryScreen(onConfirm: () => Navigator.pop(context, true));
 }
 
 class GiftCardBuySuccessScreen extends StatefulWidget {
@@ -1557,33 +1488,6 @@ class _DeliveryChoice extends StatelessWidget {
           ]),
         ),
       );
-}
-
-class _NumericKeyboard extends StatelessWidget {
-  const _NumericKeyboard({required this.onKey});
-  final ValueChanged<String> onKey;
-  @override
-  Widget build(BuildContext context) {
-    const keys = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '', '0', 'back'];
-    return Container(
-      color: const Color(0xFFF8F9FB),
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: GridView.builder(
-        itemCount: keys.length,
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 3, childAspectRatio: 2.45),
-        itemBuilder: (_, index) {
-          final key = keys[index];
-          if (key.isEmpty) return const SizedBox.shrink();
-          return InkWell(
-            onTap: () => onKey(key),
-            child: Center(child: key == 'back' ? Image.asset('$_f/buy_backspace.png', width: 22, height: 22) : Text(key, style: const TextStyle(fontFamily: 'Sora', fontSize: 18, color: AppColors.ink))),
-          );
-        },
-      ),
-    );
-  }
 }
 
 class _PrimaryButton extends StatelessWidget {

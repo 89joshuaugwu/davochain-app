@@ -50,6 +50,10 @@ enum BuyFundingWallet {
   final String formattedBalance;
   final double balance;
   final bool isDavochain;
+
+  String get iconAsset => isDavochain
+      ? 'assets/images/brand/naira_coin.png'
+      : 'assets/figma_exact/buy_nigeria.png';
 }
 
 class BuyCryptoOrder {

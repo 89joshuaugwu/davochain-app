@@ -64,14 +64,17 @@ void main() {
     expect(find.text('Signup destination'), findsOneWidget);
   });
 
-  testWidgets('reduced motion settles and demo opens without credentials',
+  testWidgets('welcome contains no demo or replay and reduced motion settles',
       (tester) async {
     await openWelcome(tester, reduced: true);
     await tester.pumpAndSettle();
     expect(tester.binding.hasScheduledFrame, isFalse);
-    await tester.tap(find.text('Explore demo'));
+    expect(find.text('Explore demo'), findsNothing);
+    await tester.tap(find.text('Skip'));
     await tester.pumpAndSettle();
-    expect(find.text('Demo dashboard'), findsOneWidget);
+    expect(find.text('Replay'), findsNothing);
+    expect(find.text('Login').hitTestable(), findsOneWidget);
+    expect(find.text('Create Account').hitTestable(), findsOneWidget);
   });
 
   testWidgets('skip reaches final page and login is available', (tester) async {

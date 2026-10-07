@@ -33,7 +33,7 @@ class _BrandSplashScreenState extends State<BrandSplashScreen>
 
     _intro = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 780),
+      duration: const Duration(milliseconds: 1700),
     );
   }
 
@@ -44,16 +44,18 @@ class _BrandSplashScreenState extends State<BrandSplashScreen>
     if (_reduceMotion == reduceMotion) return;
     _reduceMotion = reduceMotion;
     _timer?.cancel();
-    if (reduceMotion) {
-      _intro.stop();
-      _intro.value = 1;
-    } else {
-      _intro.forward();
-    }
-    _timer = Timer(
-      Duration(milliseconds: reduceMotion ? 250 : 1200),
-      _openOnboarding,
-    );
+    // Start the welcome sequence after the first layout, not during startup.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || _reduceMotion != reduceMotion) return;
+      if (reduceMotion) {
+        _intro.stop();
+        _intro.value = 1;
+      } else {
+        _intro.forward();
+      }
+      _timer = Timer(
+          Duration(milliseconds: reduceMotion ? 1200 : 3200), _openOnboarding);
+    });
   }
 
   @override
@@ -69,7 +71,7 @@ class _BrandSplashScreenState extends State<BrandSplashScreen>
       PageRouteBuilder<void>(
         settings: const RouteSettings(name: '/onboarding'),
         transitionDuration:
-            Duration(milliseconds: _reduceMotion == true ? 0 : 280),
+            Duration(milliseconds: _reduceMotion == true ? 0 : 450),
         reverseTransitionDuration:
             Duration(milliseconds: _reduceMotion == true ? 0 : 220),
         pageBuilder: (_, animation, __) => const OnboardingScreen(),
@@ -94,62 +96,89 @@ class _BrandSplashScreenState extends State<BrandSplashScreen>
   Widget build(BuildContext context) {
     final reduceMotion = MediaQuery.disableAnimationsOf(context);
     final size = MediaQuery.sizeOf(context);
-    final intro = _intro.drive(CurveTween(curve: Curves.easeOutCubic));
-    final logoCurve = _intro.drive(
-        CurveTween(curve: const Interval(.12, 1, curve: Curves.easeOutCubic)));
+    double phase(double start, double end) => reduceMotion
+        ? 1
+        : Curves.easeOutCubic.transform(
+            ((_intro.value - start) / (end - start)).clamp(0.0, 1.0));
 
-    return Scaffold(
-      backgroundColor: AppColors.primary,
-      body: Stack(
-        fit: StackFit.expand,
-        children: [
-          // Exact Figma composition: cobalt field, wide oval behind the lockup,
-          // and oversized outlined crypto artwork bleeding off the bottom edge.
-          Positioned.fill(
-            child: AnimatedBuilder(
-              animation: _intro,
-              builder: (context, child) {
-                if (reduceMotion) return child!;
-                return Transform.scale(
-                  scale: 1.035 - (intro.value * .035),
-                  alignment: Alignment.center,
-                  child: Transform.translate(
-                    offset: Offset(0, 12 * (1 - intro.value)),
-                    child: child,
-                  ),
-                );
-              },
-              child: Image.asset(
-                'assets/images/figma/splash_background.png',
-                fit: BoxFit.cover,
-                alignment: Alignment.center,
-                filterQuality: FilterQuality.high,
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: const SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: Brightness.light,
+        systemNavigationBarColor: AppColors.primary,
+        systemNavigationBarIconBrightness: Brightness.light,
+      ),
+      child: Scaffold(
+        backgroundColor: AppColors.primary,
+        body: AnimatedBuilder(
+          animation: _intro,
+          builder: (context, child) {
+            final oval = phase(0, .45);
+            final brand = phase(.12, .65);
+            final currencies = phase(.32, 1);
+            final centerY = size.height * .555;
+            return Stack(clipBehavior: Clip.hardEdge, children: [
+              Positioned(
+                left: size.width * .045,
+                right: size.width * .045,
+                top: centerY - size.height * .039,
+                height: size.height * .078,
+                child: Transform.scale(
+                  scaleX: .35 + .65 * oval,
+                  scaleY: .7 + .3 * oval,
+                  child: Opacity(
+                      opacity: .25 + .75 * oval,
+                      child: const ClipOval(
+                        key: ValueKey('welcome-oval'),
+                        child: ColoredBox(color: Color(0xFF0750E8)),
+                      )),
+                ),
               ),
-            ),
-          ),
-          Align(
-            alignment: const Alignment(0, -.006),
-            child: AnimatedBuilder(
-              animation: _intro,
-              builder: (context, child) {
-                return Opacity(
-                  opacity: intro.value.clamp(0.0, 1.0),
-                  child: Transform.translate(
-                    offset:
-                        Offset(0, reduceMotion ? 0 : 10 * (1 - intro.value)),
-                    child: Transform.scale(
-                      scale: reduceMotion ? 1 : .96 + (.04 * logoCurve.value),
-                      child: child,
-                    ),
-                  ),
-                );
-              },
-              child: _WhiteDavochainLockup(
-                maxWidth: math.min(size.width - 30, 360),
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 0,
+                child: Transform.translate(
+                  offset: Offset(0, (1 - currencies) * 95),
+                  child: Opacity(
+                      opacity: currencies,
+                      child: ClipRect(
+                        key: const ValueKey('welcome-currencies'),
+                        child: Align(
+                          alignment: Alignment.bottomCenter,
+                          heightFactor: .24,
+                          child: SizedBox(
+                              width: size.width,
+                              height: size.height,
+                              child: Image.asset(
+                                'assets/images/figma/splash_background.png',
+                                fit: BoxFit.fill,
+                                excludeFromSemantics: true,
+                              )),
+                        ),
+                      )),
+                ),
               ),
-            ),
-          ),
-        ],
+              Positioned(
+                left: 20,
+                right: 20,
+                top: centerY - 30,
+                height: 60,
+                child: Opacity(
+                    opacity: .15 + .85 * brand,
+                    child: Transform.translate(
+                      offset: Offset(0, (1 - brand) * 20),
+                      child: Transform.scale(
+                          scale: .92 + .08 * brand,
+                          child: Center(
+                            child: _WhiteDavochainLockup(
+                                maxWidth: math.min(size.width - 48, 350)),
+                          )),
+                    )),
+              ),
+            ]);
+          },
+        ),
       ),
     );
   }
