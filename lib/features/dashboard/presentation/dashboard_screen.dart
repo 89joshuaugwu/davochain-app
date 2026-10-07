@@ -5,6 +5,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import '../../transactions/presentation/transaction_history_screen.dart';
 
 import '../../../core/theme/app_theme.dart';
+import '../../../shared/widgets/auth_widgets.dart' show Entrance;
 import '../../../core/navigation/app_page_route.dart';
 import '../../../core/preview/preview_account_state.dart';
 import '../../buy_crypto/presentation/buy_crypto_flow.dart';
@@ -169,48 +170,18 @@ class _DavochainDashboardScreenState extends State<DavochainDashboardScreen> {
   }
 }
 
-class _Entrance extends StatefulWidget {
+class _Entrance extends StatelessWidget {
   const _Entrance({required this.index, required this.child});
 
   final int index;
   final Widget child;
 
   @override
-  State<_Entrance> createState() => _EntranceState();
-}
-
-class _EntranceState extends State<_Entrance> with SingleTickerProviderStateMixin {
-  late final AnimationController _controller;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 420),
-    );
-    Future<void>.delayed(Duration(milliseconds: widget.index * 45), () {
-      if (mounted) _controller.forward();
-    });
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final curve = CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic);
-    return FadeTransition(
-      opacity: curve,
-      child: SlideTransition(
-        position: Tween<Offset>(begin: const Offset(0, .045), end: Offset.zero).animate(curve),
-        child: widget.child,
-      ),
-    );
-  }
+  Widget build(BuildContext context) => Entrance(
+        delay: Duration(milliseconds: index * 45),
+        offset: const Offset(0, .025),
+        child: child,
+      );
 }
 
 class _DashboardHeader extends StatelessWidget {

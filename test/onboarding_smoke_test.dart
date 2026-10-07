@@ -13,7 +13,7 @@ void main() {
     expect(find.text('Simple. Fast. Secure.'), findsNothing);
 
     await tester.tap(find.text('Next'));
-    // The illustration floats continuously; wait for the page transition only.
+    // Wait for the swipe transition and progress indicator to settle.
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 600));
 

@@ -15,10 +15,10 @@ class BrandSplashScreen extends StatefulWidget {
 }
 
 class _BrandSplashScreenState extends State<BrandSplashScreen>
-    with TickerProviderStateMixin {
+    with SingleTickerProviderStateMixin {
   late final AnimationController _intro;
-  late final AnimationController _ambient;
   Timer? _timer;
+  bool? _reduceMotion;
 
   @override
   void initState() {
@@ -33,21 +33,33 @@ class _BrandSplashScreenState extends State<BrandSplashScreen>
 
     _intro = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 900),
-    )..forward();
-    _ambient = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 2400),
-    )..repeat(reverse: true);
+      duration: const Duration(milliseconds: 780),
+    );
+  }
 
-    _timer = Timer(const Duration(milliseconds: 1900), _openOnboarding);
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final reduceMotion = MediaQuery.disableAnimationsOf(context);
+    if (_reduceMotion == reduceMotion) return;
+    _reduceMotion = reduceMotion;
+    _timer?.cancel();
+    if (reduceMotion) {
+      _intro.stop();
+      _intro.value = 1;
+    } else {
+      _intro.forward();
+    }
+    _timer = Timer(
+      Duration(milliseconds: reduceMotion ? 250 : 1200),
+      _openOnboarding,
+    );
   }
 
   @override
   void dispose() {
     _timer?.cancel();
     _intro.dispose();
-    _ambient.dispose();
     super.dispose();
   }
 
@@ -56,15 +68,16 @@ class _BrandSplashScreenState extends State<BrandSplashScreen>
     Navigator.of(context).pushReplacement(
       PageRouteBuilder<void>(
         settings: const RouteSettings(name: '/onboarding'),
-        transitionDuration: const Duration(milliseconds: 560),
-        reverseTransitionDuration: const Duration(milliseconds: 360),
+        transitionDuration:
+            Duration(milliseconds: _reduceMotion == true ? 0 : 280),
+        reverseTransitionDuration:
+            Duration(milliseconds: _reduceMotion == true ? 0 : 220),
         pageBuilder: (_, animation, __) => const OnboardingScreen(),
         transitionsBuilder: (_, animation, __, child) {
-          final curved = CurvedAnimation(
-            parent: animation,
+          if (_reduceMotion == true) return child;
+          final curved = animation.drive(CurveTween(
             curve: Curves.easeOutCubic,
-            reverseCurve: Curves.easeInCubic,
-          );
+          ));
           return FadeTransition(
             opacity: curved,
             child: ScaleTransition(
@@ -81,11 +94,9 @@ class _BrandSplashScreenState extends State<BrandSplashScreen>
   Widget build(BuildContext context) {
     final reduceMotion = MediaQuery.disableAnimationsOf(context);
     final size = MediaQuery.sizeOf(context);
-    final intro = CurvedAnimation(parent: _intro, curve: Curves.easeOutCubic);
-    final logoCurve = CurvedAnimation(
-      parent: _intro,
-      curve: const Interval(.16, 1, curve: Curves.easeOutBack),
-    );
+    final intro = _intro.drive(CurveTween(curve: Curves.easeOutCubic));
+    final logoCurve = _intro.drive(
+        CurveTween(curve: const Interval(.12, 1, curve: Curves.easeOutCubic)));
 
     return Scaffold(
       backgroundColor: AppColors.primary,
@@ -119,17 +130,15 @@ class _BrandSplashScreenState extends State<BrandSplashScreen>
           Align(
             alignment: const Alignment(0, -.006),
             child: AnimatedBuilder(
-              animation: Listenable.merge([_intro, _ambient]),
+              animation: _intro,
               builder: (context, child) {
-                final float = reduceMotion
-                    ? 0.0
-                    : math.sin(_ambient.value * math.pi) * 1.6;
                 return Opacity(
                   opacity: intro.value.clamp(0.0, 1.0),
                   child: Transform.translate(
-                    offset: Offset(0, 14 * (1 - intro.value) + float),
+                    offset:
+                        Offset(0, reduceMotion ? 0 : 10 * (1 - intro.value)),
                     child: Transform.scale(
-                      scale: reduceMotion ? 1 : .88 + (.12 * logoCurve.value),
+                      scale: reduceMotion ? 1 : .96 + (.04 * logoCurve.value),
                       child: child,
                     ),
                   ),

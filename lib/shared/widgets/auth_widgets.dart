@@ -23,13 +23,13 @@ class DavoAuthScaffold extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+    const overlayStyle = SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
       statusBarIconBrightness: Brightness.dark,
       statusBarBrightness: Brightness.light,
       systemNavigationBarColor: Colors.white,
       systemNavigationBarIconBrightness: Brightness.dark,
-    ));
+    );
 
     final page = Scaffold(
       resizeToAvoidBottomInset: true,
@@ -65,11 +65,15 @@ class DavoAuthScaffold extends StatelessWidget {
       ),
     );
 
-    if (!keyboardDismiss) return page;
-    return GestureDetector(
-      behavior: HitTestBehavior.translucent,
-      onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
-      child: page,
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: overlayStyle,
+      child: keyboardDismiss
+          ? GestureDetector(
+              behavior: HitTestBehavior.translucent,
+              onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+              child: page,
+            )
+          : page,
     );
   }
 }
@@ -81,6 +85,7 @@ class _BackButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return IconButton(
+      tooltip: 'Back',
       onPressed: onPressed,
       padding: EdgeInsets.zero,
       constraints: const BoxConstraints.tightFor(width: 40, height: 40),
@@ -131,54 +136,105 @@ class DavoScreenIntro extends StatelessWidget {
   }
 }
 
-class DavoPrimaryButton extends StatelessWidget {
+class DavoPrimaryButton extends StatefulWidget {
   const DavoPrimaryButton({
     super.key,
     required this.label,
     required this.onPressed,
     this.enabled = true,
+    this.loading = false,
     this.height = 48,
   });
 
   final String label;
   final VoidCallback? onPressed;
   final bool enabled;
+  final bool loading;
   final double height;
 
   @override
+  State<DavoPrimaryButton> createState() => _DavoPrimaryButtonState();
+}
+
+class _DavoPrimaryButtonState extends State<DavoPrimaryButton> {
+  bool _pressed = false;
+
+  bool get _enabled =>
+      widget.enabled && !widget.loading && widget.onPressed != null;
+
+  void _activate() {
+    if (!_enabled) return;
+    HapticFeedback.selectionClick();
+    widget.onPressed!();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: double.infinity,
-      height: height,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 220),
-        curve: Curves.easeOut,
-        decoration: BoxDecoration(
-          color: enabled ? AppColors.primary : AppColors.primaryDisabled,
-          borderRadius: BorderRadius.circular(4),
-          boxShadow: enabled
-              ? [
-                  BoxShadow(
-                    color: AppColors.primary.withValues(alpha: .12),
-                    blurRadius: 18,
-                    offset: const Offset(0, 7),
-                  ),
-                ]
-              : null,
-        ),
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            onTap: enabled ? onPressed : null,
-            borderRadius: BorderRadius.circular(4),
-            child: Center(
-              child: Text(
-                label,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 14,
-                  height: 1.35,
-                  fontWeight: FontWeight.w700,
+    final reduce = MediaQuery.disableAnimationsOf(context);
+    final enabled = _enabled;
+    return Semantics(
+      button: true,
+      enabled: enabled,
+      label: widget.loading ? '${widget.label}, loading' : widget.label,
+      liveRegion: widget.loading,
+      excludeSemantics: true,
+      onTap: enabled ? _activate : null,
+      child: AnimatedScale(
+        scale: !reduce && enabled && _pressed ? .98 : 1,
+        duration: reduce ? Duration.zero : const Duration(milliseconds: 120),
+        curve: Curves.easeOutCubic,
+        child: SizedBox(
+          width: double.infinity,
+          height: widget.height,
+          child: AnimatedContainer(
+            duration:
+                reduce ? Duration.zero : const Duration(milliseconds: 180),
+            curve: Curves.easeOut,
+            decoration: BoxDecoration(
+              color: enabled || widget.loading
+                  ? AppColors.primary
+                  : AppColors.primaryDisabled,
+              borderRadius: BorderRadius.circular(4),
+              boxShadow: enabled
+                  ? [
+                      BoxShadow(
+                        color: AppColors.primary.withValues(alpha: .12),
+                        blurRadius: 18,
+                        offset: const Offset(0, 7),
+                      ),
+                    ]
+                  : null,
+            ),
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                splashFactory: reduce ? NoSplash.splashFactory : null,
+                onTap: enabled ? _activate : null,
+                excludeFromSemantics: true,
+                onHighlightChanged: (pressed) {
+                  if (_pressed != pressed) setState(() => _pressed = pressed);
+                },
+                borderRadius: BorderRadius.circular(4),
+                child: Center(
+                  child: widget.loading
+                      ? SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: reduce
+                              ? const Icon(Icons.hourglass_top,
+                                  color: Colors.white, size: 20)
+                              : const CircularProgressIndicator(
+                                  strokeWidth: 2, color: Colors.white),
+                        )
+                      : Text(
+                          widget.label,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 14,
+                            height: 1.35,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
                 ),
               ),
             ),
@@ -334,10 +390,12 @@ class _DavoTextFieldState extends State<DavoTextField> {
               color: AppColors.bodyMuted,
             ),
             decoration: InputDecoration(
+              filled: false,
               counterText: '',
               hintText: widget.hint,
               border: InputBorder.none,
               enabledBorder: InputBorder.none,
+              disabledBorder: InputBorder.none,
               focusedBorder: InputBorder.none,
               errorBorder: InputBorder.none,
               focusedErrorBorder: InputBorder.none,
@@ -356,6 +414,7 @@ class _DavoTextFieldState extends State<DavoTextField> {
               prefixIconConstraints: const BoxConstraints(minWidth: 42, minHeight: 20),
               suffixIcon: widget.showVisibilityToggle
                   ? IconButton(
+                      tooltip: _obscure ? 'Show password' : 'Hide password',
                       onPressed: () => setState(() => _obscure = !_obscure),
                       splashRadius: 18,
                       icon: Image.asset(

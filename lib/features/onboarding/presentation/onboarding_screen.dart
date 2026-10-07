@@ -1,410 +1,287 @@
 import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-
 import '../../../core/navigation/app_routes.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../shared/widgets/auth_widgets.dart';
+import '../../../shared/widgets/davochain_logo_lockup.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
-
   @override
   State<OnboardingScreen> createState() => _OnboardingScreenState();
 }
 
-class _OnboardingScreenState extends State<OnboardingScreen>
-    with TickerProviderStateMixin {
+class _OnboardingScreenState extends State<OnboardingScreen> {
+  final _controller = PageController();
   int _index = 0;
-  int _direction = 1;
-  late final AnimationController _floatController;
-
-  static const _pages = <_OnboardingData>[
-    _OnboardingData(
-      imagePath: 'assets/images/onboarding/trade_crypto.png',
-      title: 'Trade Crypto, Your Way',
-      body: 'Buy, sell and swap crypto with a simple and secure experience.',
-    ),
-    _OnboardingData(
-      imagePath: 'assets/images/onboarding/digital_assets.png',
-      title: 'Simple. Fast. Secure.',
-      body: 'Everything you need to trade digital assets, all in one place.',
-    ),
-    _OnboardingData(
-      imagePath: 'assets/images/onboarding/gift_cards.png',
-      title: 'Turn Gift Cards Into Cash',
-      body: 'Trade your gift cards at competitive rates and get paid with ease.',
-    ),
+  bool _opening = false;
+  static const _pages = [
+    _WelcomePage(
+        image: 'assets/images/onboarding/trade_crypto.png',
+        title: 'Trade Crypto, Your Way',
+        body: 'Buy, sell and swap. Your next move starts with Davochain.'),
+    _WelcomePage(
+        image: 'assets/images/onboarding/gift_cards.png',
+        title: 'Simple. Fast. Secure.',
+        body:
+            'Your digital assets, together. Keep track of your balance and every move you make.'),
+    _WelcomePage(
+        image: 'assets/images/onboarding/digital_assets.png',
+        title: 'Turn Gift Cards Into Cash',
+        body:
+            'Give your gift cards a fresh start. Choose a card, see the rate and take it from there.'),
   ];
-
-  @override
-  void initState() {
-    super.initState();
-    SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
-      statusBarColor: Colors.transparent,
-      statusBarIconBrightness: Brightness.light,
-      statusBarBrightness: Brightness.dark,
-      systemNavigationBarColor: Colors.white,
-      systemNavigationBarIconBrightness: Brightness.dark,
-    ));
-    _floatController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 3200),
-    )..repeat(reverse: true);
-  }
-
   @override
   void dispose() {
-    _floatController.dispose();
+    _controller.dispose();
     super.dispose();
   }
 
-  void _setIndex(int index) {
-    if (index < 0 || index >= _pages.length || index == _index) return;
-    setState(() {
-      _direction = index > _index ? 1 : -1;
-      _index = index;
+  void _goTo(int page) {
+    if (page < 0 || page >= _pages.length || !_controller.hasClients) return;
+    if (MediaQuery.disableAnimationsOf(context)) {
+      _controller.jumpToPage(page);
+    } else {
+      _controller.animateToPage(page,
+          duration: const Duration(milliseconds: 380),
+          curve: Curves.easeOutCubic);
+    }
+  }
+
+  Future<void> _open(String route) async {
+    if (_opening) return;
+    _opening = true;
+    await Navigator.of(context).pushNamed(route);
+    if (mounted) _opening = false;
+  }
+
+  void _preview() {
+    if (_opening) return;
+    _opening = true;
+    Navigator.of(context)
+        .pushNamedAndRemoveUntil(AppRoutes.dashboard, (_) => false);
+    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+      content: Text('Demo balances and transactions. No real money moves.'),
+      behavior: SnackBarBehavior.floating,
+    ));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final reduced = MediaQuery.disableAnimationsOf(context);
+    return PopScope(
+      canPop: _index == 0,
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop && _index > 0) _goTo(_index - 1);
+      },
+      child: AnnotatedRegion<SystemUiOverlayStyle>(
+        value: const SystemUiOverlayStyle(
+            statusBarColor: Colors.transparent,
+            statusBarIconBrightness: Brightness.light,
+            statusBarBrightness: Brightness.dark,
+            systemNavigationBarColor: Colors.white,
+            systemNavigationBarIconBrightness: Brightness.dark),
+        child: Scaffold(
+          backgroundColor: Colors.white,
+          body: DecoratedBox(
+            decoration: const BoxDecoration(
+                gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment(0, .45),
+              colors: [
+                AppColors.primary,
+                AppColors.primary,
+                Color(0xFF91B6FF),
+                Color(0xFFF0F5FF),
+                Colors.white
+              ],
+              stops: [0, .16, .42, .8, 1],
+            )),
+            child: SafeArea(
+                child: Column(children: [
+              Padding(
+                padding: const EdgeInsets.only(left: 24, right: 12, top: 4),
+                child: Row(children: [
+                  const Expanded(
+                      child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: DavochainLogoLockup(
+                                  logoColor: Colors.white,
+                                  logoWidth: 29,
+                                  fontSize: 20)))),
+                  TextButton(
+                    onPressed: _index < 2 ? () => _goTo(2) : () => _goTo(0),
+                    style: TextButton.styleFrom(
+                        foregroundColor: Colors.white,
+                        minimumSize: const Size(64, 48)),
+                    child: Text(_index < 2 ? 'Skip' : 'Replay'),
+                  ),
+                ]),
+              ),
+              Expanded(
+                  child: PageView.builder(
+                key: const ValueKey('welcome-pages'),
+                controller: _controller,
+                itemCount: _pages.length,
+                onPageChanged: (page) => setState(() => _index = page),
+                itemBuilder: (context, page) => _WelcomeContent(
+                    data: _pages[page],
+                    controller: _controller,
+                    index: page,
+                    reduced: reduced),
+              )),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(24, 0, 24, 8),
+                child: Column(mainAxisSize: MainAxisSize.min, children: [
+                  Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: List.generate(
+                          _pages.length,
+                          (page) => Semantics(
+                                label:
+                                    'Introduction ${page + 1} of ${_pages.length}',
+                                selected: _index == page,
+                                button: true,
+                                child: InkResponse(
+                                    splashFactory:
+                                        reduced ? NoSplash.splashFactory : null,
+                                    onTap: () => _goTo(page),
+                                    radius: 22,
+                                    child: SizedBox(
+                                        width: 48,
+                                        height: 48,
+                                        child: Center(
+                                          child: AnimatedContainer(
+                                            duration: reduced
+                                                ? Duration.zero
+                                                : const Duration(
+                                                    milliseconds: 220),
+                                            curve: Curves.easeOutCubic,
+                                            width: _index == page ? 28 : 8,
+                                            height: 6,
+                                            decoration: BoxDecoration(
+                                                color: _index == page
+                                                    ? AppColors.primary
+                                                    : const Color(0xFFD4DDF0),
+                                                borderRadius:
+                                                    BorderRadius.circular(8)),
+                                          ),
+                                        ))),
+                              ))),
+                  DavoPrimaryButton(
+                    label: _index == 2 ? 'Create Account' : 'Next',
+                    height: math.max(52,
+                        MediaQuery.textScalerOf(context).scale(14) * 1.35 + 24),
+                    onPressed: _index == 2
+                        ? () => _open(AppRoutes.signup)
+                        : () => _goTo(_index + 1),
+                  ),
+                  const SizedBox(height: 8),
+                  Row(children: [
+                    Expanded(
+                        child: TextButton(
+                            onPressed: () => _open(AppRoutes.login),
+                            style: TextButton.styleFrom(
+                                minimumSize: const Size(48, 48)),
+                            child: const Text('Login'))),
+                    const SizedBox(
+                        height: 16, child: VerticalDivider(width: 16)),
+                    Expanded(
+                        child: TextButton(
+                            onPressed: _preview,
+                            style: TextButton.styleFrom(
+                                minimumSize: const Size(48, 48)),
+                            child: const Text('Explore demo',
+                                textAlign: TextAlign.center))),
+                  ]),
+                ]),
+              ),
+            ])),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _WelcomeContent extends StatelessWidget {
+  const _WelcomeContent(
+      {required this.data,
+      required this.controller,
+      required this.index,
+      required this.reduced});
+  final _WelcomePage data;
+  final PageController controller;
+  final int index;
+  final bool reduced;
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(builder: (context, constraints) {
+      final artHeight = (constraints.maxHeight * .60).clamp(100.0, 355.0);
+      return SingleChildScrollView(
+        key: PageStorageKey('welcome-content-$index'),
+        padding: const EdgeInsets.symmetric(horizontal: 24),
+        child: ConstrainedBox(
+          constraints: BoxConstraints(minHeight: constraints.maxHeight),
+          child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SizedBox(
+                    height: artHeight,
+                    width: double.infinity,
+                    child: AnimatedBuilder(
+                      animation: controller,
+                      builder: (context, child) {
+                        final distance = controller.hasClients &&
+                                controller.position.hasContentDimensions
+                            ? ((controller.page ?? 0) - index).clamp(-1.0, 1.0)
+                            : 0.0;
+                        if (reduced) return child!;
+                        return Transform.translate(
+                            offset: Offset(distance * 36, 0),
+                            child: Transform.rotate(
+                                angle: distance * .025, child: child));
+                      },
+                      child: RepaintBoundary(
+                          child: Image.asset(data.image,
+                              fit: BoxFit.contain,
+                              excludeFromSemantics: true,
+                              filterQuality: FilterQuality.medium)),
+                    )),
+                const SizedBox(height: 24),
+                Semantics(
+                    header: true,
+                    child: Text(data.title,
+                        style: Theme.of(context)
+                            .textTheme
+                            .headlineSmall
+                            ?.copyWith(
+                                fontSize: 28,
+                                height: 1.2,
+                                letterSpacing: -.7,
+                                color: const Color(0xFF102650)))),
+                const SizedBox(height: 14),
+                Text(data.body,
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                        fontSize: 15,
+                        height: 1.55,
+                        color: const Color(0xFF536078))),
+                const SizedBox(height: 12),
+              ]),
+        ),
+      );
     });
   }
-
-  void _next() => _setIndex(_index + 1);
-  void _previous() => _setIndex(_index - 1);
-
-  @override
-  Widget build(BuildContext context) {
-    final data = _pages[_index];
-    final reduceMotion = MediaQuery.disableAnimationsOf(context);
-
-    return Scaffold(
-      body: Stack(
-        children: [
-          const Positioned.fill(child: _OnboardingBackdrop()),
-          SafeArea(
-            top: false,
-            bottom: false,
-            child: GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onHorizontalDragEnd: (details) {
-                final velocity = details.primaryVelocity ?? 0;
-                if (velocity < -180) {
-                  _next();
-                } else if (velocity > 180) {
-                  _previous();
-                }
-              },
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: LayoutBuilder(
-                  builder: (context, constraints) {
-                    final height = constraints.maxHeight;
-                    final width = constraints.maxWidth;
-                    final topPadding = MediaQuery.paddingOf(context).top;
-                    final artSize = math.min(width, math.min(332.0, height * .395));
-                    final contentTop = math.max(topPadding + 114, height * .205);
-
-                    return Stack(
-                      clipBehavior: Clip.hardEdge,
-                      children: [
-                        Positioned(
-                          top: contentTop,
-                          left: 0,
-                          right: 0,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              SizedBox(
-                                height: artSize,
-                                width: double.infinity,
-                                child: Center(
-                                  child: AnimatedSwitcher(
-                                    duration: reduceMotion
-                                        ? Duration.zero
-                                        : const Duration(milliseconds: 560),
-                                    switchInCurve: Curves.easeOutCubic,
-                                    switchOutCurve: Curves.easeInCubic,
-                                    transitionBuilder: (child, animation) {
-                                      final begin = Offset(_direction * .12, 0);
-                                      final slide = Tween<Offset>(begin: begin, end: Offset.zero)
-                                          .animate(CurvedAnimation(
-                                            parent: animation,
-                                            curve: Curves.easeOutCubic,
-                                          ));
-                                      final scale = Tween<double>(begin: .965, end: 1)
-                                          .animate(animation);
-                                      return FadeTransition(
-                                        opacity: animation,
-                                        child: SlideTransition(
-                                          position: slide,
-                                          child: ScaleTransition(scale: scale, child: child),
-                                        ),
-                                      );
-                                    },
-                                    child: _FloatingArt(
-                                      key: ValueKey(data.imagePath),
-                                      imagePath: data.imagePath,
-                                      size: artSize,
-                                      controller: _floatController,
-                                      reduceMotion: reduceMotion,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              SizedBox(height: _index == 2 ? 12 : 42),
-                              _ProgressDots(index: _index),
-                              const SizedBox(height: 12),
-                              AnimatedSwitcher(
-                                duration: reduceMotion
-                                    ? Duration.zero
-                                    : const Duration(milliseconds: 360),
-                                transitionBuilder: (child, animation) {
-                                  final slide = Tween<Offset>(
-                                    begin: Offset(0, _direction > 0 ? .12 : -.08),
-                                    end: Offset.zero,
-                                  ).animate(CurvedAnimation(
-                                    parent: animation,
-                                    curve: Curves.easeOutCubic,
-                                  ));
-                                  return FadeTransition(
-                                    opacity: animation,
-                                    child: SlideTransition(position: slide, child: child),
-                                  );
-                                },
-                                child: Column(
-                                  key: ValueKey('${data.title}-${data.body}'),
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      data.title,
-                                      style: Theme.of(context).textTheme.headlineSmall,
-                                    ),
-                                    const SizedBox(height: 16),
-                                    Text(
-                                      data.body,
-                                      style: Theme.of(context).textTheme.bodyLarge,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(height: 40),
-                              AnimatedSwitcher(
-                                duration: reduceMotion
-                                    ? Duration.zero
-                                    : const Duration(milliseconds: 320),
-                                child: _index < 2
-                                    ? _OnboardingPrimaryButton(
-                                        key: const ValueKey('next'),
-                                        label: 'Next',
-                                        onPressed: _next,
-                                      )
-                                    : Column(
-                                        key: const ValueKey('final-actions'),
-                                        children: [
-                                          _OnboardingPrimaryButton(
-                                            label: 'Create Account',
-                                            onPressed: () => Navigator.of(context)
-                                                .pushNamed(AppRoutes.signup),
-                                          ),
-                                          const SizedBox(height: 16),
-                                          _OnboardingSecondaryButton(
-                                            label: 'Login',
-                                            onPressed: () => Navigator.of(context)
-                                                .pushNamed(AppRoutes.login),
-                                          ),
-                                        ],
-                                      ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        if (_index < 2)
-                          Positioned(
-                            top: math.max(topPadding + 18.0, 56.0),
-                            right: 0,
-                            child: TextButton(
-                              onPressed: () => _setIndex(2),
-                              style: TextButton.styleFrom(
-                                foregroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
-                                minimumSize: Size.zero,
-                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                              ),
-                              child: const Text(
-                                'Skip',
-                                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                              ),
-                            ),
-                          ),
-                      ],
-                    );
-                  },
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 }
 
-class _FloatingArt extends StatelessWidget {
-  const _FloatingArt({
-    super.key,
-    required this.imagePath,
-    required this.size,
-    required this.controller,
-    required this.reduceMotion,
-  });
-
-  final String imagePath;
-  final double size;
-  final AnimationController controller;
-  final bool reduceMotion;
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: controller,
-      builder: (context, child) {
-        final wave = math.sin(controller.value * math.pi);
-        final dy = reduceMotion ? 0.0 : wave * 5.5;
-        final scale = reduceMotion ? 1.0 : 1 + wave * .006;
-        return Transform.translate(
-          offset: Offset(0, dy),
-          child: Transform.scale(scale: scale, child: child),
-        );
-      },
-      child: Image.asset(
-        imagePath,
-        width: size,
-        height: size,
-        fit: BoxFit.contain,
-        filterQuality: FilterQuality.high,
-      ),
-    );
-  }
-}
-
-class _ProgressDots extends StatelessWidget {
-  const _ProgressDots({required this.index});
-
-  final int index;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: List.generate(3, (dot) {
-        final active = dot == index;
-        return AnimatedContainer(
-          duration: const Duration(milliseconds: 280),
-          curve: Curves.easeOutCubic,
-          margin: EdgeInsets.only(right: dot == 2 ? 0 : 4),
-          width: active ? 25 : 10,
-          height: 7,
-          decoration: BoxDecoration(
-            color: active
-                ? AppColors.primary
-                : index == 2
-                    ? AppColors.muted
-                    : AppColors.mutedSoft,
-            borderRadius: BorderRadius.circular(100),
-          ),
-        );
-      }),
-    );
-  }
-}
-
-class _OnboardingPrimaryButton extends StatelessWidget {
-  const _OnboardingPrimaryButton({
-    super.key,
-    required this.label,
-    required this.onPressed,
-  });
-
-  final String label;
-  final VoidCallback onPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: double.infinity,
-      height: 52,
-      child: FilledButton(
-        onPressed: onPressed,
-        style: FilledButton.styleFrom(
-          backgroundColor: AppColors.primary,
-          foregroundColor: AppColors.offWhite,
-          elevation: 0,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-          textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
-        ),
-        child: Text(label),
-      ),
-    );
-  }
-}
-
-class _OnboardingSecondaryButton extends StatelessWidget {
-  const _OnboardingSecondaryButton({
-    required this.label,
-    required this.onPressed,
-  });
-
-  final String label;
-  final VoidCallback onPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: double.infinity,
-      height: 52,
-      child: FilledButton(
-        onPressed: onPressed,
-        style: FilledButton.styleFrom(
-          backgroundColor: AppColors.primarySoft,
-          foregroundColor: AppColors.primary,
-          elevation: 0,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-          textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
-        ),
-        child: Text(label),
-      ),
-    );
-  }
-}
-
-class _OnboardingBackdrop extends StatelessWidget {
-  const _OnboardingBackdrop();
-
-  @override
-  Widget build(BuildContext context) {
-    return const DecoratedBox(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment(0, -1),
-          end: Alignment(0, .52),
-          colors: [
-            AppColors.primary,
-            Color(0xFF7EA7FC),
-            Color(0xFFE8EFFF),
-            Colors.white,
-          ],
-          stops: [0, .22, .48, .66],
-        ),
-      ),
-    );
-  }
-}
-
-class _OnboardingData {
-  const _OnboardingData({
-    required this.imagePath,
-    required this.title,
-    required this.body,
-  });
-
-  final String imagePath;
+class _WelcomePage {
+  const _WelcomePage(
+      {required this.image, required this.title, required this.body});
+  final String image;
   final String title;
   final String body;
 }

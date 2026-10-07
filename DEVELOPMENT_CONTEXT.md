@@ -79,3 +79,45 @@ Profile and Personal Information have a thin divider below the title. The shared
 
 Verification: analyzer no issues; full suite 26 passing tests; Android debug build succeeded. Profile regression checks include portrait/badge overlap and compact identity spacing.
 Android emulator verification confirmed the supplied Naira logo in Select Wallet, compact Profile and Personal Information portrait/badge layouts, blue Crypto Security icon, and corrected Home/Settings footer details. Final app PID-filtered Flutter/AndroidRuntime error check returned no entries.
+
+## Mobile experience pass - 2026-10-07
+
+Implementation plan: `docs/plans/2026-10-07-mobile-experience.md`.
+
+- Welcome uses a true PageView with finger-following illustration motion, reachable actions,
+  accessible page selectors, Skip/Replay and Android Back to the previous introduction.
+  Existing supplied artwork is retained. The security artwork is historically named
+  `gift_cards.png`; the gift-card artwork is named `digital_assets.png`. Call sites now
+  match actual content, rather than trusting those filenames.
+- Splash is finite (780ms reveal, 1.2s handoff); reduced motion is static with a 250ms
+  handoff and no transition. Removed perpetual illustration tickers.
+- Shared auth primary buttons have press feedback, one activation haptic, explicit
+  disabled/loading semantics and static reduced-motion loading. Native MaterialPageRoute
+  transitions restore platform navigation behavior (including tested iOS edge back).
+- Bundled Sora variable font and OFL license from Google Fonts, matching the existing
+  font-family declarations. Dashboard three-row layout remains intact on the emulator.
+- Explore demo opens the mock dashboard without credentials, with a clear sample-data
+  notice. Login says demo preview, validates email shape, displays local busy feedback
+  and prevents duplicate submission. No network authentication or credential persistence.
+- Auth screens now declare system-bar appearance with AnnotatedRegion; transparent field
+  interiors preserve their outer rounded borders. Back/password visibility have labels.
+- Dashboard reduced-motion entrance is immediate with no delayed animation controllers.
+
+Verification: 45 widget tests passed, flutter analyze reported no issues. Coverage includes
+320x568 portrait at 2x text, 568x320 landscape at 2x text, slow swipe and Android Back,
+demo/login/signup destinations, reduced-motion idle behavior, splash disposal, button
+cancel/activation and native edge-swipe. This is debug-mode functional QA, not measured
+release/profile performance. Android build and final emulator confirmation are recorded
+in ../tmp/mobile-experience-build.txt and ../tmp/emulator-review/.
+
+Figma connector was retried after the user reported restored access, but still returned
+"This app connection requires reauthentication before other actions on this app can
+succeed." No live Figma comparison was claimed. Full flow polish beyond this welcome,
+shared motion and login pass remains in the plan's later passes, along with backend
+security/integration and profile-mode performance testing.
+
+Final emulator confirmation: installed the corrected debug APK; checked welcome artwork
+alignment, dark login status icons, rounded input borders, Login/back, Skip/Replay,
+Android Back between introduction pages and Explore demo into the dashboard. Scoped
+Flutter/AndroidRuntime error log was empty. Recorded a local walkthrough at
+`../tmp/emulator-review/davochain-mobile-preview.mp4`. Emulator left on the dashboard.

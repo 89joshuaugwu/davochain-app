@@ -17,6 +17,8 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final _email = TextEditingController();
   final _password = TextEditingController();
+  bool _loading = false;
+  String? _emailError;
 
   @override
   void dispose() {
@@ -25,9 +27,9 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  bool get _canLogin => _email.text.trim().isNotEmpty && _password.text.isNotEmpty;
+  bool get _canLogin => !_loading && _email.text.trim().isNotEmpty && _password.text.isNotEmpty;
 
-  void _refresh(String _) => setState(() {});
+  void _refresh(String _) => setState(() { _emailError = null; });
 
   @override
   Widget build(BuildContext context) {
@@ -55,7 +57,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            'Log in here.',
+                            'Demo preview. Use sample details to explore.',
                             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                                   color: AppColors.body,
                                 ),
@@ -74,6 +76,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         keyboardType: TextInputType.emailAddress,
                         textInputAction: TextInputAction.next,
                         autofillHints: const [AutofillHints.email],
+                        errorText: _emailError,
                         onChanged: _refresh,
                       ),
                     ),
@@ -83,7 +86,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       child: DavoTextField(
                         label: 'Password',
                         controller: _password,
-                        hint: 'Create your password',
+                        hint: 'Enter your password',
                         iconAsset: '$_iconRoot/lock.png',
                         obscureText: true,
                         showVisibilityToggle: true,
@@ -116,6 +119,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       delay: const Duration(milliseconds: 150),
                       child: DavoPrimaryButton(
                         label: 'Login',
+                        loading: _loading,
                         enabled: _canLogin,
                         onPressed: _canLogin ? _login : null,
                       ),
@@ -139,8 +143,17 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  void _login() {
+  Future<void> _login() async {
+    if (!_canLogin) return;
+    if (!RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$').hasMatch(_email.text.trim())) {
+      setState(() => _emailError = 'Enter a valid email address.');
+      return;
+    }
     FocusManager.instance.primaryFocus?.unfocus();
+    setState(() => _loading = true);
+    // Local preview latency only: no credentials are sent or authenticated.
+    await Future<void>.delayed(const Duration(milliseconds: 400));
+    if (!mounted) return;
     Navigator.of(context).pushNamedAndRemoveUntil(AppRoutes.dashboard, (route) => false);
   }
 }

@@ -21,6 +21,17 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  fonts:
+    - family: Sora
+      fonts:
+        - asset: assets/fonts/sora/Sora-Variable.ttf
+          weight: 400
+        - asset: assets/fonts/sora/Sora-Variable.ttf
+          weight: 500
+        - asset: assets/fonts/sora/Sora-Variable.ttf
+          weight: 600
+        - asset: assets/fonts/sora/Sora-Variable.ttf
+          weight: 700
   assets:
     - assets/images/brand/
     - assets/images/onboarding/
