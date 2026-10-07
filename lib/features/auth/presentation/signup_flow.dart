@@ -303,7 +303,7 @@ class _AccountDetailsScreenState extends State<_AccountDetailsScreen> {
       child: LayoutBuilder(
         builder: (context, constraints) {
           return SingleChildScrollView(
-            physics: const BouncingScrollPhysics(),
+
             child: ConstrainedBox(
               constraints: BoxConstraints(minHeight: constraints.maxHeight),
               child: IntrinsicHeight(

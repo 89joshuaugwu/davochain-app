@@ -1,8 +1,12 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import '../../transactions/presentation/transaction_history_screen.dart';
 
 import '../../../core/theme/app_theme.dart';
+import '../../../core/navigation/app_page_route.dart';
+import '../../../core/preview/preview_account_state.dart';
 import '../../buy_crypto/presentation/buy_crypto_flow.dart';
 import '../../crypto/presentation/crypto_full_flow.dart';
 import '../../gift_cards/presentation/gift_card_flow.dart';
@@ -39,78 +43,57 @@ class _DavochainDashboardScreenState extends State<DavochainDashboardScreen> {
       backgroundColor: const Color(0xFFF8F9FB),
       body: SafeArea(
         bottom: false,
-        child: SingleChildScrollView(
-          physics: const BouncingScrollPhysics(),
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 118),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const _Entrance(index: 0, child: _DashboardHeader()),
-              const SizedBox(height: 16),
-              _Entrance(
-                index: 1,
-                child: _BalanceCard(
-                  visible: _balanceVisible,
-                  onVisibilityToggle: () => setState(() => _balanceVisible = !_balanceVisible),
-                  onDeposit: _openWalletSelector,
-                  onWithdraw: () => startWithdrawFlow(context),
-                ),
-              ),
-              const SizedBox(height: 16),
-              const _Entrance(index: 2, child: _SetupBanner()),
-              const SizedBox(height: 16),
-              _Entrance(
-                index: 3,
-                child: _QuickActions(
-                  onBuy: () => startBuyCryptoFlow(context),
-                  onSell: () => startSellCryptoFlow(context),
-                  onGift: () => startGiftCardFlow(context),
-                  onHistory: () => _showComingSoon('History'),
-                ),
-              ),
-              const SizedBox(height: 16),
-              const _Entrance(index: 4, child: _PromoBanner()),
-              const SizedBox(height: 16),
-              _Entrance(
-                index: 5,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      'Assets',
-                      style: TextStyle(
-                        fontFamily: 'Sora',
-                        fontSize: 16,
-                        height: 1.35,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.ink,
-                      ),
-                    ),
-                    TextButton(
-                      onPressed: () => Navigator.of(context).push(
-                        _davoRoute(const PortfolioScreen()),
-                      ),
-                      style: TextButton.styleFrom(
-                        foregroundColor: AppColors.primary,
-                        textStyle: const TextStyle(fontFamily: 'Sora', fontSize: 12),
-                        visualDensity: VisualDensity.compact,
-                        padding: EdgeInsets.zero,
-                      ),
-                      child: const Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text('View Portfolio'),
-                          SizedBox(width: 4),
-                          Icon(Icons.arrow_forward, size: 14),
-                        ],
-                      ),
-                    ),
+        child: ValueListenableBuilder<bool>(
+          valueListenable: PreviewAccountState.setupComplete,
+          builder: (context, setupComplete, _) => LayoutBuilder(
+            builder: (context, constraints) {
+              final gap = constraints.maxHeight < 790 ? 12.0 : 16.0;
+              final header = Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const _Entrance(index: 0, child: _DashboardHeader()),
+                  SizedBox(height: gap),
+                  _Entrance(index: 1, child: _BalanceCard(
+                    visible: _balanceVisible,
+                    onVisibilityToggle: () => setState(() => _balanceVisible = !_balanceVisible),
+                    onDeposit: _openWalletSelector,
+                    onWithdraw: () => startWithdrawFlow(context),
+                  )),
+                  SizedBox(height: gap),
+                  if (!setupComplete) ...[
+                    _Entrance(index: 2, child: InkWell(
+                      onTap: () => Navigator.of(context).push(_davoRoute(const KycTierOverviewScreen())),
+                      borderRadius: BorderRadius.circular(8),
+                      child: const _SetupBanner(),
+                    )),
+                    SizedBox(height: gap),
                   ],
-                ),
-              ),
-              const SizedBox(height: 8),
-              const _Entrance(index: 6, child: _DashboardAssetCard()),
-            ],
+                  _Entrance(index: 3, child: _QuickActions(
+                    onBuy: () => startBuyCryptoFlow(context),
+                    onSell: () => startSellCryptoFlow(context),
+                    onGift: () => startGiftCardFlow(context),
+                    onHistory: () => Navigator.of(context).push(_davoRoute(const TransactionHistoryScreen())),
+                  )),
+                  SizedBox(height: gap),
+                  const _Entrance(index: 4, child: _PromoBanner()),
+                  SizedBox(height: gap),
+                  _assetsHeading(),
+                  const SizedBox(height: 8),
+                ],
+              );
+              // Retain readable, reachable content on short phones or with enlarged text.
+              final needsFullScroll = constraints.maxHeight < 760 || MediaQuery.textScalerOf(context).scale(14) > 18;
+              if (needsFullScroll) {
+                return SingleChildScrollView(
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+                  child: Column(children: [header, const SizedBox(height: 240, child: _DashboardAssetCard())]),
+                );
+              }
+              return Padding(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+                child: Column(children: [header, const Expanded(child: _DashboardAssetCard())]),
+              );
+            },
           ),
         ),
       ),
@@ -135,8 +118,8 @@ class _DavochainDashboardScreenState extends State<DavochainDashboardScreen> {
             return;
           }
           setState(() => _navIndex = index);
-          _showComingSoon(['Home', 'Trade', 'Gift Cards', 'Settings'][index]);
-          Future<void>.delayed(const Duration(milliseconds: 250), () {
+          HapticFeedback.selectionClick();
+          Navigator.of(context).push(_davoRoute(const PortfolioScreen())).whenComplete(() {
             if (mounted) setState(() => _navIndex = 0);
           });
         },
@@ -144,14 +127,17 @@ class _DavochainDashboardScreenState extends State<DavochainDashboardScreen> {
     );
   }
 
-  void _showComingSoon(String feature) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('$feature flow will connect to its dedicated Davochain module.'),
-        behavior: SnackBarBehavior.floating,
+  Widget _assetsHeading() => SizedBox(
+    height: 40,
+    child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+      const Text('Assets', style: TextStyle(fontFamily: 'Sora', fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.ink)),
+      TextButton(
+        onPressed: () => Navigator.of(context).push(_davoRoute(const PortfolioScreen())),
+        style: TextButton.styleFrom(foregroundColor: AppColors.primary, textStyle: const TextStyle(fontFamily: 'Sora', fontSize: 12), visualDensity: VisualDensity.compact, padding: EdgeInsets.zero),
+        child: const Row(mainAxisSize: MainAxisSize.min, children: [Text('View Portfolio'), SizedBox(width: 4), Icon(Icons.arrow_forward, size: 14)]),
       ),
-    );
-  }
+    ]),
+  );
 
   Future<void> _openWalletSelector() async {
     final selected = await showModalBottomSheet<_WalletOption>(
@@ -248,16 +234,20 @@ class _DashboardHeader extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 12),
-        const Column(
+        const Expanded(child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               'Welcome,',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
               style: TextStyle(fontFamily: 'Sora', fontSize: 12, color: Color(0xFF8D8D8D)),
             ),
             SizedBox(height: 2),
             Text(
               'Callie',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 fontFamily: 'Sora',
                 fontSize: 14,
@@ -266,9 +256,12 @@ class _DashboardHeader extends StatelessWidget {
               ),
             ),
           ],
-        ),
-        const Spacer(),
-        Container(
+        )),
+        const SizedBox(width: 8),
+        InkWell(
+          onTap: () => Navigator.of(context).push(_davoRoute(const ReferralDashboardScreen())),
+          borderRadius: BorderRadius.circular(1000),
+          child: Container(
           height: 32,
           padding: const EdgeInsets.symmetric(horizontal: 11),
           decoration: BoxDecoration(
@@ -282,6 +275,7 @@ class _DashboardHeader extends StatelessWidget {
               const Text('Earn \$5', style: TextStyle(fontFamily: 'Sora', fontSize: 12, color: AppColors.primary)),
             ],
           ),
+        ),
         ),
         const SizedBox(width: 12),
         InkWell(
@@ -360,7 +354,7 @@ class _BalanceCard extends StatelessWidget {
                 const SizedBox(height: 7),
                 AnimatedSwitcher(
                   duration: const Duration(milliseconds: 220),
-                  child: Text(
+                  child: FittedBox(fit: BoxFit.scaleDown, alignment: Alignment.centerLeft, child: Text(
                     visible ? '₦1,284,500.35' : '₦••••••••',
                     key: ValueKey(visible),
                     style: const TextStyle(
@@ -370,7 +364,7 @@ class _BalanceCard extends StatelessWidget {
                       color: Colors.white,
                       height: 1.2,
                     ),
-                  ),
+                  )),
                 ),
                 const SizedBox(height: 2),
                 Text(
@@ -440,15 +434,17 @@ class _BalanceActionButton extends StatelessWidget {
               else
                 Icon(icon, size: 19, color: light ? AppColors.primary : Colors.white),
               const SizedBox(width: 12),
-              Text(
+              Flexible(child: Text(
                 label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
                 style: TextStyle(
                   fontFamily: 'Sora',
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
                   color: light ? AppColors.primary : Colors.white,
                 ),
-              ),
+              )),
             ],
           ),
         ),
@@ -472,11 +468,12 @@ class _SetupBanner extends StatelessWidget {
       ),
       child: Row(
         children: [
-          const Text(
+          const Expanded(child: Text(
             'Finish setting up your account',
+            maxLines: 2,
             style: TextStyle(fontFamily: 'Sora', fontSize: 16, color: AppColors.primary, letterSpacing: -.16),
-          ),
-          const Spacer(),
+          )),
+          const SizedBox(width: 8),
           Container(
             width: 32,
             height: 15,
@@ -649,26 +646,31 @@ class _DashboardAssetCard extends StatelessWidget {
   const _DashboardAssetCard();
 
   @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8)),
-      child: const Column(
-        children: [
-          _AssetRow(asset: CryptoAsset.bitcoin, amount: '0.0086 BTC', value: '₦580,200.00', change: '+4.21%'),
+  Widget build(BuildContext context) => ClipRRect(
+    borderRadius: BorderRadius.circular(8),
+    child: ColoredBox(
+      color: Colors.white,
+      child: ListView(
+        key: const ValueKey('dashboard-assets'),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        children: const [
+          _AssetRow(key: ValueKey('dashboard-asset-BTC'), rowHeight: 56, asset: CryptoAsset.bitcoin, amount: '0.0086 BTC', value: '₦580,200.00', change: '+4.21%'),
           Divider(height: 1, color: Color(0xFFF0F1F4)),
-          _AssetRow(asset: CryptoAsset.ethereum, amount: '0.102 ETH', value: '₦342,100.00', change: '+2.18%'),
+          _AssetRow(key: ValueKey('dashboard-asset-ETH'), rowHeight: 56, asset: CryptoAsset.ethereum, amount: '0.102 ETH', value: '₦342,100.00', change: '+2.18%'),
           Divider(height: 1, color: Color(0xFFF0F1F4)),
-          _AssetRow(asset: CryptoAsset.tether, amount: '250.00 USDT', value: '₦250,000.00', change: '0.00%'),
+          _AssetRow(key: ValueKey('dashboard-asset-USDT'), rowHeight: 56, asset: CryptoAsset.tether, amount: '250.00 USDT', value: '₦250,000.00', change: '0.00%'),
+          Divider(height: 1, color: Color(0xFFF0F1F4)),
+          _AssetRow(key: ValueKey('dashboard-asset-USDC'), rowHeight: 56, asset: CryptoAsset.usdCoin, amount: '112.20 USDC', value: '₦112,200.35', change: '+0.01%'),
         ],
       ),
-    );
-  }
+    ),
+  );
 }
 
 class _AssetRow extends StatelessWidget {
-  const _AssetRow({required this.asset, required this.amount, required this.value, required this.change, this.chevron = false});
+  const _AssetRow({super.key, this.rowHeight = 62, required this.asset, required this.amount, required this.value, required this.change, this.chevron = false});
 
+  final double rowHeight;
   final CryptoAsset asset;
   final String amount;
   final String value;
@@ -679,7 +681,7 @@ class _AssetRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final positive = change.startsWith('+');
     return SizedBox(
-      height: 62,
+      height: rowHeight,
       child: Row(
         children: [
           _CryptoIcon(asset: asset, size: 37),
@@ -692,7 +694,7 @@ class _AssetRow extends StatelessWidget {
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(asset.name, style: const TextStyle(fontFamily: 'Sora', fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.ink)),
+                    Flexible(child: Text(asset.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontFamily: 'Sora', fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.ink))),
                     if (chevron) ...[
                       const SizedBox(width: 8),
                       Container(
@@ -704,15 +706,15 @@ class _AssetRow extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 2),
-                Text(amount, style: const TextStyle(fontFamily: 'Sora', fontSize: 12, color: Color(0xFF424242))),
+                Text(amount, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontFamily: 'Sora', fontSize: 12, color: Color(0xFF424242))),
               ],
             ),
           ),
-          Column(
+          Expanded(child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Text(value, style: const TextStyle(fontFamily: 'Sora', fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.ink)),
+              Text(value, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontFamily: 'Sora', fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.ink)),
               const SizedBox(height: 2),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
@@ -726,7 +728,7 @@ class _AssetRow extends StatelessWidget {
                 ),
               ),
             ],
-          ),
+          )),
           if (chevron) const Padding(padding: EdgeInsets.only(left: 6), child: Icon(Icons.chevron_right_rounded, color: Color(0xFF8D8D8D))),
         ],
       ),
@@ -754,10 +756,10 @@ class _BottomNav extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _NavItem(index: 0, current: index, assetPath: 'assets/figma_exact/nav_home.png', label: 'Home', onTap: onChanged),
-              _NavItem(index: 1, current: index, assetPath: 'assets/figma_exact/nav_trade.png', label: 'Trade', onTap: onChanged),
-              _NavItem(index: 2, current: index, assetPath: 'assets/figma_exact/nav_gift.png', label: 'Gift Cards', onTap: onChanged),
-              _NavItem(index: 3, current: index, assetPath: 'assets/figma_exact/nav_settings.png', label: 'Settings', onTap: onChanged),
+              _NavItem(index: 0, current: index, assetPath: 'assets/figma_exact/nav_home_full.svg', label: 'Home', onTap: onChanged),
+              _NavItem(index: 1, current: index, assetPath: 'assets/figma_exact/nav_trade_full.svg', label: 'Trade', onTap: onChanged),
+              _NavItem(index: 2, current: index, assetPath: 'assets/figma_exact/nav_gift_full.svg', label: 'Gift Cards', onTap: onChanged),
+              _NavItem(index: 3, current: index, assetPath: 'assets/figma_exact/nav_settings_full.svg', label: 'Settings', onTap: onChanged),
             ],
           ),
         ),
@@ -792,7 +794,7 @@ class _NavItem extends StatelessWidget {
               child: ColorFiltered(
                 key: ValueKey(active),
                 colorFilter: ColorFilter.mode(color, BlendMode.srcIn),
-                child: Image.asset(assetPath, width: 24, height: 24, fit: BoxFit.contain),
+                child: SvgPicture.asset(assetPath, width: 24, height: 24, fit: BoxFit.contain),
               ),
             ),
             const SizedBox(height: 4),
@@ -823,7 +825,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
       backgroundColor: const Color(0xFFF8F9FB),
       body: SafeArea(
         child: SingleChildScrollView(
-          physics: const BouncingScrollPhysics(),
+
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -1248,16 +1250,7 @@ class _WalletTile extends StatelessWidget {
         child: Row(
           children: [
             if (option.isFiat)
-              Container(
-                width: 32,
-                height: 32,
-                padding: const EdgeInsets.all(6),
-                decoration: BoxDecoration(color: AppColors.primary, borderRadius: BorderRadius.circular(7)),
-                child: ColorFiltered(
-                  colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
-                  child: Image.asset('assets/images/brand/davochain_logo.png', fit: BoxFit.contain),
-                ),
-              )
+              Image.asset('assets/images/brand/naira_coin.png', width: 37, height: 37, fit: BoxFit.contain)
             else
               _CryptoIcon(asset: option.asset!, size: 37),
             const SizedBox(width: 12),
@@ -1441,7 +1434,7 @@ class _CryptoDepositScreenState extends State<CryptoDepositScreen> {
               const SizedBox(height: 23),
               Expanded(
                 child: SingleChildScrollView(
-                  physics: const BouncingScrollPhysics(),
+
                   child: Column(
                     children: [
                       SizedBox(
@@ -1730,7 +1723,11 @@ class _SharePreview extends StatelessWidget {
             top: 110,
             width: 24.9,
             height: 5,
-            child: Image.asset('assets/figma_exact/share_preview_lockup_exact.png', width: 24.9, height: 5, fit: BoxFit.fill, filterQuality: FilterQuality.high),
+            child: Row(children: [
+              Image.asset('assets/images/brand/davochain_logo.png', width: 5, height: 5, fit: BoxFit.contain),
+              const SizedBox(width: 1),
+              const Text('Davochain', style: TextStyle(fontSize: 3.3, fontWeight: FontWeight.w700, color: AppColors.ink)),
+            ]),
           ),
         ],
       ),
@@ -1853,7 +1850,7 @@ class NairaDepositScreen extends StatelessWidget {
               const SizedBox(height: 34),
               Expanded(
                 child: SingleChildScrollView(
-                  physics: const BouncingScrollPhysics(),
+
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -1974,20 +1971,6 @@ class _BankDetailRow extends StatelessWidget {
   }
 }
 
-PageRouteBuilder<T> _davoRoute<T>(Widget child) {
-  return PageRouteBuilder<T>(
-    transitionDuration: const Duration(milliseconds: 360),
-    reverseTransitionDuration: const Duration(milliseconds: 280),
-    pageBuilder: (_, animation, __) => child,
-    transitionsBuilder: (_, animation, secondary, child) {
-      final curved = CurvedAnimation(parent: animation, curve: Curves.easeOutCubic, reverseCurve: Curves.easeInCubic);
-      return FadeTransition(
-        opacity: curved,
-        child: SlideTransition(
-          position: Tween<Offset>(begin: const Offset(.035, 0), end: Offset.zero).animate(curved),
-          child: child,
-        ),
-      );
-    },
-  );
+AppPageRoute<T> _davoRoute<T>(Widget child) {
+  return AppPageRoute<T>(builder: (_) => child);
 }

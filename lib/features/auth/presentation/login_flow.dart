@@ -35,7 +35,7 @@ class _LoginScreenState extends State<LoginScreen> {
       child: LayoutBuilder(
         builder: (context, constraints) {
           return SingleChildScrollView(
-            physics: const BouncingScrollPhysics(),
+
             child: ConstrainedBox(
               constraints: BoxConstraints(minHeight: constraints.maxHeight),
               child: IntrinsicHeight(
@@ -511,7 +511,7 @@ class _ResetPasswordStageState extends State<_ResetPasswordStage> {
   Widget build(BuildContext context) {
     return SingleChildScrollView(
       key: const ValueKey('new-password-content'),
-      physics: const BouncingScrollPhysics(),
+
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

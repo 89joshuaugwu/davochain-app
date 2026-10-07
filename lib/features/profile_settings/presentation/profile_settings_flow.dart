@@ -1,13 +1,14 @@
+import '../../../core/preview/preview_account_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../../core/navigation/app_page_route.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/widgets/inline_input_decoration.dart';
+import '../../../shared/widgets/davochain_logo_lockup.dart';
 
 const _avatar = 'assets/figma_exact/profile_avatar_exact.png';
 const _notificationEmpty = 'assets/figma_exact/notification_empty_exact.gif';
-const _supportLogo = 'assets/figma_exact/support_brand_exact.png';
 const _profileIcons = 'assets/figma_exact';
 const _kycAssets = 'assets/figma_exact';
 const _exactAssets = 'assets/figma_exact';
@@ -30,47 +31,16 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
       title: 'Profile',
       titleStyle: _navInter20,
       scroll: true,
+      showHeaderDivider: true,
+      bodyTopPadding: 24,
       child: Column(
         children: [
-          const SizedBox(height: 34),
-          Stack(
-            alignment: Alignment.bottomRight,
-            children: [
-              SizedBox(
-                width: 120,
-                height: 120,
-                child: ClipOval(
-                  child: Image.asset(
-                    _avatar,
-                    fit: BoxFit.cover,
-                    filterQuality: FilterQuality.high,
-                  ),
-                ),
-              ),
-              Container(
-                width: 24,
-                height: 24,
-                alignment: Alignment.center,
-                decoration: const BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: AppColors.primary,
-                  border: Border.fromBorderSide(BorderSide(color: Colors.white, width: 2)),
-                ),
-                child: Image.asset(
-                  '$_exactAssets/profile_verified_badge_exact.png',
-                  width: 15,
-                  height: 14,
-                  fit: BoxFit.contain,
-                  filterQuality: FilterQuality.high,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 24),
+          const _ProfileAvatar(),
+          const SizedBox(height: 16),
           const Text('Vincent Chukwu', style: _t16b),
           const SizedBox(height: 4),
           const Text('chukwuvncnt1@gmail.com', style: _t16ProfileSub),
-          const SizedBox(height: 38),
+          const SizedBox(height: 24),
           _MenuCard(
             title: 'Accounts',
             items: [
@@ -91,7 +61,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
               ),
               _MenuItem('$_exactAssets/icon_lock.png', 'Change Password', () => _push(context, const ChangePasswordScreen())),
               _MenuItem('$_exactAssets/icon_lock.png', 'Transaction Pin', () => _push(context, const ResetPinStartScreen())),
-              _MenuItem('$_exactAssets/icon_crypto_security.png', 'Crypto Security', () => _push(context, const CryptoSecurityScreen())),
+              _MenuItem('$_exactAssets/icon_lock.png', 'Crypto Security', () => _push(context, const CryptoSecurityScreen())),
             ],
           ),
           const SizedBox(height: 24),
@@ -135,11 +105,56 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
   }
 }
 
+/// The supplied PNG includes a shadow and transparent canvas around the face.
+/// Crop that canvas in layout so badges align with the visible portrait edge.
+class _ProfileAvatar extends StatelessWidget {
+  const _ProfileAvatar({this.edit = false});
+  final bool edit;
+
+  @override
+  Widget build(BuildContext context) => SizedBox(
+    key: const ValueKey('profile-avatar'),
+    width: 96,
+    height: 96,
+    child: Stack(clipBehavior: Clip.none, children: [
+      DecoratedBox(
+        decoration: const BoxDecoration(shape: BoxShape.circle, boxShadow: [
+          BoxShadow(color: Color(0x18000000), blurRadius: 16, offset: Offset(0, 6)),
+        ]),
+        child: ClipOval(
+          child: FittedBox(
+            fit: BoxFit.fill,
+            child: SizedBox(width: 120, height: 120, child: Stack(children: [
+              Positioned(left: -32, top: -20, width: 183, height: 184,
+                child: Image.asset(_avatar, fit: BoxFit.fill, filterQuality: FilterQuality.high)),
+            ])),
+          ),
+        ),
+      ),
+      Positioned(right: 1, bottom: 1, child: Semantics(
+        label: edit ? 'Profile photo edit indicator' : 'Verified profile',
+        child: Container(
+          key: ValueKey(edit ? 'profile-edit-badge' : 'profile-verification-badge'),
+          width: 22, height: 22,
+          alignment: Alignment.center,
+          decoration: const BoxDecoration(shape: BoxShape.circle, color: AppColors.primary,
+            border: Border.fromBorderSide(BorderSide(color: Colors.white, width: 2))),
+          child: Image.asset(
+            edit ? '$_exactAssets/icon_edit.png' : '$_exactAssets/profile_verified_badge_exact.png',
+            width: 14, height: 14, color: edit ? Colors.white : null,
+            fit: BoxFit.contain, filterQuality: FilterQuality.high,
+          ),
+        ),
+      )),
+    ]),
+  );
+}
+
 class AccountInformationScreen extends StatelessWidget {
   const AccountInformationScreen({super.key});
   @override Widget build(BuildContext context) => _Shell(title:'Profile',scroll:true,child:Column(children:[
     const SizedBox(height:26),
-    Stack(alignment:Alignment.bottomRight,children:[Container(width:104,height:104,decoration:const BoxDecoration(shape:BoxShape.circle),child:ClipOval(child:Image.asset(_avatar,fit:BoxFit.cover))),Container(width:22,height:22,alignment:Alignment.center,decoration:const BoxDecoration(shape:BoxShape.circle,color:AppColors.primary),child:Image.asset('$_exactAssets/profile_edit_outline_exact.png',width:12,height:12,color:Colors.white,filterQuality:FilterQuality.high))]),
+    const _ProfileAvatar(edit: true),
     const SizedBox(height:28),
     ...const [
       ('Full name','Vincent Chukwu'),('Email','vincent.dollars@gmail.com'),('Phone Number','+234 9062185004'),('Country','Nigeria'),('Username','Admiral'),('Date of Birth','1996-08-24'),('Residential Address','Flat A2, Guzape Estate, Abuja'),
@@ -451,7 +466,7 @@ class CustomerSupportScreen extends StatelessWidget {
       );
 }
 
-class SupportHubScreen extends StatelessWidget{const SupportHubScreen({super.key});@override Widget build(BuildContext context)=>Scaffold(backgroundColor:const Color(0xFFF7F7F7),body:SafeArea(child:SingleChildScrollView(child:Column(children:[Container(width:double.infinity,padding:const EdgeInsets.fromLTRB(12,12,12,10),decoration:const BoxDecoration(gradient:LinearGradient(begin:Alignment.topCenter,end:Alignment.bottomCenter,colors:[Color(0xFF1260FF),Color(0xFF3B7CFF)]),borderRadius:BorderRadius.vertical(bottom:Radius.circular(14))),child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Row(children:[Image.asset(_supportLogo,height:28,fit:BoxFit.contain),const Spacer(),InkWell(onTap:()=>Navigator.pop(context),child:Container(width:24,height:24,alignment:Alignment.center,color:Colors.white12,child:Image.asset('$_exactAssets/icon_close.png',width:18,height:18)))]),const SizedBox(height:28),const Text('Hi Chukwu 👋\nHow can we help?',style:TextStyle(fontFamily:'Sora',fontSize:16,fontWeight:FontWeight.w600,color:Colors.white,height:1.35)),const SizedBox(height:22),Container(decoration:BoxDecoration(color:Colors.white,borderRadius:BorderRadius.circular(7)),child:Column(children:[_HubAssetRow('Messages','$_exactAssets/icon_message.png',onTap:()=>_push(context,const SupportMessagesScreen())),const Divider(height:1),_HubAssetRow('Help','$_exactAssets/icon_help.png',onTap:()=>_push(context,const HelpCenterScreen()))])),const SizedBox(height:10),InkWell(onTap:()=>_push(context,const SupportMessagesScreen()),child:Container(height:38,padding:const EdgeInsets.symmetric(horizontal:12),decoration:BoxDecoration(color:Colors.white,borderRadius:BorderRadius.circular(7)),child:Row(children:[const Expanded(child:Text('Send us a messages',style:TextStyle(fontFamily:'Sora',fontSize:10,color:AppColors.body))),Image.asset('$_exactAssets/icon_send.png',width:16,height:16)]))),const SizedBox(height:10),Container(padding:const EdgeInsets.symmetric(horizontal:12,vertical:7),decoration:BoxDecoration(color:Colors.white,borderRadius:BorderRadius.circular(7)),child:Column(children:['Explore Rewards: Key Details You Should Know','Unlock More Earnings with Every Referral','Everything You Need to Know About Your Virtual Dollar Card','Join Our community Channel'].map((t)=>Padding(padding:const EdgeInsets.symmetric(vertical:5),child:Row(children:[Expanded(child:Text(t,style:const TextStyle(fontFamily:'Sora',fontSize:9,color:AppColors.body))),Image.asset('$_exactAssets/icon_external_link.png',width:11,height:11)]) )).toList()))])),Padding(padding:const EdgeInsets.all(12),child:Container(padding:const EdgeInsets.all(10),decoration:BoxDecoration(color:Colors.white,borderRadius:BorderRadius.circular(7)),child:Column(children:[Container(height:30,padding:const EdgeInsets.symmetric(horizontal:10),decoration:BoxDecoration(color:const Color(0xFFF4F5F8),borderRadius:BorderRadius.circular(4)),child:Row(children:[const Expanded(child:Text('Search for help',style:TextStyle(fontFamily:'Sora',fontSize:9))),Image.asset('$_exactAssets/icon_search.png',width:14,height:14)])),...['Receiving International Payments with Davochain','About Your USD Account','Verifying your Davochain Account: Step-by-Step Guide','Bank Accounts Deposit Charges on Davochain','How do I Buy/Sell Gift Card On Davochain','How do I Crypto Assets On Davochain'].map((t)=>Padding(padding:const EdgeInsets.symmetric(vertical:6),child:Row(children:[Expanded(child:Text(t,style:const TextStyle(fontFamily:'Sora',fontSize:9,color:AppColors.body))),Image.asset('$_exactAssets/icon_arrow_right.png',width:14,height:14)])))]))) ]))));}
+class SupportHubScreen extends StatelessWidget{const SupportHubScreen({super.key});@override Widget build(BuildContext context)=>Scaffold(backgroundColor:const Color(0xFFF7F7F7),body:SafeArea(child:SingleChildScrollView(child:Column(children:[Container(width:double.infinity,padding:const EdgeInsets.fromLTRB(12,12,12,10),decoration:const BoxDecoration(gradient:LinearGradient(begin:Alignment.topCenter,end:Alignment.bottomCenter,colors:[Color(0xFF1260FF),Color(0xFF3B7CFF)]),borderRadius:BorderRadius.vertical(bottom:Radius.circular(14))),child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Row(children:[const DavochainLogoLockup(logoColor:Colors.white,logoWidth:28,fontSize:20),const Spacer(),InkWell(onTap:()=>Navigator.pop(context),child:Container(width:24,height:24,alignment:Alignment.center,color:Colors.white12,child:Image.asset('$_exactAssets/icon_close.png',width:18,height:18)))]),const SizedBox(height:28),const Text('Hi Chukwu 👋\nHow can we help?',style:TextStyle(fontFamily:'Sora',fontSize:16,fontWeight:FontWeight.w600,color:Colors.white,height:1.35)),const SizedBox(height:22),Container(decoration:BoxDecoration(color:Colors.white,borderRadius:BorderRadius.circular(7)),child:Column(children:[_HubAssetRow('Messages','$_exactAssets/icon_message.png',onTap:()=>_push(context,const SupportMessagesScreen())),const Divider(height:1),_HubAssetRow('Help','$_exactAssets/icon_help.png',onTap:()=>_push(context,const HelpCenterScreen()))])),const SizedBox(height:10),InkWell(onTap:()=>_push(context,const SupportMessagesScreen()),child:Container(height:38,padding:const EdgeInsets.symmetric(horizontal:12),decoration:BoxDecoration(color:Colors.white,borderRadius:BorderRadius.circular(7)),child:Row(children:[const Expanded(child:Text('Send us a messages',style:TextStyle(fontFamily:'Sora',fontSize:10,color:AppColors.body))),Image.asset('$_exactAssets/icon_send.png',width:16,height:16)]))),const SizedBox(height:10),Container(padding:const EdgeInsets.symmetric(horizontal:12,vertical:7),decoration:BoxDecoration(color:Colors.white,borderRadius:BorderRadius.circular(7)),child:Column(children:['Explore Rewards: Key Details You Should Know','Unlock More Earnings with Every Referral','Everything You Need to Know About Your Virtual Dollar Card','Join Our community Channel'].map((t)=>Padding(padding:const EdgeInsets.symmetric(vertical:5),child:Row(children:[Expanded(child:Text(t,style:const TextStyle(fontFamily:'Sora',fontSize:9,color:AppColors.body))),Image.asset('$_exactAssets/icon_external_link.png',width:11,height:11)]) )).toList()))])),Padding(padding:const EdgeInsets.all(12),child:Container(padding:const EdgeInsets.all(10),decoration:BoxDecoration(color:Colors.white,borderRadius:BorderRadius.circular(7)),child:Column(children:[Container(height:30,padding:const EdgeInsets.symmetric(horizontal:10),decoration:BoxDecoration(color:const Color(0xFFF4F5F8),borderRadius:BorderRadius.circular(4)),child:Row(children:[const Expanded(child:Text('Search for help',style:TextStyle(fontFamily:'Sora',fontSize:9))),Image.asset('$_exactAssets/icon_search.png',width:14,height:14)])),...['Receiving International Payments with Davochain','About Your USD Account','Verifying your Davochain Account: Step-by-Step Guide','Bank Accounts Deposit Charges on Davochain','How do I Buy/Sell Gift Card On Davochain','How do I Crypto Assets On Davochain'].map((t)=>Padding(padding:const EdgeInsets.symmetric(vertical:6),child:Row(children:[Expanded(child:Text(t,style:const TextStyle(fontFamily:'Sora',fontSize:9,color:AppColors.body))),Image.asset('$_exactAssets/icon_arrow_right.png',width:14,height:14)])))]))) ]))));}
 Widget _supportTile(String asset, String title, String subtitle, VoidCallback tap) {
   final hasSubtitle = subtitle.isNotEmpty;
   return InkWell(
@@ -789,9 +804,9 @@ class PersonalInformationV12Screen extends StatefulWidget {
 class _PersonalInformationV12ScreenState extends State<PersonalInformationV12Screen>{
   bool editing=false;
   final values=<String,String>{'Full name':'Vincent Chukwu','Email':'vincent.dollars@gmail.com','Phone Number':'+234 9062185004','Country':'Nigeria','Username':'Admiral','Date of Birth':'1996-08-24','Residential Address':'Flat A2, Guzape Estate, Abuja'};
-  @override Widget build(BuildContext context)=>_Shell(title:'Personal Information',titleStyle:_navInter20,scroll:true,bodyTopPadding:24,child:Column(children:[
-    Stack(alignment:Alignment.bottomRight,children:[SizedBox(width:120,height:120,child:ClipOval(child:Image.asset(_avatar,fit:BoxFit.cover,filterQuality:FilterQuality.high))),Container(width:24,height:24,alignment:Alignment.center,decoration:const BoxDecoration(shape:BoxShape.circle,color:AppColors.primary,border:Border.fromBorderSide(BorderSide(color:Colors.white,width:2))),child:Image.asset('$_exactAssets/icon_edit.png',width:14,height:14,color:Colors.white,filterQuality:FilterQuality.high))]),
-    const SizedBox(height:40),
+  @override Widget build(BuildContext context)=>_Shell(title:'Personal Information',titleStyle:_navInter20,scroll:true,showHeaderDivider:true,bodyTopPadding:24,child:Column(children:[
+    const _ProfileAvatar(edit: true),
+    const SizedBox(height:24),
     ...values.entries.map((e)=>editing?_EditableInfoField(label:e.key,value:e.value):_InfoField(label:e.key,value:e.value)),
     const SizedBox(height:21),
     _PrimaryButton(editing?'Save Changes':'Edit Information',onTap:(){if(editing){_push(context,const PersonalInformationSuccessScreen());}else{setState(()=>editing=true);}}),
@@ -1901,7 +1916,10 @@ class FullyVerifiedV12Screen extends StatelessWidget {
         title: 'Your Account is Fully Verified',
         body: 'You now have access to all Davochain features\nand higher limits',
         button: 'Back to Home',
-        onTap: () => Navigator.of(context).popUntil((r) => r.isFirst),
+        onTap: () {
+          PreviewAccountState.setupComplete.value = true;
+          Navigator.of(context).popUntil((r) => r.isFirst);
+        },
       );
 }
 
@@ -3071,6 +3089,7 @@ class _Shell extends StatelessWidget {
     required this.title,
     required this.child,
     this.scroll = false,
+    this.showHeaderDivider = false,
     this.titleStyle,
     this.bodyTopPadding = 12,
   });
@@ -3078,6 +3097,7 @@ class _Shell extends StatelessWidget {
   final String title;
   final Widget child;
   final bool scroll;
+  final bool showHeaderDivider;
   final TextStyle? titleStyle;
   final double bodyTopPadding;
 
@@ -3093,6 +3113,10 @@ class _Shell extends StatelessWidget {
         backgroundColor: Colors.white,
         surfaceTintColor: Colors.white,
         centerTitle: true,
+        bottom: showHeaderDivider ? const PreferredSize(
+          preferredSize: Size.fromHeight(1),
+          child: Divider(key: ValueKey('profile-header-divider'), height: 1, thickness: 1, color: Color(0xFFF0F1F4)),
+        ) : null,
         leading: IconButton(
           icon: Image.asset(
             '$_exactAssets/icon_arrow_left.png',
@@ -3108,7 +3132,7 @@ class _Shell extends StatelessWidget {
         top: false,
         child: scroll
             ? SingleChildScrollView(
-                physics: const BouncingScrollPhysics(),
+
                 child: body,
               )
             : body,
@@ -3475,7 +3499,7 @@ class _AgentHeader extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Image.asset(
-            small ? '$_exactAssets/support_agent_logo_small_exact.png' : '$_exactAssets/support_agent_logo_large_exact.png',
+            'assets/images/brand/davochain_logo.png',
             width: small ? 23 : 47,
             height: small ? 15 : 30,
             fit: BoxFit.contain,

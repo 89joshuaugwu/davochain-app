@@ -234,7 +234,7 @@ class _GiftCardBrandScreenState extends State<GiftCardBrandScreen> {
             const SizedBox(height: 14),
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
-              physics: const BouncingScrollPhysics(),
+
               child: Row(
                 children: GiftCardCategory.values.map((item) {
                   final active = category == item;
@@ -893,7 +893,7 @@ class _GiftCardPaymentScreenState extends State<GiftCardPaymentScreen> {
                     height: 56,
                     decoration: const BoxDecoration(color: Color(0xFFF0F4FD), shape: BoxShape.circle),
                     alignment: Alignment.center,
-                    child: Image.asset('$_g/wallet.png', width: 24, height: 23, fit: BoxFit.contain),
+                    child: Image.asset('assets/images/brand/naira_coin.png', width: 24, height: 24, fit: BoxFit.contain),
                   ),
                   const SizedBox(width: 14),
                   Expanded(
@@ -1125,7 +1125,7 @@ class _GiftScaffold extends StatelessWidget {
       backgroundColor: Colors.white,
       body: SafeArea(
         child: scroll
-            ? SingleChildScrollView(physics: const BouncingScrollPhysics(), padding: EdgeInsets.zero, child: body)
+            ? SingleChildScrollView( padding: EdgeInsets.zero, child: body)
             : body,
       ),
     );

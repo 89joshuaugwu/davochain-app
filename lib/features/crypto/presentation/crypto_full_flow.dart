@@ -94,7 +94,7 @@ class _WithdrawWalletSheet extends StatelessWidget {
                 ),
               ),
             ),
-            Positioned(left: 16, right: 16, top: 125, child: _WalletSelectRow(asset: '$_f/buy_nigeria.png', title: 'Nigeria Naira', symbol: 'NGN', circle: true, onTap: () => Navigator.pop(context, _WithdrawWallet.naira))),
+            Positioned(left: 16, right: 16, top: 125, child: _WalletSelectRow(asset: 'assets/images/brand/naira_coin.png', title: 'Nigeria Naira', symbol: 'NGN', iconSize: 40, onTap: () => Navigator.pop(context, _WithdrawWallet.naira))),
             Positioned(left: 16, right: 16, top: 188, child: _WalletSelectRow(asset: '$_f/btc.png', title: 'Bitcoin', symbol: 'BTC', onTap: () => Navigator.pop(context, _WithdrawWallet.crypto))),
             Positioned(left: 16, right: 16, top: 251, child: _WalletSelectRow(asset: '$_f/eth.png', title: 'Ethereum', symbol: 'ETH', onTap: () => Navigator.pop(context, _WithdrawWallet.crypto))),
             Positioned(left: 16, right: 16, top: 314, child: _WalletSelectRow(asset: '$_f/sol.png', title: 'Solana', symbol: 'SOL', onTap: () => Navigator.pop(context, _WithdrawWallet.crypto))),
@@ -105,10 +105,10 @@ class _WithdrawWalletSheet extends StatelessWidget {
 }
 
 class _WalletSelectRow extends StatelessWidget {
-  const _WalletSelectRow({required this.asset, required this.title, required this.symbol, required this.onTap, this.circle = false});
+  const _WalletSelectRow({required this.asset, required this.title, required this.symbol, required this.onTap, this.iconSize = 32});
   final String asset, title, symbol;
   final VoidCallback onTap;
-  final bool circle;
+  final double iconSize;
 
   @override
   Widget build(BuildContext context) => InkWell(
@@ -122,9 +122,7 @@ class _WalletSelectRow extends StatelessWidget {
                 top: 7,
                 width: 40,
                 height: 40,
-                child: circle
-                    ? ClipOval(child: Image.asset(asset, fit: BoxFit.cover))
-                    : Center(child: Image.asset(asset, width: 32, height: 32, fit: BoxFit.contain)),
+                child: Center(child: Image.asset(asset, width: iconSize, height: iconSize, fit: BoxFit.contain)),
               ),
               Positioned(left: 52, top: 9, child: Text(title, style: const TextStyle(fontFamily: 'Sora', fontSize: 14, height: 1.35, color: AppColors.ink))),
               Positioned(left: 52, top: 30, child: Text(symbol, style: const TextStyle(fontFamily: 'Sora', fontSize: 12, height: 1.25, color: Color(0xFF424242)))),
@@ -154,7 +152,7 @@ class _SellWalletSheet extends StatelessWidget {
                 onTap: () => Navigator.pop(context, true),
                 child: Stack(
                   children: [
-                    Positioned(left: 0, top: 9, width: 32, height: 32, child: Image.asset('$_f/buy_nigeria.png', width: 32, height: 32, fit: BoxFit.contain)),
+                    Positioned(left: 0, top: 9, width: 32, height: 32, child: Image.asset('assets/images/brand/naira_coin.png', width: 32, height: 32, fit: BoxFit.contain)),
                     const Positioned(left: 44, top: 7, child: Text('Nigerian Naira', style: TextStyle(fontFamily: 'Sora', fontSize: 14, height: 1.35, color: AppColors.ink))),
                     const Positioned(left: 44, top: 28, child: Text('NGN', style: TextStyle(fontFamily: 'Sora', fontSize: 12, height: 1.25, color: AppColors.body))),
                     const Positioned(right: 0, top: 8, child: Text('0.00 USD', style: TextStyle(fontFamily: 'Sora', fontSize: 14, height: 1.35, color: AppColors.body))),
@@ -649,7 +647,7 @@ class _BankSheetState extends State<_BankSheet> {
             bottom: 73,
             child: ListView.separated(
               padding: EdgeInsets.zero,
-              physics: const BouncingScrollPhysics(),
+
               itemCount: visible.length,
               separatorBuilder: (_, __) => const SizedBox(height: 16),
               itemBuilder: (_, i) => InkWell(
@@ -904,7 +902,7 @@ class _CryptoWithdrawEntryScreenState extends State<CryptoWithdrawEntryScreen> {
         body: SafeArea(
           bottom: false,
           child: SingleChildScrollView(
-            physics: const BouncingScrollPhysics(),
+
             child: SizedBox(
               height: 901,
               child: Stack(
@@ -1675,7 +1673,7 @@ class TransactionDetailsScreen extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Image.asset('$_exact/receipt_davochain_26_exact.png', width: 26, height: 26, fit: BoxFit.contain),
+                Image.asset('assets/images/brand/davochain_logo.png', width: 26, height: 26, fit: BoxFit.contain),
                 const SizedBox(width: 8),
                 const Text('Davochain', style: TextStyle(fontFamily: 'Sora', fontSize: 20, fontWeight: FontWeight.w700, height: 1.35, color: AppColors.ink)),
               ],
@@ -1909,7 +1907,7 @@ class _TxUsdt24 extends StatelessWidget {
 class _TxNigeria24 extends StatelessWidget {
   const _TxNigeria24();
   @override
-  Widget build(BuildContext context) => Image.asset('$_exact/tx_nigeria_24_exact.png', width: 24, height: 24, fit: BoxFit.contain);
+  Widget build(BuildContext context) => Image.asset('assets/images/brand/naira_coin.png', width: 24, height: 24, fit: BoxFit.contain);
 }
 
 class _ApproxMark extends StatelessWidget {
@@ -3133,7 +3131,7 @@ class _Pair extends StatelessWidget {
               label: secondLabel,
               primary: secondPrimary,
               secondary: secondSecondary,
-              asset: conversion ? '$_f/usdt.png' : '$_f/buy_nigeria.png',
+              asset: conversion ? '$_f/usdt.png' : 'assets/images/brand/naira_coin.png',
               rightSymbol: conversion ? 'USDT' : null,
               radius: conversion ? 4 : 6,
               conversion: conversion,

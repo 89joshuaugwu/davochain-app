@@ -1,0 +1,174 @@
+import 'package:flutter/material.dart';
+
+import '../../../core/navigation/app_page_route.dart';
+import '../../../core/theme/app_theme.dart';
+import '../../buy_crypto/presentation/buy_crypto_models.dart';
+import '../../buy_crypto/presentation/buy_crypto_screens.dart';
+import '../../crypto/presentation/crypto_full_flow.dart';
+
+/// Local preview history until transaction endpoints are connected.
+class TransactionHistoryScreen extends StatelessWidget {
+  const TransactionHistoryScreen({super.key});
+
+  static const _samples = <_SampleTransaction>[
+    _SampleTransaction('Bought Bitcoin', '7 Oct 2026 • 10:30', '+0.0300 BTC',
+        Icons.add, _SampleKind.buy),
+    _SampleTransaction('Sold Bitcoin', '6 Oct 2026 • 14:20', '−0.0300 BTC',
+        Icons.remove, _SampleKind.sell),
+    _SampleTransaction('Converted Bitcoin', '5 Oct 2026 • 09:15',
+        '0.0300 BTC → USDT', Icons.swap_horiz, _SampleKind.convert),
+    _SampleTransaction('Withdrew Bitcoin', '4 Oct 2026 • 16:45', '−0.0300 BTC',
+        Icons.arrow_outward, _SampleKind.withdraw),
+    _SampleTransaction('Deposited Bitcoin', '3 Oct 2026 • 11:10', '+0.0300 BTC',
+        Icons.south_west, _SampleKind.deposit),
+  ];
+
+  @override
+  Widget build(BuildContext context) => Scaffold(
+        appBar: AppBar(
+          title: const Text('History'),
+          centerTitle: true,
+          backgroundColor: Colors.white,
+          foregroundColor: AppColors.ink,
+          surfaceTintColor: Colors.transparent,
+        ),
+        body: SafeArea(
+          top: false,
+          child: ListView(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+            children: [
+              Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: AppColors.primarySoft,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(Icons.info_outline,
+                        size: 20, color: AppColors.primary),
+                    SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Sample transactions',
+                              style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.primary)),
+                          SizedBox(height: 4),
+                          Text('Preview data only. No funds have been moved.',
+                              style: TextStyle(
+                                  fontSize: 12, color: AppColors.body)),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 24),
+              const Text('Recent activity',
+                  style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.ink)),
+              const SizedBox(height: 12),
+              for (final sample in _samples) ...[
+                _TransactionRow(sample: sample),
+                if (sample != _samples.last)
+                  const Divider(height: 1, color: AppColors.mutedSoft),
+              ],
+            ],
+          ),
+        ),
+      );
+}
+
+enum _SampleKind { buy, sell, convert, withdraw, deposit }
+
+class _SampleTransaction {
+  const _SampleTransaction(
+      this.title, this.date, this.amount, this.icon, this.kind);
+
+  final String title;
+  final String date;
+  final String amount;
+  final IconData icon;
+  final _SampleKind kind;
+
+  Widget details() => switch (kind) {
+        _SampleKind.buy => const BuyTransactionDetailsScreen(
+            order: BuyCryptoOrder(
+                asset: BuyCryptoAsset.bitcoin,
+                wallet: BuyFundingWallet.ngn,
+                ngnAmount: 720000),
+          ),
+        _SampleKind.sell => const TransactionDetailsScreen(
+            kind: TxKind.sell, target: 'Nigerian Naira', amount: 0.03),
+        _SampleKind.convert => const TransactionDetailsScreen(
+            kind: TxKind.conversion, target: 'Tether', amount: 0.03),
+        _SampleKind.withdraw => const TransactionDetailsScreen(
+            kind: TxKind.external, target: 'bc1qpreviewaddress', amount: 0.03),
+        _SampleKind.deposit => const DepositStatusScreen(success: true),
+      };
+}
+
+class _TransactionRow extends StatelessWidget {
+  const _TransactionRow({required this.sample});
+
+  final _SampleTransaction sample;
+
+  @override
+  Widget build(BuildContext context) => InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: () => Navigator.of(context)
+            .push<void>(AppPageRoute<void>(builder: (_) => sample.details())),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          child: Row(
+            children: [
+              Container(
+                width: 42,
+                height: 42,
+                decoration: const BoxDecoration(
+                    color: AppColors.primarySoft, shape: BoxShape.circle),
+                child: Icon(sample.icon, color: AppColors.primary, size: 22),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(sample.title,
+                        style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.ink)),
+                    const SizedBox(height: 5),
+                    Text(sample.amount,
+                        style: const TextStyle(
+                            fontSize: 13, color: AppColors.body)),
+                    const SizedBox(height: 5),
+                    Text(sample.date,
+                        style: const TextStyle(
+                            fontSize: 11, color: AppColors.bodyMuted)),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              const Column(
+                children: [
+                  Text('Completed',
+                      style: TextStyle(fontSize: 11, color: Color(0xFF1BA44D))),
+                  SizedBox(height: 8),
+                  Icon(Icons.chevron_right,
+                      color: AppColors.bodyMuted, size: 20),
+                ],
+              ),
+            ],
+          ),
+        ),
+      );
+}

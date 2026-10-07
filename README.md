@@ -1,6 +1,6 @@
 # Davochain Flutter App
 
-Current milestone: **Figma fidelity cumulative audit — v6**.
+Current milestone: **v12 frontend handoff and native mobile preview preparation**. See [DEVELOPMENT_CONTEXT.md](DEVELOPMENT_CONTEXT.md) for architecture direction, mock/backend boundaries, and remaining review work.
 
 ## Included
 
@@ -26,7 +26,7 @@ flutter analyze
 flutter run
 ```
 
-If your full repository already contains `android/` and `ios/`, keep those platform folders and merge this source into that project. When native splash assets change, regenerate the splash from the included `flutter_native_splash` configuration.
+This working project contains the native Android and iOS runner folders retained when importing the latest frontend handoff. When native splash assets change, regenerate the splash from the included `flutter_native_splash` configuration.
 
 ## Native splash
 
@@ -34,7 +34,11 @@ If your full repository already contains `android/` and `ios/`, keep those platf
 dart run flutter_native_splash:create
 ```
 
-The source snapshot includes the native splash artwork/configuration, but not generated Android/iOS runner files.
+Launcher icons are configured with the supplied Davochain artwork. To regenerate them after changing that artwork:
+
+```bash
+dart run flutter_launcher_icons
+```
 
 ## Backend status
 

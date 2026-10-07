@@ -666,7 +666,7 @@ class BuyTransactionDetailsScreen extends StatelessWidget {
               const SizedBox(height: 48),
               Expanded(
                 child: SingleChildScrollView(
-                  physics: const BouncingScrollPhysics(),
+
                   child: Column(
                     children: [
                       Text(
@@ -925,9 +925,9 @@ class _WalletBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (wallet.isDavochain) {
-      return Image.asset('assets/figma_exact/dashboard_crypto_images__Davochain_Logo.png', width: 32, height: 32, fit: BoxFit.contain, filterQuality: FilterQuality.high);
+      return Image.asset('assets/images/brand/davochain_logo.png', width: 32, height: 32, fit: BoxFit.contain, filterQuality: FilterQuality.high);
     }
-    return const NigeriaFlagMark(width: 32);
+    return const NairaCoinMark(width: 32);
   }
 }
 

@@ -192,8 +192,8 @@ class _ExactWalletSheetRow extends StatelessWidget {
                 width: 32,
                 height: 32,
                 child: wallet.isDavochain
-                    ? Image.asset('assets/figma_exact/dashboard_crypto_images__Davochain_Logo.png', width: 32, height: 32, fit: BoxFit.contain)
-                    : const NigeriaFlagMark(width: 32),
+                    ? Image.asset('assets/images/brand/davochain_logo.png', width: 32, height: 32, fit: BoxFit.contain)
+                    : const NairaCoinMark(width: 32),
               ),
               Positioned(left: 44, top: 7, child: Text(wallet.name, style: const TextStyle(fontFamily: 'Sora', fontSize: 14, height: 1.35, color: AppColors.ink))),
               Positioned(left: 44, top: 28, child: Text(wallet.symbol, style: const TextStyle(fontFamily: 'Sora', fontSize: 12, height: 1.25, color: AppColors.body))),
@@ -250,8 +250,8 @@ class BuyAssetIcon extends StatelessWidget {
   }
 }
 
-class NigeriaFlagMark extends StatelessWidget {
-  const NigeriaFlagMark({super.key, this.width = 32});
+class NairaCoinMark extends StatelessWidget {
+  const NairaCoinMark({super.key, this.width = 32});
   final double width;
 
   @override
@@ -260,7 +260,7 @@ class NigeriaFlagMark extends StatelessWidget {
       width: width,
       height: width,
       child: Image.asset(
-        'assets/figma_exact/buy_nigeria.png',
+        'assets/images/brand/naira_coin.png',
         fit: BoxFit.contain,
         filterQuality: FilterQuality.high,
       ),
