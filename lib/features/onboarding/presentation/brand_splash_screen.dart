@@ -160,27 +160,12 @@ class _BrandSplashScreenState extends State<BrandSplashScreen>
                     final lower = phase(.10, .30, Curves.easeOutBack);
                     final move = phase(.29, .55);
                     final name = phase(.35, .63);
-                    final oval = phase(.32, .65);
                     final currencies = phase(.48, .79);
                     final markWidth = 90 - 32 * move;
                     final centerY = size.height * (.50 + .055 * move);
                     final markLeft = (size.width - markWidth) / 2 * (1 - move) +
                         finalLeft * move;
                     return Stack(clipBehavior: Clip.hardEdge, children: [
-                      Positioned(
-                          left: size.width * .045,
-                          right: size.width * .045,
-                          top: size.height * .555 - size.height * .039,
-                          height: size.height * .078,
-                          child: Opacity(
-                              opacity: oval.clamp(0.0, 1.0),
-                              child: Transform.scale(
-                                  scaleX: .12 + .88 * oval,
-                                  scaleY: .85 + .15 * oval,
-                                  child: const ClipOval(
-                                      key: ValueKey('welcome-oval'),
-                                      child: ColoredBox(
-                                          color: Color(0xFF0750E8)))))),
                       Positioned(
                           left: 0,
                           right: 0,

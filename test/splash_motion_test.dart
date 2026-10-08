@@ -47,7 +47,7 @@ void main() {
         MaterialApp(theme: AppTheme.light, home: const BrandSplashScreen()));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 700));
-    expect(find.byKey(const ValueKey('welcome-oval')), findsOneWidget);
+    expect(find.byKey(const ValueKey('welcome-oval')), findsNothing);
     expect(find.byKey(const ValueKey('welcome-currencies')), findsOneWidget);
     expect(find.byType(BrandSplashScreen), findsOneWidget);
     await tester.pump(const Duration(milliseconds: 2601));
