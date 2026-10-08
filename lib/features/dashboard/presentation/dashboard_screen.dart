@@ -33,173 +33,174 @@ class _DavochainDashboardScreenState extends State<DavochainDashboardScreen> {
   bool _balanceVisible = true;
 
   @override
-  void initState() {
-    super.initState();
-    SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
-      statusBarColor: Colors.transparent,
-      statusBarIconBrightness: Brightness.dark,
-      statusBarBrightness: Brightness.light,
-      systemNavigationBarColor: Colors.white,
-      systemNavigationBarIconBrightness: Brightness.dark,
-    ));
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FB),
-      body: SafeArea(
-        bottom: false,
-        child: ValueListenableBuilder<bool>(
-          valueListenable: PreviewAccountState.setupComplete,
-          builder: (context, setupComplete, _) => LayoutBuilder(
-            builder: (context, constraints) {
-              final compact = constraints.maxHeight < 760;
-              final gap = compact
-                  ? 8.0
-                  : constraints.maxHeight < 790
-                      ? 12.0
-                      : 16.0;
-              final header = Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const _Entrance(index: 0, child: _DashboardHeader()),
-                  SizedBox(height: gap),
-                  _Entrance(
-                      index: 1,
-                      child: _BalanceCard(
-                        compact: compact,
-                        visible: _balanceVisible,
-                        onVisibilityToggle: () =>
-                            setState(() => _balanceVisible = !_balanceVisible),
-                        onDeposit: _openWalletSelector,
-                        onWithdraw: () => startWithdrawFlow(context),
-                      )),
-                  SizedBox(height: gap),
-                  if (!setupComplete) ...[
-                    _Entrance(
-                        index: 2,
-                        child: InkWell(
-                          onTap: () => Navigator.of(context).push(
-                              AppPageRoute<void>(
-                                  settings:
-                                      const RouteSettings(name: 'verification'),
-                                  builder: (_) =>
-                                      const VerificationOverviewScreen())),
-                          borderRadius: BorderRadius.circular(8),
-                          child: _SetupBanner(compact: compact),
-                        )),
-                    SizedBox(height: gap),
-                  ],
-                  _Entrance(
-                      index: 3,
-                      child: _QuickActions(
-                        compact: compact,
-                        onBuy: () => startBuyCryptoFlow(context),
-                        onSell: () => startSellCryptoFlow(context),
-                        onGift: () => startGiftCardFlow(context),
-                        onHistory: () => Navigator.of(context)
-                            .push(_davoRoute(const TransactionHistoryScreen())),
-                      )),
-                  SizedBox(height: gap),
-                  _Entrance(index: 4, child: _PromoBanner(compact: compact)),
-                  SizedBox(height: gap),
-                  _assetsHeading(compact: compact),
-                  SizedBox(height: compact ? 4 : 8),
-                ],
-              );
-              // Ordinary phones keep the header stationary. Landscape and enlarged
-              // text retain full-page scrolling so controls never become unreachable.
-              final needsFullScroll = constraints.maxHeight < 640 ||
-                  MediaQuery.textScalerOf(context).scale(14) > 18;
-              if (needsFullScroll) {
-                return SingleChildScrollView(
-                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
-                  child: Column(children: [
-                    header,
-                    const SizedBox(height: 240, child: _DashboardAssetCard())
-                  ]),
-                );
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+        value: SystemUiOverlayStyle(
+          statusBarColor: Colors.transparent,
+          statusBarIconBrightness: dark ? Brightness.light : Brightness.dark,
+          statusBarBrightness: dark ? Brightness.dark : Brightness.light,
+          systemNavigationBarColor: DavoColors.of(context).surface,
+          systemNavigationBarIconBrightness:
+              dark ? Brightness.light : Brightness.dark,
+        ),
+        child: Scaffold(
+          backgroundColor: DavoColors.of(context).canvas,
+          body: SafeArea(
+            bottom: false,
+            child: ValueListenableBuilder<bool>(
+              valueListenable: PreviewAccountState.setupComplete,
+              builder: (context, setupComplete, _) => LayoutBuilder(
+                builder: (context, constraints) {
+                  final compact = constraints.maxHeight < 760;
+                  final gap = compact
+                      ? 8.0
+                      : constraints.maxHeight < 790
+                          ? 12.0
+                          : 16.0;
+                  final header = Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const _Entrance(index: 0, child: _DashboardHeader()),
+                      SizedBox(height: gap),
+                      _Entrance(
+                          index: 1,
+                          child: _BalanceCard(
+                            compact: compact,
+                            visible: _balanceVisible,
+                            onVisibilityToggle: () => setState(
+                                () => _balanceVisible = !_balanceVisible),
+                            onDeposit: _openWalletSelector,
+                            onWithdraw: () => startWithdrawFlow(context),
+                          )),
+                      SizedBox(height: gap),
+                      if (!setupComplete) ...[
+                        _Entrance(
+                            index: 2,
+                            child: InkWell(
+                              onTap: () => Navigator.of(context).push(
+                                  AppPageRoute<void>(
+                                      settings: const RouteSettings(
+                                          name: 'verification'),
+                                      builder: (_) =>
+                                          const VerificationOverviewScreen())),
+                              borderRadius: BorderRadius.circular(8),
+                              child: _SetupBanner(compact: compact),
+                            )),
+                        SizedBox(height: gap),
+                      ],
+                      _Entrance(
+                          index: 3,
+                          child: _QuickActions(
+                            compact: compact,
+                            onBuy: () => startBuyCryptoFlow(context),
+                            onSell: () => startSellCryptoFlow(context),
+                            onGift: () => startGiftCardFlow(context),
+                            onHistory: () => Navigator.of(context).push(
+                                _davoRoute(const TransactionHistoryScreen())),
+                          )),
+                      SizedBox(height: gap),
+                      _Entrance(
+                          index: 4, child: _PromoBanner(compact: compact)),
+                      SizedBox(height: gap),
+                      _assetsHeading(compact: compact),
+                      SizedBox(height: compact ? 4 : 8),
+                    ],
+                  );
+                  // Ordinary phones keep the header stationary. Landscape and enlarged
+                  // text retain full-page scrolling so controls never become unreachable.
+                  final needsFullScroll = constraints.maxHeight < 640 ||
+                      MediaQuery.textScalerOf(context).scale(14) > 18;
+                  if (needsFullScroll) {
+                    return SingleChildScrollView(
+                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+                      child: Column(children: [
+                        header,
+                        const SizedBox(
+                            height: 240, child: _DashboardAssetCard())
+                      ]),
+                    );
+                  }
+                  return Padding(
+                    padding: EdgeInsets.fromLTRB(16, compact ? 12 : 16, 16, 0),
+                    child: Column(children: [
+                      header,
+                      Expanded(child: LayoutBuilder(builder: (context, space) {
+                        final visibleRows = setupComplete ? 4 : 3;
+                        final rowHeight =
+                            ((space.maxHeight - 4 - (visibleRows - 1)) /
+                                    visibleRows)
+                                .clamp(52.0, 72.0);
+                        final windowHeight =
+                            (4 + rowHeight * visibleRows + visibleRows - 1)
+                                .clamp(0.0, space.maxHeight);
+                        return Align(
+                            alignment: Alignment.topCenter,
+                            child: SizedBox(
+                                height: windowHeight,
+                                child:
+                                    _DashboardAssetCard(rowHeight: rowHeight)));
+                      }))
+                    ]),
+                  );
+                },
+              ),
+            ),
+          ),
+          bottomNavigationBar: _BottomNav(
+            index: _navIndex,
+            onChanged: (index) {
+              if (index == 0) return;
+              if (index == 2) {
+                HapticFeedback.selectionClick();
+                setState(() => _navIndex = index);
+                startGiftCardFlow(context).whenComplete(() {
+                  if (mounted) setState(() => _navIndex = 0);
+                });
+                return;
               }
-              return Padding(
-                padding: EdgeInsets.fromLTRB(16, compact ? 12 : 16, 16, 0),
-                child: Column(children: [
-                  header,
-                  Expanded(child: LayoutBuilder(builder: (context, space) {
-                    final visibleRows = setupComplete ? 4 : 3;
-                    final rowHeight =
-                        ((space.maxHeight - 4 - (visibleRows - 1)) /
-                                visibleRows)
-                            .clamp(52.0, 72.0);
-                    final windowHeight =
-                        (4 + rowHeight * visibleRows + visibleRows - 1)
-                            .clamp(0.0, space.maxHeight);
-                    return Align(
-                        alignment: Alignment.topCenter,
-                        child: SizedBox(
-                            height: windowHeight,
-                            child: _DashboardAssetCard(rowHeight: rowHeight)));
-                  }))
-                ]),
-              );
+              if (index == 3) {
+                HapticFeedback.selectionClick();
+                setState(() => _navIndex = index);
+                startProfileSettingsFlow(context).whenComplete(() {
+                  if (mounted) setState(() => _navIndex = 0);
+                });
+                return;
+              }
+              setState(() => _navIndex = index);
+              HapticFeedback.selectionClick();
+              Navigator.of(context)
+                  .push(_davoRoute(const BuyAmountScreen(
+                      initialOrder: BuyCryptoOrder(
+                          asset: BuyCryptoAsset.bitcoin,
+                          wallet: BuyFundingWallet.ngn,
+                          ngnAmount: 0))))
+                  .whenComplete(() {
+                if (mounted) setState(() => _navIndex = 0);
+              });
             },
           ),
-        ),
-      ),
-      bottomNavigationBar: _BottomNav(
-        index: _navIndex,
-        onChanged: (index) {
-          if (index == 0) return;
-          if (index == 2) {
-            HapticFeedback.selectionClick();
-            setState(() => _navIndex = index);
-            startGiftCardFlow(context).whenComplete(() {
-              if (mounted) setState(() => _navIndex = 0);
-            });
-            return;
-          }
-          if (index == 3) {
-            HapticFeedback.selectionClick();
-            setState(() => _navIndex = index);
-            startProfileSettingsFlow(context).whenComplete(() {
-              if (mounted) setState(() => _navIndex = 0);
-            });
-            return;
-          }
-          setState(() => _navIndex = index);
-          HapticFeedback.selectionClick();
-          Navigator.of(context)
-              .push(_davoRoute(const BuyAmountScreen(
-                  initialOrder: BuyCryptoOrder(
-                      asset: BuyCryptoAsset.bitcoin,
-                      wallet: BuyFundingWallet.ngn,
-                      ngnAmount: 0))))
-              .whenComplete(() {
-            if (mounted) setState(() => _navIndex = 0);
-          });
-        },
-      ),
-    );
+        ));
   }
 
   Widget _assetsHeading({bool compact = false}) => ConstrainedBox(
         constraints: BoxConstraints(minHeight: compact ? 36 : 40),
         child:
             Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-          const Flexible(
+          Flexible(
               child: Text('Assets',
                   style: TextStyle(
                       fontFamily: 'Sora',
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
-                      color: AppColors.ink))),
+                      color: DavoColors.of(context).ink))),
           Flexible(
               flex: 2,
               child: TextButton(
                 onPressed: () => Navigator.of(context)
                     .push(_davoRoute(const PortfolioScreen())),
                 style: TextButton.styleFrom(
-                    foregroundColor: AppColors.primary,
+                    foregroundColor: DavoColors.of(context).link,
                     textStyle:
                         const TextStyle(fontFamily: 'Sora', fontSize: 12),
                     visualDensity: VisualDensity.compact,
@@ -294,7 +295,7 @@ class _DashboardHeader extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 12),
-        const Expanded(
+        Expanded(
             child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -303,9 +304,11 @@ class _DashboardHeader extends StatelessWidget {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
-                  fontFamily: 'Sora', fontSize: 12, color: Color(0xFF8D8D8D)),
+                  fontFamily: 'Sora',
+                  fontSize: 12,
+                  color: DavoColors.of(context).muted),
             ),
-            SizedBox(height: 2),
+            const SizedBox(height: 2),
             Text(
               'Callie',
               maxLines: 1,
@@ -314,7 +317,7 @@ class _DashboardHeader extends StatelessWidget {
                 fontFamily: 'Sora',
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
-                color: Color(0xFF424242),
+                color: DavoColors.of(context).body,
               ),
             ),
           ],
@@ -328,20 +331,21 @@ class _DashboardHeader extends StatelessWidget {
             height: 32,
             padding: const EdgeInsets.symmetric(horizontal: 11),
             decoration: BoxDecoration(
-              color: const Color(0x80D0DEFD),
+              color: DavoColors.of(context).isDark ? DavoColors.of(context).primarySoft : const Color(0x80D0DEFD),
               borderRadius: BorderRadius.circular(1000),
             ),
             child: Row(
               children: [
                 Image.asset('assets/figma_exact/earn_gift.png',
+                    color: DavoColors.of(context).isDark ? DavoColors.of(context).link : null,
                     width: 20, height: 20, fit: BoxFit.contain),
                 if (MediaQuery.textScalerOf(context).scale(14) <= 18) ...[
                   const SizedBox(width: 4),
-                  const Text('Earn \$5',
+                  Text('Earn \$5',
                       style: TextStyle(
                           fontFamily: 'Sora',
                           fontSize: 12,
-                          color: AppColors.primary)),
+                          color: DavoColors.of(context).link)),
                 ],
               ],
             ),
@@ -354,10 +358,11 @@ class _DashboardHeader extends StatelessWidget {
           child: Container(
             width: 32,
             height: 32,
-            decoration: const BoxDecoration(
-                color: Color(0x80D0DEFD), shape: BoxShape.circle),
+            decoration: BoxDecoration(
+                color: DavoColors.of(context).isDark ? DavoColors.of(context).primarySoft : const Color(0x80D0DEFD), shape: BoxShape.circle),
             child: Center(
                 child: Image.asset('assets/figma_exact/notification.png',
+                    color: DavoColors.of(context).isDark ? DavoColors.of(context).link : null,
                     width: 21, height: 21, fit: BoxFit.contain)),
           ),
         ),
@@ -422,13 +427,13 @@ class _BalanceCard extends StatelessWidget {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Flexible(
+                      Flexible(
                           child: Text(
                         'Available Balance',
                         style: TextStyle(
                             fontFamily: 'Sora',
                             fontSize: 10,
-                            color: Color(0xFFEEF0F5)),
+                            color: DavoColors.of(context).isDark ? Colors.white : AppColors.border),
                       )),
                       const SizedBox(width: 4),
                       Opacity(
@@ -515,7 +520,7 @@ class _BalanceActionButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: light ? const Color(0xFFF5F6F9) : const Color(0xFF104DCE),
+      color: light ? DavoColors.of(context).fieldFill : const Color(0xFF104DCE),
       borderRadius: BorderRadius.circular(100),
       child: InkWell(
         onTap: onTap,
@@ -541,7 +546,7 @@ class _BalanceActionButton extends StatelessWidget {
                   fontFamily: 'Sora',
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
-                  color: light ? AppColors.primary : Colors.white,
+                  color: light ? DavoColors.of(context).link : Colors.white,
                 ),
               )),
             ],
@@ -562,7 +567,7 @@ class _SetupBanner extends StatelessWidget {
       constraints: BoxConstraints(minHeight: compact ? 50 : 58),
       padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 8),
       decoration: BoxDecoration(
-        color: const Color(0xFFEEF4FE),
+        color: DavoColors.of(context).primarySoft,
         border: Border.all(color: const Color(0xFF6292FA)),
         borderRadius: BorderRadius.circular(8),
       ),
@@ -575,7 +580,7 @@ class _SetupBanner extends StatelessWidget {
             style: TextStyle(
                 fontFamily: 'Sora',
                 fontSize: compact ? 14 : 16,
-                color: AppColors.primary,
+                color: DavoColors.of(context).link,
                 letterSpacing: -.16),
           )),
           const SizedBox(width: 8),
@@ -624,7 +629,7 @@ class _QuickActions extends StatelessWidget {
                 compact: compact,
                 label: 'Buy Crypto',
                 assetPath: 'assets/figma_exact/buy_action.png',
-                bg: const Color(0xFFFEE5CB),
+                bg: DavoColors.of(context).warningSurface,
                 fg: const Color(0xFFFD9915),
                 onTap: onBuy)),
         const SizedBox(width: 16),
@@ -633,8 +638,8 @@ class _QuickActions extends StatelessWidget {
                 compact: compact,
                 label: 'Sell Crypto',
                 assetPath: 'assets/figma_exact/sell_action.png',
-                bg: const Color(0xFFDBF8E8),
-                fg: const Color(0xFF20C55D),
+                bg: DavoColors.of(context).elevated,
+                fg: DavoColors.of(context).success,
                 onTap: onSell)),
         const SizedBox(width: 16),
         Expanded(
@@ -651,7 +656,7 @@ class _QuickActions extends StatelessWidget {
                 compact: compact,
                 label: 'History',
                 assetPath: 'assets/figma_exact/history_action.png',
-                bg: const Color(0xFFD8E9FE),
+                bg: DavoColors.of(context).primarySoft,
                 fg: AppColors.primary,
                 onTap: onHistory)),
       ],
@@ -682,7 +687,7 @@ class _QuickAction extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: Colors.white,
+      color: DavoColors.of(context).surface,
       borderRadius: BorderRadius.circular(6),
       child: InkWell(
         onTap: onTap,
@@ -719,11 +724,11 @@ class _QuickAction extends StatelessWidget {
                 fit: BoxFit.scaleDown,
                 child: Text(
                   label,
-                  style: const TextStyle(
+                  style: TextStyle(
                       fontFamily: 'Sora',
                       fontSize: 10,
                       fontWeight: FontWeight.w600,
-                      color: AppColors.ink),
+                      color: DavoColors.of(context).ink),
                 ),
               ),
             ],
@@ -745,10 +750,10 @@ class _PromoBanner extends StatelessWidget {
         key: const ValueKey('dashboard-promo'),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: const Color(0xFFE3ECFF),
+          color: DavoColors.of(context).primarySoft,
           borderRadius: BorderRadius.circular(12),
         ),
-        child: const Column(
+        child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text('Turn your Crypto and\nGift Cards into cash\ninstantly',
@@ -756,12 +761,14 @@ class _PromoBanner extends StatelessWidget {
                     fontSize: 13,
                     fontWeight: FontWeight.w700,
                     height: 1.3,
-                    color: AppColors.primary)),
-            SizedBox(height: 8),
+                    color: DavoColors.of(context).link)),
+            const SizedBox(height: 8),
             Text(
                 'Trade top crypto and gift card at good rates with fast payment.',
                 style: TextStyle(
-                    fontSize: 10, height: 1.4, color: AppColors.body)),
+                    fontSize: 10,
+                    height: 1.4,
+                    color: DavoColors.of(context).body)),
           ],
         ),
       );
@@ -772,10 +779,10 @@ class _PromoBanner extends StatelessWidget {
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
-        gradient: const LinearGradient(
+        gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [Color(0xFFEEF4FE), Color(0xFFBDD2FF)],
+          colors: [DavoColors.of(context).primarySoft, DavoColors.of(context).isDark ? DavoColors.of(context).elevated : const Color(0xFFBDD2FF)],
         ),
       ),
       child: Stack(
@@ -805,16 +812,16 @@ class _PromoBanner extends StatelessWidget {
                       fontSize: compact ? 12 : 13,
                       fontWeight: FontWeight.w700,
                       height: 1.3,
-                      color: AppColors.primary),
+                      color: DavoColors.of(context).link),
                 ),
                 const SizedBox(height: 5),
-                const Text(
+                Text(
                   'Trade top crypto and gift card at good rates with fast payment.',
                   style: TextStyle(
                       fontFamily: 'Sora',
                       fontSize: 10,
                       height: 1.25,
-                      color: Color(0xFF424242)),
+                      color: DavoColors.of(context).body),
                 ),
               ],
             ),
@@ -850,7 +857,7 @@ class _DashboardAssetCard extends StatelessWidget {
   Widget build(BuildContext context) => ClipRRect(
         borderRadius: BorderRadius.circular(8),
         child: ColoredBox(
-          color: Colors.white,
+          color: DavoColors.of(context).surface,
           child: ListView(
             key: const ValueKey('dashboard-assets'),
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
@@ -862,7 +869,7 @@ class _DashboardAssetCard extends StatelessWidget {
                   amount: '0.0086 BTC',
                   value: '₦580,200.00',
                   change: '+4.21%'),
-              const Divider(height: 1, color: Color(0xFFF0F1F4)),
+              Divider(height: 1, color: DavoColors.of(context).divider),
               _AssetRow(
                   key: const ValueKey('dashboard-asset-ETH'),
                   rowHeight: rowHeight,
@@ -870,7 +877,7 @@ class _DashboardAssetCard extends StatelessWidget {
                   amount: '0.102 ETH',
                   value: '₦342,100.00',
                   change: '+2.18%'),
-              const Divider(height: 1, color: Color(0xFFF0F1F4)),
+              Divider(height: 1, color: DavoColors.of(context).divider),
               _AssetRow(
                   key: const ValueKey('dashboard-asset-USDT'),
                   rowHeight: rowHeight,
@@ -878,7 +885,7 @@ class _DashboardAssetCard extends StatelessWidget {
                   amount: '250.00 USDT',
                   value: '₦250,000.00',
                   change: '0.00%'),
-              const Divider(height: 1, color: Color(0xFFF0F1F4)),
+              Divider(height: 1, color: DavoColors.of(context).divider),
               _AssetRow(
                   key: const ValueKey('dashboard-asset-USDC'),
                   rowHeight: rowHeight,
@@ -886,7 +893,7 @@ class _DashboardAssetCard extends StatelessWidget {
                   amount: '112.20 USDC',
                   value: '₦112,200.35',
                   change: '+0.01%'),
-              const Divider(height: 1, color: Color(0xFFF0F1F4)),
+              Divider(height: 1, color: DavoColors.of(context).divider),
               _AssetRow(
                   key: const ValueKey('dashboard-asset-SOL'),
                   rowHeight: rowHeight,
@@ -933,24 +940,24 @@ class _AssetRow extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(asset.name,
-                    style: const TextStyle(
+                    style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
-                        color: AppColors.ink)),
+                        color: DavoColors.of(context).ink)),
                 Text(amount,
-                    style:
-                        const TextStyle(fontSize: 12, color: AppColors.body)),
+                    style: TextStyle(
+                        fontSize: 12, color: DavoColors.of(context).body)),
                 Text(value,
-                    style: const TextStyle(
+                    style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
-                        color: AppColors.ink)),
+                        color: DavoColors.of(context).ink)),
                 Text(change,
                     style: TextStyle(
                         fontSize: 11,
                         color: positive
-                            ? AppColors.success
-                            : AppColors.bodyMuted)),
+                            ? DavoColors.of(context).success
+                            : DavoColors.of(context).bodyMuted)),
               ],
             )),
           ],
@@ -977,24 +984,24 @@ class _AssetRow extends StatelessWidget {
                         child: Text(asset.name,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
+                            style: TextStyle(
                                 fontFamily: 'Sora',
                                 fontSize: 14,
                                 fontWeight: FontWeight.w600,
-                                color: AppColors.ink))),
+                                color: DavoColors.of(context).ink))),
                     if (chevron) ...[
                       const SizedBox(width: 8),
                       Container(
                         padding: const EdgeInsets.symmetric(
                             horizontal: 6, vertical: 2),
                         decoration: BoxDecoration(
-                            color: const Color(0xFFE8ECFC),
+                            color: DavoColors.of(context).primarySoft,
                             borderRadius: BorderRadius.circular(2)),
                         child: Text(asset.symbol,
-                            style: const TextStyle(
+                            style: TextStyle(
                                 fontFamily: 'Sora',
                                 fontSize: 9,
-                                color: Colors.black)),
+                                color: DavoColors.of(context).ink)),
                       ),
                     ],
                   ],
@@ -1003,10 +1010,10 @@ class _AssetRow extends StatelessWidget {
                 Text(amount,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
+                    style: TextStyle(
                         fontFamily: 'Sora',
                         fontSize: 12,
-                        color: Color(0xFF424242))),
+                        color: DavoColors.of(context).body)),
               ],
             ),
           ),
@@ -1018,18 +1025,18 @@ class _AssetRow extends StatelessWidget {
               Text(value,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
+                  style: TextStyle(
                       fontFamily: 'Sora',
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
-                      color: AppColors.ink)),
+                      color: DavoColors.of(context).ink)),
               const SizedBox(height: 2),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(
                   color: positive
-                      ? const Color(0xFFF3FAF5)
-                      : const Color(0xFFE8ECFC),
+                      ? DavoColors.of(context).elevated
+                      : DavoColors.of(context).primarySoft,
                   borderRadius: BorderRadius.circular(4),
                 ),
                 child: Text(
@@ -1038,17 +1045,17 @@ class _AssetRow extends StatelessWidget {
                       fontSize: 11,
                       fontWeight: FontWeight.w600,
                       color: positive
-                          ? const Color(0xFF20C55D)
-                          : const Color(0xFF434656)),
+                          ? DavoColors.of(context).success
+                          : DavoColors.of(context).body),
                 ),
               ),
             ],
           )),
           if (chevron)
-            const Padding(
-                padding: EdgeInsets.only(left: 6),
+            Padding(
+                padding: const EdgeInsets.only(left: 6),
                 child: Icon(Icons.chevron_right_rounded,
-                    color: Color(0xFF8D8D8D))),
+                    color: DavoColors.of(context).muted)),
         ],
       ),
     );
@@ -1064,9 +1071,9 @@ class _BottomNav extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        border: Border(top: BorderSide(color: Color(0xFFF2F2F2))),
+      decoration: BoxDecoration(
+        color: DavoColors.of(context).surface,
+        border: Border(top: BorderSide(color: DavoColors.of(context).divider)),
       ),
       child: SafeArea(
         top: false,
@@ -1126,7 +1133,8 @@ class _NavItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final active = index == current;
-    final color = active ? AppColors.primary : const Color(0xFF686868);
+    final color =
+        active ? DavoColors.of(context).link : DavoColors.of(context).bodyMuted;
     return InkResponse(
       onTap: () => onTap(index),
       radius: 28,
@@ -1176,7 +1184,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FB),
+      backgroundColor: DavoColors.of(context).canvas,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
@@ -1190,7 +1198,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                       icon: const Icon(Icons.arrow_back_ios_new_rounded,
                           size: 20)),
                   const SizedBox(width: 7),
-                  const Expanded(
+                  Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -1198,10 +1206,11 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                             style: TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.w600,
-                                color: Color(0xFF131B2E))),
+                                color: DavoColors.of(context).ink)),
                         Text('Real-time valuation',
                             style: TextStyle(
-                                fontSize: 12, color: Color(0xFF434656))),
+                                fontSize: 12,
+                                color: DavoColors.of(context).body)),
                       ],
                     ),
                   ),
@@ -1222,7 +1231,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                     child: Padding(
                       padding: EdgeInsets.only(right: index == 2 ? 0 : 16),
                       child: Material(
-                        color: const Color(0xFFEEF0F5),
+                        color: DavoColors.of(context).border,
                         borderRadius: BorderRadius.circular(6),
                         child: InkWell(
                           onTap: () {
@@ -1242,11 +1251,11 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                             child: Center(
                               child: Text(
                                 ['Buy', 'Sell', 'Swap'][index],
-                                style: const TextStyle(
+                                style: TextStyle(
                                     fontFamily: 'Sora',
                                     fontSize: 14,
                                     fontWeight: FontWeight.w600,
-                                    color: Color(0xFF424242)),
+                                    color: DavoColors.of(context).body),
                               ),
                             ),
                           ),
@@ -1259,12 +1268,12 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
               const SizedBox(height: 16),
               const _AllocationCard(),
               const SizedBox(height: 24),
-              const Text('Your Assets',
+              Text('Your Assets',
                   style: TextStyle(
                       fontFamily: 'Sora',
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
-                      color: AppColors.ink)),
+                      color: DavoColors.of(context).ink)),
               const SizedBox(height: 9),
               Container(
                 decoration:
@@ -1321,8 +1330,8 @@ class _RoundIconButton extends StatelessWidget {
       child: Container(
         width: 36,
         height: 36,
-        decoration: const BoxDecoration(
-            color: Color(0xFFE8ECFC), shape: BoxShape.circle),
+        decoration: BoxDecoration(
+            color: DavoColors.of(context).primarySoft, shape: BoxShape.circle),
         child: assetPath != null
             ? Center(
                 child: Image.asset(
@@ -1365,27 +1374,27 @@ class _PortfolioValueCard extends StatelessWidget {
               filterQuality: FilterQuality.high,
             ),
           ),
-          const Positioned(
+          Positioned(
             right: 12,
             top: 16,
             child: DecoratedBox(
               decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.all(Radius.circular(999))),
+                  color: DavoColors.of(context).surface,
+                  borderRadius: const BorderRadius.all(Radius.circular(999))),
               child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 child: Row(
                   children: [
-                    DecoratedBox(
+                    const DecoratedBox(
                         decoration: BoxDecoration(
                             color: AppColors.primary, shape: BoxShape.circle),
                         child: SizedBox(width: 6, height: 6)),
-                    SizedBox(width: 4),
+                    const SizedBox(width: 4),
                     Text('Live Sync',
                         style: TextStyle(
                             fontFamily: 'Sora',
                             fontSize: 12,
-                            color: AppColors.primary)),
+                            color: DavoColors.of(context).link)),
                   ],
                 ),
               ),
@@ -1397,11 +1406,11 @@ class _PortfolioValueCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Total Portfolio Value',
+                Text('Total Portfolio Value',
                     style: TextStyle(
                         fontFamily: 'Sora',
                         fontSize: 10,
-                        color: Color(0xFFEEF0F5))),
+                        color: DavoColors.of(context).border)),
                 const SizedBox(height: 8),
                 Text(
                   visible ? '₦1,284,500.35' : '₦••••••••',
@@ -1433,49 +1442,50 @@ class _AllocationCard extends StatelessWidget {
       height: 205,
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-          color: Colors.white, borderRadius: BorderRadius.circular(12)),
+          color: DavoColors.of(context).surface,
+          borderRadius: BorderRadius.circular(12)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              const Text('Asset Allocation',
+              Text('Asset Allocation',
                   style: TextStyle(
                       fontFamily: 'Sora',
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
-                      color: AppColors.ink)),
+                      color: DavoColors.of(context).ink)),
               const SizedBox(width: 12),
               Container(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
-                    color: const Color(0xFFEAEDFF),
+                    color: DavoColors.of(context).primarySoft,
                     borderRadius: BorderRadius.circular(100)),
-                child: const Text('4 Coins',
+                child: Text('4 Coins',
                     style: TextStyle(
                         fontFamily: 'Sora',
                         fontSize: 12,
-                        color: Color(0xFF424242))),
+                        color: DavoColors.of(context).body)),
               ),
             ],
           ),
           const SizedBox(height: 14),
           ClipRRect(
             borderRadius: BorderRadius.circular(100),
-            child: const Row(
+            child: Row(
               children: [
-                Expanded(
+                const Expanded(
                     flex: 452,
                     child: SizedBox(
                         height: 12,
                         child: ColoredBox(color: Color(0xFFF7931A)))),
-                Expanded(
+                const Expanded(
                     flex: 266,
                     child: SizedBox(
                         height: 12,
                         child: ColoredBox(color: Color(0xFF627EEA)))),
-                Expanded(
+                const Expanded(
                     flex: 195,
                     child: SizedBox(
                         height: 12,
@@ -1484,15 +1494,16 @@ class _AllocationCard extends StatelessWidget {
                     flex: 87,
                     child: SizedBox(
                         height: 12,
-                        child: ColoredBox(color: Color(0xFF20C55D)))),
+                        child:
+                            ColoredBox(color: DavoColors.of(context).success))),
               ],
             ),
           ),
           const SizedBox(height: 10),
-          const Expanded(
+          Expanded(
             child: Column(
               children: [
-                Expanded(
+                const Expanded(
                   child: Row(
                     children: [
                       Expanded(
@@ -1511,23 +1522,23 @@ class _AllocationCard extends StatelessWidget {
                     ],
                   ),
                 ),
-                SizedBox(height: 10),
+                const SizedBox(height: 10),
                 Expanded(
                   child: Row(
                     children: [
-                      Expanded(
+                      const Expanded(
                           child: _AllocationTile(
                               name: 'Tether',
                               percent: '19.5%',
                               value: '₦250.0k',
                               color: Color(0xFF50AF95))),
-                      SizedBox(width: 16),
+                      const SizedBox(width: 16),
                       Expanded(
                           child: _AllocationTile(
                               name: 'Solana',
                               percent: '8.7%',
                               value: '₦112.2k',
-                              color: Color(0xFF20C55D))),
+                              color: DavoColors.of(context).success)),
                     ],
                   ),
                 ),
@@ -1557,7 +1568,7 @@ class _AllocationTile extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
       decoration: BoxDecoration(
-          color: const Color(0xFFEAF1F9),
+          color: DavoColors.of(context).primarySoft,
           borderRadius: BorderRadius.circular(4)),
       child: Row(
         children: [
@@ -1572,25 +1583,25 @@ class _AllocationTile extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(name,
-                    style: const TextStyle(
+                    style: TextStyle(
                         fontFamily: 'Sora',
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
-                        color: Color(0xFF131B2E))),
+                        color: DavoColors.of(context).ink)),
                 Text(percent,
-                    style: const TextStyle(
+                    style: TextStyle(
                         fontFamily: 'Sora',
                         fontSize: 10,
-                        color: Color(0xFF424242))),
+                        color: DavoColors.of(context).body)),
               ],
             ),
           ),
           Text(value,
-              style: const TextStyle(
+              style: TextStyle(
                   fontFamily: 'Sora',
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.ink)),
+                  color: DavoColors.of(context).ink)),
         ],
       ),
     );
@@ -1614,7 +1625,8 @@ class _PortfolioAssetTile extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12),
       decoration: BoxDecoration(
-          color: Colors.white, borderRadius: BorderRadius.circular(6)),
+          color: DavoColors.of(context).surface,
+          borderRadius: BorderRadius.circular(6)),
       child: _AssetRow(
           asset: asset,
           amount: amount,
@@ -1630,7 +1642,7 @@ class _PortfolioAssetTile extends StatelessWidget {
 enum CryptoAsset {
   bitcoin('Bitcoin', 'BTC', '₿', Color(0xFFF7931A)),
   ethereum('Ethereum', 'ETH', '◆', Color(0xFF627EEA)),
-  solana('Solana', 'SOL', '≋', Color(0xFF090909)),
+  solana('Solana', 'SOL', '≋', AppColors.ink),
   usdCoin('USD Coin', 'USDC', r'$', Color(0xFF2775CA)),
   tether('Tether', 'USDT', '₮', Color(0xFF009393));
 
@@ -1746,8 +1758,9 @@ class _WalletSelectorSheet extends StatelessWidget {
             leading: Container(
               width: 34,
               height: 34,
-              decoration: const BoxDecoration(
-                  color: Color(0xFFD8E9FE), shape: BoxShape.circle),
+              decoration: BoxDecoration(
+                  color: DavoColors.of(context).primarySoft,
+                  shape: BoxShape.circle),
               child: Image.asset('assets/figma_exact/plus_circle.png',
                   width: 24, height: 24),
             ),
@@ -1775,9 +1788,10 @@ class _WalletTile extends StatelessWidget {
       onTap: () => Navigator.pop(context, option),
       child: Container(
         height: 63,
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
             border: Border(
-                bottom: BorderSide(color: Color(0xFFEBEDF3), width: .4))),
+                bottom: BorderSide(
+                    color: DavoColors.of(context).divider, width: .4))),
         child: Row(
           children: [
             if (option.isFiat)
@@ -1792,16 +1806,16 @@ class _WalletTile extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(option.name,
-                      style: const TextStyle(
+                      style: TextStyle(
                           fontFamily: 'Sora',
                           fontSize: 14,
-                          color: AppColors.ink)),
+                          color: DavoColors.of(context).ink)),
                   const SizedBox(height: 2),
                   Text(option.symbol,
-                      style: const TextStyle(
+                      style: TextStyle(
                           fontFamily: 'Sora',
                           fontSize: 12,
-                          color: Color(0xFF424242))),
+                          color: DavoColors.of(context).body)),
                 ],
               ),
             ),
@@ -1810,16 +1824,16 @@ class _WalletTile extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(option.balance,
-                    style: const TextStyle(
+                    style: TextStyle(
                         fontFamily: 'Sora',
                         fontSize: 14,
-                        color: Color(0xFF424242))),
+                        color: DavoColors.of(context).body)),
                 const SizedBox(height: 2),
                 Text(option.subBalance,
-                    style: const TextStyle(
+                    style: TextStyle(
                         fontFamily: 'Sora',
                         fontSize: 10,
-                        color: Color(0xFF686868))),
+                        color: DavoColors.of(context).bodyMuted)),
               ],
             ),
           ],
@@ -1843,9 +1857,10 @@ class _CurrencySelectorSheet extends StatelessWidget {
             onTap: () => Navigator.pop(context, asset),
             child: Container(
               height: 63,
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                   border: Border(
-                      bottom: BorderSide(color: Color(0xFFEBEDF3), width: .4))),
+                      bottom: BorderSide(
+                          color: DavoColors.of(context).divider, width: .4))),
               child: Row(
                 children: [
                   _CryptoIcon(asset: asset, size: 37),
@@ -1856,21 +1871,21 @@ class _CurrencySelectorSheet extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(asset.name,
-                            style: const TextStyle(
+                            style: TextStyle(
                                 fontFamily: 'Sora',
                                 fontSize: 14,
-                                color: AppColors.ink)),
+                                color: DavoColors.of(context).ink)),
                         const SizedBox(height: 2),
                         Text(asset.symbol,
-                            style: const TextStyle(
+                            style: TextStyle(
                                 fontFamily: 'Sora',
                                 fontSize: 12,
-                                color: Color(0xFF424242))),
+                                color: DavoColors.of(context).body)),
                       ],
                     ),
                   ),
                   Image.asset('assets/figma_exact/chevron_right.png',
-                      width: 16, height: 16),
+                      color: DavoColors.of(context).ink, width: 16, height: 16),
                 ],
               ),
             ),
@@ -1894,9 +1909,9 @@ class _DavoSheet extends StatelessWidget {
     return FractionallySizedBox(
       heightFactor: heightFactor,
       child: Container(
-        decoration: const BoxDecoration(
-          color: Color(0xFFF8F9FB),
-          borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+        decoration: BoxDecoration(
+          color: DavoColors.of(context).canvas,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
         ),
         child: SafeArea(
           top: false,
@@ -1909,7 +1924,7 @@ class _DavoSheet extends StatelessWidget {
                     width: 85,
                     height: 4,
                     decoration: BoxDecoration(
-                        color: const Color(0xFF686868),
+                        color: DavoColors.of(context).bodyMuted,
                         borderRadius: BorderRadius.circular(100))),
                 const SizedBox(height: 11),
                 DavoSheetHeader(title: title),
@@ -1950,7 +1965,7 @@ class _CryptoDepositScreenState extends State<CryptoDepositScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: DavoColors.of(context).surface,
       bottomNavigationBar: SafeArea(
         top: false,
         child: Padding(
@@ -1960,8 +1975,8 @@ class _CryptoDepositScreenState extends State<CryptoDepositScreen> {
               Expanded(
                   child: _FooterButton(
                 label: 'Share or save',
-                background: const Color(0xFFEEF0F5),
-                foreground: const Color(0xFF424242),
+                background: DavoColors.of(context).border,
+                foreground: DavoColors.of(context).body,
                 fontWeight: FontWeight.w400,
                 onTap: () => _openShareSheet(context),
               )),
@@ -1970,7 +1985,7 @@ class _CryptoDepositScreenState extends State<CryptoDepositScreen> {
                   child: _FooterButton(
                 label: 'Copy Address',
                 background: AppColors.primary,
-                foreground: const Color(0xFFEEF0F5),
+                foreground: DavoColors.of(context).border,
                 fontWeight: FontWeight.w600,
                 onTap: () => _copy(context, _address),
               )),
@@ -2003,7 +2018,7 @@ class _CryptoDepositScreenState extends State<CryptoDepositScreen> {
                               child: Container(
                                 decoration: BoxDecoration(
                                     border: Border.all(
-                                        color: const Color(0xFFF5F6F9),
+                                        color: DavoColors.of(context).fieldFill,
                                         width: 1)),
                                 child: Image.asset(_qrAsset,
                                     fit: BoxFit.fill,
@@ -2031,28 +2046,29 @@ class _CryptoDepositScreenState extends State<CryptoDepositScreen> {
                         width: double.infinity,
                         padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
                         decoration: BoxDecoration(
-                            color: const Color(0xFFF5F6F9),
+                            color: DavoColors.of(context).fieldFill,
                             borderRadius: BorderRadius.circular(8)),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text('Deposit Address',
+                            Text('Deposit Address',
                                 style: TextStyle(
                                     fontFamily: 'Sora',
                                     fontSize: 14,
                                     height: 1.35,
-                                    color: Color(0xFF686868))),
+                                    color: DavoColors.of(context).bodyMuted)),
                             const SizedBox(height: 8),
                             Row(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Expanded(
                                     child: Text(_address,
-                                        style: const TextStyle(
+                                        style: TextStyle(
                                             fontFamily: 'Sora',
                                             fontSize: 16,
                                             height: 1.35,
-                                            color: AppColors.ink))),
+                                            color:
+                                                DavoColors.of(context).ink))),
                                 const SizedBox(width: 18),
                                 InkWell(
                                   onTap: () => _copy(context, _address),
@@ -2094,24 +2110,23 @@ class _CryptoDepositScreenState extends State<CryptoDepositScreen> {
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              const Flexible(
+                              Flexible(
                                 child: Text(
                                   'Please review these guidelines before making a deposit.',
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
                                       fontFamily: 'Sora',
                                       fontSize: 10,
-                                      color: Color(0xFF424242)),
+                                      color: DavoColors.of(context).body),
                                 ),
                               ),
                               const SizedBox(width: 8),
                               AnimatedRotation(
                                 turns: _guidelinesOpen ? .5 : 0,
                                 duration: const Duration(milliseconds: 220),
-                                child: const Icon(
-                                    Icons.keyboard_arrow_down_rounded,
+                                child: Icon(Icons.keyboard_arrow_down_rounded,
                                     size: 16,
-                                    color: Color(0xFF424242)),
+                                    color: DavoColors.of(context).body),
                               ),
                             ],
                           ),
@@ -2164,9 +2179,10 @@ class _CryptoDepositScreenState extends State<CryptoDepositScreen> {
       isScrollControlled: true,
       barrierColor: Colors.black.withValues(alpha: .32),
       builder: (_) => Container(
-        decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+        decoration: BoxDecoration(
+            color: DavoColors.of(context).surface,
+            borderRadius:
+                const BorderRadius.vertical(top: Radius.circular(16))),
         child: SafeArea(
             top: false,
             child: SingleChildScrollView(
@@ -2195,8 +2211,8 @@ class _CryptoDepositScreenState extends State<CryptoDepositScreen> {
                               ])),
                         ]),
                     const SizedBox(height: 20),
-                    const Wrap(spacing: 20, runSpacing: 16, children: [
-                      _ShareAction(
+                    Wrap(spacing: 20, runSpacing: 16, children: [
+                      const _ShareAction(
                           assetPath:
                               'assets/figma_exact/share_download_native_exact.png',
                           label: 'Download',
@@ -2205,8 +2221,8 @@ class _CryptoDepositScreenState extends State<CryptoDepositScreen> {
                           assetPath:
                               'assets/figma_exact/share_x_native_exact.png',
                           label: 'X',
-                          color: Color(0xFF1C1C1C)),
-                      _ShareAction(
+                          color: DavoColors.of(context).ink),
+                      const _ShareAction(
                           assetPath:
                               'assets/figma_exact/share_telegram_native_exact.png',
                           label: 'Telegram',
@@ -2215,7 +2231,7 @@ class _CryptoDepositScreenState extends State<CryptoDepositScreen> {
                           assetPath:
                               'assets/figma_exact/share_more_native_exact.png',
                           label: 'More',
-                          color: Color(0xFFEEF0F5)),
+                          color: DavoColors.of(context).border),
                     ]),
                   ]),
             )),
@@ -2238,19 +2254,19 @@ class _DepositMetaRow extends StatelessWidget {
         Expanded(
             flex: 2,
             child: Text(label,
-                style: const TextStyle(
+                style: TextStyle(
                     fontFamily: 'Sora',
                     fontSize: 10,
                     height: 1.3,
-                    color: Color(0xFF686868)))),
+                    color: DavoColors.of(context).bodyMuted))),
         Expanded(
             child: Text(value,
                 textAlign: TextAlign.right,
-                style: const TextStyle(
+                style: TextStyle(
                     fontFamily: 'Sora',
                     fontSize: 10,
                     height: 1.3,
-                    color: AppColors.ink))),
+                    color: DavoColors.of(context).ink))),
       ],
     );
   }
@@ -2261,7 +2277,7 @@ class _Guidelines extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const SizedBox(
+    return SizedBox(
       width: double.infinity,
       child: Text(
         'Use supported wallet addresses only\n'
@@ -2274,7 +2290,7 @@ class _Guidelines extends StatelessWidget {
             fontFamily: 'Sora',
             fontSize: 10,
             height: 1.28,
-            color: Color(0xFF686868)),
+            color: DavoColors.of(context).bodyMuted),
       ),
     );
   }
@@ -2426,11 +2442,11 @@ class _ShareAction extends StatelessWidget {
           const SizedBox(height: 6),
           Text(label,
               textAlign: TextAlign.center,
-              style: const TextStyle(
+              style: TextStyle(
                   fontFamily: 'Sora',
                   fontSize: 10,
                   height: 1.3,
-                  color: Color(0xFF424242))),
+                  color: DavoColors.of(context).body)),
         ],
       ),
     );
@@ -2495,6 +2511,7 @@ class _SimpleAppBar extends StatelessWidget {
             child: InkResponse(
                 onTap: onBack,
                 child: Image.asset('assets/figma_exact/deposit_back_exact.png',
+                    color: DavoColors.of(context).ink,
                     width: 32,
                     height: 32,
                     fit: BoxFit.fill,
@@ -2507,12 +2524,12 @@ class _SimpleAppBar extends StatelessWidget {
             child: IgnorePointer(
               child: Text(title,
                   textAlign: TextAlign.center,
-                  style: const TextStyle(
+                  style: TextStyle(
                       fontFamily: 'Sora',
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
                       height: 1.35,
-                      color: AppColors.ink)),
+                      color: DavoColors.of(context).ink)),
             ),
           ),
         ],
@@ -2527,7 +2544,7 @@ class NairaDepositScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: DavoColors.of(context).surface,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.fromLTRB(16, 16, 15, 18),
@@ -2545,7 +2562,7 @@ class NairaDepositScreen extends StatelessWidget {
                         height: 121,
                         padding: const EdgeInsets.fromLTRB(22, 16, 22, 18),
                         decoration: BoxDecoration(
-                            color: const Color(0xFFFEF7EA),
+                            color: DavoColors.of(context).warningSurface,
                             borderRadius: BorderRadius.circular(6)),
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -2556,7 +2573,7 @@ class NairaDepositScreen extends StatelessWidget {
                                 height: 17,
                                 fit: BoxFit.contain),
                             const SizedBox(width: 15),
-                            const Expanded(
+                            Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
@@ -2569,15 +2586,16 @@ class NairaDepositScreen extends StatelessWidget {
                                               fontSize: 14,
                                               fontWeight: FontWeight.w600,
                                               height: 1.35,
-                                              color: AppColors.ink))),
-                                  SizedBox(height: 4),
+                                              color:
+                                                  DavoColors.of(context).ink))),
+                                  const SizedBox(height: 4),
                                   Text(
                                       'For faster processing, transfer funds from your own bank account. Transfers from other accounts may be delayed and require proof of ownership',
                                       style: TextStyle(
                                           fontFamily: 'Sora',
                                           fontSize: 10,
                                           height: 1.5,
-                                          color: Color(0xFF424242))),
+                                          color: DavoColors.of(context).body)),
                                 ],
                               ),
                             ),
@@ -2588,7 +2606,7 @@ class NairaDepositScreen extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.fromLTRB(17, 19, 16, 20),
                         decoration: BoxDecoration(
-                            color: const Color(0xFFF5F6F9),
+                            color: DavoColors.of(context).fieldFill,
                             borderRadius: BorderRadius.circular(4)),
                         child: const Column(
                           children: [
@@ -2607,7 +2625,7 @@ class NairaDepositScreen extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 24),
-                      const Center(
+                      Center(
                         child: SizedBox(
                           width: 305,
                           height: 75,
@@ -2618,35 +2636,35 @@ class NairaDepositScreen extends StatelessWidget {
                                 fontFamily: 'Sora',
                                 fontSize: 12,
                                 height: 1.25,
-                                color: Color(0xFF424242)),
+                                color: DavoColors.of(context).body),
                           ),
                         ),
                       ),
                       const SizedBox(height: 22),
-                      const SizedBox(
+                      SizedBox(
                           height: 19,
                           child: Text('Disclaimer',
                               style: TextStyle(
                                   fontFamily: 'Sora',
                                   fontSize: 14,
                                   height: 1.35,
-                                  color: AppColors.ink))),
+                                  color: DavoColors.of(context).ink))),
                       const SizedBox(height: 16),
-                      const SizedBox(
+                      SizedBox(
                         child: Text(
                           '1. Funds deposited into your Davochain (NGD) wallet cannot be withdrawn.\n\n2. Deposits are only accepted from bank accounts with a name that matches your Davochain NGD account name. Deposits from accounts with different names will be blocked and rejected.',
                           style: TextStyle(
                               fontFamily: 'Sora',
                               fontSize: 10,
                               height: 1.4,
-                              color: Color(0xFF424242)),
+                              color: DavoColors.of(context).body),
                         ),
                       ),
                       const SizedBox(height: 66),
                       _FooterButton(
                         label: 'Share Details',
                         background: AppColors.primary,
-                        foreground: const Color(0xFFF8F9FB),
+                        foreground: DavoColors.of(context).canvas,
                         fontWeight: FontWeight.w400,
                         onTap: () => showDavoToast(
                             context, 'Bank details are ready to share.'),
@@ -2678,9 +2696,10 @@ class _BankDetailRow extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 10),
       decoration: last
           ? null
-          : const BoxDecoration(
+          : BoxDecoration(
               border: Border(
-                  bottom: BorderSide(color: Color(0xFFF2F3F7), width: .5))),
+                  bottom: BorderSide(
+                      color: DavoColors.of(context).fieldFill, width: .5))),
       child: Row(
         children: [
           Expanded(
@@ -2689,18 +2708,18 @@ class _BankDetailRow extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(label,
-                    style: const TextStyle(
+                    style: TextStyle(
                         fontFamily: 'Sora',
                         fontSize: 12,
                         height: 1.25,
-                        color: Color(0xFF424242))),
+                        color: DavoColors.of(context).body)),
                 const SizedBox(height: 4),
                 Text(value,
-                    style: const TextStyle(
+                    style: TextStyle(
                         fontFamily: 'Sora',
                         fontSize: 14,
                         height: 1.35,
-                        color: AppColors.ink)),
+                        color: DavoColors.of(context).ink)),
               ],
             ),
           ),
@@ -2716,6 +2735,7 @@ class _BankDetailRow extends StatelessWidget {
               }
             },
             child: Image.asset('assets/figma_exact/deposit_ngd_copy_exact.png',
+                color: DavoColors.of(context).ink,
                 width: 16,
                 height: 16,
                 fit: BoxFit.fill,

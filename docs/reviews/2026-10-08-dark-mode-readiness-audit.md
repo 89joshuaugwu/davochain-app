@@ -1,5 +1,7 @@
 # Dark-mode readiness audit — 8 October 2026
 
+Historical audit snapshot. Implementation was subsequently authorized and completed in the current workspace; see [implementation review and evidence](2026-10-08-dark-mode-implementation.md). The counts and line references below describe the pre-migration source.
+
 The current light interface has a useful shared foundation, but dark mode is not connected. Settings → Appearance is an interactive visual prototype: it changes the selected card locally, then closes. A reliable dark mode requires semantic colors across the screens, application-level preference state, asset decisions, and separate treatment of exported receipts.
 
 ## Scope and evidence limits

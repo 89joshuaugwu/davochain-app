@@ -112,9 +112,10 @@ class _WithdrawWalletSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Container(
         height: 472,
-        decoration: const BoxDecoration(
-            color: Color(0xFFF8F9FB),
-            borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+        decoration: BoxDecoration(
+            color: DavoColors.of(context).canvas,
+            borderRadius:
+                const BorderRadius.vertical(top: Radius.circular(16))),
         child: Stack(
           children: [
             Positioned(
@@ -126,7 +127,7 @@ class _WithdrawWalletSheet extends StatelessWidget {
                         width: 85,
                         height: 4,
                         decoration: BoxDecoration(
-                            color: const Color(0xFF686868),
+                            color: DavoColors.of(context).bodyMuted,
                             borderRadius: BorderRadius.circular(100))))),
             const Positioned(
                 left: 0,
@@ -147,21 +148,22 @@ class _WithdrawWalletSheet extends StatelessWidget {
                           width: 34,
                           height: 34,
                           alignment: Alignment.center,
-                          decoration: const BoxDecoration(
-                              color: Color(0xFFD8E9FE), shape: BoxShape.circle),
+                          decoration: BoxDecoration(
+                              color: DavoColors.of(context).primarySoft,
+                              shape: BoxShape.circle),
                           child: Image.asset(
                               '$_exact/crypto_plus_circle_exact.png',
                               width: 24,
                               height: 24)),
                       const SizedBox(width: 18),
-                      const Expanded(
+                      Expanded(
                           child: Text('Add crypto asset',
                               style: TextStyle(
                                   fontFamily: 'Sora',
                                   fontSize: 14,
                                   fontWeight: FontWeight.w600,
                                   height: 1.35,
-                                  color: AppColors.ink))),
+                                  color: DavoColors.of(context).ink))),
                     ],
                   ),
                 ),
@@ -258,20 +260,20 @@ class _WalletSelectRow extends StatelessWidget {
                   left: 52,
                   top: 9,
                   child: Text(title,
-                      style: const TextStyle(
+                      style: TextStyle(
                           fontFamily: 'Sora',
                           fontSize: 14,
                           height: 1.35,
-                          color: AppColors.ink))),
+                          color: DavoColors.of(context).ink))),
               Positioned(
                   left: 52,
                   top: 30,
                   child: Text(symbol,
-                      style: const TextStyle(
+                      style: TextStyle(
                           fontFamily: 'Sora',
                           fontSize: 12,
                           height: 1.25,
-                          color: Color(0xFF424242)))),
+                          color: DavoColors.of(context).body))),
             ],
           ),
         ),
@@ -283,9 +285,10 @@ class _SellWalletSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Container(
         height: 242,
-        decoration: const BoxDecoration(
-            color: Color(0xFFF8F9FB),
-            borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+        decoration: BoxDecoration(
+            color: DavoColors.of(context).canvas,
+            borderRadius:
+                const BorderRadius.vertical(top: Radius.circular(20))),
         child: Stack(
           children: [
             Positioned(
@@ -297,9 +300,9 @@ class _SellWalletSheet extends StatelessWidget {
                         width: 85,
                         height: 4,
                         decoration: BoxDecoration(
-                            color: const Color(0xFF686868),
+                            color: DavoColors.of(context).bodyMuted,
                             borderRadius: BorderRadius.circular(100))))),
-            const Positioned(
+            Positioned(
                 left: 0,
                 right: 0,
                 top: 32,
@@ -309,7 +312,7 @@ class _SellWalletSheet extends StatelessWidget {
                         fontFamily: 'Sora',
                         fontSize: 14,
                         height: 1.35,
-                        color: AppColors.ink))),
+                        color: DavoColors.of(context).ink))),
             Positioned(
                 left: 342,
                 top: 20,
@@ -318,7 +321,9 @@ class _SellWalletSheet extends StatelessWidget {
                 child: InkResponse(
                     onTap: () => Navigator.pop(context),
                     child: Image.asset('$_f/buy_close.png',
-                        width: 24, height: 24))),
+                        color: DavoColors.of(context).ink,
+                        width: 24,
+                        height: 24))),
             Positioned(
               left: 16,
               right: 16,
@@ -335,7 +340,7 @@ class _SellWalletSheet extends StatelessWidget {
                         height: 32,
                         child: Image.asset('$_f/buy_nigeria.png',
                             width: 32, height: 32, fit: BoxFit.contain)),
-                    const Positioned(
+                    Positioned(
                         left: 44,
                         top: 7,
                         child: Text('Nigerian Naira',
@@ -343,8 +348,8 @@ class _SellWalletSheet extends StatelessWidget {
                                 fontFamily: 'Sora',
                                 fontSize: 14,
                                 height: 1.35,
-                                color: AppColors.ink))),
-                    const Positioned(
+                                color: DavoColors.of(context).ink))),
+                    Positioned(
                         left: 44,
                         top: 28,
                         child: Text('NGN',
@@ -352,8 +357,8 @@ class _SellWalletSheet extends StatelessWidget {
                                 fontFamily: 'Sora',
                                 fontSize: 12,
                                 height: 1.25,
-                                color: AppColors.body))),
-                    const Positioned(
+                                color: DavoColors.of(context).body))),
+                    Positioned(
                         right: 0,
                         top: 8,
                         child: Text('0.00 USD',
@@ -361,8 +366,8 @@ class _SellWalletSheet extends StatelessWidget {
                                 fontFamily: 'Sora',
                                 fontSize: 14,
                                 height: 1.35,
-                                color: AppColors.body))),
-                    const Positioned(
+                                color: DavoColors.of(context).body))),
+                    Positioned(
                         right: 0,
                         top: 29,
                         child: Text('0.00₦',
@@ -370,7 +375,7 @@ class _SellWalletSheet extends StatelessWidget {
                                 fontFamily: 'Sora',
                                 fontSize: 10,
                                 height: 1.3,
-                                color: AppColors.bodyMuted))),
+                                color: DavoColors.of(context).bodyMuted))),
                   ],
                 ),
               ),
@@ -419,23 +424,23 @@ class _NairaWithdrawScreenState extends State<NairaWithdrawScreen> {
                 keyboardType:
                     const TextInputType.numberWithOptions(decimal: true),
                 onChanged: (_) => setState(() {}),
-                decoration: const DavoInlineInputDecoration(
+                decoration: DavoInlineInputDecoration(
                   hintText: '0',
                   hintStyle: TextStyle(
                       fontFamily: 'Sora',
                       fontSize: 16,
                       height: 1.35,
-                      color: Color(0xFF686868)),
+                      color: DavoColors.of(context).bodyMuted),
                 ),
-                style: const TextStyle(
+                style: TextStyle(
                     fontFamily: 'Sora',
                     fontSize: 16,
                     height: 1.35,
-                    color: AppColors.ink),
+                    color: DavoColors.of(context).ink),
               ),
             ),
           ),
-          const Positioned(
+          Positioned(
             left: 0,
             right: 0,
             top: 305,
@@ -445,7 +450,7 @@ class _NairaWithdrawScreenState extends State<NairaWithdrawScreen> {
                     fontFamily: 'Sora',
                     fontSize: 12,
                     height: 1.25,
-                    color: AppColors.body)),
+                    color: DavoColors.of(context).body)),
           ),
           Positioned(
             left: 0,
@@ -456,22 +461,25 @@ class _NairaWithdrawScreenState extends State<NairaWithdrawScreen> {
               label: 'Payment Method',
               onTap: _payment,
               trailing: Image.asset('$_exact/naira_payment_chevron_exact.png',
-                  width: 24, height: 24, fit: BoxFit.contain),
+                  color: DavoColors.of(context).ink,
+                  width: 24,
+                  height: 24,
+                  fit: BoxFit.contain),
               child: account == null
-                  ? const Text('Select a payment method',
+                  ? Text('Select a payment method',
                       style: TextStyle(
                           fontFamily: 'Sora',
                           fontSize: 16,
                           height: 1.35,
-                          color: Color(0xFF686868)))
+                          color: DavoColors.of(context).bodyMuted))
                   : Padding(
                       padding: const EdgeInsets.only(left: 5),
                       child: Text(account!.bank,
-                          style: const TextStyle(
+                          style: TextStyle(
                               fontFamily: 'Sora',
                               fontSize: 14,
                               height: 1.35,
-                              color: AppColors.ink)),
+                              color: DavoColors.of(context).ink)),
                     ),
             ),
           ),
@@ -543,13 +551,13 @@ class _ExactNairaField extends StatelessWidget {
   Widget build(BuildContext context) => Focus(
       child: Builder(
           builder: (context) => Material(
-                color: const Color(0xFFFBFBFD),
+                color: DavoColors.of(context).canvas,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(4),
                   side: BorderSide(
                       color: Focus.of(context).hasFocus
                           ? AppColors.primary
-                          : const Color(0xFFD9DCE4),
+                          : DavoColors.of(context).border,
                       width: 1),
                 ),
                 clipBehavior: Clip.antiAlias,
@@ -564,11 +572,11 @@ class _ExactNairaField extends StatelessWidget {
                           top: 10,
                           height: 19,
                           child: Text(label,
-                              style: const TextStyle(
+                              style: TextStyle(
                                   fontFamily: 'Sora',
                                   fontSize: 14,
                                   height: 1.35,
-                                  color: AppColors.body))),
+                                  color: DavoColors.of(context).body))),
                       Positioned(
                         left: 12,
                         right: trailing == null ? 12 : 44,
@@ -611,9 +619,9 @@ class _PaymentSheet extends StatelessWidget {
     ];
     return Container(
       height: 384,
-      decoration: const BoxDecoration(
-        color: Color(0xFFF8F9FB),
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      decoration: BoxDecoration(
+        color: DavoColors.of(context).canvas,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
       ),
       child: Stack(
         children: [
@@ -626,12 +634,12 @@ class _PaymentSheet extends StatelessWidget {
                 width: 85,
                 height: 4,
                 decoration: BoxDecoration(
-                    color: const Color(0xFF686868),
+                    color: DavoColors.of(context).bodyMuted,
                     borderRadius: BorderRadius.circular(100)),
               ),
             ),
           ),
-          const Positioned(
+          Positioned(
             left: 0,
             right: 0,
             top: 32,
@@ -643,7 +651,7 @@ class _PaymentSheet extends StatelessWidget {
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
                   height: 1.35,
-                  color: AppColors.ink),
+                  color: DavoColors.of(context).ink),
             ),
           ),
           Positioned(
@@ -655,7 +663,7 @@ class _PaymentSheet extends StatelessWidget {
                 onTap: () => Navigator.pop(context),
                 radius: 20,
                 child: Image.asset('$_exact/crypto_close_exact.png',
-                    width: 24, height: 24)),
+                    color: DavoColors.of(context).ink, width: 24, height: 24)),
           ),
           Positioned(
             left: 16,
@@ -679,21 +687,22 @@ class _PaymentSheet extends StatelessWidget {
                           width: 34,
                           height: 34,
                           alignment: Alignment.center,
-                          decoration: const BoxDecoration(
-                              color: Color(0xFFD8E9FE), shape: BoxShape.circle),
+                          decoration: BoxDecoration(
+                              color: DavoColors.of(context).primarySoft,
+                              shape: BoxShape.circle),
                           child: Image.asset(
                               '$_exact/crypto_plus_circle_exact.png',
                               width: 24,
                               height: 24),
                         ),
                         const SizedBox(width: 16),
-                        const Expanded(
+                        Expanded(
                             child: Text('Add new payment method',
                                 style: TextStyle(
                                     fontFamily: 'Sora',
                                     fontSize: 14,
                                     height: 1.35,
-                                    color: Color(0xFF424242)))),
+                                    color: DavoColors.of(context).body))),
                       ],
                     ),
                   ),
@@ -749,20 +758,20 @@ class _PaymentMethodSavedRow extends StatelessWidget {
                   Text(account.name,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
+                      style: TextStyle(
                           fontFamily: 'Sora',
                           fontSize: 14,
                           height: 1.35,
-                          color: Color(0xFF424242))),
+                          color: DavoColors.of(context).body)),
                   const SizedBox(height: 2),
                   Text('${account.bank} - ${account.number}',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
+                      style: TextStyle(
                           fontFamily: 'Sora',
                           fontSize: 12,
                           height: 1.25,
-                          color: Color(0xFF686868))),
+                          color: DavoColors.of(context).bodyMuted)),
                 ],
               ),
             ),
@@ -772,7 +781,10 @@ class _PaymentMethodSavedRow extends StatelessWidget {
                 width: 16,
                 height: 16,
                 child: Image.asset('$_exact/crypto_ep_arrow_right_exact.png',
-                    width: 16, height: 16, fit: BoxFit.contain)),
+                    color: DavoColors.of(context).ink,
+                    width: 16,
+                    height: 16,
+                    fit: BoxFit.contain)),
           ],
         ),
       ),
@@ -830,7 +842,7 @@ class _AddBankScreenState extends State<AddBankScreen> {
         children: [
           _BankTopBar(onBack: () => Navigator.pop(context)),
           const SizedBox(height: 22),
-          const SizedBox(
+          SizedBox(
             height: 44,
             child: Text(
               'Add your bank account to receive money fast and secured easily',
@@ -838,7 +850,7 @@ class _AddBankScreenState extends State<AddBankScreen> {
                   fontFamily: 'Sora',
                   fontSize: 16,
                   height: 1.35,
-                  color: Color(0xFF424242)),
+                  color: DavoColors.of(context).body),
             ),
           ),
           const SizedBox(height: 24),
@@ -860,11 +872,11 @@ class _AddBankScreenState extends State<AddBankScreen> {
               onChanged: (_) => _resolveAccount(),
               decoration: const DavoInlineInputDecoration(
                   hintText: 'Enter account number'),
-              style: const TextStyle(
+              style: TextStyle(
                   fontFamily: 'Sora',
                   fontSize: 12,
                   height: 1.25,
-                  color: Color(0xFF424242)),
+                  color: DavoColors.of(context).body),
             ),
           ),
           const SizedBox(height: 16),
@@ -928,7 +940,7 @@ class _BankTopBar extends StatelessWidget {
                 top: -3,
                 child: _AssetButton(
                     asset: '$_f/buy_back.png', size: 24, onTap: onBack)),
-            const Positioned(
+            Positioned(
                 left: 0,
                 right: 0,
                 top: 4,
@@ -941,7 +953,7 @@ class _BankTopBar extends StatelessWidget {
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
                             height: 1.35,
-                            color: AppColors.ink)))),
+                            color: DavoColors.of(context).ink)))),
           ],
         ),
       );
@@ -970,7 +982,7 @@ class _BankFormBox extends StatelessWidget {
   Widget build(BuildContext context) => Focus(
       child: Builder(
           builder: (context) => Material(
-                color: const Color(0xFFFBFBFD),
+                color: DavoColors.of(context).canvas,
                 borderRadius: BorderRadius.circular(4),
                 child: InkWell(
                   onTap: onTap,
@@ -983,17 +995,17 @@ class _BankFormBox extends StatelessWidget {
                         border: Border.all(
                             color: Focus.of(context).hasFocus
                                 ? AppColors.primary
-                                : const Color(0xFFD9DCE4)),
+                                : DavoColors.of(context).border),
                         borderRadius: BorderRadius.circular(4)),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(label,
-                            style: const TextStyle(
+                            style: TextStyle(
                                 fontFamily: 'Sora',
                                 fontSize: 14,
                                 height: 1.35,
-                                color: Color(0xFF424242))),
+                                color: DavoColors.of(context).body)),
                         const Spacer(),
                         Row(
                           children: [
@@ -1006,12 +1018,14 @@ class _BankFormBox extends StatelessWidget {
                                           height: valueSize == 16 ? 1.35 : 1.25,
                                           fontWeight: valueWeight,
                                           color: muted
-                                              ? const Color(0xFF8D8D8D)
-                                              : AppColors.ink)),
+                                              ? DavoColors.of(context).muted
+                                              : DavoColors.of(context).ink)),
                             ),
                             if (onTap != null)
                               Image.asset('$_cf/chevron_right.png',
-                                  width: 16, height: 16),
+                                  color: DavoColors.of(context).ink,
+                                  width: 16,
+                                  height: 16),
                           ],
                         ),
                       ],
@@ -1060,9 +1074,9 @@ class _BankSheetState extends State<_BankSheet> {
             : available;
     return Container(
       height: sheetHeight,
-      decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+      decoration: BoxDecoration(
+          color: DavoColors.of(context).surface,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(16))),
       child: Stack(
         children: [
           Positioned(
@@ -1074,7 +1088,7 @@ class _BankSheetState extends State<_BankSheet> {
                       width: 62,
                       height: 5,
                       decoration: BoxDecoration(
-                          color: const Color(0xFF686868),
+                          color: DavoColors.of(context).bodyMuted,
                           borderRadius: BorderRadius.circular(100))))),
           Positioned(
               left: 10,
@@ -1083,7 +1097,7 @@ class _BankSheetState extends State<_BankSheet> {
                   asset: '$_exact/crypto_close_exact.png',
                   size: 24,
                   onTap: () => Navigator.pop(context))),
-          const Positioned(
+          Positioned(
               left: 0,
               right: 0,
               top: 37,
@@ -1093,7 +1107,7 @@ class _BankSheetState extends State<_BankSheet> {
                       fontFamily: 'Sora',
                       fontSize: 16,
                       height: 1.35,
-                      color: AppColors.ink))),
+                      color: DavoColors.of(context).ink))),
           Positioned(
             left: 16,
             right: 16,
@@ -1102,12 +1116,12 @@ class _BankSheetState extends State<_BankSheet> {
               height: 44,
               padding: const EdgeInsets.symmetric(horizontal: 12),
               decoration: BoxDecoration(
-                  color: const Color(0xFFF8F9FB),
+                  color: DavoColors.of(context).canvas,
                   borderRadius: BorderRadius.circular(4)),
               child: Row(
                 children: [
                   Image.asset('$_exact/crypto_search_exact.png',
-                      width: 24, height: 24),
+                      color: DavoColors.of(context).ink, width: 24, height: 24),
                   const SizedBox(width: 16),
                   Expanded(
                       child: TextField(
@@ -1115,11 +1129,11 @@ class _BankSheetState extends State<_BankSheet> {
                           onChanged: (_) => setState(() {}),
                           decoration: const DavoInlineInputDecoration(
                               hintText: 'Search for a bank'),
-                          style: const TextStyle(
+                          style: TextStyle(
                               fontFamily: 'Sora',
                               fontSize: 14,
                               height: 1.35,
-                              color: AppColors.ink))),
+                              color: DavoColors.of(context).ink))),
                 ],
               ),
             ),
@@ -1146,8 +1160,8 @@ class _BankSheetState extends State<_BankSheet> {
                           height: 40,
                           child: Container(
                               alignment: Alignment.center,
-                              decoration: const BoxDecoration(
-                                  color: Color(0xFFEEF0F5),
+                              decoration: BoxDecoration(
+                                  color: DavoColors.of(context).border,
                                   shape: BoxShape.circle),
                               child: DavoBankLogo(
                                   bankName: visible[i], size: 40))),
@@ -1156,11 +1170,11 @@ class _BankSheetState extends State<_BankSheet> {
                           top: 10.5,
                           right: 0,
                           child: Text(visible[i],
-                              style: const TextStyle(
+                              style: TextStyle(
                                   fontFamily: 'Sora',
                                   fontSize: 14,
                                   height: 1.35,
-                                  color: AppColors.ink))),
+                                  color: DavoColors.of(context).ink))),
                     ],
                   ),
                 ),
@@ -1175,7 +1189,7 @@ class _BankSheetState extends State<_BankSheet> {
                     width: 134,
                     height: 5,
                     decoration: BoxDecoration(
-                        color: Colors.black,
+                        color: DavoColors.of(context).ink,
                         borderRadius: BorderRadius.circular(100)))),
         ],
       ),
@@ -1197,9 +1211,10 @@ class _NairaConfirmState extends State<_NairaConfirm> {
   @override
   Widget build(BuildContext context) => Container(
         height: 539,
-        decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+        decoration: BoxDecoration(
+            color: DavoColors.of(context).surface,
+            borderRadius:
+                const BorderRadius.vertical(top: Radius.circular(20))),
         child: Stack(
           children: [
             Positioned(
@@ -1211,9 +1226,12 @@ class _NairaConfirmState extends State<_NairaConfirm> {
                   onTap: () => Navigator.pop(context, false),
                   radius: 20,
                   child: Image.asset('$_exact/crypto_close_exact.png',
-                      width: 23, height: 24, fit: BoxFit.fill)),
+                      color: DavoColors.of(context).ink,
+                      width: 23,
+                      height: 24,
+                      fit: BoxFit.fill)),
             ),
-            const Positioned(
+            Positioned(
                 right: 14,
                 top: 36.5,
                 child: Text('Use Payment PIN',
@@ -1221,7 +1239,7 @@ class _NairaConfirmState extends State<_NairaConfirm> {
                         fontFamily: 'Sora',
                         fontSize: 12,
                         height: 1.25,
-                        color: AppColors.primary))),
+                        color: DavoColors.of(context).link))),
             Positioned(
               left: 16,
               right: 14,
@@ -1229,7 +1247,7 @@ class _NairaConfirmState extends State<_NairaConfirm> {
               height: 307,
               child: Container(
                 decoration: BoxDecoration(
-                    color: const Color(0xFFF8F9FB),
+                    color: DavoColors.of(context).canvas,
                     borderRadius: BorderRadius.circular(8)),
                 child: Stack(
                   children: [
@@ -1240,12 +1258,12 @@ class _NairaConfirmState extends State<_NairaConfirm> {
                         height: 27,
                         child: Center(
                             child: Text('₦${widget.amount}',
-                                style: const TextStyle(
+                                style: TextStyle(
                                     fontFamily: 'Sora',
                                     fontSize: 20,
                                     fontWeight: FontWeight.w600,
                                     height: 1.35,
-                                    color: AppColors.ink)))),
+                                    color: DavoColors.of(context).ink)))),
                     Positioned(
                         left: 15,
                         right: 15,
@@ -1295,12 +1313,12 @@ class _NairaConfirmState extends State<_NairaConfirm> {
                         width: 16,
                         height: 16),
                     const SizedBox(width: 8),
-                    const Text('I agree to the terms and condition',
+                    Text('I agree to the terms and condition',
                         style: TextStyle(
                             fontFamily: 'Sora',
                             fontSize: 12,
                             height: 1.25,
-                            color: AppColors.primary)),
+                            color: DavoColors.of(context).link)),
                   ],
                 ),
               ),
@@ -1334,28 +1352,30 @@ class _ExactNairaConfirmLine extends StatelessWidget {
                 left: 0,
                 top: 0,
                 child: Text(label,
-                    style: const TextStyle(
+                    style: TextStyle(
                         fontFamily: 'Sora',
                         fontSize: 14,
                         height: 1.35,
-                        color: Color(0xFF686868)))),
+                        color: DavoColors.of(context).bodyMuted))),
             Positioned(
                 right: 0,
                 top: 0,
                 child: Text(value,
                     textAlign: TextAlign.right,
-                    style: const TextStyle(
+                    style: TextStyle(
                         fontFamily: 'Sora',
                         fontSize: 14,
                         height: 1.35,
-                        color: AppColors.ink))),
+                        color: DavoColors.of(context).ink))),
             if (!last)
-              const Positioned(
+              Positioned(
                   left: 0,
                   right: 0,
                   bottom: 0,
                   child: Divider(
-                      height: 1, thickness: .6, color: Color(0xFFF2F2F2))),
+                      height: 1,
+                      thickness: .6,
+                      color: DavoColors.of(context).divider)),
           ],
         ),
       );
@@ -1442,7 +1462,7 @@ class _CryptoWithdrawEntryScreenState extends State<CryptoWithdrawEntryScreen> {
   Widget _buildExternal(BuildContext context) => _buildEntry(context);
 
   Widget _buildEntry(BuildContext context) => Scaffold(
-        backgroundColor: const Color(0xFFF8F9FB),
+        backgroundColor: DavoColors.of(context).canvas,
         bottomNavigationBar: SafeArea(
           top: false,
           child: Padding(
@@ -1456,9 +1476,10 @@ class _CryptoWithdrawEntryScreenState extends State<CryptoWithdrawEntryScreen> {
                         mainAxisSize: MainAxisSize.min,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text('Receiving',
+                          Text('Receiving',
                               style: TextStyle(
-                                  fontSize: 12, color: AppColors.bodyMuted)),
+                                  fontSize: 12,
+                                  color: DavoColors.of(context).bodyMuted)),
                           const SizedBox(height: 6),
                           Text(
                               '${formatGroupedAmount(parseAmount(amount.text).toStringAsFixed(5))} ${asset.symbol}',
@@ -1467,16 +1488,18 @@ class _CryptoWithdrawEntryScreenState extends State<CryptoWithdrawEntryScreen> {
                           const SizedBox(height: 4),
                           Text(
                               'Network fee: ${network == null ? '—' : '0.00002 ${asset.symbol}'}',
-                              style: const TextStyle(
-                                  fontSize: 10, color: AppColors.bodyMuted)),
+                              style: TextStyle(
+                                  fontSize: 10,
+                                  color: DavoColors.of(context).bodyMuted)),
                         ],
                       )),
                       const SizedBox(width: 16),
                       Expanded(
                           child: _Button(
                               label: 'Confirm',
-                              disabledColor: AppColors.mutedSoft,
-                              disabledTextColor: AppColors.bodyMuted,
+                              disabledColor: DavoColors.of(context).mutedSoft,
+                              disabledTextColor:
+                                  DavoColors.of(context).bodyMuted,
                               enabled: _ready,
                               onTap: _confirm)),
                     ],
@@ -1571,13 +1594,15 @@ class _CryptoWithdrawEntryScreenState extends State<CryptoWithdrawEntryScreen> {
                         ])),
                     const SizedBox(height: 10),
                     Row(children: [
-                      const Expanded(
+                      Expanded(
                           child: Text('Available',
                               style: TextStyle(
-                                  fontSize: 14, color: AppColors.bodyMuted))),
+                                  fontSize: 14,
+                                  color: DavoColors.of(context).bodyMuted))),
                       Text('0.0300 ${asset.symbol}',
-                          style: const TextStyle(
-                              fontSize: 14, color: AppColors.bodyMuted))
+                          style: TextStyle(
+                              fontSize: 14,
+                              color: DavoColors.of(context).bodyMuted))
                     ]),
                     if (widget.external) ...[
                       const SizedBox(height: 24),
@@ -1591,15 +1616,16 @@ class _CryptoWithdrawEntryScreenState extends State<CryptoWithdrawEntryScreen> {
                           '3. Internal transfers: transfers to other Davochain users are instant and free.\n\n'
                           '4. Unsupported addresses: avoid crowdfunding or ICO addresses that require token distribution.\n\n'
                           '5. Security: confirm the address and network, and use trusted destinations.',
-                          style: const TextStyle(
+                          style: TextStyle(
                               fontSize: 11,
                               height: 1.5,
-                              color: AppColors.bodyMuted)),
+                              color: DavoColors.of(context).bodyMuted)),
                     ] else ...[
                       const SizedBox(height: 12),
-                      const Text(r'Daily transfer limit - $500',
+                      Text(r'Daily transfer limit - $500',
                           style: TextStyle(
-                              fontSize: 12, color: AppColors.bodyMuted)),
+                              fontSize: 12,
+                              color: DavoColors.of(context).bodyMuted)),
                     ],
                   ]),
             )),
@@ -1617,12 +1643,12 @@ class _CryptoWithdrawEntryScreenState extends State<CryptoWithdrawEntryScreen> {
                   builder: (context) => Container(
                         padding: const EdgeInsets.symmetric(horizontal: 12),
                         decoration: BoxDecoration(
-                            color: Colors.white,
+                            color: DavoColors.of(context).surface,
                             borderRadius: BorderRadius.circular(6),
                             border: Border.all(
                                 color: Focus.of(context).hasFocus
                                     ? AppColors.primary
-                                    : const Color(0xFFD9DCE4))),
+                                    : DavoColors.of(context).border)),
                         child: child,
                       ))),
         ],
@@ -1688,7 +1714,7 @@ class _CryptoWithdrawEntryScreenState extends State<CryptoWithdrawEntryScreen> {
           : SafeArea(
               child: Container(
                   padding: const EdgeInsets.all(20),
-                  color: Colors.white,
+                  color: DavoColors.of(context).surface,
                   child: Column(mainAxisSize: MainAxisSize.min, children: [
                     const Text('Select Network'),
                     ...((asset == BuyCryptoAsset.solana)
@@ -1793,9 +1819,10 @@ class _WithdrawReviewSheet extends StatelessWidget {
       top: false,
       child: Container(
         padding: const EdgeInsets.fromLTRB(16, 20, 16, 24),
-        decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+        decoration: BoxDecoration(
+            color: DavoColors.of(context).surface,
+            borderRadius:
+                const BorderRadius.vertical(top: Radius.circular(20))),
         child: SingleChildScrollView(
             child: Column(mainAxisSize: MainAxisSize.min, children: [
           Row(children: [
@@ -1811,7 +1838,7 @@ class _WithdrawReviewSheet extends StatelessWidget {
           Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                  color: const Color(0xFFF8F9FB),
+                  color: DavoColors.of(context).canvas,
                   borderRadius: BorderRadius.circular(8)),
               child: Column(children: [
                 ReceiptDetailRow(
@@ -1955,7 +1982,9 @@ class _TransactionProgressScreenState extends State<TransactionProgressScreen> {
                   amount: widget.amount,
                   asset: widget.asset)));
     } catch (_) {
-      if (mounted && ModalRoute.of(context)?.isCurrent != false) setState(() => failed = true);
+      if (mounted && ModalRoute.of(context)?.isCurrent != false) {
+        setState(() => failed = true);
+      }
     }
   }
 
@@ -1974,8 +2003,8 @@ class _TransactionProgressScreenState extends State<TransactionProgressScreen> {
       _ => ''
     };
     final subColor = widget.kind == TxKind.external
-        ? const Color(0xFF686868)
-        : const Color(0xFF424242);
+        ? DavoColors.of(context).bodyMuted
+        : DavoColors.of(context).body;
     return _FigmaFullScaffold(
       child: Column(
         children: [
@@ -1987,20 +2016,20 @@ class _TransactionProgressScreenState extends State<TransactionProgressScreen> {
               fontWeight: FontWeight.w400),
           const SizedBox(height: 47),
           failed
-              ? const Icon(Icons.error_outline_rounded,
-                  size: 56, color: AppColors.danger)
+              ? Icon(Icons.error_outline_rounded,
+                  size: 56, color: DavoColors.of(context).danger)
               : const DavoWorkingIndicator(),
           const SizedBox(height: 16),
           SizedBox(
               height: 22,
               child: Text(title,
                   textAlign: TextAlign.center,
-                  style: const TextStyle(
+                  style: TextStyle(
                       fontFamily: 'Sora',
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
                       height: 1.35,
-                      color: AppColors.ink))),
+                      color: DavoColors.of(context).ink))),
           if (sub.isNotEmpty) ...[
             const SizedBox(height: 4),
             SizedBox(
@@ -2023,11 +2052,11 @@ class _TransactionProgressScreenState extends State<TransactionProgressScreen> {
                         : 'Please wait while we process your transaction'
                     : 'Please wait while we process your transaction',
             textAlign: TextAlign.center,
-            style: const TextStyle(
+            style: TextStyle(
                 fontFamily: 'Sora',
                 fontSize: 14,
                 height: 1.35,
-                color: Color(0xFF424242)),
+                color: DavoColors.of(context).body),
           ),
         ],
       ),
@@ -2065,18 +2094,18 @@ class TransactionSuccessScreen extends StatelessWidget {
           ? 'Pending network confirmation'
           : '',
       details: outcomeKind == DavoOutcomeKind.submitted
-          ? const Text(
+          ? Text(
               'Your withdrawal has been submitted. It will update after network confirmation.',
               textAlign: TextAlign.center,
               style: TextStyle(
                   fontFamily: 'Sora',
                   fontSize: 14,
                   height: 1.35,
-                  color: AppColors.body))
+                  color: DavoColors.of(context).body))
           : _TransactionSuccessMessage(
               kind: kind, target: target, amount: amount, asset: asset),
       appBar: AppBar(
-          backgroundColor: Colors.white,
+          backgroundColor: DavoColors.of(context).surface,
           title: transfer
               ? const Text('Crypto withdrawal',
                   style: TextStyle(fontFamily: 'Sora', fontSize: 16))
@@ -2119,13 +2148,13 @@ class _TransactionSuccessMessage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const muted = Color(0xFF686868);
-    const ink = AppColors.ink;
-    const base =
+    final muted = DavoColors.of(context).bodyMuted;
+    final ink = DavoColors.of(context).ink;
+    final base =
         TextStyle(fontFamily: 'Sora', fontSize: 14, height: 1.35, color: muted);
-    const dark =
+    final dark =
         TextStyle(fontFamily: 'Sora', fontSize: 14, height: 1.35, color: ink);
-    const strong = TextStyle(
+    final strong = TextStyle(
         fontFamily: 'Sora',
         fontSize: 14,
         height: 1.35,
@@ -2136,29 +2165,28 @@ class _TransactionSuccessMessage extends StatelessWidget {
         : '${formatGroupedAmount(amount.toStringAsFixed(4))} ${asset.symbol}';
     final spans = switch (kind) {
       TxKind.internal => <InlineSpan>[
-          const TextSpan(text: 'You have sent', style: base),
+          TextSpan(text: 'You have sent', style: base),
           TextSpan(text: ' $amountText ', style: dark),
-          const TextSpan(text: 'to', style: base),
+          TextSpan(text: 'to', style: base),
           TextSpan(text: ' $target', style: dark),
         ],
       TxKind.external => <InlineSpan>[
-          const TextSpan(text: 'You have sent ', style: base),
+          TextSpan(text: 'You have sent ', style: base),
           TextSpan(text: amountText, style: strong),
-          const TextSpan(text: ' to ', style: base),
+          TextSpan(text: ' to ', style: base),
           TextSpan(text: _short(target), style: strong),
         ],
       TxKind.conversion => <InlineSpan>[
-          const TextSpan(
-              text: 'You have successfully converted  ', style: base),
+          TextSpan(text: 'You have successfully converted  ', style: base),
           TextSpan(text: amountText, style: strong),
-          const TextSpan(text: ' to ', style: base),
-          const TextSpan(text: r'$500 USDT', style: strong),
+          TextSpan(text: ' to ', style: base),
+          TextSpan(text: r'$500 USDT', style: strong),
         ],
       TxKind.sell => <InlineSpan>[
-          const TextSpan(text: 'You have successfully sold ', style: base),
+          TextSpan(text: 'You have successfully sold ', style: base),
           TextSpan(text: '$amountText ', style: strong),
-          const TextSpan(text: 'for ', style: base),
-          const TextSpan(text: '₦731,540.00', style: strong),
+          TextSpan(text: 'for ', style: base),
+          TextSpan(text: '₦731,540.00', style: strong),
         ],
     };
     return Text.rich(TextSpan(children: spans), textAlign: TextAlign.center);
@@ -2187,7 +2215,7 @@ class TransactionDetailsScreen extends StatelessWidget {
 
   Widget _buildDetails(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FB),
+      backgroundColor: DavoColors.of(context).canvas,
       body: SafeArea(
           child: Column(children: [
         _TopBar(
@@ -2209,29 +2237,30 @@ class TransactionDetailsScreen extends StatelessWidget {
                   if (kind == TxKind.sell)
                     Text(
                         '\u2248 \$${formatGroupedAmount((amount * asset.ngnPerUnit / 1463.08).toStringAsFixed(2))} USD',
-                        style: const TextStyle(
-                            fontSize: 14, color: AppColors.body))
+                        style: TextStyle(
+                            fontSize: 14, color: DavoColors.of(context).body))
                   else
-                    const Text(r'$500.00 USD',
-                        style: TextStyle(fontSize: 14, color: AppColors.body)),
+                    Text(r'$500.00 USD',
+                        style: TextStyle(
+                            fontSize: 14, color: DavoColors.of(context).body)),
                   const SizedBox(height: 16),
                   if (kind == TxKind.sell)
                     Container(
                         padding: const EdgeInsets.symmetric(
                             horizontal: 12, vertical: 6),
                         decoration: BoxDecoration(
-                            color: const Color(0xFFEAF7EF),
+                            color: DavoColors.of(context).elevated,
                             borderRadius: BorderRadius.circular(20)),
                         child: Text(pending ? 'Pending' : 'Completed',
-                            style: const TextStyle(
+                            style: TextStyle(
                                 fontSize: 12,
-                                color: Color(0xFF158542),
+                                color: DavoColors.of(context).success,
                                 fontWeight: FontWeight.w600)))
                   else
                     Text(pending ? 'Pending' : 'Completed',
-                        style: const TextStyle(
+                        style: TextStyle(
                             fontSize: 12,
-                            color: Color(0xFF1BA44D),
+                            color: DavoColors.of(context).success,
                             fontWeight: FontWeight.w600)),
                   const SizedBox(height: 28),
                   _TransactionDetailCard(
@@ -2542,12 +2571,15 @@ class _TransactionDetailCard extends StatelessWidget {
       return Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           decoration: BoxDecoration(
-              color: Colors.white, borderRadius: BorderRadius.circular(8)),
+              color: DavoColors.of(context).surface,
+              borderRadius: BorderRadius.circular(8)),
           child: Column(children: [
             for (var i = 0; i < rows.length; i++) ...[
               if (i > 0)
-                const Divider(
-                    height: 1, thickness: .5, color: Color(0xFFEBEDF3)),
+                Divider(
+                    height: 1,
+                    thickness: .5,
+                    color: DavoColors.of(context).divider),
               rows[i],
             ]
           ]));
@@ -2555,7 +2587,8 @@ class _TransactionDetailCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
-          color: Colors.white, borderRadius: BorderRadius.circular(8)),
+          color: DavoColors.of(context).surface,
+          borderRadius: BorderRadius.circular(8)),
       child: Column(children: [
         if (trading) ...[
           row('From', '${formatGroupedAmount(amount.toStringAsFixed(5))} BTC',
@@ -2604,8 +2637,8 @@ class _SellDetailAmountRow extends StatelessWidget {
         Expanded(
             flex: 2,
             child: Text(label,
-                style:
-                    const TextStyle(fontSize: 14, color: AppColors.bodyMuted))),
+                style: TextStyle(
+                    fontSize: 14, color: DavoColors.of(context).bodyMuted))),
         const SizedBox(width: 12),
         Expanded(
             flex: 3,
@@ -2623,8 +2656,9 @@ class _SellDetailAmountRow extends StatelessWidget {
                     const SizedBox(height: 4),
                     Text(secondary,
                         textAlign: TextAlign.right,
-                        style: const TextStyle(
-                            fontSize: 11, color: AppColors.bodyMuted)),
+                        style: TextStyle(
+                            fontSize: 11,
+                            color: DavoColors.of(context).bodyMuted)),
                   ])),
             ])),
         const SizedBox(width: 32),
@@ -2720,7 +2754,7 @@ class _ScanPasteAddressScreenState extends State<ScanPasteAddressScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FB),
+      backgroundColor: DavoColors.of(context).canvas,
       body: SafeArea(
         bottom: false,
         child: Stack(
@@ -2733,10 +2767,11 @@ class _ScanPasteAddressScreenState extends State<ScanPasteAddressScreen> {
               child: InkResponse(
                 onTap: () => Navigator.pop(context),
                 radius: 20,
-                child: Image.asset('$_f/buy_back.png', width: 24, height: 24),
+                child: Image.asset('$_f/buy_back.png',
+                    color: DavoColors.of(context).ink, width: 24, height: 24),
               ),
             ),
-            const Positioned(
+            Positioned(
               left: 0,
               right: 0,
               top: 8,
@@ -2749,7 +2784,7 @@ class _ScanPasteAddressScreenState extends State<ScanPasteAddressScreen> {
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
                           height: 1.35,
-                          color: AppColors.ink)),
+                          color: DavoColors.of(context).ink)),
                 ),
               ),
             ),
@@ -2779,7 +2814,8 @@ class _ScanPasteAddressScreenState extends State<ScanPasteAddressScreen> {
                 height: 485,
                 child: Container(
                   decoration: BoxDecoration(
-                      color: const Color(0xFF191919),
+                      // Camera artwork uses white overlays in both appearances.
+                      color: Colors.black,
                       borderRadius: BorderRadius.circular(8)),
                   clipBehavior: Clip.antiAlias,
                   child: Stack(
@@ -2799,7 +2835,7 @@ class _ScanPasteAddressScreenState extends State<ScanPasteAddressScreen> {
                         child: Container(
                           alignment: Alignment.center,
                           decoration: const BoxDecoration(
-                              color: Color(0xFF2A2A2A), shape: BoxShape.circle),
+                              color: Colors.black, shape: BoxShape.circle),
                           child: Image.asset('$_cf/flashlight.png',
                               width: 24, height: 24, fit: BoxFit.contain),
                         ),
@@ -2816,7 +2852,7 @@ class _ScanPasteAddressScreenState extends State<ScanPasteAddressScreen> {
                                 fontSize: 14,
                                 fontWeight: FontWeight.w600,
                                 height: 1.35,
-                                color: Color(0xFFF5F6F9))),
+                                color: Colors.white)),
                       ),
                       Positioned(
                         left: 54.5,
@@ -2849,20 +2885,20 @@ class _ScanPasteAddressScreenState extends State<ScanPasteAddressScreen> {
                   controller: _addressController,
                   onChanged: (_) => setState(() {}),
                   textInputAction: TextInputAction.done,
-                  style: const TextStyle(
+                  style: TextStyle(
                       fontFamily: 'Open Sans',
                       fontSize: 16,
                       height: 1.375,
-                      color: AppColors.ink),
+                      color: DavoColors.of(context).ink),
                   decoration: InputDecoration(
                     hintText: 'Paste the wallet address',
-                    hintStyle: const TextStyle(
+                    hintStyle: TextStyle(
                         fontFamily: 'Open Sans',
                         fontSize: 16,
                         height: 1.375,
-                        color: Color(0xFF686868)),
+                        color: DavoColors.of(context).bodyMuted),
                     filled: true,
-                    fillColor: const Color(0xFFF5F6F9),
+                    fillColor: DavoColors.of(context).fieldFill,
                     contentPadding: const EdgeInsets.fromLTRB(16, 13, 72, 13),
                     border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(4),
@@ -2880,7 +2916,7 @@ class _ScanPasteAddressScreenState extends State<ScanPasteAddressScreen> {
                         onPressed: _pasteAddress,
                         style: TextButton.styleFrom(
                             padding: EdgeInsets.zero,
-                            foregroundColor: AppColors.primary),
+                            foregroundColor: DavoColors.of(context).link),
                         child: const Text('Paste',
                             style: TextStyle(
                                 fontFamily: 'Sora',
@@ -2919,7 +2955,7 @@ class _ExactScanTab extends StatelessWidget {
   final VoidCallback onTap;
   @override
   Widget build(BuildContext context) => Material(
-        color: active ? AppColors.primary : const Color(0xFFEAF0FB),
+        color: active ? AppColors.primary : DavoColors.of(context).primarySoft,
         borderRadius: BorderRadius.circular(4),
         child: InkWell(
           onTap: onTap,
@@ -2931,7 +2967,9 @@ class _ExactScanTab extends StatelessWidget {
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
                       height: 1.35,
-                      color: active ? Colors.white : AppColors.primary))),
+                      color: active
+                          ? Colors.white
+                          : DavoColors.of(context).link))),
         ),
       );
 }
@@ -2941,12 +2979,13 @@ class SelectNetworkSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Container(
         height: 407,
-        decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+        decoration: BoxDecoration(
+            color: DavoColors.of(context).surface,
+            borderRadius:
+                const BorderRadius.vertical(top: Radius.circular(16))),
         child: Stack(
           children: [
-            const Positioned(
+            Positioned(
                 left: 0,
                 right: 0,
                 top: 41,
@@ -2956,7 +2995,7 @@ class SelectNetworkSheet extends StatelessWidget {
                         fontFamily: 'Sora',
                         fontSize: 16,
                         height: 1.35,
-                        color: AppColors.ink))),
+                        color: DavoColors.of(context).ink))),
             Positioned(
               left: 23,
               right: 17,
@@ -2965,7 +3004,7 @@ class SelectNetworkSheet extends StatelessWidget {
                 height: 72,
                 padding: const EdgeInsets.fromLTRB(16, 14, 15, 12),
                 decoration: BoxDecoration(
-                    color: const Color(0xFFE5ECFC),
+                    color: DavoColors.of(context).primarySoft,
                     borderRadius: BorderRadius.circular(8)),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -2973,14 +3012,14 @@ class SelectNetworkSheet extends StatelessWidget {
                     Image.asset('$_cf/network_warning.png',
                         width: 14, height: 14),
                     const SizedBox(width: 8),
-                    const Expanded(
+                    Expanded(
                         child: Text(
                             'Please make sure that your withdrawal address and chain match each other, otherwise you may lose your assets!',
                             style: TextStyle(
                                 fontFamily: 'Sora',
                                 fontSize: 12,
                                 height: 1.25,
-                                color: AppColors.ink))),
+                                color: DavoColors.of(context).ink))),
                   ],
                 ),
               ),
@@ -3040,12 +3079,12 @@ class _ExactNetworkRow extends StatelessWidget {
                         fontSize: 14, fontWeight: FontWeight.w600)),
                 const SizedBox(height: 6),
                 Text('Expected arrival: $eta',
-                    style: const TextStyle(
-                        fontSize: 11, color: AppColors.bodyMuted)),
+                    style: TextStyle(
+                        fontSize: 11, color: DavoColors.of(context).bodyMuted)),
                 const SizedBox(height: 4),
                 Text('Fee: $fee $usd',
-                    style: const TextStyle(
-                        fontSize: 11, color: AppColors.bodyMuted)),
+                    style: TextStyle(
+                        fontSize: 11, color: DavoColors.of(context).bodyMuted)),
               ])),
         ]),
       ));
@@ -3056,9 +3095,10 @@ class SanctionWarningSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Container(
         height: 627,
-        decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+        decoration: BoxDecoration(
+            color: DavoColors.of(context).surface,
+            borderRadius:
+                const BorderRadius.vertical(top: Radius.circular(16))),
         child: Stack(
           children: [
             Positioned(
@@ -3068,7 +3108,7 @@ class SanctionWarningSheet extends StatelessWidget {
                     width: 92,
                     height: 5,
                     decoration: BoxDecoration(
-                        color: const Color(0xFF686868),
+                        color: DavoColors.of(context).bodyMuted,
                         borderRadius: BorderRadius.circular(100)))),
             Positioned(
                 left: 342,
@@ -3079,8 +3119,10 @@ class SanctionWarningSheet extends StatelessWidget {
                     onTap: () => Navigator.pop(context, false),
                     radius: 20,
                     child: Image.asset('$_exact/crypto_close_exact.png',
-                        width: 32, height: 32))),
-            const Positioned(
+                        color: DavoColors.of(context).ink,
+                        width: 32,
+                        height: 32))),
+            Positioned(
                 left: 17,
                 top: 78,
                 width: 288,
@@ -3091,8 +3133,8 @@ class SanctionWarningSheet extends StatelessWidget {
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
                         height: 1.25,
-                        color: AppColors.ink))),
-            const Positioned(
+                        color: DavoColors.of(context).ink))),
+            Positioned(
                 left: 17,
                 right: 12,
                 top: 124,
@@ -3104,8 +3146,8 @@ class SanctionWarningSheet extends StatelessWidget {
                         fontSize: 10,
                         fontWeight: FontWeight.w500,
                         height: 1.4,
-                        color: Color(0xFFCC8408)))),
-            const Positioned(
+                        color: DavoColors.of(context).warning))),
+            Positioned(
                 left: 17,
                 right: 12,
                 top: 190,
@@ -3117,8 +3159,8 @@ class SanctionWarningSheet extends StatelessWidget {
                         fontSize: 10,
                         fontWeight: FontWeight.w600,
                         height: 1.4,
-                        color: AppColors.ink))),
-            const Positioned(
+                        color: DavoColors.of(context).ink))),
+            Positioned(
                 left: 17,
                 top: 208,
                 width: 100,
@@ -3129,8 +3171,8 @@ class SanctionWarningSheet extends StatelessWidget {
                         fontFamily: 'Sora',
                         fontSize: 10,
                         height: 1.6,
-                        color: Color(0xFF424242)))),
-            const Positioned(
+                        color: DavoColors.of(context).body))),
+            Positioned(
                 left: 17,
                 right: 12,
                 top: 328,
@@ -3141,8 +3183,8 @@ class SanctionWarningSheet extends StatelessWidget {
                         fontSize: 10,
                         fontWeight: FontWeight.w600,
                         height: 1.4,
-                        color: AppColors.ink))),
-            const Positioned(
+                        color: DavoColors.of(context).ink))),
+            Positioned(
                 left: 17,
                 right: 12,
                 top: 346,
@@ -3153,7 +3195,7 @@ class SanctionWarningSheet extends StatelessWidget {
                         fontFamily: 'Sora',
                         fontSize: 10,
                         height: 1.4,
-                        color: Color(0xFF424242)))),
+                        color: DavoColors.of(context).body))),
             Positioned(
                 left: 17,
                 right: 12,
@@ -3171,14 +3213,15 @@ class CancelReminderSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Container(
         height: 229,
-        decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+        decoration: BoxDecoration(
+            color: DavoColors.of(context).surface,
+            borderRadius:
+                const BorderRadius.vertical(top: Radius.circular(16))),
         child: Padding(
           padding: const EdgeInsets.fromLTRB(38, 24, 38, 16),
           child: Column(
             children: [
-              const SizedBox(
+              SizedBox(
                   height: 22,
                   child: Center(
                       child: Text('Reminder',
@@ -3188,9 +3231,9 @@ class CancelReminderSheet extends StatelessWidget {
                               fontSize: 16,
                               fontWeight: FontWeight.w400,
                               height: 1.35,
-                              color: AppColors.ink)))),
+                              color: DavoColors.of(context).ink)))),
               const SizedBox(height: 12),
-              const SizedBox(
+              SizedBox(
                   height: 19,
                   child: Center(
                       child: Text('Do you want to cancel this payment',
@@ -3200,7 +3243,7 @@ class CancelReminderSheet extends StatelessWidget {
                               fontSize: 14,
                               fontWeight: FontWeight.w400,
                               height: 1.35,
-                              color: Color(0xFF424242))))),
+                              color: DavoColors.of(context).body)))),
               const SizedBox(height: 24),
               _Button(
                   label: 'Continue to Pay',
@@ -3210,7 +3253,7 @@ class CancelReminderSheet extends StatelessWidget {
               _Secondary(
                   label: 'Cancel',
                   fontWeight: FontWeight.w700,
-                  background: const Color(0xFFEFF4FE),
+                  background: DavoColors.of(context).primarySoft,
                   onTap: () => Navigator.pop(context, true)),
             ],
           ),
@@ -3365,7 +3408,8 @@ class _TradeAmountScreenState extends State<TradeAmountScreen> {
                       ]))),
           Text(
               '\u2248 ${formatGroupedAmount((ngn / 1463.08).toStringAsFixed(2))} USD',
-              style: const TextStyle(fontSize: 13, color: AppColors.bodyMuted)),
+              style: TextStyle(
+                  fontSize: 13, color: DavoColors.of(context).bodyMuted)),
           const SizedBox(height: 24),
           _ExactSwapBox(
               from: true,
@@ -3381,8 +3425,8 @@ class _TradeAmountScreenState extends State<TradeAmountScreen> {
                   onPressed: _swapAssets,
                   tooltip: 'Swap assets',
                   style: IconButton.styleFrom(
-                      backgroundColor: const Color(0xFFE8EFFD),
-                      foregroundColor: AppColors.primary),
+                      backgroundColor: DavoColors.of(context).primarySoft,
+                      foregroundColor: DavoColors.of(context).link),
                   icon: const Icon(Icons.swap_vert_rounded, size: 28))),
           _ExactSwapBox(
               from: false,
@@ -3393,10 +3437,11 @@ class _TradeAmountScreenState extends State<TradeAmountScreen> {
                   : 25040.27,
               value: ngn / destinationAsset.ngnPerUnit),
           const SizedBox(height: 16),
-          const Align(
+          Align(
               alignment: Alignment.centerLeft,
               child: Text('Estimated fee: Free',
-                  style: TextStyle(fontSize: 12, color: AppColors.bodyMuted))),
+                  style: TextStyle(
+                      fontSize: 12, color: DavoColors.of(context).bodyMuted))),
         ] else ...[
           _AssetBalance(asset: sourceAsset),
           const SizedBox(height: 24),
@@ -3406,10 +3451,10 @@ class _TradeAmountScreenState extends State<TradeAmountScreen> {
               onChanged: () => setState(() {})),
           const SizedBox(height: 20),
           Text('\u2248 \u20a6${formatGroupedAmount(ngn.toStringAsFixed(2))}',
-              style: const TextStyle(
+              style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.ink)),
+                  color: DavoColors.of(context).ink)),
         ],
         const SizedBox(height: 12),
         Text(
@@ -3417,7 +3462,8 @@ class _TradeAmountScreenState extends State<TradeAmountScreen> {
                 ? '1 ${sourceAsset.symbol} \u2248 \u20a6${formatGroupedAmount(sourceAsset.ngnPerUnit.toStringAsFixed(2))}'
                 : '1 USDT \u2248 (\u20a6${formatGroupedAmount(BuyCryptoAsset.tether.ngnPerUnit.toStringAsFixed(2))})',
             textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 12, color: AppColors.bodyMuted)),
+            style: TextStyle(
+                fontSize: 12, color: DavoColors.of(context).bodyMuted)),
         const SizedBox(height: 24),
         Wrap(
             spacing: 12,
@@ -3427,10 +3473,10 @@ class _TradeAmountScreenState extends State<TradeAmountScreen> {
                 .map((v) => _Percent(label: v, onTap: () => _pickPercent(v)))
                 .toList()),
         if (n > balance)
-          const Padding(
-              padding: EdgeInsets.only(top: 16),
+          Padding(
+              padding: const EdgeInsets.only(top: 16),
               child: Text('Amount exceeds your available balance.',
-                  style: TextStyle(color: AppColors.danger))),
+                  style: TextStyle(color: DavoColors.of(context).danger))),
       ]),
       action: _Button(
           label: convert ? 'Preview' : 'Continue',
@@ -3461,15 +3507,17 @@ class TradeReviewScreen extends StatelessWidget {
   final double amount;
   final BuyCryptoAsset sourceAsset, destinationAsset;
 
-  Widget _reviewAsset(
-          String label, BuyCryptoAsset asset, String value, String secondary) =>
+  Widget _reviewAsset(BuildContext context, String label, BuyCryptoAsset asset,
+          String value, String secondary) =>
       Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-            color: Colors.white, borderRadius: BorderRadius.circular(8)),
+            color: DavoColors.of(context).surface,
+            borderRadius: BorderRadius.circular(8)),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Text(label,
-              style: const TextStyle(fontSize: 12, color: AppColors.bodyMuted)),
+              style: TextStyle(
+                  fontSize: 12, color: DavoColors.of(context).bodyMuted)),
           const SizedBox(height: 12),
           Row(children: [
             BuyAssetIcon(asset: asset, size: 32),
@@ -3483,8 +3531,9 @@ class TradeReviewScreen extends StatelessWidget {
                           fontSize: 16, fontWeight: FontWeight.w600)),
                   const SizedBox(height: 4),
                   Text(secondary,
-                      style: const TextStyle(
-                          fontSize: 12, color: AppColors.bodyMuted)),
+                      style: TextStyle(
+                          fontSize: 12,
+                          color: DavoColors.of(context).bodyMuted)),
                 ])),
             Text(asset.symbol,
                 style:
@@ -3503,7 +3552,7 @@ class TradeReviewScreen extends StatelessWidget {
     final rate =
         '1 ${destinationAsset.symbol} \u2248 ${formatGroupedAmount((destinationAsset.ngnPerUnit / sourceAsset.ngnPerUnit).toStringAsFixed(8))} ${sourceAsset.symbol}';
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FB),
+      backgroundColor: DavoColors.of(context).canvas,
       bottomNavigationBar: SafeArea(
           top: false,
           child: Padding(
@@ -3530,6 +3579,7 @@ class TradeReviewScreen extends StatelessWidget {
                         onBack: () => Navigator.pop(context))),
                 const SizedBox(height: 24),
                 _reviewAsset(
+                    context,
                     conv ? 'You are converting' : 'You are Selling',
                     sourceAsset,
                     formatGroupedAmount(amount.toStringAsFixed(5)),
@@ -3539,8 +3589,9 @@ class TradeReviewScreen extends StatelessWidget {
                     child: Container(
                         width: 36,
                         height: 36,
-                        decoration: const BoxDecoration(
-                            color: Color(0xFFE8EFFD), shape: BoxShape.circle),
+                        decoration: BoxDecoration(
+                            color: DavoColors.of(context).primarySoft,
+                            shape: BoxShape.circle),
                         child: Icon(
                             conv
                                 ? Icons.swap_vert_rounded
@@ -3548,20 +3599,21 @@ class TradeReviewScreen extends StatelessWidget {
                             size: 22,
                             color: AppColors.primary))),
                 if (conv)
-                  _reviewAsset('To (You will receive)', destinationAsset,
-                      receivedText, '\$$usdText')
+                  _reviewAsset(context, 'To (You will receive)',
+                      destinationAsset, receivedText, '\$$usdText')
                 else
                   Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                          color: Colors.white,
+                          color: DavoColors.of(context).surface,
                           borderRadius: BorderRadius.circular(8)),
                       child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text('To (You will receive)',
+                            Text('To (You will receive)',
                                 style: TextStyle(
-                                    fontSize: 12, color: AppColors.bodyMuted)),
+                                    fontSize: 12,
+                                    color: DavoColors.of(context).bodyMuted)),
                             const SizedBox(height: 12),
                             Row(children: [
                               Image.asset('$_f/buy_nigeria.png',
@@ -3578,10 +3630,11 @@ class TradeReviewScreen extends StatelessWidget {
                                             fontSize: 16,
                                             fontWeight: FontWeight.w600)),
                                     const SizedBox(height: 4),
-                                    const Text('Nigerian Naira',
+                                    Text('Nigerian Naira',
                                         style: TextStyle(
                                             fontSize: 12,
-                                            color: AppColors.bodyMuted)),
+                                            color: DavoColors.of(context)
+                                                .bodyMuted)),
                                   ])),
                             ]),
                           ])),
@@ -3622,17 +3675,19 @@ class _ExactCryptoTradeHeader extends StatelessWidget {
               height: 32,
               child: InkResponse(
                   onTap: onBack,
-                  child:
-                      Image.asset('$_f/buy_back.png', width: 32, height: 32))),
+                  child: Image.asset('$_f/buy_back.png',
+                      color: DavoColors.of(context).ink,
+                      width: 32,
+                      height: 32))),
           Positioned.fill(
               child: Center(
                   child: Text(title,
-                      style: const TextStyle(
+                      style: TextStyle(
                           fontFamily: 'Sora',
                           fontSize: 20,
                           fontWeight: FontWeight.w400,
                           height: 1.35,
-                          color: AppColors.ink)))),
+                          color: DavoColors.of(context).ink)))),
         ],
       );
 }
@@ -3658,18 +3713,19 @@ class _ExactSwapBox extends StatelessWidget {
           builder: (context) => Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: DavoColors.of(context).surface,
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
                         color: Focus.of(context).hasFocus
                             ? AppColors.primary
-                            : const Color(0xFFD9DCE4))),
+                            : DavoColors.of(context).border)),
                 child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(from ? 'From' : 'To',
-                          style: const TextStyle(
-                              fontSize: 12, color: AppColors.bodyMuted)),
+                          style: TextStyle(
+                              fontSize: 12,
+                              color: DavoColors.of(context).bodyMuted)),
                       const SizedBox(height: 8),
                       Row(children: [
                         InkWell(
@@ -3721,8 +3777,9 @@ class _ExactSwapBox extends StatelessWidget {
                       const SizedBox(height: 8),
                       Text(
                           'Available: ${formatGroupedAmount(balance.toString())} ${asset.symbol}',
-                          style: const TextStyle(
-                              fontSize: 12, color: AppColors.bodyMuted)),
+                          style: TextStyle(
+                              fontSize: 12,
+                              color: DavoColors.of(context).bodyMuted)),
                     ]),
               )));
 }
@@ -3735,11 +3792,15 @@ class _ExactTradeSummary extends StatelessWidget {
   Widget build(BuildContext context) => Container(
         padding: const EdgeInsets.symmetric(horizontal: 16),
         decoration: BoxDecoration(
-            color: Colors.white, borderRadius: BorderRadius.circular(8)),
+            color: DavoColors.of(context).surface,
+            borderRadius: BorderRadius.circular(8)),
         child: Column(children: [
           for (var i = 0; i < rows.length; i++) ...[
             if (i > 0)
-              const Divider(height: 1, thickness: .5, color: Color(0xFFEBEDF3)),
+              Divider(
+                  height: 1,
+                  thickness: .5,
+                  color: DavoColors.of(context).divider),
             Padding(
                 padding: const EdgeInsets.symmetric(vertical: 18),
                 child: LayoutBuilder(
@@ -3749,9 +3810,10 @@ class _ExactTradeSummary extends StatelessWidget {
                               SizedBox(
                                   width: constraints.maxWidth * .30,
                                   child: Text(rows[i].$1,
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                           fontSize: 12,
-                                          color: AppColors.bodyMuted))),
+                                          color: DavoColors.of(context)
+                                              .bodyMuted))),
                               const SizedBox(width: 12),
                               Expanded(
                                   child: Text(rows[i].$2,
@@ -3760,8 +3822,8 @@ class _ExactTradeSummary extends StatelessWidget {
                                           fontSize: 12,
                                           height: 1.5,
                                           color: rows[i].$3
-                                              ? AppColors.primary
-                                              : AppColors.ink,
+                                              ? DavoColors.of(context).link
+                                              : DavoColors.of(context).ink,
                                           fontWeight: FontWeight.w500))),
                             ]))),
           ]
@@ -3775,7 +3837,7 @@ class DepositStatusScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-        backgroundColor: Colors.white,
+        backgroundColor: DavoColors.of(context).surface,
         body: SafeArea(
             child: Column(children: [
           _TopBar(
@@ -3798,9 +3860,10 @@ class DepositStatusScreen extends StatelessWidget {
                           kind: DavoWorkingKind.reviewPending,
                           active: false,
                           size: 148),
-                    const Text('Quantity',
+                    Text('Quantity',
                         style: TextStyle(
-                            fontSize: 16, color: AppColors.bodyMuted)),
+                            fontSize: 16,
+                            color: DavoColors.of(context).bodyMuted)),
                     const SizedBox(height: 8),
                     const Text('0.0317934 BTC',
                         style: TextStyle(
@@ -3809,21 +3872,22 @@ class DepositStatusScreen extends StatelessWidget {
                     Text(success ? 'Deposit Successful' : 'Pending',
                         style: TextStyle(
                             color: success
-                                ? const Color(0xFF1BA44D)
-                                : const Color(0xFFCC8408))),
+                                ? DavoColors.of(context).success
+                                : DavoColors.of(context).warning)),
                     const SizedBox(height: 24),
                     Text(
                         success
                             ? 'Crypto has arrived in your Davochain account. View your wallet balance for more details.'
                             : 'Your deposit is awaiting network confirmation.',
                         textAlign: TextAlign.center,
-                        style: const TextStyle(
-                            fontSize: 12, color: AppColors.bodyMuted)),
+                        style: TextStyle(
+                            fontSize: 12,
+                            color: DavoColors.of(context).bodyMuted)),
                     const SizedBox(height: 24),
                     Container(
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                            color: const Color(0xFFF5F6F9),
+                            color: DavoColors.of(context).fieldFill,
                             borderRadius: BorderRadius.circular(12)),
                         child: const Column(children: [
                           _ExactTransactionRow(label: 'Network', value: 'BTC'),
@@ -3854,7 +3918,7 @@ class _Scaffold extends StatelessWidget {
   final Widget child;
   @override
   Widget build(BuildContext context) => Scaffold(
-        backgroundColor: const Color(0xFFF8F9FB),
+        backgroundColor: DavoColors.of(context).canvas,
         body: SafeArea(
             child: Padding(
                 padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
@@ -3867,7 +3931,7 @@ class _FigmaFullScaffold extends StatelessWidget {
   final Widget child;
   @override
   Widget build(BuildContext context) => Scaffold(
-        backgroundColor: const Color(0xFFF8F9FB),
+        backgroundColor: DavoColors.of(context).canvas,
         body: SafeArea(
             bottom: false,
             child: Padding(
@@ -3901,7 +3965,9 @@ class _TopBar extends StatelessWidget {
                     tooltip: 'Back',
                     onPressed: onBack,
                     icon: Image.asset('$_f/buy_back.png',
-                        width: 24, height: 24))),
+                        color: DavoColors.of(context).ink,
+                        width: 24,
+                        height: 24))),
             if (title.isNotEmpty)
               Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 48),
@@ -3914,7 +3980,7 @@ class _TopBar extends StatelessWidget {
                           fontSize: fontSize,
                           fontWeight: fontWeight,
                           height: 1.35,
-                          color: AppColors.ink))),
+                          color: DavoColors.of(context).ink))),
           ],
         ),
       );
@@ -3947,17 +4013,19 @@ class _Button extends StatelessWidget {
       this.enabled = true,
       required this.onTap,
       this.fontWeight = FontWeight.w600,
-      this.disabledColor = AppColors.primaryDisabled,
+      this.disabledColor,
       this.disabledTextColor = Colors.white});
   final String label;
   final bool enabled;
   final VoidCallback onTap;
   final FontWeight fontWeight;
-  final Color disabledColor;
+  final Color? disabledColor;
   final Color disabledTextColor;
   @override
   Widget build(BuildContext context) => Material(
-        color: enabled ? AppColors.primary : disabledColor,
+        color: enabled
+            ? AppColors.primary
+            : (disabledColor ?? DavoColors.of(context).primaryDisabled),
         borderRadius: BorderRadius.circular(4),
         child: InkWell(
           onTap: enabled
@@ -3986,14 +4054,14 @@ class _Secondary extends StatelessWidget {
       {required this.label,
       required this.onTap,
       this.fontWeight = FontWeight.w600,
-      this.background = const Color(0xFFEAF0FB)});
+      this.background});
   final String label;
   final VoidCallback onTap;
   final FontWeight fontWeight;
-  final Color background;
+  final Color? background;
   @override
   Widget build(BuildContext context) => Material(
-        color: background,
+        color: background ?? DavoColors.of(context).primarySoft,
         borderRadius: BorderRadius.circular(4),
         child: InkWell(
             onTap: onTap,
@@ -4007,7 +4075,7 @@ class _Secondary extends StatelessWidget {
                             fontFamily: 'Sora',
                             fontSize: 14,
                             fontWeight: fontWeight,
-                            color: AppColors.primary))))),
+                            color: DavoColors.of(context).link))))),
       );
 }
 
@@ -4025,9 +4093,10 @@ class _Row extends StatelessWidget {
       constraints: const BoxConstraints(minHeight: 47),
       decoration: last
           ? null
-          : const BoxDecoration(
+          : BoxDecoration(
               border: Border(
-                  bottom: BorderSide(color: Color(0xFFF2F2F2), width: .6))),
+                  bottom: BorderSide(
+                      color: DavoColors.of(context).divider, width: .6))),
       child:
           ReceiptDetailRow(label: label, value: value, valueColor: valueColor));
 }
@@ -4040,7 +4109,8 @@ class _Summary extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       decoration: BoxDecoration(
-          color: Colors.white, borderRadius: BorderRadius.circular(8)),
+          color: DavoColors.of(context).surface,
+          borderRadius: BorderRadius.circular(8)),
       child: Column(children: children));
 }
 
@@ -4062,8 +4132,8 @@ class _Choice extends StatelessWidget {
           child: Container(
             height: 75,
             decoration: BoxDecoration(
-                color: Colors.white,
-                border: Border.all(color: const Color(0xFFEEF0F5)),
+                color: DavoColors.of(context).surface,
+                border: Border.all(color: DavoColors.of(context).border),
                 borderRadius: BorderRadius.circular(4)),
             child: Stack(
               children: [
@@ -4075,7 +4145,7 @@ class _Choice extends StatelessWidget {
                   child: Container(
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
-                        color: const Color(0xFFF0F3FA),
+                        color: DavoColors.of(context).fieldFill,
                         borderRadius: BorderRadius.circular(4)),
                     child: Image.asset(asset,
                         width: 24,
@@ -4088,30 +4158,32 @@ class _Choice extends StatelessWidget {
                     left: 60,
                     top: 12,
                     child: Text(title,
-                        style: const TextStyle(
+                        style: TextStyle(
                             fontFamily: 'Sora',
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
                             height: 1.35,
-                            color: AppColors.ink))),
+                            color: DavoColors.of(context).ink))),
                 Positioned(
                     left: 60,
                     right: 54,
                     top: 33,
                     height: 30,
                     child: Text(subtitle,
-                        style: const TextStyle(
+                        style: TextStyle(
                             fontFamily: 'Sora',
                             fontSize: 12,
                             height: 1.25,
-                            color: AppColors.bodyMuted))),
+                            color: DavoColors.of(context).bodyMuted))),
                 Positioned(
                     right: 12,
                     top: 29.5,
                     width: 16,
                     height: 16,
                     child: Image.asset('$_cf/chevron_right.png',
-                        width: 16, height: 16)),
+                        color: DavoColors.of(context).ink,
+                        width: 16,
+                        height: 16)),
               ],
             ),
           ),
@@ -4134,7 +4206,7 @@ class _DashboardHeader extends StatelessWidget {
                 child: ClipOval(
                     child: Image.asset('$_f/profile_avatar.png',
                         width: 40, height: 40, fit: BoxFit.cover))),
-            const Positioned(
+            Positioned(
                 left: 52,
                 top: 2,
                 width: 61,
@@ -4144,8 +4216,8 @@ class _DashboardHeader extends StatelessWidget {
                         fontFamily: 'Sora',
                         fontSize: 12,
                         height: 1.25,
-                        color: AppColors.muted))),
-            const Positioned(
+                        color: DavoColors.of(context).muted))),
+            Positioned(
                 left: 52,
                 top: 19,
                 width: 61,
@@ -4156,7 +4228,7 @@ class _DashboardHeader extends StatelessWidget {
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
                         height: 1.35,
-                        color: AppColors.body))),
+                        color: DavoColors.of(context).body))),
             Positioned(
               left: 225,
               top: 4,
@@ -4164,7 +4236,9 @@ class _DashboardHeader extends StatelessWidget {
               height: 32,
               child: Container(
                 decoration: BoxDecoration(
-                    color: AppColors.primaryDisabled.withValues(alpha: .5),
+                    color: DavoColors.of(context)
+                        .primaryDisabled
+                        .withValues(alpha: .5),
                     borderRadius: BorderRadius.circular(1000)),
                 child: Stack(
                   children: [
@@ -4175,7 +4249,7 @@ class _DashboardHeader extends StatelessWidget {
                         height: 24,
                         child: Image.asset('$_exact/naira_earn_gift_exact.png',
                             width: 24, height: 24, fit: BoxFit.contain)),
-                    const Positioned(
+                    Positioned(
                         left: 36,
                         top: 8.5,
                         width: 45,
@@ -4185,7 +4259,7 @@ class _DashboardHeader extends StatelessWidget {
                                 fontFamily: 'Sora',
                                 fontSize: 12,
                                 height: 1.25,
-                                color: AppColors.primary))),
+                                color: DavoColors.of(context).link))),
                   ],
                 ),
               ),
@@ -4197,7 +4271,9 @@ class _DashboardHeader extends StatelessWidget {
               height: 32,
               child: Container(
                 decoration: BoxDecoration(
-                    color: AppColors.primaryDisabled.withValues(alpha: .5),
+                    color: DavoColors.of(context)
+                        .primaryDisabled
+                        .withValues(alpha: .5),
                     borderRadius: BorderRadius.circular(1000)),
                 alignment: Alignment.center,
                 child: Image.asset('$_exact/icon_notifications.png',
@@ -4237,7 +4313,7 @@ class _BalanceCard extends StatelessWidget {
                         fontSize: 10,
                         fontWeight: FontWeight.w500,
                         height: 1.3,
-                        color: Color(0xFFEEF0F5)))),
+                        color: Colors.white))),
             Positioned(
                 left: 155,
                 top: 32.5,
@@ -4256,7 +4332,7 @@ class _BalanceCard extends StatelessWidget {
                         fontSize: 24,
                         fontWeight: FontWeight.w700,
                         height: 1.35,
-                        color: Color(0xFFF8F9FB)))),
+                        color: Colors.white))),
             const Positioned(
                 left: 16,
                 top: 86,
@@ -4267,7 +4343,7 @@ class _BalanceCard extends StatelessWidget {
                         fontFamily: 'Sora',
                         fontSize: 14,
                         height: 1.35,
-                        color: Color(0xFFF8F9FB)))),
+                        color: Colors.white))),
           ],
         ),
       );
@@ -4282,20 +4358,23 @@ class _CryptoBalance extends StatelessWidget {
         width: double.infinity,
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-            color: Colors.white, borderRadius: BorderRadius.circular(8)),
+            color: DavoColors.of(context).surface,
+            borderRadius: BorderRadius.circular(8)),
         child: Column(children: [
           Row(children: [
-            const Expanded(
+            Expanded(
                 child: Text('Wallet Balance',
-                    style:
-                        TextStyle(fontSize: 10, color: AppColors.bodyMuted))),
+                    style: TextStyle(
+                        fontSize: 10,
+                        color: DavoColors.of(context).bodyMuted))),
             InkWell(
                 onTap: onChange,
-                child: const Row(mainAxisSize: MainAxisSize.min, children: [
+                child: Row(mainAxisSize: MainAxisSize.min, children: [
                   Text('Change Asset',
-                      style: TextStyle(fontSize: 10, color: AppColors.primary)),
-                  SizedBox(width: 4),
-                  Icon(Icons.chevron_right_rounded,
+                      style: TextStyle(
+                          fontSize: 10, color: DavoColors.of(context).link)),
+                  const SizedBox(width: 4),
+                  const Icon(Icons.chevron_right_rounded,
                       size: 16, color: AppColors.primary),
                 ])),
           ]),
@@ -4309,8 +4388,9 @@ class _CryptoBalance extends StatelessWidget {
                     children: [
                   Text(asset.name, style: const TextStyle(fontSize: 14)),
                   Text(asset.symbol,
-                      style: const TextStyle(
-                          fontSize: 12, color: AppColors.bodyMuted)),
+                      style: TextStyle(
+                          fontSize: 12,
+                          color: DavoColors.of(context).bodyMuted)),
                 ])),
             const SizedBox(width: 8),
             Flexible(
@@ -4321,10 +4401,11 @@ class _CryptoBalance extends StatelessWidget {
                       textAlign: TextAlign.right,
                       style: const TextStyle(
                           fontSize: 14, fontWeight: FontWeight.w600)),
-                  const Text(r'$842.31 USD',
+                  Text(r'$842.31 USD',
                       textAlign: TextAlign.right,
-                      style:
-                          TextStyle(fontSize: 12, color: AppColors.bodyMuted)),
+                      style: TextStyle(
+                          fontSize: 12,
+                          color: DavoColors.of(context).bodyMuted)),
                 ])),
           ]),
         ]),
@@ -4346,7 +4427,7 @@ class _Tabs extends StatelessWidget {
     return Container(
         padding: const EdgeInsets.all(6),
         decoration: BoxDecoration(
-            color: const Color(0xFFF3F3F9),
+            color: DavoColors.of(context).fieldFill,
             borderRadius: BorderRadius.circular(999)),
         child: Row(
             children: List.generate(
@@ -4355,8 +4436,9 @@ class _Tabs extends StatelessWidget {
                     child: Semantics(
                         selected: active == i,
                         child: Material(
-                            color:
-                                active == i ? Colors.white : Colors.transparent,
+                            color: active == i
+                                ? DavoColors.of(context).surface
+                                : Colors.transparent,
                             borderRadius: BorderRadius.circular(999),
                             child: InkWell(
                                 onTap: callbacks[i],
@@ -4370,8 +4452,10 @@ class _Tabs extends StatelessWidget {
                                                 fontSize: 14,
                                                 fontWeight: FontWeight.w600,
                                                 color: active == i
-                                                    ? AppColors.primary
-                                                    : AppColors.body)))))))))));
+                                                    ? DavoColors.of(context)
+                                                        .link
+                                                    : DavoColors.of(context)
+                                                        .body)))))))))));
   }
 }
 
@@ -4387,8 +4471,8 @@ class _AssetBalance extends StatelessWidget {
     return Column(children: [
       BuyAssetIcon(asset: asset, size: 40),
       const SizedBox(height: 12),
-      const Text('Available Balance',
-          style: TextStyle(fontSize: 12, color: AppColors.body)),
+      Text('Available Balance',
+          style: TextStyle(fontSize: 12, color: DavoColors.of(context).body)),
       const SizedBox(height: 6),
       Wrap(
           alignment: WrapAlignment.center,
@@ -4400,8 +4484,8 @@ class _AssetBalance extends StatelessWidget {
                 style:
                     const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
             Text('\u2248 (\$$usd)',
-                style:
-                    const TextStyle(fontSize: 12, color: AppColors.bodyMuted)),
+                style: TextStyle(
+                    fontSize: 12, color: DavoColors.of(context).bodyMuted)),
           ]),
     ]);
   }
@@ -4422,11 +4506,11 @@ class _Amount extends StatelessWidget {
                 height: 77,
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: DavoColors.of(context).surface,
                     border: Border.all(
                         color: Focus.of(context).hasFocus
                             ? AppColors.primary
-                            : const Color(0xFFD9DCE4)),
+                            : DavoColors.of(context).border),
                     borderRadius: BorderRadius.circular(8)),
                 child: Row(children: [
                   const SizedBox(width: 48),
@@ -4439,23 +4523,24 @@ class _Amount extends StatelessWidget {
                             GroupedAmountInputFormatter()
                           ],
                           onChanged: (_) => onChanged(),
-                          decoration: const DavoInlineInputDecoration(
+                          decoration: DavoInlineInputDecoration(
                               hintText: '0.00',
                               hintStyle: TextStyle(
                                   fontSize: 24,
                                   fontWeight: FontWeight.w600,
-                                  color: AppColors.bodyMuted)),
+                                  color: DavoColors.of(context).bodyMuted)),
                           textAlign: TextAlign.center,
-                          style: const TextStyle(
+                          style: TextStyle(
                               fontSize: 24,
                               fontWeight: FontWeight.w600,
-                              color: AppColors.ink))),
+                              color: DavoColors.of(context).ink))),
                   SizedBox(
                       width: 48,
                       child: Text(suffix,
                           textAlign: TextAlign.right,
-                          style: const TextStyle(
-                              fontSize: 14, color: AppColors.body))),
+                          style: TextStyle(
+                              fontSize: 14,
+                              color: DavoColors.of(context).body))),
                 ]),
               )));
 }
@@ -4473,13 +4558,14 @@ class _Percent extends StatelessWidget {
           height: 44,
           alignment: Alignment.center,
           decoration: BoxDecoration(
-              border: Border.all(color: const Color(0xFFEEF0F5)),
+              border: Border.all(color: DavoColors.of(context).border),
               borderRadius: BorderRadius.circular(8)),
           child: Text(label,
               style: TextStyle(
                   fontSize: 12,
-                  color:
-                      label == 'Max' ? AppColors.primary : AppColors.body))));
+                  color: label == 'Max'
+                      ? DavoColors.of(context).link
+                      : DavoColors.of(context).body))));
 }
 
 String _short(String v) => v.length <= 16

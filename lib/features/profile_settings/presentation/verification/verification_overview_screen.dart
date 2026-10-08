@@ -78,10 +78,10 @@ class VerificationOverviewScreen extends StatelessWidget {
                               (_) => const AdvancedVerificationFlowScreen())
                           : null),
                   const SizedBox(height: 18),
-                  const Text(
+                  Text(
                       'Submission and approval are different steps. Your verification status will update after review.',
                       style: TextStyle(
-                          fontSize: 12, height: 1.5, color: Color(0xFF667085))),
+                          fontSize: 12, height: 1.5, color: DavoColors.of(context).bodyMuted)),
                 ],
               ));
         },
@@ -96,13 +96,13 @@ class VerificationPage extends StatelessWidget {
   final Widget? bottom;
   @override
   Widget build(BuildContext context) => Scaffold(
-        backgroundColor: Colors.white,
+        backgroundColor: DavoColors.of(context).surface,
         appBar: AppBar(
             title: Text(title,
                 style:
                     const TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
             centerTitle: true,
-            backgroundColor: Colors.white,
+            backgroundColor: DavoColors.of(context).surface,
             surfaceTintColor: Colors.transparent),
         body: SafeArea(
             child: Column(children: [
@@ -134,8 +134,8 @@ class _LevelCard extends StatelessWidget {
   Widget build(BuildContext context) => Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-            color: onTap == null ? const Color(0xFFF8F9FB) : Colors.white,
-            border: Border.all(color: const Color(0xFFE7EAF1)),
+            color: onTap == null ? DavoColors.of(context).offWhite : DavoColors.of(context).surface,
+            border: Border.all(color: DavoColors.of(context).border),
             borderRadius: BorderRadius.circular(16)),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Row(children: [
@@ -144,8 +144,8 @@ class _LevelCard extends StatelessWidget {
                 height: 36,
                 decoration: BoxDecoration(
                     color: onTap == null
-                        ? const Color(0xFFEFF1F5)
-                        : AppColors.primarySoft,
+                        ? DavoColors.of(context).fieldFill
+                        : DavoColors.of(context).primarySoft,
                     borderRadius: BorderRadius.circular(10)),
                 child: Icon(
                     title.startsWith('Basic')
@@ -153,8 +153,8 @@ class _LevelCard extends StatelessWidget {
                         : Icons.shield_outlined,
                     size: 20,
                     color: onTap == null
-                        ? const Color(0xFF667085)
-                        : AppColors.primary)),
+                        ? DavoColors.of(context).bodyMuted
+                        : DavoColors.of(context).link)),
             const SizedBox(width: 12),
             Expanded(
                 child: Text(title,
@@ -166,15 +166,15 @@ class _LevelCard extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
                   color: status.contains('Pending')
-                      ? const Color(0xFFFFF5E5)
-                      : const Color(0xFFF2F4F7),
+                      ? DavoColors.of(context).warningSurface
+                      : DavoColors.of(context).fieldFill,
                   borderRadius: BorderRadius.circular(6)),
               child: Text(status,
                   style: TextStyle(
                       fontSize: 12,
                       color: status.contains('Pending')
-                          ? const Color(0xFF9A6700)
-                          : const Color(0xFF475467)))),
+                          ? DavoColors.of(context).warning
+                          : DavoColors.of(context).body))),
           const SizedBox(height: 14),
           for (var i = 0; i < steps.length; i++)
             Padding(
@@ -185,8 +185,8 @@ class _LevelCard extends StatelessWidget {
                       SizedBox(
                           width: 16,
                           child: Text('${i + 1}',
-                              style: const TextStyle(
-                                  fontSize: 12, color: AppColors.primary))),
+                              style: TextStyle(
+                                  fontSize: 12, color: DavoColors.of(context).link))),
                       const SizedBox(width: 12),
                       Expanded(
                           child: Text(steps[i],
@@ -196,13 +196,13 @@ class _LevelCard extends StatelessWidget {
             Padding(
                 padding: const EdgeInsets.only(top: 4),
                 child: Row(children: [
-                  const Icon(Icons.lock_outline_rounded,
-                      size: 14, color: Color(0xFF667085)),
+                  Icon(Icons.lock_outline_rounded,
+                      size: 14, color: DavoColors.of(context).bodyMuted),
                   const SizedBox(width: 8),
                   Expanded(
                       child: Text(action,
-                          style: const TextStyle(
-                              fontSize: 14, color: Color(0xFF667085))))
+                          style: TextStyle(
+                              fontSize: 14, color: DavoColors.of(context).bodyMuted)))
                 ]))
           else
             VerificationButton(action, onPressed: onTap),
@@ -268,13 +268,13 @@ class _BasicIdentityChoiceState extends State<BasicIdentityChoiceScreen> {
                           padding: const EdgeInsets.all(20),
                           decoration: BoxDecoration(
                               color: selected == method
-                                  ? AppColors.primarySoft
-                                  : Colors.white,
+                                  ? DavoColors.of(context).primarySoft
+                                  : DavoColors.of(context).surface,
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(
                                   color: selected == method
                                       ? AppColors.primary
-                                      : const Color(0xFFE7EAF1))),
+                                      : DavoColors.of(context).border)),
                           child: Row(children: [
                             Expanded(
                                 child: Column(
@@ -293,7 +293,7 @@ class _BasicIdentityChoiceState extends State<BasicIdentityChoiceScreen> {
                                 selected == method
                                     ? Icons.radio_button_checked
                                     : Icons.radio_button_off,
-                                color: AppColors.primary)
+                                color: DavoColors.of(context).link)
                           ]))))),
       ]));
 }
@@ -336,7 +336,7 @@ class _BasicIdentityNumberState extends State<BasicIdentityNumberScreen> {
             'Your number should match the personal details in your profile.',
             style: TextStyle(fontSize: 14, height: 1.5)),
         const SizedBox(height: 28),
-        TextField(
+        TextField(keyboardAppearance: Theme.of(context).brightness,
             controller: number,
             keyboardType: TextInputType.number,
             inputFormatters: [
@@ -351,10 +351,10 @@ class _BasicIdentityNumberState extends State<BasicIdentityNumberScreen> {
                 border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12)))),
         const SizedBox(height: 24),
-        const Text(
+        Text(
             'We use this number to confirm your identity. You will not need to provide both NIN and BVN.',
             style:
-                TextStyle(fontSize: 12, height: 1.5, color: Color(0xFF667085))),
+                TextStyle(fontSize: 12, height: 1.5, color: DavoColors.of(context).bodyMuted)),
       ]));
 }
 
@@ -390,14 +390,14 @@ class BasicVerificationSubmittedScreen extends StatelessWidget {
                 kind: DavoOutcomeKind.submitted,
                 play: animate,
                 semanticLabel: 'Details submitted',
-                heading: const Column(children: [
-                  Text('Basic verification submitted',
+                heading: Column(children: [
+                  const Text('Basic verification submitted',
                       textAlign: TextAlign.center,
                       style:
                           TextStyle(fontSize: 24, fontWeight: FontWeight.w600)),
-                  SizedBox(height: 12),
+                  const SizedBox(height: 12),
                   Text('Pending review',
-                      style: TextStyle(fontSize: 14, color: AppColors.primary))
+                      style: TextStyle(fontSize: 14, color: DavoColors.of(context).link))
                 ]),
                 details: Column(children: [
                   Text(

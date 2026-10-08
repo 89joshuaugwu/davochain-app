@@ -127,22 +127,22 @@ class _BuyAmountScreenState extends State<BuyAmountScreen> {
               const SizedBox(height: 12),
               Text(
                 '${_order.wallet.symbol} Balance',
-                style: const TextStyle(
+                style: TextStyle(
                     fontFamily: 'Sora',
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
                     height: 1.25,
-                    color: AppColors.body),
+                    color: DavoColors.of(context).body),
               ),
               const SizedBox(height: 4),
               Text(
                 _order.wallet.formattedBalance,
-                style: const TextStyle(
+                style: TextStyle(
                     fontFamily: 'Sora',
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
                     height: 1.35,
-                    color: AppColors.ink),
+                    color: DavoColors.of(context).ink),
               ),
             ],
           ),
@@ -152,11 +152,11 @@ class _BuyAmountScreenState extends State<BuyAmountScreen> {
           duration: const Duration(milliseconds: 180),
           padding: const EdgeInsets.symmetric(horizontal: 16),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: DavoColors.of(context).surface,
             border: Border.all(
                 color: _focusNode.hasFocus
                     ? AppColors.primary
-                    : const Color(0xFFEBEDF3),
+                    : DavoColors.of(context).divider,
                 width: _focusNode.hasFocus ? 1.2 : 1),
             borderRadius: BorderRadius.circular(4),
           ),
@@ -164,12 +164,12 @@ class _BuyAmountScreenState extends State<BuyAmountScreen> {
           child: Row(
             children: [
               if (_amountController.text.isNotEmpty)
-                const Text('₦',
+                Text('₦',
                     style: TextStyle(
                         fontFamily: 'Sora',
                         fontSize: 20,
                         fontWeight: FontWeight.w600,
-                        color: AppColors.ink)),
+                        color: DavoColors.of(context).ink)),
               Expanded(
                 child: TextField(
                   controller: _amountController,
@@ -179,12 +179,12 @@ class _BuyAmountScreenState extends State<BuyAmountScreen> {
                   inputFormatters: const [GroupedAmountInputFormatter()],
                   onChanged: (_) => setState(() {}),
                   textAlign: TextAlign.center,
-                  style: const TextStyle(
+                  style: TextStyle(
                       fontFamily: 'Sora',
                       fontSize: 20,
                       fontWeight: FontWeight.w600,
-                      color: AppColors.ink),
-                  decoration: const InputDecoration(
+                      color: DavoColors.of(context).ink),
+                  decoration: InputDecoration(
                     border: InputBorder.none,
                     enabledBorder: InputBorder.none,
                     focusedBorder: InputBorder.none,
@@ -194,16 +194,16 @@ class _BuyAmountScreenState extends State<BuyAmountScreen> {
                         fontFamily: 'Sora',
                         fontSize: 20,
                         fontWeight: FontWeight.w600,
-                        color: AppColors.ink),
+                        color: DavoColors.of(context).ink),
                   ),
                 ),
               ),
               Text(_order.wallet.symbol,
-                  style: const TextStyle(
+                  style: TextStyle(
                       fontFamily: 'Sora',
                       fontSize: 14,
                       height: 1.35,
-                      color: AppColors.body)),
+                      color: DavoColors.of(context).body)),
             ],
           ),
         ),
@@ -214,21 +214,21 @@ class _BuyAmountScreenState extends State<BuyAmountScreen> {
             alignment: WrapAlignment.center,
             crossAxisAlignment: WrapCrossAlignment.center,
             children: [
-              const Text('≈',
+              Text('≈',
                   style: TextStyle(
                       fontFamily: 'Sora',
                       fontSize: 16,
                       height: 1.2,
-                      color: AppColors.bodyMuted)),
+                      color: DavoColors.of(context).bodyMuted)),
               const SizedBox(width: 4),
               Text(
                 '${formatGroupedAmount(crypto.toStringAsFixed(5))} ${_order.asset.symbol}',
-                style: const TextStyle(
+                style: TextStyle(
                     fontFamily: 'Sora',
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
                     height: 1.35,
-                    color: AppColors.body),
+                    color: DavoColors.of(context).body),
               ),
             ],
           ),
@@ -239,35 +239,37 @@ class _BuyAmountScreenState extends State<BuyAmountScreen> {
           crossAxisAlignment: WrapCrossAlignment.center,
           children: [
             Text('1 ${_order.asset.symbol}',
-                style: const TextStyle(
+                style: TextStyle(
                     fontFamily: 'Sora',
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
                     height: 1.35,
-                    color: AppColors.ink)),
+                    color: DavoColors.of(context).ink)),
             const SizedBox(width: 12),
-            const Text('≈',
+            Text('≈',
                 style: TextStyle(
                     fontFamily: 'Sora',
                     fontSize: 14,
-                    color: AppColors.bodyMuted)),
+                    color: DavoColors.of(context).bodyMuted)),
             const SizedBox(width: 4),
             Text('(₦${_formatNgn(_order.asset.ngnPerUnit)})',
-                style: const TextStyle(
+                style: TextStyle(
                     fontFamily: 'Sora',
                     fontSize: 14,
                     height: 1.35,
-                    color: AppColors.bodyMuted)),
+                    color: DavoColors.of(context).bodyMuted)),
           ],
         ),
         const SizedBox(height: 24),
         _PercentageButtons(balance: _order.wallet.balance, onPick: _setAmount),
         if (_amount > _order.wallet.balance) ...[
           const SizedBox(height: 16),
-          const Text('Amount exceeds your selected wallet balance.',
+          Text('Amount exceeds your selected wallet balance.',
               textAlign: TextAlign.center,
               style: TextStyle(
-                  fontFamily: 'Sora', fontSize: 12, color: AppColors.danger)),
+                  fontFamily: 'Sora',
+                  fontSize: 12,
+                  color: DavoColors.of(context).danger)),
         ],
       ]),
       action: _PrimaryButton(
@@ -289,7 +291,7 @@ class BuyReviewScreen extends StatelessWidget {
   final BuyCryptoOrder order;
   @override
   Widget build(BuildContext context) => Scaffold(
-        backgroundColor: AppColors.offWhite,
+        backgroundColor: DavoColors.of(context).offWhite,
         bottomNavigationBar: SafeArea(
             top: false,
             child: Padding(
@@ -391,40 +393,40 @@ class _BuyProgressScreenState extends State<BuyProgressScreen> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-      backgroundColor: const Color(0xFFF8F9FB),
+      backgroundColor: DavoColors.of(context).canvas,
       appBar: AppBar(
-          backgroundColor: const Color(0xFFF8F9FB),
+          backgroundColor: DavoColors.of(context).canvas,
           surfaceTintColor: Colors.transparent),
       body: SafeArea(
           child: SingleChildScrollView(
               padding: const EdgeInsets.fromLTRB(24, 36, 24, 24),
               child: Column(children: [
                 if (failed)
-                  const Icon(Icons.error_outline_rounded,
-                      size: 56, color: AppColors.danger)
+                  Icon(Icons.error_outline_rounded,
+                      size: 56, color: DavoColors.of(context).danger)
                 else
                   const DavoWorkingIndicator(),
                 const SizedBox(height: 16),
                 Text(
                     'Buying ${formatGroupedAmount(widget.order.cryptoAmount.toStringAsFixed(5))} ${widget.order.asset.symbol}',
                     textAlign: TextAlign.center,
-                    style: const TextStyle(
+                    style: TextStyle(
                         fontFamily: 'Sora',
                         fontSize: 16,
                         height: 1.35,
                         fontWeight: FontWeight.w600,
-                        color: AppColors.ink)),
+                        color: DavoColors.of(context).ink)),
                 const SizedBox(height: 8),
                 Text(
                     failed
                         ? 'Could not complete this transaction. Go back to try again.'
                         : 'Please wait while we process your transaction',
                     textAlign: TextAlign.center,
-                    style: const TextStyle(
+                    style: TextStyle(
                         fontFamily: 'Sora',
                         fontSize: 14,
                         height: 1.35,
-                        color: AppColors.body)),
+                        color: DavoColors.of(context).body)),
               ]))));
 }
 
@@ -438,7 +440,7 @@ class BuySuccessScreen extends StatelessWidget {
         message:
             'You bought ${formatGroupedAmount(order.cryptoAmount.toStringAsFixed(4))} ${order.asset.symbol} for \u20A6${_formatNgn(order.ngnAmount)}.',
         appBar: AppBar(
-            backgroundColor: Colors.white,
+            backgroundColor: DavoColors.of(context).surface,
             leading: IconButton(
               tooltip: 'Back to dashboard',
               icon: const Icon(Icons.arrow_back),
@@ -461,8 +463,8 @@ class BuySuccessScreen extends StatelessWidget {
                         initialOrder: order.copyWith(ngnAmount: 0)))),
             style: FilledButton.styleFrom(
                 minimumSize: const Size(double.infinity, 48),
-                backgroundColor: const Color(0xFFEAF0FB),
-                foregroundColor: AppColors.primary,
+                backgroundColor: DavoColors.of(context).primarySoft,
+                foregroundColor: DavoColors.of(context).link,
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8)),
                 textStyle: const TextStyle(
@@ -484,7 +486,7 @@ class BuyTransactionDetailsScreen extends StatelessWidget {
     final now = DateTime.now();
     final transactionId = '0x3a4f...9c7d';
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FB),
+      backgroundColor: DavoColors.of(context).canvas,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
@@ -502,22 +504,22 @@ class BuyTransactionDetailsScreen extends StatelessWidget {
                     children: [
                       Text(
                         '${formatGroupedAmount(order.cryptoAmount.toStringAsFixed(4))} ${order.asset.symbol}',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontFamily: 'Sora',
                           fontSize: 24,
                           height: 1.35,
                           fontWeight: FontWeight.w700,
-                          color: AppColors.ink,
+                          color: DavoColors.of(context).ink,
                         ),
                       ),
                       const SizedBox(height: 2),
                       Text(
                         '\$${formatGroupedAmount(order.usdAmount.toStringAsFixed(2))} USD',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontFamily: 'Sora',
                           fontSize: 14,
                           height: 1.35,
-                          color: AppColors.body,
+                          color: DavoColors.of(context).body,
                         ),
                       ),
                       const SizedBox(height: 8),
@@ -526,16 +528,16 @@ class BuyTransactionDetailsScreen extends StatelessWidget {
                         height: 31,
                         alignment: Alignment.center,
                         decoration: BoxDecoration(
-                          color: const Color(0xFFE5F9ED),
+                          color: DavoColors.of(context).elevated,
                           borderRadius: BorderRadius.circular(100),
                         ),
-                        child: const Text(
+                        child: Text(
                           'Completed',
                           style: TextStyle(
                             fontFamily: 'Sora',
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
-                            color: Color(0xFF1BA44D),
+                            color: DavoColors.of(context).success,
                           ),
                         ),
                       ),
@@ -544,7 +546,7 @@ class BuyTransactionDetailsScreen extends StatelessWidget {
                         width: double.infinity,
                         padding: const EdgeInsets.fromLTRB(15, 22, 15, 22),
                         decoration: BoxDecoration(
-                          color: Colors.white,
+                          color: DavoColors.of(context).surface,
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Column(
@@ -606,8 +608,8 @@ class BuyTransactionDetailsScreen extends StatelessWidget {
                   },
                   style: FilledButton.styleFrom(
                     elevation: 0,
-                    backgroundColor: const Color(0xFFEAF0FB),
-                    foregroundColor: AppColors.primary,
+                    backgroundColor: DavoColors.of(context).primarySoft,
+                    foregroundColor: DavoColors.of(context).link,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(4),
                     ),
@@ -644,18 +646,18 @@ class _ExactTradeHeader extends StatelessWidget {
             child: InkResponse(
                 onTap: onBack,
                 radius: 22,
-                child: Image.asset('assets/figma_exact/buy_back.png',
+                child: Image.asset('assets/figma_exact/buy_back.png', color: DavoColors.of(context).ink,
                     width: 32, height: 32)),
           ),
           Positioned.fill(
             child: Center(
               child: Text(title,
-                  style: const TextStyle(
+                  style: TextStyle(
                       fontFamily: 'Sora',
                       fontSize: 20,
                       fontWeight: FontWeight.w400,
                       height: 1.35,
-                      color: AppColors.ink)),
+                      color: DavoColors.of(context).ink)),
             ),
           ),
         ],
@@ -669,11 +671,15 @@ class _ExactReviewSummary extends StatelessWidget {
   Widget build(BuildContext context) => Container(
         padding: const EdgeInsets.symmetric(horizontal: 16),
         decoration: BoxDecoration(
-            color: Colors.white, borderRadius: BorderRadius.circular(8)),
+            color: DavoColors.of(context).surface,
+            borderRadius: BorderRadius.circular(8)),
         child: Column(children: [
           for (var i = 0; i < rows.length; i++) ...[
             if (i > 0)
-              const Divider(height: 1, thickness: .5, color: Color(0xFFEBEDF3)),
+              Divider(
+                  height: 1,
+                  thickness: .5,
+                  color: DavoColors.of(context).divider),
             Padding(
                 padding: const EdgeInsets.symmetric(vertical: 18),
                 child: LayoutBuilder(
@@ -681,9 +687,10 @@ class _ExactReviewSummary extends StatelessWidget {
                           SizedBox(
                               width: constraints.maxWidth * .30,
                               child: Text(rows[i].$1,
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                       fontSize: 12,
-                                      color: AppColors.bodyMuted))),
+                                      color:
+                                          DavoColors.of(context).bodyMuted))),
                           const SizedBox(width: 12),
                           Expanded(
                               child: Text(rows[i].$2,
@@ -693,8 +700,8 @@ class _ExactReviewSummary extends StatelessWidget {
                                       height: 1.5,
                                       fontWeight: FontWeight.w500,
                                       color: rows[i].$3
-                                          ? AppColors.primary
-                                          : AppColors.ink))),
+                                          ? DavoColors.of(context).link
+                                          : DavoColors.of(context).ink))),
                         ]))),
           ],
         ]),
@@ -721,7 +728,7 @@ class _TradeTopBar extends StatelessWidget {
               onPressed: onBack,
               padding: EdgeInsets.zero,
               visualDensity: VisualDensity.compact,
-              icon: Image.asset('assets/figma_exact/buy_back.png',
+              icon: Image.asset('assets/figma_exact/buy_back.png', color: DavoColors.of(context).ink,
                   width: 24, height: 24),
             ),
           ),
@@ -732,7 +739,7 @@ class _TradeTopBar extends StatelessWidget {
               fontSize: compactTitle ? 14 : 20,
               height: 1.35,
               fontWeight: compactTitle ? FontWeight.w600 : FontWeight.w400,
-              color: AppColors.ink,
+              color: DavoColors.of(context).ink,
             ),
           ),
         ],
@@ -748,14 +755,16 @@ class _ModeToggle extends StatelessWidget {
   Widget build(BuildContext context) => Container(
         padding: const EdgeInsets.all(6),
         decoration: BoxDecoration(
-            color: const Color(0xFFF3F3F9),
+            color: DavoColors.of(context).fieldFill,
             borderRadius: BorderRadius.circular(999)),
         child: Row(
             children: List.generate(
                 3,
                 (index) => Expanded(
                         child: Material(
-                      color: index == 0 ? Colors.white : Colors.transparent,
+                      color: index == 0
+                          ? DavoColors.of(context).surface
+                          : Colors.transparent,
                       borderRadius: BorderRadius.circular(999),
                       child: InkWell(
                         borderRadius: BorderRadius.circular(999),
@@ -777,8 +786,8 @@ class _ModeToggle extends StatelessWidget {
                                         fontSize: 14,
                                         fontWeight: FontWeight.w600,
                                         color: index == 0
-                                            ? AppColors.primary
-                                            : AppColors.body)))),
+                                            ? DavoColors.of(context).link
+                                            : DavoColors.of(context).body)))),
                       ),
                     )))),
       );
@@ -820,8 +829,8 @@ class _PercentageButtons extends StatelessWidget {
             height: 44,
             alignment: Alignment.center,
             decoration: BoxDecoration(
-              color: const Color(0xFFF8F9FB),
-              border: Border.all(color: const Color(0xFFEEF0F5)),
+              color: DavoColors.of(context).canvas,
+              border: Border.all(color: DavoColors.of(context).border),
               borderRadius: BorderRadius.circular(4),
             ),
             child: Text(
@@ -829,7 +838,9 @@ class _PercentageButtons extends StatelessWidget {
               style: TextStyle(
                 fontFamily: 'Sora',
                 fontSize: 12,
-                color: index == 4 ? AppColors.primary : AppColors.body,
+                color: index == 4
+                    ? DavoColors.of(context).link
+                    : DavoColors.of(context).body,
               ),
             ),
           ),
@@ -856,7 +867,7 @@ class _PrimaryButton extends StatelessWidget {
         style: FilledButton.styleFrom(
           elevation: 0,
           backgroundColor: AppColors.primary,
-          disabledBackgroundColor: AppColors.primaryDisabled,
+          disabledBackgroundColor: DavoColors.of(context).primaryDisabled,
           disabledForegroundColor: Colors.white,
           foregroundColor: Colors.white,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
@@ -872,15 +883,18 @@ class _PrimaryButton extends StatelessWidget {
 class _ReviewExchangeCards extends StatelessWidget {
   const _ReviewExchangeCards({required this.order});
   final BuyCryptoOrder order;
-  Widget _card(String label, Widget icon, String value, String subtitle) =>
+  Widget _card(BuildContext context, String label, Widget icon, String value,
+          String subtitle) =>
       Container(
         width: double.infinity,
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-            color: Colors.white, borderRadius: BorderRadius.circular(8)),
+            color: DavoColors.of(context).surface,
+            borderRadius: BorderRadius.circular(8)),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Text(label,
-              style: const TextStyle(fontSize: 12, color: AppColors.bodyMuted)),
+              style: TextStyle(
+                  fontSize: 12, color: DavoColors.of(context).bodyMuted)),
           const SizedBox(height: 12),
           Row(children: [
             icon,
@@ -894,20 +908,22 @@ class _ReviewExchangeCards extends StatelessWidget {
                           fontSize: 16, fontWeight: FontWeight.w600)),
                   const SizedBox(height: 2),
                   Text(subtitle,
-                      style: const TextStyle(
-                          fontSize: 12, color: AppColors.bodyMuted)),
+                      style: TextStyle(
+                          fontSize: 12,
+                          color: DavoColors.of(context).bodyMuted)),
                 ]))
           ]),
         ]),
       );
   @override
   Widget build(BuildContext context) => Column(children: [
-        _card('You will pay', _WalletBadge(wallet: order.wallet),
+        _card(context, 'You will pay', _WalletBadge(wallet: order.wallet),
             '\u20a6${_formatNgn(order.ngnAmount)}', order.wallet.name),
         Stack(clipBehavior: Clip.none, children: [
           Padding(
               padding: const EdgeInsets.only(top: 10),
               child: _card(
+                  context,
                   'You will receive',
                   BuyAssetIcon(asset: order.asset, size: 32),
                   '${formatGroupedAmount(order.cryptoAmount.toStringAsFixed(5))} ${order.asset.symbol}',
@@ -921,8 +937,9 @@ class _ReviewExchangeCards extends StatelessWidget {
                   child: Container(
                       width: 40,
                       height: 40,
-                      decoration: const BoxDecoration(
-                          color: Color(0xFFF4F7FF), shape: BoxShape.circle),
+                      decoration: BoxDecoration(
+                          color: DavoColors.of(context).primarySoft,
+                          shape: BoxShape.circle),
                       child: const Icon(Icons.arrow_downward_rounded,
                           size: 22, color: AppColors.primary)))),
         ]),
@@ -950,7 +967,7 @@ class _DetailsRow extends StatelessWidget {
         value: value,
         copyable: copyable,
         leading: leading,
-        valueColor: accent ? AppColors.primary : AppColors.ink,
+        valueColor: accent ? AppColors.primary : DavoColors.of(context).ink,
         onCopy: () {
           HapticFeedback.selectionClick();
           showDavoToast(context, 'Transaction ID copied');
@@ -961,9 +978,10 @@ class _DetailsRow extends StatelessWidget {
 class _DetailsDivider extends StatelessWidget {
   const _DetailsDivider();
   @override
-  Widget build(BuildContext context) => const Padding(
-        padding: EdgeInsets.symmetric(vertical: 15),
-        child: Divider(height: 1, thickness: .5, color: Color(0xFFEBEDF3)),
+  Widget build(BuildContext context) => Padding(
+        padding: const EdgeInsets.symmetric(vertical: 15),
+        child: Divider(
+            height: 1, thickness: .5, color: DavoColors.of(context).divider),
       );
 }
 

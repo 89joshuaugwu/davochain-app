@@ -65,27 +65,27 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         if (!didPop && _index > 0) _goTo(_index - 1);
       },
       child: AnnotatedRegion<SystemUiOverlayStyle>(
-        value: const SystemUiOverlayStyle(
+        value: SystemUiOverlayStyle(
             statusBarColor: Colors.transparent,
             statusBarIconBrightness: Brightness.light,
             statusBarBrightness: Brightness.dark,
-            systemNavigationBarColor: Colors.white,
-            systemNavigationBarIconBrightness: Brightness.dark),
+            systemNavigationBarColor: DavoColors.of(context).surface,
+            systemNavigationBarIconBrightness: Theme.of(context).brightness == Brightness.dark ? Brightness.light : Brightness.dark),
         child: Scaffold(
-          backgroundColor: Colors.white,
+          backgroundColor: DavoColors.of(context).surface,
           body: DecoratedBox(
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
                 gradient: LinearGradient(
               begin: Alignment.topCenter,
-              end: Alignment(0, .45),
+              end: const Alignment(0, .45),
               colors: [
                 AppColors.primary,
                 AppColors.primary,
-                Color(0xFF91B6FF),
-                Color(0xFFF0F5FF),
-                Colors.white
+                DavoColors.of(context).isDark ? const Color(0xFF224581) : const Color(0xFF91B6FF),
+                DavoColors.of(context).isDark ? DavoColors.of(context).surface : const Color(0xFFF0F5FF),
+                DavoColors.of(context).surface
               ],
-              stops: [0, .16, .42, .8, 1],
+              stops: const [0, .16, .42, .8, 1],
             )),
             child: SafeArea(
                 child: Column(children: [
@@ -245,13 +245,13 @@ class _WelcomeContent extends StatelessWidget {
                                 fontSize: 28,
                                 height: 1.2,
                                 letterSpacing: -.7,
-                                color: const Color(0xFF102650)))),
+                                color: DavoColors.of(context).ink))),
                 const SizedBox(height: 14),
                 Text(data.body,
                     style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                         fontSize: 15,
                         height: 1.55,
-                        color: const Color(0xFF536078))),
+                        color: DavoColors.of(context).bodyMuted)),
                 const SizedBox(height: 12),
               ]),
         ),

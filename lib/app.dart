@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import 'core/navigation/app_page_route.dart';
 import 'core/navigation/app_routes.dart';
 import 'core/theme/app_theme.dart';
+import 'core/theme/appearance_controller.dart';
 import 'features/auth/presentation/create_password_screen.dart';
 import 'features/auth/presentation/login_flow.dart';
 import 'features/auth/presentation/signup_flow.dart';
@@ -17,10 +19,15 @@ class DavochainApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return ListenableBuilder(
+      listenable: AppearanceController.instance,
+      builder: (context, _) => MaterialApp(
       title: 'Davochain',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
+      darkTheme: AppTheme.dark,
+      themeMode: AppearanceController.instance.mode,
+      themeAnimationDuration: Duration.zero,
       builder: (context, child) => Listener(
         onPointerDown: (event) {
           final focused = FocusManager.instance.primaryFocus;
@@ -32,13 +39,22 @@ class DavochainApp extends StatelessWidget {
             focused?.unfocus();
           }
         },
-        child: MediaQuery.disableAnimationsOf(context)
+        child: AnnotatedRegion<SystemUiOverlayStyle>(
+          value: SystemUiOverlayStyle(
+            statusBarColor: Colors.transparent,
+            statusBarIconBrightness: Theme.of(context).brightness == Brightness.dark ? Brightness.light : Brightness.dark,
+            statusBarBrightness: Theme.of(context).brightness,
+            systemNavigationBarColor: DavoColors.of(context).surface,
+            systemNavigationBarIconBrightness: Theme.of(context).brightness == Brightness.dark ? Brightness.light : Brightness.dark,
+          ),
+          child: MediaQuery.disableAnimationsOf(context)
             ? Theme(
                 data: Theme.of(context)
                     .copyWith(splashFactory: NoSplash.splashFactory),
                 child: child!,
               )
             : child!,
+        ),
       ),
       scrollBehavior:
           const MaterialScrollBehavior().copyWith(overscroll: false),
@@ -82,6 +98,6 @@ class DavochainApp extends StatelessWidget {
             settings: settings,
             authHandoff: settings.arguments is AuthHandoff);
       },
-    );
+    ));
   }
 }

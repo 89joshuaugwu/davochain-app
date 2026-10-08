@@ -13,11 +13,11 @@ class DavoSheetHeader extends StatelessWidget {
           Expanded(
               child: Text(title,
                   textAlign: TextAlign.center,
-                  style: const TextStyle(
+                  style: TextStyle(
                       fontFamily: 'Sora',
                       fontSize: 14,
                       height: 1.35,
-                      color: AppColors.ink))),
+                      color: DavoColors.of(context).ink))),
           IconButton(
               tooltip: 'Close',
               onPressed: () => Navigator.pop(context),

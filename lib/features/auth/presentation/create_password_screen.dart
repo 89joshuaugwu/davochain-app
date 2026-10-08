@@ -47,7 +47,7 @@ class _CreatePasswordScreenState extends State<CreatePasswordScreen> {
     return 'Strong Password';
   }
 
-  Color get _strengthColor => PasswordStrengthPalette.forScore(_score);
+  Color get _strengthColor => PasswordStrengthPalette.forScore(_score, context: context);
 
   void _refresh(String _) => setState(() {});
 
@@ -173,8 +173,8 @@ class _PasswordStrength extends StatelessWidget {
             height: 8,
             child: Stack(
               children: [
-                const Positioned.fill(
-                  child: ColoredBox(color: AppColors.mutedSoft),
+                Positioned.fill(
+                  child: ColoredBox(color: DavoColors.of(context).mutedSoft),
                 ),
                 AnimatedFractionallySizedBox(
                   duration: const Duration(milliseconds: 160),
@@ -222,7 +222,7 @@ class _Criterion extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = met ? const Color(0xFF13803D) : AppColors.bodyMuted;
+    final color = met ? DavoColors.of(context).success : DavoColors.of(context).bodyMuted;
     return AnimatedDefaultTextStyle(
       duration: const Duration(milliseconds: 220),
       style: TextStyle(
@@ -240,7 +240,7 @@ class _Criterion extends StatelessWidget {
             height: 8,
             decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: met ? AppColors.success : AppColors.border),
+                color: met ? DavoColors.of(context).success : DavoColors.of(context).border),
           ),
           const SizedBox(width: 9),
           Text(label),

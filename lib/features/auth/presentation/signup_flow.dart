@@ -105,7 +105,7 @@ class _CountrySelectionScreenState extends State<CountrySelectionScreen> {
     sheetAnimationStyle: (MediaQuery.disableAnimationsOf(context) || MediaQuery.accessibleNavigationOf(context)) ? AnimationStyle.noAnimation : const AnimationStyle(duration: Duration(milliseconds: 280), reverseDuration: Duration(milliseconds: 200)),
       useSafeArea: true,
       showDragHandle: true,
-      backgroundColor: Colors.white,
+      backgroundColor: DavoColors.of(context).surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -131,7 +131,7 @@ class _CountryField extends StatelessWidget {
         child: Ink(
           height: 48,
           decoration: BoxDecoration(
-            border: Border.all(color: AppColors.border),
+            border: Border.all(color: DavoColors.of(context).border),
             borderRadius: BorderRadius.circular(4),
           ),
           padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -147,7 +147,7 @@ class _CountryField extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 16,
                     height: 1.35,
-                    color: country == null ? AppColors.muted : AppColors.body,
+                    color: country == null ? DavoColors.of(context).muted : DavoColors.of(context).body,
                   ),
                 ),
               ),
@@ -182,10 +182,10 @@ class _AgreementCopy extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final style = Theme.of(context).textTheme.bodySmall?.copyWith(
-          color: AppColors.body,
+          color: DavoColors.of(context).body,
           height: 1.25,
         );
-    final link = style?.copyWith(color: AppColors.primary);
+    final link = style?.copyWith(color: DavoColors.of(context).link);
 
     return RichText(
       text: TextSpan(
@@ -385,9 +385,9 @@ class _PhoneField extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'Phone Number',
-          style: TextStyle(fontSize: 16, height: 1.35, color: AppColors.body),
+          style: TextStyle(fontSize: 16, height: 1.35, color: DavoColors.of(context).body),
         ),
         const SizedBox(height: 4),
         Row(
@@ -397,7 +397,7 @@ class _PhoneField extends StatelessWidget {
               constraints: const BoxConstraints(minWidth: 82),
               padding: const EdgeInsets.symmetric(horizontal: 9),
               decoration: BoxDecoration(
-                border: Border.all(color: AppColors.border),
+                border: Border.all(color: DavoColors.of(context).border),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Row(
@@ -408,7 +408,7 @@ class _PhoneField extends StatelessWidget {
                   const SizedBox(width: 5),
                   Text(country.dialCode,
                       style:
-                          const TextStyle(fontSize: 12, color: AppColors.body)),
+                          TextStyle(fontSize: 12, color: DavoColors.of(context).body)),
                 ],
               ),
             ),
@@ -427,18 +427,18 @@ class _PhoneField extends StatelessWidget {
                   ],
                   onChanged: (_) => onChanged(),
                   style:
-                      const TextStyle(fontSize: 14, color: AppColors.bodyMuted),
+                      TextStyle(fontSize: 14, color: DavoColors.of(context).bodyMuted),
                   decoration: InputDecoration(
                     hintText: country.name == 'Nigeria'
                         ? '9062568004'
                         : 'Phone number',
                     hintStyle:
-                        const TextStyle(fontSize: 14, color: AppColors.muted),
+                        TextStyle(fontSize: 14, color: DavoColors.of(context).muted),
                     contentPadding: const EdgeInsets.symmetric(
                         horizontal: 16, vertical: 12),
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
-                      borderSide: const BorderSide(color: Color(0x14121212)),
+                      borderSide: BorderSide(color: DavoColors.of(context).isDark ? DavoColors.of(context).border : const Color(0x14121212)),
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),

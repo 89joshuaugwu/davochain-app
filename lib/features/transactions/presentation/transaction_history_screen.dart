@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/navigation/app_page_route.dart';
-import '../../../core/theme/app_theme.dart';
+import '../../../core/theme/davo_colors.dart';
 import '../../buy_crypto/presentation/buy_crypto_models.dart';
 import '../../buy_crypto/presentation/buy_crypto_screens.dart';
 import '../../crypto/presentation/crypto_full_flow.dart';
@@ -28,8 +28,8 @@ class TransactionHistoryScreen extends StatelessWidget {
         appBar: AppBar(
           title: const Text('History'),
           centerTitle: true,
-          backgroundColor: Colors.white,
-          foregroundColor: AppColors.ink,
+          backgroundColor: DavoColors.of(context).surface,
+          foregroundColor: DavoColors.of(context).ink,
           surfaceTintColor: Colors.transparent,
         ),
         body: SafeArea(
@@ -40,15 +40,15 @@ class TransactionHistoryScreen extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
-                  color: AppColors.primarySoft,
+                  color: DavoColors.of(context).primarySoft,
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Row(
+                child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Icon(Icons.info_outline,
-                        size: 20, color: AppColors.primary),
-                    SizedBox(width: 10),
+                        size: 20, color: DavoColors.of(context).link),
+                    const SizedBox(width: 10),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -57,11 +57,12 @@ class TransactionHistoryScreen extends StatelessWidget {
                               style: TextStyle(
                                   fontSize: 13,
                                   fontWeight: FontWeight.w600,
-                                  color: AppColors.primary)),
-                          SizedBox(height: 4),
+                                  color: DavoColors.of(context).link)),
+                          const SizedBox(height: 4),
                           Text('Preview data only. No funds have been moved.',
                               style: TextStyle(
-                                  fontSize: 12, color: AppColors.body)),
+                                  fontSize: 12,
+                                  color: DavoColors.of(context).body)),
                         ],
                       ),
                     ),
@@ -69,16 +70,16 @@ class TransactionHistoryScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 24),
-              const Text('Recent activity',
+              Text('Recent activity',
                   style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
-                      color: AppColors.ink)),
+                      color: DavoColors.of(context).ink)),
               const SizedBox(height: 12),
               for (final sample in _samples) ...[
                 _TransactionRow(sample: sample),
                 if (sample != _samples.last)
-                  const Divider(height: 1, color: AppColors.mutedSoft),
+                  Divider(height: 1, color: DavoColors.of(context).divider),
               ],
             ],
           ),
@@ -132,9 +133,11 @@ class _TransactionRow extends StatelessWidget {
               Container(
                 width: 42,
                 height: 42,
-                decoration: const BoxDecoration(
-                    color: AppColors.primarySoft, shape: BoxShape.circle),
-                child: Icon(sample.icon, color: AppColors.primary, size: 22),
+                decoration: BoxDecoration(
+                    color: DavoColors.of(context).primarySoft,
+                    shape: BoxShape.circle),
+                child: Icon(sample.icon,
+                    color: DavoColors.of(context).link, size: 22),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -142,29 +145,31 @@ class _TransactionRow extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(sample.title,
-                        style: const TextStyle(
+                        style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
-                            color: AppColors.ink)),
+                            color: DavoColors.of(context).ink)),
                     const SizedBox(height: 5),
                     Text(sample.amount,
-                        style: const TextStyle(
-                            fontSize: 13, color: AppColors.body)),
+                        style: TextStyle(
+                            fontSize: 13, color: DavoColors.of(context).body)),
                     const SizedBox(height: 5),
                     Text(sample.date,
-                        style: const TextStyle(
-                            fontSize: 11, color: AppColors.bodyMuted)),
+                        style: TextStyle(
+                            fontSize: 11,
+                            color: DavoColors.of(context).bodyMuted)),
                   ],
                 ),
               ),
               const SizedBox(width: 8),
-              const Column(
+              Column(
                 children: [
                   Text('Completed',
-                      style: TextStyle(fontSize: 11, color: Color(0xFF1BA44D))),
-                  SizedBox(height: 8),
+                      style: TextStyle(
+                          fontSize: 11, color: DavoColors.of(context).success)),
+                  const SizedBox(height: 8),
                   Icon(Icons.chevron_right,
-                      color: AppColors.bodyMuted, size: 20),
+                      color: DavoColors.of(context).bodyMuted, size: 20),
                 ],
               ),
             ],

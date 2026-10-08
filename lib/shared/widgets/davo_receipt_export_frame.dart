@@ -43,7 +43,7 @@ class _DavoReceiptExportFrameState extends State<DavoReceiptExportFrame> {
     sheetAnimationStyle: (MediaQuery.disableAnimationsOf(context) || MediaQuery.accessibleNavigationOf(context)) ? AnimationStyle.noAnimation : const AnimationStyle(duration: Duration(milliseconds: 280), reverseDuration: Duration(milliseconds: 200)),
         showDragHandle: true,
         isScrollControlled: true,
-        backgroundColor: Colors.white,
+        backgroundColor: DavoColors.of(context).elevated,
         builder: (_) => _ReceiptShareSheet(receipt: file, service: _service),
       );
     } catch (_) {
@@ -58,10 +58,10 @@ class _DavoReceiptExportFrameState extends State<DavoReceiptExportFrame> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-        backgroundColor: Colors.white,
+        backgroundColor: DavoColors.of(context).canvas,
         appBar: AppBar(
-            backgroundColor: Colors.white,
-            surfaceTintColor: Colors.white,
+            backgroundColor: DavoColors.of(context).surface,
+            surfaceTintColor: Colors.transparent,
             centerTitle: true,
             title: Text(widget.title,
                 style: const TextStyle(
@@ -75,7 +75,7 @@ class _DavoReceiptExportFrameState extends State<DavoReceiptExportFrame> {
               child: RepaintBoundary(
                   key: _receiptKey,
                   child:
-                      ColoredBox(color: Colors.white, child: widget.receipt)),
+                      Theme(data: AppTheme.light, child: ColoredBox(color: Colors.white, child: widget.receipt))),
             )),
         bottomNavigationBar: SafeArea(
           top: false,
@@ -117,8 +117,8 @@ class _ExportButton extends StatelessWidget {
         style: OutlinedButton.styleFrom(
           minimumSize: const Size(0, 52),
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
-          foregroundColor: AppColors.primary,
-          side: const BorderSide(color: Color(0xFFD0DEFD)),
+          foregroundColor: DavoColors.of(context).link,
+          side: BorderSide(color: DavoColors.of(context).border),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         ),
         child: Column(mainAxisSize: MainAxisSize.min, children: [
@@ -182,7 +182,7 @@ class _ReceiptShareSheetState extends State<_ReceiptShareSheet> {
       onPressed: _busy ? null : () => _act(actionContext, action),
       style: TextButton.styleFrom(
           padding: const EdgeInsets.symmetric(vertical: 6),
-          foregroundColor: AppColors.ink),
+          foregroundColor: DavoColors.of(actionContext).ink),
       child: Column(mainAxisSize: MainAxisSize.min, children: [
         Container(
             width: 40,
@@ -194,7 +194,7 @@ class _ReceiptShareSheetState extends State<_ReceiptShareSheet> {
                     : action == 'Telegram'
                         ? const Color(0xFF29A9EA)
                         : action == 'More'
-                            ? const Color(0xFFEEF0F5)
+                            ? DavoColors.of(actionContext).mutedSoft
                             : AppColors.primary),
             child: Center(
                 child: action == 'X' || action == 'Telegram'
@@ -212,7 +212,7 @@ class _ReceiptShareSheetState extends State<_ReceiptShareSheet> {
                             : Icons.more_horiz_rounded,
                         size: 24,
                         color:
-                            action == 'More' ? AppColors.ink : Colors.white))),
+                            action == 'More' ? DavoColors.of(actionContext).ink : Colors.white))),
         const SizedBox(height: 6),
         Text(action,
             textAlign: TextAlign.center,

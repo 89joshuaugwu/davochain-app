@@ -110,27 +110,30 @@ class _GiftCardHomeScreenState extends State<GiftCardHomeScreen> {
         children: [
           _TopBar(title: 'Gift cards', onBack: () => Navigator.pop(context)),
           const SizedBox(height: 22),
-          const Text('Gift Cards', style: _title20),
+          Text('Gift Cards', style: _title20(context)),
           const SizedBox(height: 2),
-          const Text('Buy and sell gift cards instantly', style: _body14),
+          Text('Buy and sell gift cards instantly', style: _body14(context)),
           const SizedBox(height: 18),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-            decoration: _softCard,
-            child: const Row(
+            decoration: _softCard(context),
+            child: Row(
               children: [
-                Expanded(child: _Stat(label: '24h Volume', value: '₦42M')),
+                const Expanded(
+                    child: _Stat(label: '24h Volume', value: '₦42M')),
                 SizedBox(
                     height: 38,
-                    child: VerticalDivider(color: Color(0xFFEBEDF3))),
-                Expanded(child: _Stat(label: 'Active Now', value: '2,840')),
+                    child:
+                        VerticalDivider(color: DavoColors.of(context).divider)),
+                const Expanded(
+                    child: _Stat(label: 'Active Now', value: '2,840')),
               ],
             ),
           ),
           const SizedBox(height: 16),
           _ModeTabs(mode: mode, onChanged: _setMode),
           const SizedBox(height: 22),
-          const Text('Top Gift Cards', style: _section),
+          Text('Top Gift Cards', style: _section(context)),
           const SizedBox(height: 12),
           Row(
             children: [
@@ -150,7 +153,7 @@ class _GiftCardHomeScreenState extends State<GiftCardHomeScreen> {
             ],
           ),
           const SizedBox(height: 24),
-          const Text('Popular Brands', style: _section),
+          Text('Popular Brands', style: _section(context)),
           const SizedBox(height: 12),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -169,8 +172,9 @@ class _GiftCardHomeScreenState extends State<GiftCardHomeScreen> {
           Center(
               child: TextButton(
                   onPressed: _openSelector,
-                  child: const Text('View All',
-                      style: TextStyle(fontSize: 12, color: AppColors.body)))),
+                  child: Text('View All',
+                      style: TextStyle(
+                          fontSize: 12, color: DavoColors.of(context).body)))),
           const SizedBox(height: 12),
         ],
       ),
@@ -240,13 +244,13 @@ class _GiftCardBrandScreenState extends State<GiftCardBrandScreen> {
                         widget.mode == GiftCardMode.buy
                             ? 'Buy Gift Card'
                             : 'Sell Gift Card',
-                        style: _title24),
+                        style: _title24(context)),
                     const SizedBox(height: 3),
                     Text(
                         widget.mode == GiftCardMode.buy
                             ? 'Buy gift cards instantly'
                             : 'Sell gift cards instantly',
-                        style: _body14),
+                        style: _body14(context)),
                   ],
                 ),
               ),
@@ -257,22 +261,26 @@ class _GiftCardBrandScreenState extends State<GiftCardBrandScreen> {
           const SizedBox(height: 18),
           Container(
             height: 48,
-            decoration: _fieldDecoration.copyWith(
-                color: const Color(0xFFF6F7FB),
+            decoration: _fieldDecoration(context).copyWith(
+                color: DavoColors.of(context).offWhite,
                 borderRadius: BorderRadius.circular(24)),
             padding: const EdgeInsets.symmetric(horizontal: 14),
             child: Row(
               children: [
-                Image.asset('$_g/search.png', width: 22, height: 22),
+                Image.asset('$_g/search.png',
+                    color: DavoColors.of(context).bodyMuted,
+                    width: 22,
+                    height: 22),
                 const SizedBox(width: 10),
                 Expanded(
                   child: TextField(
+                    keyboardAppearance: Theme.of(context).brightness,
                     controller: controller,
                     onChanged: (_) => setState(() {}),
                     textInputAction: TextInputAction.search,
                     decoration: const DavoInlineInputDecoration(
                         hintText: 'Search 50+ gift card brands...'),
-                    style: _body14,
+                    style: _body14(context),
                   ),
                 ),
               ],
@@ -301,7 +309,7 @@ class _GiftCardBrandScreenState extends State<GiftCardBrandScreen> {
             ),
           ],
           const SizedBox(height: 22),
-          const Text('TOP RATES', style: _eyebrow),
+          Text('TOP RATES', style: _eyebrow(context)),
           const SizedBox(height: 8),
           _BrandListTile(
               brand: _brands[0],
@@ -310,7 +318,7 @@ class _GiftCardBrandScreenState extends State<GiftCardBrandScreen> {
           const SizedBox(height: 8),
           _BrandListTile(brand: _brands[1], onTap: () => _open(_brands[1])),
           const SizedBox(height: 22),
-          const Text('ALL BRANDS', style: _eyebrow),
+          Text('ALL BRANDS', style: _eyebrow(context)),
           const SizedBox(height: 8),
           ...visible.skip(2).map((brand) => Padding(
                 padding: const EdgeInsets.only(bottom: 8),
@@ -380,7 +388,7 @@ class _GiftCardSellFormScreenState extends State<GiftCardSellFormScreen> {
         children: [
           _TopBar(title: 'Sell Card', onBack: () => Navigator.pop(context)),
           const SizedBox(height: 14),
-          Text('Sell ${widget.brand.name}', style: _title24),
+          Text('Sell ${widget.brand.name}', style: _title24(context)),
           const SizedBox(height: 8),
           const _StepProgress(step: 1),
           const SizedBox(height: 24),
@@ -389,7 +397,7 @@ class _GiftCardSellFormScreenState extends State<GiftCardSellFormScreen> {
               runSpacing: 8,
               crossAxisAlignment: WrapCrossAlignment.center,
               children: [
-                const Text('Sort by:', style: _body14),
+                Text('Sort by:', style: _body14(context)),
                 _TwoChoice(
                     left: 'Physical',
                     right: 'E-code',
@@ -434,9 +442,13 @@ class _GiftCardSellFormScreenState extends State<GiftCardSellFormScreen> {
               width: double.infinity,
               height: uploaded ? 118 : 74,
               decoration: BoxDecoration(
-                color: uploaded ? const Color(0xFFF8F9FB) : Colors.white,
+                color: uploaded
+                    ? DavoColors.of(context).offWhite
+                    : DavoColors.of(context).surface,
                 border: Border.all(
-                    color: uploaded ? AppColors.primary : AppColors.mutedSoft),
+                    color: uploaded
+                        ? AppColors.primary
+                        : DavoColors.of(context).border),
                 borderRadius: BorderRadius.circular(6),
               ),
               alignment: Alignment.center,
@@ -449,9 +461,12 @@ class _GiftCardSellFormScreenState extends State<GiftCardSellFormScreen> {
                   : Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Image.asset('$_g/gallery.png', width: 24, height: 24),
+                        Image.asset('$_g/gallery.png',
+                            color: DavoColors.of(context).bodyMuted,
+                            width: 24,
+                            height: 24),
                         const SizedBox(width: 8),
-                        const Text('Upload Card Image(s)', style: _body14),
+                        Text('Upload Card Image(s)', style: _body14(context)),
                       ],
                     ),
             ),
@@ -518,14 +533,15 @@ class _GiftCardSellReviewScreenState extends State<GiftCardSellReviewScreen> {
         children: [
           _TopBar(title: 'Sell Card', onBack: () => Navigator.pop(context)),
           const SizedBox(height: 12),
-          Text('Sell ${widget.brand.name}', style: _title24),
+          Text('Sell ${widget.brand.name}', style: _title24(context)),
           const SizedBox(height: 8),
           const _StepProgress(step: 2),
           const SizedBox(height: 22),
-          const Center(child: Text('Trade Breakdown', style: _title20)),
+          Center(child: Text('Trade Breakdown', style: _title20(context))),
           const SizedBox(height: 3),
-          const Center(
-              child: Text('Kindly read the terms carefully', style: _caption)),
+          Center(
+              child: Text('Kindly read the terms carefully',
+                  style: _caption(context))),
           const SizedBox(height: 18),
           _BreakdownCard(
               amount: widget.amount,
@@ -549,22 +565,22 @@ class _GiftCardSellReviewScreenState extends State<GiftCardSellReviewScreen> {
                 ),
               ])),
           const SizedBox(height: 14),
-          const Text('Trade Terms',
+          Text('Trade Terms',
               style: TextStyle(
                   fontFamily: 'Sora',
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.primary)),
+                  color: DavoColors.of(context).link)),
           const SizedBox(height: 6),
-          const Text(
+          Text(
             'Please ensure you have uploaded a physical picture of your FRANCE iTunes gift card purchased from the store. iTunes gift card codes start with X and are 16 digits.',
-            style: _caption,
+            style: _caption(context),
           ),
           const SizedBox(height: 16),
           if (!confirmed)
             Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: _outlinedCard,
+                decoration: _outlinedCard(context),
                 child: Row(children: [
                   DavoAnimatedCheckbox(
                       value: accepted,
@@ -574,15 +590,14 @@ class _GiftCardSellReviewScreenState extends State<GiftCardSellReviewScreen> {
                   Expanded(
                       child: GestureDetector(
                           onTap: () => setState(() => accepted = !accepted),
-                          child: const Text(
-                              'I have read and accepted the terms',
-                              style: _caption))),
+                          child: Text('I have read and accepted the terms',
+                              style: _caption(context)))),
                 ])),
           if (confirmed) ...[
             const SizedBox(height: 16),
             Container(
                 padding: const EdgeInsets.all(8),
-                decoration: _softCard,
+                decoration: _softCard(context),
                 child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -599,13 +614,12 @@ class _GiftCardSellReviewScreenState extends State<GiftCardSellReviewScreen> {
                             GestureDetector(
                                 onTap: () =>
                                     setState(() => cardValid = !cardValid),
-                                child: const Text(
-                                    'I confirm this card is valid',
-                                    style: _section)),
+                                child: Text('I confirm this card is valid',
+                                    style: _section(context))),
                             const SizedBox(height: 4),
-                            const Text(
+                            Text(
                                 'Submitting invalid or used cards may result in account restrictions.',
-                                style: _caption),
+                                style: _caption(context)),
                           ])),
                     ])),
           ],
@@ -633,26 +647,28 @@ class _GiftCardSellSubmittedScreenState
           Align(
               alignment: Alignment.centerLeft,
               child: _BackButton(onTap: () => Navigator.pop(context))),
-          const Expanded(
+          Expanded(
               child: SingleChildScrollView(
                   child: Padding(
-                      padding: EdgeInsets.symmetric(vertical: 28),
+                      padding: const EdgeInsets.symmetric(vertical: 28),
                       child: DavoOutcomeContent(
                           kind: DavoOutcomeKind.submitted,
                           semanticLabel: 'Trade submitted; review pending',
                           heading: Column(children: [
-                            Text('Transaction Submitted', style: _title20),
-                            SizedBox(height: 4),
-                            Text.rich(TextSpan(style: _caption, children: [
-                              TextSpan(text: 'Current Trade Status: '),
+                            Text('Transaction Submitted',
+                                style: _title20(context)),
+                            const SizedBox(height: 4),
+                            Text.rich(
+                                TextSpan(style: _caption(context), children: [
+                              const TextSpan(text: 'Current Trade Status: '),
                               TextSpan(
                                   text: 'Pending',
                                   style: TextStyle(
-                                      color: Color(0xFF986000),
+                                      color: DavoColors.of(context).warning,
                                       fontWeight: FontWeight.w500))
                             ]))
                           ]),
-                          details: _TransactionCard(
+                          details: const _TransactionCard(
                             rows: [
                               (
                                 'Transaction ID',
@@ -709,41 +725,41 @@ class _GiftCardVerificationScreenState
           const SizedBox(height: 20),
           const DavoWorkingIndicator(kind: DavoWorkingKind.reviewPending),
           const SizedBox(height: 20),
-          const Text('Verifying your card...', style: _title20),
+          Text('Verifying your card...', style: _title20(context)),
           const SizedBox(height: 5),
-          const Text('This usually takes 5–30 minutes', style: _caption),
+          Text('This usually takes 5–30 minutes', style: _caption(context)),
           const SizedBox(height: 24),
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(16),
-            decoration: _outlinedCard.copyWith(boxShadow: [
+            decoration: _outlinedCard(context).copyWith(boxShadow: [
               const BoxShadow(
                   color: Color(0x14000000),
                   blurRadius: 12,
                   offset: Offset(0, 3))
             ]),
-            child: const Column(
+            child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Verification Progress', style: _section),
-                Divider(height: 28, color: Color(0xFFEBEDF3)),
-                _ProgressRow(
+                Text('Verification Progress', style: _section(context)),
+                Divider(height: 28, color: DavoColors.of(context).divider),
+                const _ProgressRow(
                     color: AppColors.primary,
                     title: 'Submission received',
                     meta: 'Just now'),
-                _TimelineLine(active: true),
+                const _TimelineLine(active: true),
                 _ProgressRow(
-                    color: Color(0xFFF59E0B),
+                    color: DavoColors.of(context).warning,
                     title: 'Photo verification',
                     meta: 'In progress'),
-                _TimelineLine(active: false),
+                const _TimelineLine(active: false),
                 _ProgressRow(
-                    color: Color(0xFFD2D2D2),
+                    color: DavoColors.of(context).muted,
                     title: 'Card validation',
                     meta: 'Up next'),
-                _TimelineLine(active: false),
+                const _TimelineLine(active: false),
                 _ProgressRow(
-                    color: Color(0xFFD2D2D2),
+                    color: DavoColors.of(context).muted,
                     title: 'Funds credited',
                     meta: '~25 mins'),
               ],
@@ -753,17 +769,17 @@ class _GiftCardVerificationScreenState
           Container(
             width: double.infinity,
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
-            decoration: _softCard,
+            decoration: _softCard(context),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Expanded(
+                Expanded(
                     child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                      Text('Reference', style: _caption),
-                      SizedBox(height: 4),
-                      Text('GC-SELL-2826491', style: _section),
+                      Text('Reference', style: _caption(context)),
+                      const SizedBox(height: 4),
+                      Text('GC-SELL-2826491', style: _section(context)),
                     ])),
                 const SizedBox(width: 10),
                 TextButton.icon(
@@ -775,7 +791,7 @@ class _GiftCardVerificationScreenState
                       }
                     },
                     style: TextButton.styleFrom(
-                        backgroundColor: const Color(0xFFE1EBFF),
+                        backgroundColor: DavoColors.of(context).primarySoft,
                         foregroundColor: AppColors.primary,
                         minimumSize: const Size(0, 44),
                         padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -786,15 +802,15 @@ class _GiftCardVerificationScreenState
             ),
           ),
           const SizedBox(height: 12),
-          const Text.rich(
+          Text.rich(
             TextSpan(children: [
-              TextSpan(text: 'Need help? ', style: _caption),
+              TextSpan(text: 'Need help? ', style: _caption(context)),
               TextSpan(
                   text: 'Contact support',
                   style: TextStyle(
                       fontFamily: 'Sora',
                       fontSize: 12,
-                      color: AppColors.primary,
+                      color: DavoColors.of(context).link,
                       fontWeight: FontWeight.w600))
             ]),
           ),
@@ -848,7 +864,7 @@ class _GiftCardBuyFormScreenState extends State<GiftCardBuyFormScreen> {
         children: [
           _TopBar(title: 'Buy Card', onBack: () => Navigator.pop(context)),
           const SizedBox(height: 14),
-          Text('Buy ${widget.brand.name}', style: _title24),
+          Text('Buy ${widget.brand.name}', style: _title24(context)),
           const SizedBox(height: 8),
           const _StepProgress(step: 1),
           const SizedBox(height: 24),
@@ -879,7 +895,7 @@ class _GiftCardBuyFormScreenState extends State<GiftCardBuyFormScreen> {
           const SizedBox(height: 10),
           Container(
             height: 52,
-            decoration: _fieldDecoration,
+            decoration: _fieldDecoration(context),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -890,7 +906,7 @@ class _GiftCardBuyFormScreenState extends State<GiftCardBuyFormScreen> {
                 AnimatedSwitcher(
                     duration: const Duration(milliseconds: 160),
                     child: Text('$quantity',
-                        key: ValueKey(quantity), style: _section)),
+                        key: ValueKey(quantity), style: _section(context))),
                 _QuantityButton(
                     label: '+',
                     filled: true,
@@ -940,7 +956,7 @@ class _GiftCardDeliveryScreenState extends State<GiftCardDeliveryScreen> {
         children: [
           _TopBar(title: 'Buy Card', onBack: () => Navigator.pop(context)),
           const SizedBox(height: 14),
-          Text('Buy ${widget.brand.name}', style: _title24),
+          Text('Buy ${widget.brand.name}', style: _title24(context)),
           const SizedBox(height: 8),
           const _StepProgress(step: 1),
           const SizedBox(height: 20),
@@ -963,7 +979,7 @@ class _GiftCardDeliveryScreenState extends State<GiftCardDeliveryScreen> {
           ),
           const SizedBox(height: 22),
           Text(forMe ? 'Delivery Details' : 'Recipient Details',
-              style: _section),
+              style: _section(context)),
           const SizedBox(height: 12),
           const _Label('Email Address'),
           const SizedBox(height: 6),
@@ -981,7 +997,7 @@ class _GiftCardDeliveryScreenState extends State<GiftCardDeliveryScreen> {
               hint: '234 000 0000 000',
               keyboard: TextInputType.phone),
           const SizedBox(height: 22),
-          const Text('Delivery Method', style: _section),
+          Text('Delivery Method', style: _section(context)),
           const SizedBox(height: 10),
           _DeliveryChoice(
             title: 'Instant Delivery',
@@ -1042,14 +1058,15 @@ class GiftCardBuyReviewScreen extends StatelessWidget {
           _TopBar(
               title: 'Review Purchase', onBack: () => Navigator.pop(context)),
           const SizedBox(height: 16),
-          Text('Buy ${brand.name}', style: _title24),
+          Text('Buy ${brand.name}', style: _title24(context)),
           const SizedBox(height: 8),
           const _StepProgress(step: 1),
           const SizedBox(height: 22),
-          const Center(child: Text('Trade Breakdown', style: _title20)),
+          Center(child: Text('Trade Breakdown', style: _title20(context))),
           const SizedBox(height: 3),
-          const Center(
-              child: Text('Kindly read the terms carefully', style: _caption)),
+          Center(
+              child: Text('Kindly read the terms carefully',
+                  style: _caption(context))),
           const SizedBox(height: 18),
           _BreakdownCard(
               amount: amount * quantity,
@@ -1085,11 +1102,11 @@ class _GiftCardPaymentScreenState extends State<GiftCardPaymentScreen> {
               alignment: Alignment.centerLeft,
               child: _BackButton(onTap: () => Navigator.pop(context))),
           const SizedBox(height: 24),
-          const Text('Choose payment method', style: _title20),
+          Text('Choose payment method', style: _title20(context)),
           const SizedBox(height: 5),
-          const Text(
+          Text(
               'Select how you would like to fund your gift card purchase. Balance updates are near-instant.',
-              style: _caption),
+              style: _caption(context)),
           const SizedBox(height: 24),
           InkWell(
             onTap: () => setState(() => selected = true),
@@ -1099,11 +1116,11 @@ class _GiftCardPaymentScreenState extends State<GiftCardPaymentScreen> {
               height: 128,
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
               decoration: BoxDecoration(
-                color: const Color(0xFFF8F9FB),
+                color: DavoColors.of(context).offWhite,
                 border: Border.all(
                     color: selected
-                        ? const Color(0xFFC4C5CA)
-                        : AppColors.mutedSoft),
+                        ? DavoColors.of(context).border
+                        : DavoColors.of(context).border),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Row(
@@ -1112,8 +1129,9 @@ class _GiftCardPaymentScreenState extends State<GiftCardPaymentScreen> {
                   Container(
                     width: 56,
                     height: 56,
-                    decoration: const BoxDecoration(
-                        color: Color(0xFFF0F4FD), shape: BoxShape.circle),
+                    decoration: BoxDecoration(
+                        color: DavoColors.of(context).primarySoft,
+                        shape: BoxShape.circle),
                     alignment: Alignment.center,
                     child: Image.asset('$_f/buy_nigeria.png',
                         width: 24, height: 24, fit: BoxFit.contain),
@@ -1123,24 +1141,24 @@ class _GiftCardPaymentScreenState extends State<GiftCardPaymentScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text('NGN Wallet Balance', style: _section),
+                        Text('NGN Wallet Balance', style: _section(context)),
                         const SizedBox(height: 4),
-                        const Text('Available balance: ₦1,240,500.00',
+                        Text('Available balance: ₦1,240,500.00',
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: _body14),
+                            style: _body14(context)),
                         const SizedBox(height: 12),
                         Container(
                           padding: const EdgeInsets.symmetric(
                               horizontal: 12, vertical: 4),
                           decoration: BoxDecoration(
-                              color: const Color(0xFFE9EEFA),
+                              color: DavoColors.of(context).primarySoft,
                               borderRadius: BorderRadius.circular(999)),
-                          child: const Text('INSTANT SETTLEMENT',
+                          child: Text('INSTANT SETTLEMENT',
                               style: TextStyle(
                                   fontFamily: 'Sora',
                                   fontSize: 12,
-                                  color: AppColors.primary)),
+                                  color: DavoColors.of(context).link)),
                         ),
                       ],
                     ),
@@ -1154,8 +1172,8 @@ class _GiftCardPaymentScreenState extends State<GiftCardPaymentScreen> {
             width: double.infinity,
             padding: const EdgeInsets.fromLTRB(22, 16, 22, 14),
             decoration: BoxDecoration(
-              color: Colors.white,
-              border: Border.all(color: const Color(0xFFF5F6F9)),
+              color: DavoColors.of(context).surface,
+              border: Border.all(color: DavoColors.of(context).divider),
               borderRadius: BorderRadius.circular(14),
             ),
             child: Column(
@@ -1167,16 +1185,16 @@ class _GiftCardPaymentScreenState extends State<GiftCardPaymentScreen> {
                     Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text('You are buying',
+                          Text('You are buying',
                               style: TextStyle(
                                   fontFamily: 'Sora',
                                   fontSize: 12,
-                                  color: Color(0xFF434656))),
+                                  color: DavoColors.of(context).body)),
                           const SizedBox(height: 4),
                           Row(children: [
                             Text(
                                 '\$${formatGroupedAmount(widget.amount.toStringAsFixed(2))}',
-                                style: _section),
+                                style: _section(context)),
                             const SizedBox(width: 7),
                             Image.asset('$_g/trend.png', width: 18, height: 11)
                           ]),
@@ -1184,15 +1202,15 @@ class _GiftCardPaymentScreenState extends State<GiftCardPaymentScreen> {
                     Column(
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
-                          const Text('Estimated Cost', style: _caption),
+                          Text('Estimated Cost', style: _caption(context)),
                           const SizedBox(height: 4),
                           Text('₦${_money(widget.naira)}',
-                              style: const TextStyle(
+                              style: TextStyle(
                                   fontFamily: 'Sora',
                                   fontSize: 14,
                                   height: 1.35,
                                   fontWeight: FontWeight.w600,
-                                  color: AppColors.primary)),
+                                  color: DavoColors.of(context).link)),
                         ]),
                   ],
                 ),
@@ -1216,16 +1234,19 @@ class _GiftCardPaymentScreenState extends State<GiftCardPaymentScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Image.asset('$_f/buy_lock.png', width: 11, height: 14),
+                    Image.asset('$_f/buy_lock.png',
+                        color: DavoColors.of(context).bodyMuted,
+                        width: 11,
+                        height: 14),
                     const SizedBox(width: 7),
-                    const Flexible(
+                    Flexible(
                         child: Text('SECURE TRANSACTION POWERED BY DAVOVAULT',
                             textAlign: TextAlign.center,
                             style: TextStyle(
                                 fontFamily: 'Sora',
                                 fontSize: 9,
                                 letterSpacing: .9,
-                                color: AppColors.bodyMuted))),
+                                color: DavoColors.of(context).bodyMuted))),
                   ],
                 ),
               ],
@@ -1271,13 +1292,14 @@ class _GiftCardBuySuccessScreenState extends State<GiftCardBuySuccessScreen> {
                       child: DavoOutcomeContent(
                           kind: DavoOutcomeKind.completed,
                           semanticLabel: 'Gift card purchase confirmed',
-                          heading: const Column(children: [
-                            Text('Purchase Successful!', style: _title20),
-                            SizedBox(height: 4),
+                          heading: Column(children: [
+                            Text('Purchase Successful!',
+                                style: _title20(context)),
+                            const SizedBox(height: 4),
                             Text(
                                 'Your gift card has been purchased successfully',
                                 textAlign: TextAlign.center,
-                                style: _body14)
+                                style: _body14(context))
                           ]),
                           details: _TransactionCard(
                             rows: [
@@ -1345,7 +1367,7 @@ class _GiftScaffold extends StatelessWidget {
     final body = Padding(
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 18), child: child);
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: DavoColors.of(context).surface,
       bottomNavigationBar: bottom == null
           ? null
           : SafeArea(
@@ -1381,7 +1403,7 @@ class _TopBar extends StatelessWidget {
           Align(
               alignment: Alignment.centerLeft,
               child: _BackButton(onTap: onBack)),
-          Text(title, style: _section),
+          Text(title, style: _section(context)),
         ],
       ),
     );
@@ -1400,7 +1422,8 @@ class _BackButton extends StatelessWidget {
       child: SizedBox(
           width: 32,
           height: 32,
-          child: Image.asset('$_f/buy_back.png', fit: BoxFit.contain)),
+          child: Image.asset('$_f/buy_back.png',
+              color: DavoColors.of(context).ink, fit: BoxFit.contain)),
     );
   }
 }
@@ -1413,9 +1436,9 @@ class _Stat extends StatelessWidget {
   @override
   Widget build(BuildContext context) =>
       Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text(label, style: _caption),
+        Text(label, style: _caption(context)),
         const SizedBox(height: 2),
-        Text(value, style: _section)
+        Text(value, style: _section(context))
       ]);
 }
 
@@ -1430,7 +1453,7 @@ class _ModeTabs extends StatelessWidget {
       height: 40,
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-          color: const Color(0xFFF1F3F7),
+          color: DavoColors.of(context).fieldFill,
           borderRadius: BorderRadius.circular(20)),
       child: Row(children: [
         Expanded(
@@ -1462,7 +1485,8 @@ class _ModeTab extends StatelessWidget {
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 180),
           decoration: BoxDecoration(
-              color: active ? Colors.white : Colors.transparent,
+              color:
+                  active ? DavoColors.of(context).elevated : Colors.transparent,
               borderRadius: BorderRadius.circular(18),
               boxShadow: active
                   ? const [BoxShadow(color: Color(0x11000000), blurRadius: 6)]
@@ -1473,7 +1497,9 @@ class _ModeTab extends StatelessWidget {
                   fontFamily: 'Sora',
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
-                  color: active ? AppColors.primary : AppColors.bodyMuted)),
+                  color: active
+                      ? AppColors.primary
+                      : DavoColors.of(context).bodyMuted)),
         ),
       );
 }
@@ -1490,7 +1516,7 @@ class _TopBrandCard extends StatelessWidget {
   final GiftCardMode mode;
   @override
   Widget build(BuildContext context) => Material(
-        color: Colors.white,
+        color: DavoColors.of(context).surface,
         borderRadius: BorderRadius.circular(10),
         child: InkWell(
             onTap: onTap,
@@ -1498,7 +1524,7 @@ class _TopBrandCard extends StatelessWidget {
             child: Container(
                 decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: const Color(0xFFEBEDF3))),
+                    border: Border.all(color: DavoColors.of(context).divider)),
                 child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
@@ -1545,20 +1571,24 @@ class _TopBrandCard extends StatelessWidget {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(mode == GiftCardMode.buy ? 'BUY' : 'SELL',
-                                    style: const TextStyle(
-                                        fontSize: 10, color: AppColors.body)),
-                                const Divider(
-                                    height: 16, color: Color(0xFFF0F1F4)),
-                                const Row(children: [
+                                    style: TextStyle(
+                                        fontSize: 10,
+                                        color: DavoColors.of(context).body)),
+                                Divider(
+                                    height: 16,
+                                    color: DavoColors.of(context).divider),
+                                Row(children: [
                                   Flexible(
                                       child: Text('Tap to trade',
                                           style: TextStyle(
                                               fontSize: 10,
                                               fontWeight: FontWeight.w500,
-                                              color: AppColors.primary))),
-                                  SizedBox(width: 4),
+                                              color: DavoColors.of(context)
+                                                  .link))),
+                                  const SizedBox(width: 4),
                                   Icon(Icons.arrow_forward_rounded,
-                                      size: 14, color: AppColors.primary)
+                                      size: 14,
+                                      color: DavoColors.of(context).link)
                                 ]),
                               ])),
                     ]))),
@@ -1576,15 +1606,17 @@ class _PopularBrand extends StatelessWidget {
         child: Container(
             width: 68,
             padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 8),
-            decoration: _outlinedCard,
+            decoration: _outlinedCard(context),
             child: Column(children: [
               Image.asset(brand.asset,
                   width: 30, height: 30, fit: BoxFit.contain),
               const SizedBox(height: 6),
               Text(brand.name.split(' ').first,
                   textAlign: TextAlign.center,
-                  style: const TextStyle(
-                      fontSize: 10, height: 1.3, color: AppColors.ink)),
+                  style: TextStyle(
+                      fontSize: 10,
+                      height: 1.3,
+                      color: DavoColors.of(context).ink)),
             ])),
       );
 }
@@ -1643,14 +1675,14 @@ class _ModeChip extends StatelessWidget {
   Widget build(BuildContext context) => Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-          color: const Color(0xFFE8EFFD),
+          color: DavoColors.of(context).primarySoft,
           borderRadius: BorderRadius.circular(14)),
       child: Text(label,
-          style: const TextStyle(
+          style: TextStyle(
               fontFamily: 'Sora',
               fontSize: 12,
               fontWeight: FontWeight.w600,
-              color: AppColors.primary)));
+              color: DavoColors.of(context).link)));
 }
 
 class _FilterChip extends StatelessWidget {
@@ -1668,13 +1700,14 @@ class _FilterChip extends StatelessWidget {
           duration: const Duration(milliseconds: 150),
           padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 7),
           decoration: BoxDecoration(
-              color: active ? AppColors.primary : const Color(0xFFF1F3F7),
+              color:
+                  active ? AppColors.primary : DavoColors.of(context).fieldFill,
               borderRadius: BorderRadius.circular(16)),
           child: Text(label,
               style: TextStyle(
                   fontFamily: 'Sora',
                   fontSize: 11,
-                  color: active ? Colors.white : AppColors.body,
+                  color: active ? Colors.white : DavoColors.of(context).body,
                   fontWeight: FontWeight.w600))));
 }
 
@@ -1692,7 +1725,7 @@ class _BrandListTile extends StatelessWidget {
             constraints: const BoxConstraints(minHeight: 54),
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
             decoration: BoxDecoration(
-                color: const Color(0xFFF6F7FB),
+                color: DavoColors.of(context).offWhite,
                 border: Border.all(
                     color: selected ? AppColors.primary : Colors.transparent),
                 borderRadius: BorderRadius.circular(8)),
@@ -1705,36 +1738,38 @@ class _BrandListTile extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                     Text(brand.name,
-                        style: const TextStyle(
-                            fontSize: 12, height: 1.3, color: AppColors.ink)),
+                        style: TextStyle(
+                            fontSize: 12,
+                            height: 1.3,
+                            color: DavoColors.of(context).ink)),
                     if (brand.hot) ...[
                       const SizedBox(height: 4),
                       Container(
                           padding: const EdgeInsets.symmetric(
                               horizontal: 6, vertical: 2),
                           decoration: BoxDecoration(
-                              color: const Color(0xFFFFE8E3),
+                              color: DavoColors.of(context).dangerSurface,
                               borderRadius: BorderRadius.circular(8)),
-                          child: const Text('HOT',
+                          child: Text('HOT',
                               style: TextStyle(
                                   fontSize: 8,
                                   fontWeight: FontWeight.w700,
-                                  color: Color(0xFFB82C22)))),
+                                  color: DavoColors.of(context).danger))),
                     ] else if (brand.subtitle != null) ...[
                       const SizedBox(height: 3),
                       Text(brand.subtitle!,
-                          style: const TextStyle(
+                          style: TextStyle(
                               fontSize: 10,
                               height: 1.3,
-                              color: AppColors.body)),
+                              color: DavoColors.of(context).body)),
                     ],
                   ])),
               if (brand.rate != null) ...[
                 const SizedBox(width: 8),
                 Text(brand.rate!,
-                    style: const TextStyle(
+                    style: TextStyle(
                         fontSize: 10,
-                        color: AppColors.primary,
+                        color: DavoColors.of(context).link,
                         fontWeight: FontWeight.w600)),
               ],
             ])),
@@ -1753,15 +1788,15 @@ class _StepProgress extends StatelessWidget {
             child: LinearProgressIndicator(
                 value: step / 3,
                 minHeight: 4,
-                backgroundColor: const Color(0xFFEBEDF3),
-                color: AppColors.primary)),
+                backgroundColor: DavoColors.of(context).divider,
+                color: DavoColors.of(context).link)),
         const SizedBox(height: 6),
         Text('Step $step of 3',
-            style: const TextStyle(
+            style: TextStyle(
                 fontSize: 10,
                 height: 1.3,
                 fontWeight: FontWeight.w600,
-                color: AppColors.body)),
+                color: DavoColors.of(context).body)),
       ]);
 }
 
@@ -1778,28 +1813,33 @@ class _TwoChoice extends StatelessWidget {
   final VoidCallback onLeft;
   final VoidCallback onRight;
 
-  Widget _pill(String label, bool selected, VoidCallback onTap) => Semantics(
-      selected: selected,
-      button: true,
-      child: Material(
-          color: selected ? AppColors.primary : const Color(0xFFEBEDF3),
-          borderRadius: BorderRadius.circular(24),
-          child: InkWell(
-              onTap: onTap,
+  Widget _pill(BuildContext context, String label, bool selected,
+          VoidCallback onTap) =>
+      Semantics(
+          selected: selected,
+          button: true,
+          child: Material(
+              color:
+                  selected ? AppColors.primary : DavoColors.of(context).divider,
               borderRadius: BorderRadius.circular(24),
-              child: Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                  child: Text(label,
-                      style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: selected ? Colors.white : AppColors.ink))))));
+              child: InkWell(
+                  onTap: onTap,
+                  borderRadius: BorderRadius.circular(24),
+                  child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 10),
+                      child: Text(label,
+                          style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: selected
+                                  ? Colors.white
+                                  : DavoColors.of(context).ink))))));
   @override
   Widget build(BuildContext context) =>
       Wrap(spacing: 20, runSpacing: 8, children: [
-        _pill(left, leftActive, onLeft),
-        _pill(right, !leftActive, onRight),
+        _pill(context, left, leftActive, onLeft),
+        _pill(context, right, !leftActive, onRight),
       ]);
 }
 
@@ -1807,7 +1847,7 @@ class _Label extends StatelessWidget {
   const _Label(this.text);
   final String text;
   @override
-  Widget build(BuildContext context) => Text(text, style: _caption);
+  Widget build(BuildContext context) => Text(text, style: _caption(context));
 }
 
 Future<bool?> _showGiftSubcategories(BuildContext context, GiftCardBrand brand,
@@ -1845,8 +1885,8 @@ Future<bool?> _showGiftSubcategories(BuildContext context, GiftCardBrand brand,
                                 fontSize: 14, fontWeight: FontWeight.w600)),
                         subtitle: Text(
                             '${physical ? 'Physical' : 'E-code'} (50 above)'),
-                        trailing: const Icon(Icons.chevron_right_rounded,
-                            color: AppColors.primary),
+                        trailing: Icon(Icons.chevron_right_rounded,
+                            color: DavoColors.of(context).link),
                         onTap: () => Navigator.pop(sheetContext, true)),
                   ]))),
     );
@@ -1865,7 +1905,7 @@ class _SelectField extends StatelessWidget {
         child: Container(
             height: 50,
             padding: const EdgeInsets.symmetric(horizontal: 12),
-            decoration: _fieldDecoration,
+            decoration: _fieldDecoration(context),
             child: Row(children: [
               Image.asset(brand.asset,
                   width: 24, height: 24, fit: BoxFit.contain),
@@ -1874,9 +1914,9 @@ class _SelectField extends StatelessWidget {
                   child: Text(value,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: _body14)),
+                      style: _body14(context))),
               Image.asset('assets/icons/auth/arrow_down.png',
-                  width: 20, height: 20)
+                  color: DavoColors.of(context).ink, width: 20, height: 20)
             ])),
       );
 }
@@ -1891,12 +1931,13 @@ class _AmountField extends StatelessWidget {
       child: Builder(
           builder: (context) => Container(
               height: 50,
-              decoration: _fieldDecoration.copyWith(
+              decoration: _fieldDecoration(context).copyWith(
                   border: Border.all(
                       color: Focus.of(context).hasFocus
                           ? AppColors.primary
-                          : const Color(0xFFD9DCE4))),
+                          : DavoColors.of(context).border)),
               child: TextField(
+                  keyboardAppearance: Theme.of(context).brightness,
                   controller: controller,
                   keyboardType:
                       const TextInputType.numberWithOptions(decimal: true),
@@ -1906,7 +1947,7 @@ class _AmountField extends StatelessWidget {
                       contentPadding:
                           EdgeInsets.symmetric(horizontal: 12, vertical: 14),
                       hintText: 'Enter Gift Card Amount'),
-                  style: _body14))));
+                  style: _body14(context)))));
 }
 
 class _RateOutput extends StatelessWidget {
@@ -1922,21 +1963,22 @@ class _RateOutput extends StatelessWidget {
             alignment: Alignment.centerLeft,
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
             decoration: BoxDecoration(
-                color: const Color(0xFFE8EFFF),
+                color: DavoColors.of(context).primarySoft,
                 borderRadius: BorderRadius.circular(12)),
             child: Text('\u20a6${_money(value)}',
-                style: const TextStyle(
+                style: TextStyle(
                     fontSize: 14,
-                    color: AppColors.primary,
+                    color: DavoColors.of(context).link,
                     fontWeight: FontWeight.w500))),
         const SizedBox(height: 10),
         Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
             decoration: BoxDecoration(
-                color: const Color(0xFFE8EFFF),
+                color: DavoColors.of(context).primarySoft,
                 borderRadius: BorderRadius.circular(20)),
-            child: const Text('Rate: \u20a6865/\$1',
-                style: TextStyle(fontSize: 11, color: AppColors.primary))),
+            child: Text('Rate: \u20a6865/\$1',
+                style: TextStyle(
+                    fontSize: 11, color: DavoColors.of(context).link))),
       ]);
 }
 
@@ -1957,20 +1999,20 @@ class _BreakdownCard extends StatelessWidget {
   Widget build(BuildContext context) => Container(
         width: double.infinity,
         padding: const EdgeInsets.all(14),
-        decoration: _outlinedCard,
+        decoration: _outlinedCard(context),
         child: Column(children: [
           _SummaryLine(label: 'Card Type', value: cardType),
-          const Divider(height: 22, color: Color(0xFFEBEDF3)),
+          Divider(height: 22, color: DavoColors.of(context).divider),
           _SummaryLine(
               label: 'Card Value',
               value: '\$${formatGroupedAmount(amount.toStringAsFixed(2))}'),
-          const Divider(height: 22, color: Color(0xFFEBEDF3)),
+          Divider(height: 22, color: DavoColors.of(context).divider),
           const _SummaryLine(label: 'Exchange Rate', value: '₦865/\$1'),
-          const Divider(height: 22, color: Color(0xFFEBEDF3)),
+          Divider(height: 22, color: DavoColors.of(context).divider),
           _SummaryLine(label: 'Gross Amount', value: '₦${_money(naira)}'),
-          const Divider(height: 22, color: Color(0xFFEBEDF3)),
+          Divider(height: 22, color: DavoColors.of(context).divider),
           const _SummaryLine(label: 'Processing Fee', value: '₦0'),
-          const Divider(height: 22, color: Color(0xFFEBEDF3)),
+          Divider(height: 22, color: DavoColors.of(context).divider),
           _SummaryLine(
               label: sell ? 'Net Payout' : 'Net Debited',
               value: '₦${_money(naira)}',
@@ -1989,7 +2031,7 @@ class _SummaryLine extends StatelessWidget {
   @override
   Widget build(BuildContext context) =>
       Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
-        Expanded(flex: 2, child: Text(label, style: _caption)),
+        Expanded(flex: 2, child: Text(label, style: _caption(context))),
         const SizedBox(width: 12),
         Expanded(
             flex: 3,
@@ -1999,7 +2041,8 @@ class _SummaryLine extends StatelessWidget {
                     fontFamily: 'Sora',
                     fontSize: 12,
                     fontWeight: blue ? FontWeight.w600 : FontWeight.w400,
-                    color: blue ? AppColors.primary : AppColors.ink)))
+                    color:
+                        blue ? AppColors.primary : DavoColors.of(context).ink)))
       ]);
 }
 
@@ -2011,9 +2054,9 @@ class _InfoNote extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-          color: const Color(0xFFF8F9FB),
+          color: DavoColors.of(context).offWhite,
           borderRadius: BorderRadius.circular(6)),
-      child: Text(text, style: _caption));
+      child: Text(text, style: _caption(context)));
 }
 
 class _TransactionCard extends StatelessWidget {
@@ -2024,7 +2067,7 @@ class _TransactionCard extends StatelessWidget {
   Widget build(BuildContext context) => Container(
         width: double.infinity,
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-        decoration: _outlinedCard,
+        decoration: _outlinedCard(context),
         child: Column(
             children: rows.indexed.map((entry) {
           final i = entry.$1;
@@ -2037,22 +2080,22 @@ class _TransactionCard extends StatelessWidget {
                 label: row.$1,
                 value: row.$2,
                 copyable: row.$3,
-                labelStyle: _caption,
+                labelStyle: _caption(context),
                 valueStyle: TextStyle(
                     fontFamily: 'Sora',
                     fontSize: 12,
                     height: 1.35,
                     color: status
-                        ? const Color(0xFF1BA44D)
+                        ? DavoColors.of(context).success
                         : row.$4
                             ? AppColors.primary
-                            : AppColors.ink,
+                            : DavoColors.of(context).ink,
                     fontWeight:
                         status || row.$4 ? FontWeight.w600 : FontWeight.w400),
               ),
             ),
             if (i != rows.length - 1)
-              const Divider(height: 1, color: Color(0xFFEBEDF3)),
+              Divider(height: 1, color: DavoColors.of(context).divider),
           ]);
         }).toList()),
       );
@@ -2073,13 +2116,16 @@ class _ProgressRow extends StatelessWidget {
           width: 22,
           height: 22,
           decoration: BoxDecoration(
-              color: active ? color : const Color(0xFFF0F2F6),
+              color: active ? color : DavoColors.of(context).fieldFill,
               shape: BoxShape.circle),
           child: done
               ? const Icon(Icons.check_rounded, size: 16, color: Colors.white)
               : active
-                  ? const Icon(Icons.more_horiz_rounded,
-                      size: 16, color: Colors.white)
+                  ? Icon(Icons.more_horiz_rounded,
+                      size: 16,
+                      color: DavoColors.of(context).isDark
+                          ? DavoColors.of(context).canvas
+                          : DavoColors.of(context).ink)
                   : null),
       const SizedBox(width: 14),
       Expanded(
@@ -2090,15 +2136,17 @@ class _ProgressRow extends StatelessWidget {
                 fontSize: 12,
                 height: 1.35,
                 fontWeight: active ? FontWeight.w600 : FontWeight.w400,
-                color: active ? AppColors.ink : AppColors.bodyMuted)),
+                color: active
+                    ? DavoColors.of(context).ink
+                    : DavoColors.of(context).bodyMuted)),
         const SizedBox(height: 4),
         Text(meta,
             style: TextStyle(
                 fontSize: 12,
                 height: 1.35,
                 color: meta == 'In progress'
-                    ? const Color(0xFF986000)
-                    : AppColors.bodyMuted)),
+                    ? DavoColors.of(context).warning
+                    : DavoColors.of(context).bodyMuted)),
       ])),
     ]);
   }
@@ -2112,7 +2160,7 @@ class _TimelineLine extends StatelessWidget {
       width: 1,
       height: 18,
       margin: const EdgeInsets.only(left: 10.5),
-      color: active ? AppColors.primary : const Color(0xFFEBEDF3));
+      color: active ? AppColors.primary : DavoColors.of(context).divider);
 }
 
 class _QuantityButton extends StatelessWidget {
@@ -2135,7 +2183,7 @@ class _QuantityButton extends StatelessWidget {
                     decoration: BoxDecoration(
                         color: filled
                             ? AppColors.primary
-                            : const Color(0xFFF0F2F6),
+                            : DavoColors.of(context).fieldFill,
                         borderRadius: BorderRadius.circular(10)),
                     child: Text(label,
                         style: TextStyle(
@@ -2143,7 +2191,7 @@ class _QuantityButton extends StatelessWidget {
                             fontWeight: FontWeight.w600,
                             color: filled
                                 ? Colors.white
-                                : AppColors.bodyMuted))))),
+                                : DavoColors.of(context).bodyMuted))))),
       );
 }
 
@@ -2165,18 +2213,29 @@ class _DeliverySegment extends StatelessWidget {
           duration: const Duration(milliseconds: 180),
           height: 48,
           decoration: BoxDecoration(
-              color: active ? const Color(0xFFE8EFFD) : const Color(0xFFF8F9FB),
+              color: active
+                  ? DavoColors.of(context).primarySoft
+                  : DavoColors.of(context).offWhite,
               border: Border.all(
-                  color: active ? AppColors.primary : AppColors.mutedSoft),
+                  color: active
+                      ? AppColors.primary
+                      : DavoColors.of(context).border),
               borderRadius: BorderRadius.circular(6)),
           child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-            Image.asset(asset, width: 22, height: 22),
+            Image.asset(asset,
+                color: active
+                    ? DavoColors.of(context).link
+                    : DavoColors.of(context).body,
+                width: 22,
+                height: 22),
             const SizedBox(width: 7),
             Text(label,
                 style: TextStyle(
                     fontFamily: 'Sora',
                     fontSize: 13,
-                    color: active ? AppColors.primary : AppColors.body,
+                    color: active
+                        ? AppColors.primary
+                        : DavoColors.of(context).body,
                     fontWeight: FontWeight.w600))
           ])));
 }
@@ -2196,21 +2255,25 @@ class _IconTextField extends StatelessWidget {
       child: Builder(
           builder: (context) => Container(
               height: 50,
-              decoration: _fieldDecoration.copyWith(
+              decoration: _fieldDecoration(context).copyWith(
                   border: Border.all(
                       color: Focus.of(context).hasFocus
                           ? AppColors.primary
-                          : const Color(0xFFD9DCE4))),
+                          : DavoColors.of(context).border)),
               child: Row(children: [
                 const SizedBox(width: 12),
-                Image.asset(asset, width: 20, height: 20),
+                Image.asset(asset,
+                    color: DavoColors.of(context).bodyMuted,
+                    width: 20,
+                    height: 20),
                 const SizedBox(width: 8),
                 Expanded(
                     child: TextField(
+                        keyboardAppearance: Theme.of(context).brightness,
                         controller: controller,
                         keyboardType: keyboard,
                         decoration: DavoInlineInputDecoration(hintText: hint),
-                        style: _body14)),
+                        style: _body14(context))),
                 const SizedBox(width: 12)
               ]))));
 }
@@ -2233,9 +2296,10 @@ class _DeliveryChoice extends StatelessWidget {
           duration: const Duration(milliseconds: 180),
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: DavoColors.of(context).surface,
             border: Border.all(
-                color: active ? AppColors.primary : AppColors.mutedSoft,
+                color:
+                    active ? AppColors.primary : DavoColors.of(context).border,
                 width: 2),
             borderRadius: BorderRadius.circular(14),
           ),
@@ -2244,7 +2308,7 @@ class _DeliveryChoice extends StatelessWidget {
               width: 32,
               height: 32,
               decoration: BoxDecoration(
-                  color: const Color(0xFFE6EDFD),
+                  color: DavoColors.of(context).primarySoft,
                   borderRadius: BorderRadius.circular(8)),
               alignment: Alignment.center,
               child: Image.asset('$_g/lightning.png',
@@ -2255,20 +2319,20 @@ class _DeliveryChoice extends StatelessWidget {
                 child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                  Text(title, style: _section),
+                  Text(title, style: _section(context)),
                   const SizedBox(height: 2),
-                  Text(subtitle, style: _caption)
+                  Text(subtitle, style: _caption(context))
                 ])),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
               decoration: BoxDecoration(
-                  color: const Color(0xFFE6EDFD),
+                  color: DavoColors.of(context).primarySoft,
                   borderRadius: BorderRadius.circular(10)),
-              child: const Text('Free',
+              child: Text('Free',
                   style: TextStyle(
                       fontFamily: 'Sora',
                       fontSize: 10,
-                      color: AppColors.primary,
+                      color: DavoColors.of(context).link,
                       fontWeight: FontWeight.w700)),
             ),
           ]),
@@ -2289,7 +2353,7 @@ class _PrimaryButton extends StatelessWidget {
           onPressed: enabled ? onTap : null,
           style: FilledButton.styleFrom(
               backgroundColor: AppColors.primary,
-              disabledBackgroundColor: AppColors.primaryDisabled,
+              disabledBackgroundColor: DavoColors.of(context).primaryDisabled,
               foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(4)),
@@ -2311,7 +2375,7 @@ class _SecondaryButton extends StatelessWidget {
       child: TextButton(
           onPressed: onTap,
           style: TextButton.styleFrom(
-              foregroundColor: AppColors.ink,
+              foregroundColor: DavoColors.of(context).ink,
               textStyle: const TextStyle(
                   fontFamily: 'Sora',
                   fontSize: 14,
@@ -2338,51 +2402,52 @@ String _money(num value) {
   return buffer.toString();
 }
 
-const _title24 = TextStyle(
+TextStyle _title24(BuildContext context) => TextStyle(
     fontFamily: 'Sora',
     fontSize: 24,
     height: 1.35,
     fontWeight: FontWeight.w600,
-    color: AppColors.ink);
-const _title20 = TextStyle(
+    color: DavoColors.of(context).ink);
+TextStyle _title20(BuildContext context) => TextStyle(
     fontFamily: 'Sora',
     fontSize: 20,
     height: 1.35,
     fontWeight: FontWeight.w600,
-    color: AppColors.inkStrong);
-const _section = TextStyle(
+    color: DavoColors.of(context).inkStrong);
+TextStyle _section(BuildContext context) => TextStyle(
     fontFamily: 'Sora',
     fontSize: 14,
     height: 1.35,
     fontWeight: FontWeight.w600,
-    color: AppColors.ink);
-const _body14 = TextStyle(
+    color: DavoColors.of(context).ink);
+TextStyle _body14(BuildContext context) => TextStyle(
     fontFamily: 'Sora',
     fontSize: 14,
     height: 1.35,
     fontWeight: FontWeight.w400,
-    color: AppColors.body);
-const _caption = TextStyle(
+    color: DavoColors.of(context).body);
+TextStyle _caption(BuildContext context) => TextStyle(
     fontFamily: 'Sora',
     fontSize: 12,
     height: 1.25,
     fontWeight: FontWeight.w400,
-    color: AppColors.body);
-const _eyebrow = TextStyle(
+    color: DavoColors.of(context).body);
+TextStyle _eyebrow(BuildContext context) => TextStyle(
     fontFamily: 'Sora',
     fontSize: 10,
     height: 1.2,
     fontWeight: FontWeight.w600,
     letterSpacing: .45,
-    color: AppColors.bodyMuted);
+    color: DavoColors.of(context).bodyMuted);
 
-final _fieldDecoration = BoxDecoration(
-    color: Colors.white,
-    border: Border.all(color: const Color(0xFFEBEDF3)),
+BoxDecoration _fieldDecoration(BuildContext context) => BoxDecoration(
+    color: DavoColors.of(context).fieldFill,
+    border: Border.all(color: DavoColors.of(context).divider),
     borderRadius: BorderRadius.circular(12));
-final _softCard = BoxDecoration(
-    color: const Color(0xFFF8F9FB), borderRadius: BorderRadius.circular(8));
-final _outlinedCard = BoxDecoration(
-    color: Colors.white,
-    border: Border.all(color: const Color(0xFFEBEDF3)),
+BoxDecoration _softCard(BuildContext context) => BoxDecoration(
+    color: DavoColors.of(context).offWhite,
+    borderRadius: BorderRadius.circular(8));
+BoxDecoration _outlinedCard(BuildContext context) => BoxDecoration(
+    color: DavoColors.of(context).surface,
+    border: Border.all(color: DavoColors.of(context).divider),
     borderRadius: BorderRadius.circular(12));

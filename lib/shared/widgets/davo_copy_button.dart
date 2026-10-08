@@ -60,5 +60,5 @@ class _CopyState extends State<DavoCopyButton> {
                       key: ValueKey(copied),
                       size: 16,
                       color:
-                          copied ? AppColors.primary : AppColors.bodyMuted)))));
+                          copied ? DavoColors.of(context).link : DavoColors.of(context).bodyMuted)))));
 }

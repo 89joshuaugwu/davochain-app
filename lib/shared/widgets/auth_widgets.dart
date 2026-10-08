@@ -25,17 +25,17 @@ class DavoAuthScaffold extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const overlayStyle = SystemUiOverlayStyle(
+    final overlayStyle = SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
-      statusBarIconBrightness: Brightness.dark,
-      statusBarBrightness: Brightness.light,
-      systemNavigationBarColor: Colors.white,
-      systemNavigationBarIconBrightness: Brightness.dark,
+      statusBarIconBrightness: Theme.of(context).brightness == Brightness.dark ? Brightness.light : Brightness.dark,
+      statusBarBrightness: Theme.of(context).brightness,
+      systemNavigationBarColor: DavoColors.of(context).surface,
+      systemNavigationBarIconBrightness: Theme.of(context).brightness == Brightness.dark ? Brightness.light : Brightness.dark,
     );
 
     final page = Scaffold(
       resizeToAvoidBottomInset: true,
-      backgroundColor: Colors.white,
+      backgroundColor: DavoColors.of(context).surface,
       body: SafeArea(
         child: Column(
           children: [
@@ -94,6 +94,7 @@ class _BackButton extends StatelessWidget {
       splashRadius: 20,
       icon: Image.asset(
         '$_iconRoot/arrow_left.png',
+        color: DavoColors.of(context).isDark ? DavoColors.of(context).ink : null,
         width: 24,
         height: 24,
         filterQuality: FilterQuality.high,
@@ -107,12 +108,12 @@ class DavoScreenIntro extends StatelessWidget {
     super.key,
     required this.title,
     required this.subtitle,
-    this.titleColor = AppColors.inkStrong,
+    this.titleColor,
   });
 
   final String title;
   final String subtitle;
-  final Color titleColor;
+  final Color? titleColor;
 
   @override
   Widget build(BuildContext context) {
@@ -122,7 +123,7 @@ class DavoScreenIntro extends StatelessWidget {
         Text(
           title,
           style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                color: titleColor,
+                color: titleColor ?? DavoColors.of(context).inkStrong,
                 fontWeight: FontWeight.w700,
               ),
         ),
@@ -130,7 +131,7 @@ class DavoScreenIntro extends StatelessWidget {
         Text(
           subtitle,
           style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                color: AppColors.bodyMuted,
+                color: DavoColors.of(context).bodyMuted,
               ),
         ),
       ],
@@ -197,7 +198,7 @@ class _DavoPrimaryButtonState extends State<DavoPrimaryButton> {
             decoration: BoxDecoration(
               color: enabled || widget.loading
                   ? AppColors.primary
-                  : AppColors.primaryDisabled,
+                  : DavoColors.of(context).primaryDisabled,
               borderRadius: BorderRadius.circular(4),
               boxShadow: enabled
                   ? [
@@ -267,7 +268,7 @@ class DavoSecondaryButton extends StatelessWidget {
       width: double.infinity,
       height: height,
       child: Material(
-        color: AppColors.primarySoft,
+        color: DavoColors.of(context).primarySoft,
         borderRadius: BorderRadius.circular(4),
         child: InkWell(
           onTap: onPressed,
@@ -275,8 +276,8 @@ class DavoSecondaryButton extends StatelessWidget {
           child: Center(
             child: Text(
               label,
-              style: const TextStyle(
-                color: AppColors.primary,
+              style: TextStyle(
+                color: DavoColors.of(context).link,
                 fontSize: 14,
                 fontWeight: FontWeight.w700,
               ),
@@ -364,20 +365,20 @@ class _DavoTextFieldState extends State<DavoTextField> {
   Widget build(BuildContext context) {
     final success = widget.successText != null && widget.errorText == null;
     final borderColor = widget.errorText != null
-        ? AppColors.danger
+        ? DavoColors.of(context).danger
         : success
-            ? AppColors.success
+            ? DavoColors.of(context).success
             : _focusNode.hasFocus
-                ? AppColors.primary
-                : const Color(0xFFD2D6DF);
+                ? DavoColors.of(context).link
+                : DavoColors.of(context).border;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           widget.label,
-          style: const TextStyle(
-            color: AppColors.body,
+          style: TextStyle(
+            color: DavoColors.of(context).body,
             fontSize: 14,
             height: 1.35,
             fontWeight: FontWeight.w500,
@@ -387,7 +388,7 @@ class _DavoTextFieldState extends State<DavoTextField> {
         AnimatedContainer(
           duration: const Duration(milliseconds: 180),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: DavoColors.of(context).fieldFill,
             borderRadius: BorderRadius.circular(widget.borderRadius),
             border: Border.all(color: borderColor),
           ),
@@ -404,11 +405,11 @@ class _DavoTextFieldState extends State<DavoTextField> {
             autofillHints: widget.autofillHints,
             maxLength: widget.maxLength,
             inputFormatters: widget.inputFormatters,
-            style: const TextStyle(
+            style: TextStyle(
               fontFamily: 'Sora',
               fontSize: 14,
               height: 1.35,
-              color: AppColors.bodyMuted,
+              color: DavoColors.of(context).bodyMuted,
             ),
             decoration: InputDecoration(
               filled: false,
@@ -428,6 +429,7 @@ class _DavoTextFieldState extends State<DavoTextField> {
                       padding: const EdgeInsets.only(left: 14, right: 8),
                       child: Image.asset(
                         widget.iconAsset!,
+                        color: DavoColors.of(context).isDark ? DavoColors.of(context).bodyMuted : null,
                         width: 20,
                         height: 20,
                         filterQuality: FilterQuality.high,
@@ -442,6 +444,7 @@ class _DavoTextFieldState extends State<DavoTextField> {
                       splashRadius: 18,
                       icon: Image.asset(
                         '$_iconRoot/eye.png',
+                        color: DavoColors.of(context).isDark ? DavoColors.of(context).bodyMuted : null,
                         width: 20,
                         height: 20,
                         filterQuality: FilterQuality.high,
@@ -452,6 +455,7 @@ class _DavoTextFieldState extends State<DavoTextField> {
                           padding: const EdgeInsets.all(13),
                           child: Image.asset(
                             '$_iconRoot/danger.png',
+                            color: DavoColors.of(context).isDark ? DavoColors.of(context).danger : null,
                             width: 18,
                             height: 18,
                             filterQuality: FilterQuality.high,
@@ -473,8 +477,8 @@ class _DavoTextFieldState extends State<DavoTextField> {
                       fontSize: 12,
                       height: 1.3,
                       color: widget.errorText != null
-                          ? AppColors.danger
-                          : AppColors.success,
+                          ? DavoColors.of(context).danger
+                          : DavoColors.of(context).success,
                     ),
                   ),
                 )
@@ -560,7 +564,7 @@ class LinkText extends StatelessWidget {
             child: Text(
               action,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: AppColors.primary,
+                    color: DavoColors.of(context).link,
                     fontWeight: FontWeight.w500,
                   ),
             ),

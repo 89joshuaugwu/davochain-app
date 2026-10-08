@@ -7,10 +7,10 @@ import '../../../../shared/widgets/auth_widgets.dart';
 import '../../../../shared/widgets/davo_success_mark.dart';
 import 'verification_state.dart';
 
-const _body = TextStyle(
-    fontFamily: 'Sora', fontSize: 14, height: 1.5, color: Color(0xFF667085));
-const _caption = TextStyle(
-    fontFamily: 'Sora', fontSize: 12, height: 1.5, color: Color(0xFF667085));
+TextStyle _body(BuildContext context) => TextStyle(
+    fontFamily: 'Sora', fontSize: 14, height: 1.5, color: DavoColors.of(context).bodyMuted);
+TextStyle _caption(BuildContext context) => TextStyle(
+    fontFamily: 'Sora', fontSize: 12, height: 1.5, color: DavoColors.of(context).bodyMuted);
 const _heading = TextStyle(
     fontFamily: 'Sora', fontSize: 20, fontWeight: FontWeight.w600, height: 1.4);
 
@@ -88,10 +88,10 @@ class _AdvancedVerificationFlowScreenState
         if (!didPop) _back();
       },
       child: Scaffold(
-        backgroundColor: Colors.white,
+        backgroundColor: DavoColors.of(context).surface,
         appBar: AppBar(
-          backgroundColor: Colors.white,
-          surfaceTintColor: Colors.white,
+          backgroundColor: DavoColors.of(context).surface,
+          surfaceTintColor: DavoColors.of(context).surface,
           elevation: 0,
           leading: IconButton(
               tooltip: 'Back to overview',
@@ -144,7 +144,7 @@ class _AdvancedVerificationFlowScreenState
   Widget _progress() =>
       Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Text(_step == 3 ? 'Review your details' : 'Step ${_step + 1} of 3',
-            style: _caption),
+            style: _caption(context)),
         const SizedBox(height: 10),
         Row(
             children: List.generate(
@@ -157,21 +157,21 @@ class _AdvancedVerificationFlowScreenState
                           decoration: BoxDecoration(
                               color: index <= _step
                                   ? AppColors.primary
-                                  : const Color(0xFFEAECF0),
+                                  : DavoColors.of(context).divider,
                               borderRadius: BorderRadius.circular(2))),
                     )))),
       ]);
 
-  List<Widget> _gate() => const [
-        SizedBox(height: 32),
-        Icon(Icons.lock_outline, color: AppColors.primary, size: 48),
-        SizedBox(height: 24),
-        Text('Complete basic verification first',
+  List<Widget> _gate() => [
+        const SizedBox(height: 32),
+        Icon(Icons.lock_outline, color: DavoColors.of(context).link, size: 48),
+        const SizedBox(height: 24),
+        const Text('Complete basic verification first',
             style: _heading, textAlign: TextAlign.center),
-        SizedBox(height: 12),
+        const SizedBox(height: 12),
         Text(
             'Submit your profile and NIN or BVN before starting advanced verification.',
-            style: _body,
+            style: _body(context),
             textAlign: TextAlign.center),
       ];
 
@@ -183,20 +183,20 @@ class _AdvancedVerificationFlowScreenState
             kind: DavoOutcomeKind.submitted,
             play: _newSubmission,
             semanticLabel: 'Details submitted',
-            heading: const Column(children: [
-              Text('Advanced verification submitted',
+            heading: Column(children: [
+              const Text('Advanced verification submitted',
                   style: _heading, textAlign: TextAlign.center),
-              SizedBox(height: 12),
+              const SizedBox(height: 12),
               Text('Pending review',
                   style: TextStyle(
                       fontFamily: 'Sora',
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
-                      color: AppColors.primary)),
-              SizedBox(height: 12),
+                      color: DavoColors.of(context).link)),
+              const SizedBox(height: 12),
               Text(
                   'Your face photo, identity document and proof of address have been submitted for review.',
-                  style: _body,
+                  style: _body(context),
                   textAlign: TextAlign.center)
             ]),
             details: Column(
@@ -208,14 +208,14 @@ class _AdvancedVerificationFlowScreenState
       return [
         const Text('Review and submit', style: _heading),
         const SizedBox(height: 8),
-        const Text('Check your documents before submitting them for review.',
-            style: _body),
+        Text('Check your documents before submitting them for review.',
+            style: _body(context)),
         const SizedBox(height: 24),
         ..._summary(editable: true),
         const SizedBox(height: 20),
-        const Text(
+        Text(
             'Submitting your details starts the review. Your verification status will remain pending until the review is complete.',
-            style: _caption),
+            style: _caption(context)),
       ];
     }
     if (_step == 0) {
@@ -227,7 +227,7 @@ class _AdvancedVerificationFlowScreenState
             _photoReview
                 ? 'Make sure your whole face is clear and inside the frame.'
                 : 'Use good lighting and keep your face inside the frame.',
-            style: _body),
+            style: _body(context)),
         const SizedBox(height: 28),
         Center(
             child: ClipRRect(
@@ -246,9 +246,9 @@ class _AdvancedVerificationFlowScreenState
         if (_session.faceAdded && !_photoReview && !_retaking)
           _added('Photo added'),
         const SizedBox(height: 12),
-        const Text(
+        Text(
             'Keep your face uncovered. Remove glasses, hats or masks, and hold still for a sharp photo.',
-            style: _body,
+            style: _body(context),
             textAlign: TextAlign.center),
       ];
     }
@@ -256,9 +256,9 @@ class _AdvancedVerificationFlowScreenState
       return [
         const Text('Choose your identity document', style: _heading),
         const SizedBox(height: 8),
-        const Text(
+        Text(
             'Use a valid government-issued document. Your name and document details must be easy to read.',
-            style: _body),
+            style: _body(context)),
         const SizedBox(height: 20),
         for (final type in [
           'National ID',
@@ -269,9 +269,9 @@ class _AdvancedVerificationFlowScreenState
               () => _session.chooseDocument(type)),
         if (_session.identityDocumentType != null) ...[
           const SizedBox(height: 20),
-          const Text(
+          Text(
               'Show the entire document, with no cropped edges, glare or blur.',
-              style: _caption),
+              style: _caption(context)),
           const SizedBox(height: 12),
           _upload(
               _session.identityDocumentType == 'International passport'
@@ -288,9 +288,9 @@ class _AdvancedVerificationFlowScreenState
     return [
       const Text('Add proof of address', style: _heading),
       const SizedBox(height: 8),
-      const Text(
+      Text(
           'Choose a document that clearly shows your name and current address.',
-          style: _body),
+          style: _body(context)),
       const SizedBox(height: 20),
       _choice('Utility bill', _session.addressDocumentType == 'Utility bill',
           () => _session.chooseAddressDocument('Utility bill'),
@@ -369,12 +369,12 @@ class _AdvancedVerificationFlowScreenState
                   _photoReview = false;
                   _retaking = true;
                 }),
-            child: const Text('Retake photo', style: _body)),
+            child: Text('Retake photo', style: _body(context))),
       if (_step > 0)
         TextButton(
-            onPressed: _back, child: const Text('Previous step', style: _body)),
+            onPressed: _back, child: Text('Previous step', style: _body(context))),
       TextButton(
-          onPressed: _exit, child: const Text('Return later', style: _body)),
+          onPressed: _exit, child: Text('Return later', style: _body(context))),
     ];
   }
 
@@ -386,13 +386,13 @@ class _AdvancedVerificationFlowScreenState
             selected: selected,
             button: true,
             child: Material(
-              color: selected ? const Color(0xFFF2F6FF) : Colors.white,
+              color: selected ? DavoColors.of(context).primarySoft : DavoColors.of(context).surface,
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                   side: BorderSide(
                       color: selected
                           ? AppColors.primary
-                          : const Color(0xFFEAECF0))),
+                          : DavoColors.of(context).divider)),
               child: InkWell(
                   onTap: onTap,
                   borderRadius: BorderRadius.circular(8),
@@ -404,8 +404,8 @@ class _AdvancedVerificationFlowScreenState
                               ? Icons.radio_button_checked
                               : Icons.radio_button_off,
                           color: selected
-                              ? AppColors.primary
-                              : const Color(0xFF98A2B3),
+                              ? DavoColors.of(context).link
+                              : DavoColors.of(context).muted,
                           size: 20),
                       const SizedBox(width: 12),
                       Expanded(
@@ -413,12 +413,12 @@ class _AdvancedVerificationFlowScreenState
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                             Text(title,
-                                style: _body.copyWith(
-                                    color: const Color(0xFF101828),
+                                style: _body(context).copyWith(
+                                    color: DavoColors.of(context).ink,
                                     fontWeight: FontWeight.w600)),
                             if (detail != null) ...[
                               const SizedBox(height: 4),
-                              Text(detail, style: _caption)
+                              Text(detail, style: _caption(context))
                             ],
                           ])),
                     ]),
@@ -432,24 +432,24 @@ class _AdvancedVerificationFlowScreenState
           onPressed: onAdd,
           style: OutlinedButton.styleFrom(
               padding: const EdgeInsets.all(16),
-              side: const BorderSide(color: Color(0xFFD0D5DD)),
+              side: BorderSide(color: DavoColors.of(context).border),
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8))),
           child: Row(children: [
             Icon(added ? Icons.check_circle_outline : Icons.upload_file,
-                size: 24, color: AppColors.primary),
+                size: 24, color: DavoColors.of(context).link),
             const SizedBox(width: 12),
             Expanded(
                 child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                   Text(title,
-                      style: _body.copyWith(color: const Color(0xFF101828))),
+                      style: _body(context).copyWith(color: DavoColors.of(context).ink)),
                   Text(
                       added
                           ? 'Document added · Tap to replace'
                           : 'Tap to add document',
-                      style: _caption),
+                      style: _caption(context)),
                 ]))
           ]),
         ),
@@ -457,10 +457,10 @@ class _AdvancedVerificationFlowScreenState
 
   Widget _added(String title) =>
       Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-        const Icon(Icons.check_circle_outline,
-            size: 18, color: AppColors.primary),
+        Icon(Icons.check_circle_outline,
+            size: 18, color: DavoColors.of(context).link),
         const SizedBox(width: 8),
-        Text(title, style: _body)
+        Text(title, style: _body(context))
       ]);
 
   List<Widget> _summary({bool editable = false}) => [
@@ -475,26 +475,26 @@ class _AdvancedVerificationFlowScreenState
   Widget _summaryRow(String label, String value, VoidCallback? edit) =>
       Container(
         padding: const EdgeInsets.symmetric(vertical: 16),
-        decoration: const BoxDecoration(
-            border: Border(bottom: BorderSide(color: Color(0xFFEAECF0)))),
+        decoration: BoxDecoration(
+            border: Border(bottom: BorderSide(color: DavoColors.of(context).divider))),
         child: Row(children: [
           Expanded(
               child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                Text(label, style: _caption),
+                Text(label, style: _caption(context)),
                 const SizedBox(height: 4),
                 Text(value,
-                    style: _body.copyWith(color: const Color(0xFF101828)))
+                    style: _body(context).copyWith(color: DavoColors.of(context).ink))
               ])),
           if (edit != null)
             TextButton(
                 onPressed: edit,
-                child: const Text('Edit',
+                child: Text('Edit',
                     style: TextStyle(
                         fontFamily: 'Sora',
                         fontSize: 12,
-                        color: AppColors.primary)))
+                        color: DavoColors.of(context).link)))
         ]),
       );
 }

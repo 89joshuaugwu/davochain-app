@@ -8,9 +8,15 @@ abstract final class PasswordStrengthPalette {
   static const medium = Color(0xFF986000);
   static const strong = Color(0xFF13803D);
 
-  static Color forScore(int score) => score <= 1
+  static Color forScore(int score, {BuildContext? context}) {
+    if (context != null && DavoColors.of(context).isDark) {
+      final colors = DavoColors.of(context);
+      return score <= 1 ? colors.link : score == 2 ? colors.warning : colors.success;
+    }
+    return score <= 1
       ? low
       : score == 2
           ? medium
           : strong;
+  }
 }

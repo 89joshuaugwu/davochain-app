@@ -1,3 +1,4 @@
+import '../../core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 
 /// Keeps the trade controls usable on short screens and above the keyboard.
@@ -9,7 +10,7 @@ class TradeFormLayout extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    backgroundColor: const Color(0xFFF8F9FB),
+    backgroundColor: DavoColors.of(context).canvas,
     body: SafeArea(child: Column(children: [
       SizedBox(height: 56, child: header),
       Padding(padding: const EdgeInsets.symmetric(horizontal: 16), child: tabs),

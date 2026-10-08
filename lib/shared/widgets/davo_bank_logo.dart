@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/theme/app_theme.dart';
 
 /// Bank artwork supplied by the design or downloaded from the bank itself.
 /// Unavailable logos use an initial, without imitating a bank's branding.
@@ -26,7 +27,7 @@ class DavoBankLogo extends StatelessWidget {
         bankName.trim().isEmpty ? '?' : bankName.trim()[0].toUpperCase(),
         style: TextStyle(
           fontFamily: 'Sora', fontSize: size * .42,
-          fontWeight: FontWeight.w600, color: const Color(0xFF505866),
+          fontWeight: FontWeight.w600, color: DavoColors.of(context).bodyMuted,
         ),
       ),
     );
@@ -35,7 +36,7 @@ class DavoBankLogo extends StatelessWidget {
         width: size, height: size,
         padding: EdgeInsets.all(asset == null ? 0 : 4),
         decoration: BoxDecoration(
-          color: asset == null ? const Color(0xFFF0F2F5) : Colors.white,
+          color: asset == null ? DavoColors.of(context).mutedSoft : Colors.white,
           borderRadius: BorderRadius.circular(8),
         ),
         child: asset == null ? fallback : Image.asset(

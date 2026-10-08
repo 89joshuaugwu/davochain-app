@@ -175,15 +175,15 @@ class _VerificationScreenState extends State<VerificationScreen>
                     duration: const Duration(milliseconds: 180),
                     curve: Curves.easeOut,
                     child: _error
-                        ? const Padding(
-                            padding: EdgeInsets.only(top: 8),
+                        ? Padding(
+                            padding: const EdgeInsets.only(top: 8),
                             child: Text(
                               'Incorrect code. Try again',
                               style: TextStyle(
                                 fontFamily: 'Sora',
                                 fontSize: 14,
                                 height: 1.35,
-                                color: Color(0xFFE84A4A),
+                                color: DavoColors.of(context).danger,
                               ),
                             ),
                           )
@@ -202,10 +202,10 @@ class _VerificationScreenState extends State<VerificationScreen>
           const SizedBox(height: 16),
           Row(
             children: [
-              const Text(
+              Text(
                 'Didn’t get a code?',
                 style: TextStyle(
-                    fontFamily: 'Sora', fontSize: 14, color: AppColors.body),
+                    fontFamily: 'Sora', fontSize: 14, color: DavoColors.of(context).body),
               ),
               const SizedBox(width: 4),
               InkWell(
@@ -216,7 +216,7 @@ class _VerificationScreenState extends State<VerificationScreen>
                     fontFamily: 'Sora',
                     fontSize: 14,
                     color:
-                        _seconds == 0 ? AppColors.primary : AppColors.bodyMuted,
+                        _seconds == 0 ? AppColors.primary : DavoColors.of(context).bodyMuted,
                   ),
                 ),
               ),
@@ -227,10 +227,10 @@ class _VerificationScreenState extends State<VerificationScreen>
                     ? Text(
                         '0:${_seconds.toString().padLeft(2, '0')}',
                         key: ValueKey(_seconds),
-                        style: const TextStyle(
+                        style: TextStyle(
                             fontFamily: 'Sora',
                             fontSize: 14,
-                            color: AppColors.body),
+                            color: DavoColors.of(context).body),
                       )
                     : const SizedBox.shrink(),
               ),
@@ -275,8 +275,8 @@ class _OtpBoxes extends StatelessWidget {
               textInputAction:
                   index == 3 ? TextInputAction.done : TextInputAction.next,
               textAlign: TextAlign.center,
-              style: const TextStyle(
-                  fontFamily: 'Sora', fontSize: 14, color: AppColors.bodyMuted),
+              style: TextStyle(
+                  fontFamily: 'Sora', fontSize: 14, color: DavoColors.of(context).bodyMuted),
               maxLength: 1,
               inputFormatters: [FilteringTextInputFormatter.digitsOnly],
               decoration: InputDecoration(
@@ -286,13 +286,13 @@ class _OtpBoxes extends StatelessWidget {
                   borderRadius: BorderRadius.circular(8),
                   borderSide: BorderSide(
                       color:
-                          error ? const Color(0xFFE84A4A) : AppColors.border),
+                          error ? DavoColors.of(context).danger : DavoColors.of(context).border),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
                   borderSide: BorderSide(
                       color:
-                          error ? const Color(0xFFE84A4A) : AppColors.primary),
+                          error ? DavoColors.of(context).danger : AppColors.primary),
                 ),
               ),
               onChanged: (value) => onChanged(index, value),
@@ -321,7 +321,7 @@ class VerificationSuccessScreen extends StatelessWidget {
         message: kind == VerificationKind.email
             ? 'Your email address has been verified. Continue to proceed.'
             : 'Your phone number has been verified. Continue to proceed.',
-        appBar: AppBar(backgroundColor: Colors.white),
+        appBar: AppBar(backgroundColor: DavoColors.of(context).surface),
         actions: DavoPrimaryButton(label: 'Continue', onPressed: onContinue),
       );
 }
@@ -428,11 +428,11 @@ class _TransactionPinScreenState extends State<TransactionPinScreen>
                   _confirming
                       ? 'Confirm Your Secure PIN'
                       : 'Create Your Secure PIN',
-                  style: const TextStyle(
+                  style: TextStyle(
                       fontFamily: 'Sora',
                       fontSize: 14,
                       height: 1.35,
-                      color: AppColors.body),
+                      color: DavoColors.of(context).body),
                 ),
                 const SizedBox(height: 9),
                 AnimatedBuilder(
@@ -456,14 +456,14 @@ class _TransactionPinScreenState extends State<TransactionPinScreen>
                 AnimatedSize(
                   duration: const Duration(milliseconds: 180),
                   child: _error
-                      ? const Padding(
-                          padding: EdgeInsets.only(top: 8),
+                      ? Padding(
+                          padding: const EdgeInsets.only(top: 8),
                           child: Text(
                             'PINs do not match. Try again',
                             style: TextStyle(
                                 fontFamily: 'Sora',
                                 fontSize: 14,
-                                color: Color(0xFFE84A4A)),
+                                color: DavoColors.of(context).danger),
                           ),
                         )
                       : const SizedBox.shrink(),

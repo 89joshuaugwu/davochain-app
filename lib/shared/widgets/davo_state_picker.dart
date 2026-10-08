@@ -49,7 +49,7 @@ class _DavoStatePickerState extends State<DavoStatePicker> {
         isScrollControlled: true,
         useSafeArea: true,
         showDragHandle: true,
-        backgroundColor: Colors.white,
+        backgroundColor: DavoColors.of(context).surface,
         shape: const RoundedRectangleBorder(
             borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
         builder: (_) =>
@@ -82,25 +82,25 @@ class _DavoStatePickerState extends State<DavoStatePicker> {
             enableInteractiveSelection: false,
             onTap: _open,
             onTapOutside: (_) => _focus.unfocus(),
-            style: const TextStyle(
+            style: TextStyle(
                 fontFamily: 'Sora',
                 fontSize: 14,
                 fontWeight: FontWeight.w400,
-                color: AppColors.body),
+                color: DavoColors.of(context).body),
             decoration: InputDecoration(
               hintText: 'Select state',
-              hintStyle: const TextStyle(
+              hintStyle: TextStyle(
                   fontFamily: 'Sora',
                   fontSize: 14,
                   fontWeight: FontWeight.w400,
-                  color: AppColors.bodyMuted),
+                  color: DavoColors.of(context).bodyMuted),
               contentPadding:
                   const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-              suffixIcon: const Icon(Icons.keyboard_arrow_down_rounded,
-                  color: AppColors.bodyMuted, size: 22),
+              suffixIcon: Icon(Icons.keyboard_arrow_down_rounded,
+                  color: DavoColors.of(context).bodyMuted, size: 22),
               enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
-                  borderSide: const BorderSide(color: AppColors.border)),
+                  borderSide: BorderSide(color: DavoColors.of(context).border)),
               focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
                   borderSide:
@@ -147,18 +147,18 @@ class _StateSheetState extends State<_StateSheet> {
                 Padding(
                     padding: const EdgeInsets.fromLTRB(20, 0, 12, 8),
                     child: Row(children: [
-                      const Expanded(
+                      Expanded(
                           child: Text('Select state',
                               style: TextStyle(
                                   fontFamily: 'Sora',
                                   fontSize: 18,
                                   fontWeight: FontWeight.w600,
-                                  color: AppColors.ink))),
+                                  color: DavoColors.of(context).ink))),
                       IconButton(
                           tooltip: 'Close state picker',
                           onPressed: () => Navigator.pop(context),
-                          icon: const Icon(Icons.close_rounded,
-                              size: 22, color: AppColors.body)),
+                          icon: Icon(Icons.close_rounded,
+                              size: 22, color: DavoColors.of(context).body)),
                     ])),
                 Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -167,19 +167,19 @@ class _StateSheetState extends State<_StateSheet> {
                       onChanged: (_) => setState(() {}),
                       onTapOutside: (_) =>
                           FocusManager.instance.primaryFocus?.unfocus(),
-                      style: const TextStyle(
+                      style: TextStyle(
                           fontFamily: 'Sora',
                           fontSize: 14,
                           fontWeight: FontWeight.w400,
-                          color: AppColors.body),
+                          color: DavoColors.of(context).body),
                       decoration: InputDecoration(
                         hintText: 'Search states',
-                        hintStyle: const TextStyle(
+                        hintStyle: TextStyle(
                             fontFamily: 'Sora',
                             fontSize: 14,
-                            color: AppColors.bodyMuted),
-                        prefixIcon: const Icon(Icons.search_rounded,
-                            size: 20, color: AppColors.bodyMuted),
+                            color: DavoColors.of(context).bodyMuted),
+                        prefixIcon: Icon(Icons.search_rounded,
+                            size: 20, color: DavoColors.of(context).bodyMuted),
                         suffixIcon: query.isEmpty
                             ? null
                             : IconButton(
@@ -193,7 +193,7 @@ class _StateSheetState extends State<_StateSheet> {
                         enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
                             borderSide:
-                                const BorderSide(color: AppColors.border)),
+                                BorderSide(color: DavoColors.of(context).border)),
                         focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
                             borderSide: const BorderSide(
@@ -203,12 +203,12 @@ class _StateSheetState extends State<_StateSheet> {
                 const SizedBox(height: 12),
                 Expanded(
                     child: matches.isEmpty
-                        ? const Center(
+                        ? Center(
                             child: Text('No states found',
                                 style: TextStyle(
                                     fontFamily: 'Sora',
                                     fontSize: 14,
-                                    color: AppColors.bodyMuted)))
+                                    color: DavoColors.of(context).bodyMuted)))
                         : ListView.builder(
                             key: const ValueKey('state-picker-list'),
                             keyboardDismissBehavior:
@@ -227,7 +227,7 @@ class _StateSheetState extends State<_StateSheet> {
                                     shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(8)),
                                     selected: selected,
-                                    selectedTileColor: AppColors.primarySoft,
+                                    selectedTileColor: DavoColors.of(context).primarySoft,
                                     title: Text(state,
                                         style: TextStyle(
                                             fontFamily: 'Sora',
@@ -235,7 +235,7 @@ class _StateSheetState extends State<_StateSheet> {
                                             fontWeight: FontWeight.w400,
                                             color: selected
                                                 ? AppColors.primary
-                                                : AppColors.body)),
+                                                : DavoColors.of(context).body)),
                                     trailing: selected
                                         ? const Icon(Icons.check_rounded,
                                             color: AppColors.primary, size: 20)

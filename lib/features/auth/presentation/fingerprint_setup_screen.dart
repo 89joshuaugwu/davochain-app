@@ -15,7 +15,7 @@ class _FingerprintSetupScreenState extends State<FingerprintSetupScreen> {
   bool _enabled = false;
   @override
   Widget build(BuildContext context) => Scaffold(
-        backgroundColor: Colors.white,
+        backgroundColor: DavoColors.of(context).surface,
         appBar: AppBar(title: const Text('Biometrics')),
         body: SafeArea(
             child: LayoutBuilder(
@@ -28,7 +28,7 @@ class _FingerprintSetupScreenState extends State<FingerprintSetupScreen> {
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 if (_enabled)
-                                  const DavoOutcomeContent(
+                                  DavoOutcomeContent(
                                       tempo: DavoOutcomeTempo.compact,
                                       semanticLabel: 'Fingerprint enabled',
                                       heading: Column(children: [
@@ -37,15 +37,15 @@ class _FingerprintSetupScreenState extends State<FingerprintSetupScreen> {
                                             style: TextStyle(
                                                 fontSize: 24,
                                                 fontWeight: FontWeight.w600,
-                                                color: AppColors.ink)),
-                                        SizedBox(height: 16),
+                                                color: DavoColors.of(context).ink)),
+                                        const SizedBox(height: 16),
                                         Text(
                                             'Use your fingerprint to unlock your Davochain account quickly and securely.',
                                             textAlign: TextAlign.center,
                                             style: TextStyle(
                                                 fontSize: 14,
                                                 height: 1.6,
-                                                color: AppColors.bodyMuted))
+                                                color: DavoColors.of(context).bodyMuted))
                                       ]))
                                 else ...[
                                   Container(
@@ -59,20 +59,20 @@ class _FingerprintSetupScreenState extends State<FingerprintSetupScreen> {
                                           size: 82,
                                           color: AppColors.primary)),
                                   const SizedBox(height: 32),
-                                  const Text('Enable fingerprint',
+                                  Text('Enable fingerprint',
                                       textAlign: TextAlign.center,
                                       style: TextStyle(
                                           fontSize: 24,
                                           fontWeight: FontWeight.w600,
-                                          color: AppColors.ink)),
+                                          color: DavoColors.of(context).ink)),
                                   const SizedBox(height: 16),
-                                  const Text(
+                                  Text(
                                       'Use your fingerprint to unlock your Davochain account quickly and securely.',
                                       textAlign: TextAlign.center,
                                       style: TextStyle(
                                           fontSize: 14,
                                           height: 1.6,
-                                          color: AppColors.bodyMuted)),
+                                          color: DavoColors.of(context).bodyMuted)),
                                 ],
                                 const SizedBox(height: 40),
                                 DavoPrimaryButton(

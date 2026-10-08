@@ -1,3 +1,4 @@
+import '../../core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 
 import 'davo_success_mark.dart';
@@ -50,7 +51,7 @@ class DavoResultScreen extends StatelessWidget {
                           child: child));
                 });
         return Scaffold(
-          backgroundColor: Colors.white,
+          backgroundColor: DavoColors.of(context).surface,
           appBar: appBar,
           body: SafeArea(
             child: Column(
@@ -82,12 +83,12 @@ class DavoResultScreen extends StatelessWidget {
                                     Text(
                                       title,
                                       textAlign: TextAlign.center,
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                         fontFamily: 'Sora',
                                         fontSize: 24,
                                         height: 1.3,
                                         fontWeight: FontWeight.w600,
-                                        color: Color(0xFF101828),
+                                        color: DavoColors.of(context).ink,
                                       ),
                                     ),
                                     false,
@@ -98,11 +99,11 @@ class DavoResultScreen extends StatelessWidget {
                                       Text(
                                         message,
                                         textAlign: TextAlign.center,
-                                        style: const TextStyle(
+                                        style: TextStyle(
                                           fontFamily: 'Sora',
                                           fontSize: 14,
                                           height: 1.6,
-                                          color: Color(0xFF475467),
+                                          color: DavoColors.of(context).bodyMuted,
                                         ),
                                       ),
                                       false,

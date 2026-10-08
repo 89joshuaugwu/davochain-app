@@ -69,7 +69,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                     .titleLarge
                                     ?.copyWith(
                                       fontWeight: FontWeight.w600,
-                                      color: AppColors.ink,
+                                      color: DavoColors.of(context).ink,
                                     ),
                               ),
                               const SizedBox(height: 4),
@@ -79,7 +79,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                     .textTheme
                                     .bodyMedium
                                     ?.copyWith(
-                                      color: AppColors.body,
+                                      color: DavoColors.of(context).body,
                                     ),
                               ),
                             ],
@@ -126,7 +126,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             onPressed: () => Navigator.of(context)
                                 .pushNamed(AppRoutes.forgotPassword),
                             style: TextButton.styleFrom(
-                              foregroundColor: AppColors.primary,
+                              foregroundColor: DavoColors.of(context).link,
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 0, vertical: 6),
                               minimumSize: Size.zero,
@@ -473,12 +473,12 @@ class _CodeStage extends StatelessWidget {
         AnimatedSize(
           duration: const Duration(milliseconds: 180),
           child: error
-              ? const Padding(
-                  padding: EdgeInsets.only(top: 8),
+              ? Padding(
+                  padding: const EdgeInsets.only(top: 8),
                   child: Center(
                     child: Text(
                       'Incorrect code. Try again',
-                      style: TextStyle(fontSize: 12, color: AppColors.danger),
+                      style: TextStyle(fontSize: 12, color: DavoColors.of(context).danger),
                     ),
                   ),
                 )
@@ -542,19 +542,19 @@ class _OtpBox extends StatelessWidget {
         maxLength: 1,
         inputFormatters: [FilteringTextInputFormatter.digitsOnly],
         onChanged: onChanged,
-        style: const TextStyle(fontSize: 14, color: AppColors.bodyMuted),
+        style: TextStyle(fontSize: 14, color: DavoColors.of(context).bodyMuted),
         decoration: InputDecoration(
           counterText: '',
           contentPadding: EdgeInsets.zero,
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8),
             borderSide:
-                BorderSide(color: error ? AppColors.danger : AppColors.primary),
+                BorderSide(color: error ? DavoColors.of(context).danger : AppColors.primary),
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8),
             borderSide: BorderSide(
-                color: error ? AppColors.danger : AppColors.primary,
+                color: error ? DavoColors.of(context).danger : AppColors.primary,
                 width: 1.4),
           ),
         ),
@@ -666,7 +666,7 @@ class _CriteriaBlock extends StatelessWidget {
   Widget build(BuildContext context) {
     final score =
         [lengthOk, numberOrSymbol, capital].where((value) => value).length;
-    final strengthColor = PasswordStrengthPalette.forScore(score);
+    final strengthColor = PasswordStrengthPalette.forScore(score, context: context);
     final strengthLabel = score <= 1
         ? 'Low Strength'
         : score == 2
@@ -681,8 +681,8 @@ class _CriteriaBlock extends StatelessWidget {
             height: 8,
             child: Stack(
               children: [
-                const Positioned.fill(
-                    child: ColoredBox(color: AppColors.mutedSoft)),
+                Positioned.fill(
+                    child: ColoredBox(color: DavoColors.of(context).mutedSoft)),
                 AnimatedFractionallySizedBox(
                   duration: const Duration(milliseconds: 160),
                   heightFactor: 1,
@@ -718,7 +718,7 @@ class _ResetCriterion extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = met ? const Color(0xFF13803D) : AppColors.bodyMuted;
+    final color = met ? DavoColors.of(context).success : DavoColors.of(context).bodyMuted;
     return Row(
       children: [
         AnimatedContainer(
@@ -727,7 +727,7 @@ class _ResetCriterion extends StatelessWidget {
           height: 8,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: met ? AppColors.success : AppColors.border,
+            color: met ? DavoColors.of(context).success : DavoColors.of(context).border,
           ),
         ),
         const SizedBox(width: 9),
@@ -761,27 +761,27 @@ class _PasswordUpdatedStage extends StatelessWidget {
                     style: Theme.of(context)
                         .textTheme
                         .bodyLarge
-                        ?.copyWith(color: AppColors.bodyMuted),
+                        ?.copyWith(color: DavoColors.of(context).bodyMuted),
                     textAlign: TextAlign.center)
               ]),
               details: Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: AppColors.warningSurface,
+                  color: DavoColors.of(context).warningSurface,
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Row(
+                child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Icon(Icons.info_outline_rounded,
-                        color: Color(0xFF986000), size: 20),
-                    SizedBox(width: 12),
+                        color: DavoColors.of(context).warning, size: 20),
+                    const SizedBox(width: 12),
                     Expanded(
                         child: Text(
                       'For security, you’ve been signed out of all other devices.',
                       style: TextStyle(
-                          fontSize: 14, height: 1.5, color: Color(0xFF805000)),
+                          fontSize: 14, height: 1.5, color: DavoColors.of(context).warning),
                     )),
                   ],
                 ),

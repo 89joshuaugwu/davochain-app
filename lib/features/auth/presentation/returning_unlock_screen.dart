@@ -151,17 +151,17 @@ class _ReturningUnlockScreenState extends State<ReturningUnlockScreen> {
                                                                             child: const Text(
                                                                                 'Use fingerprint'))
                                                                       else
-                                                                        const Text(
+                                                                        Text(
                                                                             'Enable fingerprint in Settings',
                                                                             textAlign: TextAlign
                                                                                 .center,
                                                                             style: TextStyle(
                                                                                 fontSize: 12,
                                                                                 height: 1.5,
-                                                                                color: AppColors.bodyMuted)),
+                                                                                color: DavoColors.of(context).bodyMuted)),
                                                                     ])),
                                                     const SizedBox(height: 24),
-                                                    const Text(
+                                                    Text(
                                                         'Welcome back, Vincent',
                                                         textAlign:
                                                             TextAlign.center,
@@ -170,7 +170,7 @@ class _ReturningUnlockScreenState extends State<ReturningUnlockScreen> {
                                                             fontWeight:
                                                                 FontWeight.w600,
                                                             color:
-                                                                AppColors.ink)),
+                                                                DavoColors.of(context).ink)),
                                                     const SizedBox(height: 12),
                                                     const Text(
                                                         'Enter your password to unlock your account.',

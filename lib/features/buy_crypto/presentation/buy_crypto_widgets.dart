@@ -1,9 +1,9 @@
+import '../../../core/theme/davo_colors.dart';
 import '../../../shared/widgets/davo_sheet_header.dart';
 import '../../../shared/widgets/solana_icon.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../../../core/theme/app_theme.dart';
 import 'buy_crypto_models.dart';
 
 class BuyCryptoAssetSheet extends StatelessWidget {
@@ -13,9 +13,10 @@ class BuyCryptoAssetSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       height: 351,
-      decoration: const BoxDecoration(
-        color: Color(0xFFF8F9FB),
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      decoration: BoxDecoration(
+        color: DavoColors.of(context).canvas,
+        borderRadius:
+            const BorderRadius.vertical(top: Radius.circular(20)),
       ),
       child: Stack(
         children: [
@@ -28,7 +29,7 @@ class BuyCryptoAssetSheet extends StatelessWidget {
                 width: 85,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF686868),
+                  color: DavoColors.of(context).bodyMuted,
                   borderRadius: BorderRadius.circular(100),
                 ),
               ),
@@ -68,9 +69,10 @@ class BuyFundingWalletSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       height: 242,
-      decoration: const BoxDecoration(
-        color: Color(0xFFF8F9FB),
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      decoration: BoxDecoration(
+        color: DavoColors.of(context).canvas,
+        borderRadius:
+            const BorderRadius.vertical(top: Radius.circular(20)),
       ),
       child: Stack(
         children: [
@@ -83,7 +85,7 @@ class BuyFundingWalletSheet extends StatelessWidget {
                 width: 85,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF686868),
+                  color: DavoColors.of(context).bodyMuted,
                   borderRadius: BorderRadius.circular(100),
                 ),
               ),
@@ -143,21 +145,21 @@ class _ExactAssetSheetRow extends StatelessWidget {
                   left: 49,
                   top: 7.5,
                   child: Text(asset.name,
-                      style: const TextStyle(
+                      style: TextStyle(
                           fontFamily: 'Sora',
                           fontSize: 14,
                           height: 1.35,
-                          color: AppColors.ink))),
+                          color: DavoColors.of(context).ink))),
               Positioned(
                   left: 49,
                   top: 28.5,
                   child: Text(asset.symbol,
-                      style: const TextStyle(
+                      style: TextStyle(
                           fontFamily: 'Sora',
                           fontSize: 12,
                           height: 1.25,
-                          color: AppColors.body))),
-              const Positioned(
+                          color: DavoColors.of(context).body))),
+              Positioned(
                   right: 0,
                   top: 8.5,
                   child: Text('0.00 USD',
@@ -166,17 +168,17 @@ class _ExactAssetSheetRow extends StatelessWidget {
                           fontFamily: 'Sora',
                           fontSize: 14,
                           height: 1.35,
-                          color: AppColors.body))),
+                          color: DavoColors.of(context).body))),
               Positioned(
                   right: 0,
                   top: 29.5,
                   child: Text(_bottom,
                       textAlign: TextAlign.right,
-                      style: const TextStyle(
+                      style: TextStyle(
                           fontFamily: 'Sora',
                           fontSize: 10,
                           height: 1.3,
-                          color: AppColors.bodyMuted))),
+                          color: DavoColors.of(context).bodyMuted))),
             ],
           ),
         ),
@@ -207,31 +209,31 @@ class _ExactWalletSheetRow extends StatelessWidget {
                   left: 44,
                   top: 7,
                   child: Text(wallet.name,
-                      style: const TextStyle(
+                      style: TextStyle(
                           fontFamily: 'Sora',
                           fontSize: 14,
                           height: 1.35,
-                          color: AppColors.ink))),
+                          color: DavoColors.of(context).ink))),
               Positioned(
                   left: 44,
                   top: 28,
                   child: Text(wallet.symbol,
-                      style: const TextStyle(
+                      style: TextStyle(
                           fontFamily: 'Sora',
                           fontSize: 12,
                           height: 1.25,
-                          color: AppColors.body))),
+                          color: DavoColors.of(context).body))),
               Positioned(
                 right: 0,
                 top: 8,
                 child: Text(
                     wallet == BuyFundingWallet.ngn ? '0.00 USD' : '100.50 USD',
                     textAlign: TextAlign.right,
-                    style: const TextStyle(
+                    style: TextStyle(
                         fontFamily: 'Sora',
                         fontSize: 14,
                         height: 1.35,
-                        color: AppColors.body)),
+                        color: DavoColors.of(context).body)),
               ),
               Positioned(
                 right: 0,
@@ -239,11 +241,11 @@ class _ExactWalletSheetRow extends StatelessWidget {
                 child: Text(
                     wallet == BuyFundingWallet.ngn ? '0.00₦' : '135,000.00 ₦',
                     textAlign: TextAlign.right,
-                    style: const TextStyle(
+                    style: TextStyle(
                         fontFamily: 'Sora',
                         fontSize: 10,
                         height: 1.3,
-                        color: AppColors.bodyMuted)),
+                        color: DavoColors.of(context).bodyMuted)),
               ),
             ],
           ),

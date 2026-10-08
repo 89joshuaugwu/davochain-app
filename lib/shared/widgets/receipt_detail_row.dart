@@ -32,11 +32,11 @@ class ReceiptDetailRow extends StatelessWidget {
               flex: 2,
               child: Text(label,
                   style: labelStyle ??
-                      const TextStyle(
+                      TextStyle(
                           fontFamily: 'Sora',
                           fontSize: 14,
                           height: 1.35,
-                          color: AppColors.bodyMuted))),
+                          color: DavoColors.of(context).bodyMuted))),
           const SizedBox(width: 12),
           Expanded(
               flex: 3,
@@ -55,7 +55,7 @@ class ReceiptDetailRow extends StatelessWidget {
                                   fontFamily: 'Sora',
                                   fontSize: 14,
                                   height: 1.35,
-                                  color: valueColor ?? AppColors.ink))),
+                                  color: valueColor ?? DavoColors.of(context).ink))),
                 ],
               )),
           SizedBox(

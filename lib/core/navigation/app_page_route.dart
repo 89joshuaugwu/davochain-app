@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../shared/motion/davo_motion_policy.dart';
 import '../../shared/motion/davo_motion_spec.dart';
+import '../theme/app_theme.dart';
 
 class AuthHandoff {
   const AuthHandoff();
@@ -15,12 +16,12 @@ class AppPageRoute<T> extends MaterialPageRoute<T> {
     this.authHandoff = false,
   }) : super(
             builder: (context) => AnnotatedRegion<SystemUiOverlayStyle>(
-                  value: const SystemUiOverlayStyle(
+                  value: SystemUiOverlayStyle(
                     statusBarColor: Colors.transparent,
-                    statusBarIconBrightness: Brightness.dark,
-                    statusBarBrightness: Brightness.light,
-                    systemNavigationBarColor: Colors.white,
-                    systemNavigationBarIconBrightness: Brightness.dark,
+                    statusBarIconBrightness: Theme.of(context).brightness == Brightness.dark ? Brightness.light : Brightness.dark,
+                    statusBarBrightness: Theme.of(context).brightness,
+                    systemNavigationBarColor: DavoColors.of(context).surface,
+                    systemNavigationBarIconBrightness: Theme.of(context).brightness == Brightness.dark ? Brightness.light : Brightness.dark,
                   ),
                   child: builder(context),
                 ));

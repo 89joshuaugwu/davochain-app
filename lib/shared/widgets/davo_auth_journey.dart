@@ -175,15 +175,15 @@ class DavoAuthScene extends StatelessWidget {
             ? 1.0
             : DavoMotionSpec.phase(
                 ms, fingerprint ? 620 : 580, fingerprint ? 760 : 720);
-    final foreground = onBlue ? Colors.white : AppColors.primary;
+    final foreground = onBlue ? Colors.white : DavoColors.of(context).link;
     final style = TextStyle(
         fontFamily: 'Sora',
         decoration: TextDecoration.none,
         fontSize: 20,
         fontWeight: FontWeight.w600,
-        color: onBlue ? Colors.white : AppColors.ink);
+        color: onBlue ? Colors.white : DavoColors.of(context).ink);
     return Material(
-        color: onBlue ? AppColors.primary : Colors.white,
+        color: onBlue ? AppColors.primary : DavoColors.of(context).surface,
         child: SafeArea(
             child: Center(
                 child: SingleChildScrollView(

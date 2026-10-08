@@ -55,7 +55,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('appearance preview includes the supplied phone artwork',
+  testWidgets('appearance preview responds to the selected theme',
       (tester) async {
     tester.view.physicalSize = const Size(320, 700);
     tester.view.devicePixelRatio = 1;
@@ -64,15 +64,14 @@ void main() {
     await tester.pumpWidget(
         MaterialApp(theme: AppTheme.light, home: const AppearanceScreen()));
     await tester.pump();
-    final phones = find.byWidgetPredicate((widget) =>
-        widget is Image &&
-        widget.image is AssetImage &&
-        (widget.image as AssetImage)
-            .assetName
-            .endsWith('_3__Profile_Image.png'));
-    expect(phones, findsOneWidget);
-    await tester.ensureVisible(phones);
-    expect(tester.getSize(phones).height, greaterThan(150));
+    final preview = find.byKey(const ValueKey('appearance-live-preview'));
+    expect(preview, findsOneWidget);
+    expect((tester.widget<Container>(preview).decoration as BoxDecoration).color, DavoColors.light.canvas);
+    await tester.tap(find.text('Dark'));
+    await tester.pumpAndSettle();
+    expect((tester.widget<Container>(preview).decoration as BoxDecoration).color, DavoColors.dark.canvas);
+    await tester.ensureVisible(preview);
+    expect(tester.getSize(preview).height, greaterThan(150));
     expect(tester.takeException(), isNull);
   });
 
