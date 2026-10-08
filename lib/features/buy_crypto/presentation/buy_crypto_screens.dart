@@ -1,3 +1,5 @@
+import '../../../shared/widgets/davo_result_screen.dart';
+import '../../../shared/widgets/receipt_detail_row.dart';
 import '../../../shared/widgets/trade_form_layout.dart';
 import '../../crypto/presentation/crypto_full_flow.dart';
 import '../../../shared/widgets/transaction_pin_entry.dart';
@@ -44,7 +46,8 @@ class _BuyAmountScreenState extends State<BuyAmountScreen> {
   }
 
   double get _amount {
-    final normalized = _amountController.text.replaceAll(',', '').replaceAll('₦', '').trim();
+    final normalized =
+        _amountController.text.replaceAll(',', '').replaceAll('₦', '').trim();
     return double.tryParse(normalized) ?? 0;
   }
 
@@ -54,7 +57,8 @@ class _BuyAmountScreenState extends State<BuyAmountScreen> {
     HapticFeedback.selectionClick();
     final safe = value.clamp(0.0, _order.wallet.balance).toDouble();
     _amountController.text = _formatEditable(safe);
-    _amountController.selection = TextSelection.collapsed(offset: _amountController.text.length);
+    _amountController.selection =
+        TextSelection.collapsed(offset: _amountController.text.length);
     setState(() {});
   }
 
@@ -82,7 +86,8 @@ class _BuyAmountScreenState extends State<BuyAmountScreen> {
     final shouldClamp = _amount > wallet.balance;
     if (shouldClamp) {
       _amountController.text = _formatEditable(wallet.balance);
-      _amountController.selection = TextSelection.collapsed(offset: _amountController.text.length);
+      _amountController.selection =
+          TextSelection.collapsed(offset: _amountController.text.length);
     }
     setState(() => _order = _order.copyWith(wallet: wallet));
   }
@@ -91,111 +96,177 @@ class _BuyAmountScreenState extends State<BuyAmountScreen> {
   Widget build(BuildContext context) {
     final crypto = _amount / _order.asset.ngnPerUnit;
     return TradeFormLayout(
-      header: _ExactTradeHeader(title: 'Buy', onBack: () => Navigator.pop(context)),
-      tabs: _ModeToggle(asset:_order.asset),
+      header:
+          _ExactTradeHeader(title: 'Buy', onBack: () => Navigator.pop(context)),
+      tabs: _ModeToggle(asset: _order.asset),
       content: Column(children: [
         InkWell(
-                onTap: _changeWallet,
-                borderRadius: BorderRadius.circular(16),
-                child: Column(
-                  children: [
-                    _WalletBadge(wallet: _order.wallet),
-                    const SizedBox(height: 12),
-                    Text(
-                      '${_order.wallet.symbol} Balance',
-                      style: const TextStyle(fontFamily: 'Sora', fontSize: 12, fontWeight: FontWeight.w600, height: 1.25, color: AppColors.body),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      _order.wallet.formattedBalance,
-                      style: const TextStyle(fontFamily: 'Sora', fontSize: 14, fontWeight: FontWeight.w600, height: 1.35, color: AppColors.ink),
-                    ),
-                  ],
-                ),
+          onTap: _changeWallet,
+          borderRadius: BorderRadius.circular(16),
+          child: Column(
+            children: [
+              _WalletBadge(wallet: _order.wallet),
+              const SizedBox(height: 12),
+              Text(
+                '${_order.wallet.symbol} Balance',
+                style: const TextStyle(
+                    fontFamily: 'Sora',
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    height: 1.25,
+                    color: AppColors.body),
               ),
+              const SizedBox(height: 4),
+              Text(
+                _order.wallet.formattedBalance,
+                style: const TextStyle(
+                    fontFamily: 'Sora',
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    height: 1.35,
+                    color: AppColors.ink),
+              ),
+            ],
+          ),
+        ),
         const SizedBox(height: 24),
         AnimatedContainer(
-                duration: const Duration(milliseconds: 180),
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  border: Border.all(color: _focusNode.hasFocus ? AppColors.primary : const Color(0xFFEBEDF3), width: _focusNode.hasFocus ? 1.2 : 1),
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                height: 77,
-                child: Row(
-                  children: [
-                    if (_amountController.text.isNotEmpty)
-                      const Text('₦', style: TextStyle(fontFamily: 'Sora', fontSize: 20, fontWeight: FontWeight.w600, color: AppColors.ink)),
-                    Expanded(
-                      child: TextField(
-                        controller: _amountController,
-                        focusNode: _focusNode,
-                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                        inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')), _ThousandsFormatter()],
-                        onChanged: (_) => setState(() {}),
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(fontFamily: 'Sora', fontSize: 20, fontWeight: FontWeight.w600, color: AppColors.ink),
-                        decoration: const InputDecoration(
-                          border: InputBorder.none,
-                          enabledBorder: InputBorder.none,
-                          focusedBorder: InputBorder.none,
-                          contentPadding: EdgeInsets.zero,
-                          hintText: '0.00',
-                          hintStyle: TextStyle(fontFamily: 'Sora', fontSize: 20, fontWeight: FontWeight.w600, color: AppColors.ink),
-                        ),
-                      ),
-                    ),
-                    Text(_order.wallet.symbol, style: const TextStyle(fontFamily: 'Sora', fontSize: 14, height: 1.35, color: AppColors.body)),
+          duration: const Duration(milliseconds: 180),
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            border: Border.all(
+                color: _focusNode.hasFocus
+                    ? AppColors.primary
+                    : const Color(0xFFEBEDF3),
+                width: _focusNode.hasFocus ? 1.2 : 1),
+            borderRadius: BorderRadius.circular(4),
+          ),
+          height: 77,
+          child: Row(
+            children: [
+              if (_amountController.text.isNotEmpty)
+                const Text('₦',
+                    style: TextStyle(
+                        fontFamily: 'Sora',
+                        fontSize: 20,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.ink)),
+              Expanded(
+                child: TextField(
+                  controller: _amountController,
+                  focusNode: _focusNode,
+                  keyboardType:
+                      const TextInputType.numberWithOptions(decimal: true),
+                  inputFormatters: [
+                    FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')),
+                    _ThousandsFormatter()
                   ],
+                  onChanged: (_) => setState(() {}),
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                      fontFamily: 'Sora',
+                      fontSize: 20,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.ink),
+                  decoration: const InputDecoration(
+                    border: InputBorder.none,
+                    enabledBorder: InputBorder.none,
+                    focusedBorder: InputBorder.none,
+                    contentPadding: EdgeInsets.zero,
+                    hintText: '0.00',
+                    hintStyle: TextStyle(
+                        fontFamily: 'Sora',
+                        fontSize: 20,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.ink),
+                  ),
                 ),
               ),
+              Text(_order.wallet.symbol,
+                  style: const TextStyle(
+                      fontFamily: 'Sora',
+                      fontSize: 14,
+                      height: 1.35,
+                      color: AppColors.body)),
+            ],
+          ),
+        ),
         const SizedBox(height: 20),
         InkWell(
-                onTap: _changeAsset,
-                child: Wrap(
-                  alignment: WrapAlignment.center,
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  children: [
-                    const Text('≈', style: TextStyle(fontFamily: 'Sora', fontSize: 16, height: 1.2, color: AppColors.bodyMuted)),
-                    const SizedBox(width: 4),
-                    Text(
-                      '${crypto.toStringAsFixed(5)} ${_order.asset.symbol}',
-                      style: const TextStyle(fontFamily: 'Sora', fontSize: 14, fontWeight: FontWeight.w600, height: 1.35, color: AppColors.body),
-                    ),
-                  ],
-                ),
+          onTap: _changeAsset,
+          child: Wrap(
+            alignment: WrapAlignment.center,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: [
+              const Text('≈',
+                  style: TextStyle(
+                      fontFamily: 'Sora',
+                      fontSize: 16,
+                      height: 1.2,
+                      color: AppColors.bodyMuted)),
+              const SizedBox(width: 4),
+              Text(
+                '${crypto.toStringAsFixed(5)} ${_order.asset.symbol}',
+                style: const TextStyle(
+                    fontFamily: 'Sora',
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    height: 1.35,
+                    color: AppColors.body),
               ),
+            ],
+          ),
+        ),
         const SizedBox(height: 12),
         Wrap(
-                alignment: WrapAlignment.center,
-                crossAxisAlignment: WrapCrossAlignment.center,
-                children: [
-                  Text('1 ${_order.asset.symbol}', style: const TextStyle(fontFamily: 'Sora', fontSize: 14, fontWeight: FontWeight.w600, height: 1.35, color: AppColors.ink)),
-                  const SizedBox(width: 12),
-                  const Text('≈', style: TextStyle(fontFamily: 'Sora', fontSize: 14, color: AppColors.bodyMuted)),
-                  const SizedBox(width: 4),
-                  Text('(₦${_formatNgn(_order.asset.ngnPerUnit)})', style: const TextStyle(fontFamily: 'Sora', fontSize: 14, height: 1.35, color: AppColors.bodyMuted)),
-                ],
-              ),
+          alignment: WrapAlignment.center,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: [
+            Text('1 ${_order.asset.symbol}',
+                style: const TextStyle(
+                    fontFamily: 'Sora',
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    height: 1.35,
+                    color: AppColors.ink)),
+            const SizedBox(width: 12),
+            const Text('≈',
+                style: TextStyle(
+                    fontFamily: 'Sora',
+                    fontSize: 14,
+                    color: AppColors.bodyMuted)),
+            const SizedBox(width: 4),
+            Text('(₦${_formatNgn(_order.asset.ngnPerUnit)})',
+                style: const TextStyle(
+                    fontFamily: 'Sora',
+                    fontSize: 14,
+                    height: 1.35,
+                    color: AppColors.bodyMuted)),
+          ],
+        ),
         const SizedBox(height: 24),
         _PercentageButtons(balance: _order.wallet.balance, onPick: _setAmount),
         if (_amount > _order.wallet.balance) ...[
-          const SizedBox(height: 16), const Text('Amount exceeds your selected wallet balance.', textAlign: TextAlign.center, style: TextStyle(fontFamily: 'Sora', fontSize: 12, color: AppColors.danger)),
+          const SizedBox(height: 16),
+          const Text('Amount exceeds your selected wallet balance.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                  fontFamily: 'Sora', fontSize: 12, color: AppColors.danger)),
         ],
       ]),
       action: _PrimaryButton(
-                label: 'Continue',
-                enabled: _canContinue,
-                onPressed: () {
-                  FocusScope.of(context).unfocus();
-                  final order = _order.copyWith(ngnAmount: _amount);
-                  Navigator.of(context).push<void>(AppPageRoute<void>(builder: (_) => BuyReviewScreen(order: order)));
-                },
-              ),
+        label: 'Continue',
+        enabled: _canContinue,
+        onPressed: () {
+          FocusScope.of(context).unfocus();
+          final order = _order.copyWith(ngnAmount: _amount);
+          Navigator.of(context).push<void>(AppPageRoute<void>(
+              builder: (_) => BuyReviewScreen(order: order)));
+        },
+      ),
     );
   }
-
 }
 
 class BuyReviewScreen extends StatelessWidget {
@@ -210,8 +281,19 @@ class BuyReviewScreen extends StatelessWidget {
         bottom: false,
         child: Stack(
           children: [
-            Positioned(left: 0, right: 0, top: 16, height: 40, child: _ExactTradeHeader(title: 'Buy', onBack: () => Navigator.pop(context))),
-            Positioned(left: 16, right: 16, top: 76, height: 193, child: _ReviewExchangeCards(order: order)),
+            Positioned(
+                left: 0,
+                right: 0,
+                top: 16,
+                height: 40,
+                child: _ExactTradeHeader(
+                    title: 'Buy', onBack: () => Navigator.pop(context))),
+            Positioned(
+                left: 16,
+                right: 16,
+                top: 76,
+                height: 193,
+                child: _ReviewExchangeCards(order: order)),
             Positioned(
               left: 16,
               right: 16,
@@ -219,7 +301,11 @@ class BuyReviewScreen extends StatelessWidget {
               height: 192,
               child: _ExactReviewSummary(
                 rows: [
-                  ('Exchange Rate', '1 USDT   ₦${_formatNgn(BuyCryptoOrder.usdtNgnRate)}', false),
+                  (
+                    'Exchange Rate',
+                    '1 USDT   ₦${_formatNgn(BuyCryptoOrder.usdtNgnRate)}',
+                    false
+                  ),
                   ('Network Fee', 'Free', true),
                   ('Total you Pay', '₦${_formatNgn(order.ngnAmount)}', false),
                 ],
@@ -235,7 +321,8 @@ class BuyReviewScreen extends StatelessWidget {
                 enabled: true,
                 onPressed: () {
                   HapticFeedback.mediumImpact();
-                  Navigator.of(context).push<void>(AppPageRoute<void>(builder: (_) => BuyPinScreen(order: order)));
+                  Navigator.of(context).push<void>(AppPageRoute<void>(
+                      builder: (_) => BuyPinScreen(order: order)));
                 },
               ),
             ),
@@ -247,12 +334,14 @@ class BuyReviewScreen extends StatelessWidget {
 }
 
 class BuyPinScreen extends StatelessWidget {
- const BuyPinScreen({super.key, required this.order});
- final BuyCryptoOrder order;
- @override
- Widget build(BuildContext context) => TransactionPinEntryScreen(onConfirm: () {
-  Navigator.of(context).pushReplacement<void, void>(AppPageRoute<void>(builder: (_) => BuyProgressScreen(order: order)));
- });
+  const BuyPinScreen({super.key, required this.order});
+  final BuyCryptoOrder order;
+  @override
+  Widget build(BuildContext context) =>
+      TransactionPinEntryScreen(onConfirm: () {
+        Navigator.of(context).pushReplacement<void, void>(AppPageRoute<void>(
+            builder: (_) => BuyProgressScreen(order: order)));
+      });
 }
 
 class BuyProgressScreen extends StatefulWidget {
@@ -273,7 +362,8 @@ class _BuyProgressScreenState extends State<BuyProgressScreen> {
       if (!mounted) return;
       HapticFeedback.mediumImpact();
       Navigator.of(context).pushReplacement<void, void>(
-        AppPageRoute<void>(builder: (_) => BuySuccessScreen(order: widget.order)),
+        AppPageRoute<void>(
+            builder: (_) => BuySuccessScreen(order: widget.order)),
       );
     });
   }
@@ -300,7 +390,8 @@ class _BuyProgressScreenState extends State<BuyProgressScreen> {
               child: InkResponse(
                 onTap: () => Navigator.pop(context),
                 radius: 20,
-                child: Image.asset('assets/figma_exact/buy_back.png', width: 24, height: 24),
+                child: Image.asset('assets/figma_exact/buy_back.png',
+                    width: 24, height: 24),
               ),
             ),
             Positioned(
@@ -361,120 +452,46 @@ class BuySuccessScreen extends StatelessWidget {
   final BuyCryptoOrder order;
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FB),
-      body: SafeArea(
-        bottom: false,
-        child: Stack(
-          children: [
-            Positioned(
-              left: 8,
-              top: 16,
-              width: 24,
-              height: 24,
-              child: InkResponse(
-                onTap: () => Navigator.of(context).pushNamedAndRemoveUntil(AppRoutes.dashboard, (route) => false),
-                radius: 20,
-                child: Image.asset('assets/figma_exact/buy_back.png', width: 24, height: 24),
-              ),
-            ),
-            Positioned(
-              left: 120,
-              top: 91,
-              width: 150,
-              height: 150,
-              child: Image.asset(
-                'assets/figma_exact/dashboard_crypto_gifs__dashbardandcryptgifs_4d6e1474ce658d29d4eaabd043e0c07fe0db035c.gif',
-                width: 150,
-                height: 150,
-                fit: BoxFit.contain,
-                filterQuality: FilterQuality.high,
-              ),
-            ),
-            const Positioned(
-              left: 51.5,
-              top: 257,
-              width: 287,
-              height: 27,
-              child: Text(
-                'Sold  Successful',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontFamily: 'Sora',
-                  fontSize: 20,
-                  height: 1.35,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.ink,
-                ),
-              ),
-            ),
-            Positioned(
-              left: 51.5,
-              top: 292,
-              width: 287,
-              height: 38,
-              child: Text.rich(
-                TextSpan(
-                  style: const TextStyle(
+  Widget build(BuildContext context) => DavoResultScreen(
+        title: 'Purchase successful',
+        message:
+            'You bought ${order.cryptoAmount.toStringAsFixed(4)} ${order.asset.symbol} for \u20A6${_formatNgn(order.ngnAmount)}.',
+        appBar: AppBar(
+            backgroundColor: Colors.white,
+            leading: IconButton(
+              tooltip: 'Back to dashboard',
+              icon: const Icon(Icons.arrow_back),
+              onPressed: () => Navigator.of(context).pushNamedAndRemoveUntil(
+                  AppRoutes.dashboard, (route) => false),
+            )),
+        actions: Column(mainAxisSize: MainAxisSize.min, children: [
+          _PrimaryButton(
+              label: 'View Details',
+              enabled: true,
+              onPressed: () => Navigator.of(context).push<void>(
+                  AppPageRoute<void>(
+                      builder: (_) =>
+                          BuyTransactionDetailsScreen(order: order)))),
+          const SizedBox(height: 12),
+          FilledButton(
+            onPressed: () => Navigator.of(context).pushReplacement<void, void>(
+                AppPageRoute<void>(
+                    builder: (_) => BuyAmountScreen(
+                        initialOrder: order.copyWith(ngnAmount: 0)))),
+            style: FilledButton.styleFrom(
+                minimumSize: const Size(double.infinity, 48),
+                backgroundColor: const Color(0xFFEAF0FB),
+                foregroundColor: AppColors.primary,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8)),
+                textStyle: const TextStyle(
                     fontFamily: 'Sora',
                     fontSize: 14,
-                    height: 1.35,
-                    color: AppColors.bodyMuted,
-                  ),
-                  children: [
-                    const TextSpan(text: 'You have successfully bought '),
-                    TextSpan(
-                      text: ' 0.0300 ${order.asset.symbol} ',
-                      style: const TextStyle(fontWeight: FontWeight.w600, color: AppColors.ink),
-                    ),
-                    const TextSpan(text: 'for'),
-                    TextSpan(
-                      text: ' ₦${_formatNgn(order.ngnAmount)}',
-                      style: const TextStyle(fontWeight: FontWeight.w600, color: AppColors.ink),
-                    ),
-                  ],
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ),
-            Positioned(
-              left: 16,
-              right: 16,
-              top: 644,
-              height: 48,
-              child: _PrimaryButton(
-                label: 'View Details',
-                enabled: true,
-                onPressed: () => Navigator.of(context).push<void>(
-                  AppPageRoute<void>(builder: (_) => BuyTransactionDetailsScreen(order: order)),
-                ),
-              ),
-            ),
-            Positioned(
-              left: 16,
-              right: 16,
-              top: 708,
-              height: 48,
-              child: FilledButton(
-                onPressed: () => Navigator.of(context).pushReplacement<void, void>(
-                  AppPageRoute<void>(builder: (_) => BuyAmountScreen(initialOrder: order.copyWith(ngnAmount: 0))),
-                ),
-                style: FilledButton.styleFrom(
-                  elevation: 0,
-                  backgroundColor: const Color(0xFFEAF0FB),
-                  foregroundColor: AppColors.primary,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-                  textStyle: const TextStyle(fontFamily: 'Sora', fontSize: 14, fontWeight: FontWeight.w600),
-                ),
-                child: const Text('Send another transfer'),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+                    fontWeight: FontWeight.w600)),
+            child: const Text('Buy more crypto'),
+          ),
+        ]),
+      );
 }
 
 class BuyTransactionDetailsScreen extends StatelessWidget {
@@ -500,7 +517,6 @@ class BuyTransactionDetailsScreen extends StatelessWidget {
               const SizedBox(height: 48),
               Expanded(
                 child: SingleChildScrollView(
-
                   child: Column(
                     children: [
                       Text(
@@ -556,13 +572,16 @@ class BuyTransactionDetailsScreen extends StatelessWidget {
                             const _DetailsDivider(),
                             _DetailsRow(
                               label: 'Asset',
-                              value: '${order.asset.name} (${order.asset.symbol})',
-                              leading: BuyAssetIcon(asset: order.asset, size: 24),
+                              value:
+                                  '${order.asset.name} (${order.asset.symbol})',
+                              leading:
+                                  BuyAssetIcon(asset: order.asset, size: 24),
                             ),
                             const _DetailsDivider(),
                             _DetailsRow(
                               label: 'Date',
-                              value: '${_month(now.month)} ${now.day}, ${now.year}, ${_two(now.hour)}:${_two(now.minute)}',
+                              value:
+                                  '${_month(now.month)} ${now.day}, ${now.year}, ${_two(now.hour)}:${_two(now.minute)}',
                             ),
                             const _DetailsDivider(),
                             const _DetailsRow(
@@ -643,11 +662,21 @@ class _ExactTradeHeader extends StatelessWidget {
             top: 4,
             width: 32,
             height: 32,
-            child: InkResponse(onTap: onBack, radius: 22, child: Image.asset('assets/figma_exact/buy_back.png', width: 32, height: 32)),
+            child: InkResponse(
+                onTap: onBack,
+                radius: 22,
+                child: Image.asset('assets/figma_exact/buy_back.png',
+                    width: 32, height: 32)),
           ),
           Positioned.fill(
             child: Center(
-              child: Text(title, style: const TextStyle(fontFamily: 'Sora', fontSize: 20, fontWeight: FontWeight.w400, height: 1.35, color: AppColors.ink)),
+              child: Text(title,
+                  style: const TextStyle(
+                      fontFamily: 'Sora',
+                      fontSize: 20,
+                      fontWeight: FontWeight.w400,
+                      height: 1.35,
+                      color: AppColors.ink)),
             ),
           ),
         ],
@@ -662,7 +691,8 @@ class _ExactReviewSummary extends StatelessWidget {
   Widget build(BuildContext context) => Container(
         width: double.infinity,
         height: 192,
-        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8)),
+        decoration: BoxDecoration(
+            color: Colors.white, borderRadius: BorderRadius.circular(8)),
         child: Stack(
           children: List.generate(rows.length, (i) {
             final row = rows[i];
@@ -678,15 +708,30 @@ class _ExactReviewSummary extends StatelessWidget {
                     height: 19,
                     child: Row(
                       children: [
-                        Text(row.$1, style: const TextStyle(fontFamily: 'Sora', fontSize: 14, height: 1.35, color: AppColors.bodyMuted)),
+                        Text(row.$1,
+                            style: const TextStyle(
+                                fontFamily: 'Sora',
+                                fontSize: 14,
+                                height: 1.35,
+                                color: AppColors.bodyMuted)),
                         const Spacer(),
-                        Flexible(child: Text(row.$2, textAlign: TextAlign.right, style: TextStyle(fontFamily: 'Sora', fontSize: 14, height: 1.35, color: row.$3 ? AppColors.primary : AppColors.ink))),
+                        Flexible(
+                            child: Text(row.$2,
+                                textAlign: TextAlign.right,
+                                style: TextStyle(
+                                    fontFamily: 'Sora',
+                                    fontSize: 14,
+                                    height: 1.35,
+                                    color: row.$3
+                                        ? AppColors.primary
+                                        : AppColors.ink))),
                       ],
                     ),
                   ),
                   if (i != rows.length - 1) ...[
                     const SizedBox(height: 15),
-                    const Divider(height: 1, thickness: .5, color: Color(0xFFF2F2F2)),
+                    const Divider(
+                        height: 1, thickness: .5, color: Color(0xFFF2F2F2)),
                   ],
                 ],
               ),
@@ -697,7 +742,8 @@ class _ExactReviewSummary extends StatelessWidget {
 }
 
 class _TradeTopBar extends StatelessWidget {
-  const _TradeTopBar({required this.title, required this.onBack, this.compactTitle = false});
+  const _TradeTopBar(
+      {required this.title, required this.onBack, this.compactTitle = false});
   final String title;
   final VoidCallback onBack;
   final bool compactTitle;
@@ -715,7 +761,8 @@ class _TradeTopBar extends StatelessWidget {
               onPressed: onBack,
               padding: EdgeInsets.zero,
               visualDensity: VisualDensity.compact,
-              icon: Image.asset('assets/figma_exact/buy_back.png', width: 24, height: 24),
+              icon: Image.asset('assets/figma_exact/buy_back.png',
+                  width: 24, height: 24),
             ),
           ),
           Text(
@@ -735,20 +782,46 @@ class _TradeTopBar extends StatelessWidget {
 }
 
 class _ModeToggle extends StatelessWidget {
- const _ModeToggle({required this.asset});
- final BuyCryptoAsset asset;
- @override
- Widget build(BuildContext context) => Container(
-  padding:const EdgeInsets.all(6),
-  decoration:BoxDecoration(color:const Color(0xFFF3F3F9),borderRadius:BorderRadius.circular(999)),
-  child:Row(children:List.generate(3,(index)=>Expanded(child:Material(
-   color:index==0 ? Colors.white : Colors.transparent,
-   borderRadius:BorderRadius.circular(999),
-   child:InkWell(borderRadius:BorderRadius.circular(999),onTap:index==0 ? null : ()=>Navigator.pushReplacement(context,AppPageRoute<void>(builder:(_)=>TradeAmountScreen(mode:index==1 ? TradeMode.sell : TradeMode.convert,asset:asset))),
-    child:Padding(padding:const EdgeInsets.symmetric(vertical:12),child:Center(child:Text(['Buy','Sell','Swap'][index],style:TextStyle(fontSize:14,fontWeight:FontWeight.w600,color:index==0 ? AppColors.primary : AppColors.body)))),
-   ),
-  )))),
- );
+  const _ModeToggle({required this.asset});
+  final BuyCryptoAsset asset;
+  @override
+  Widget build(BuildContext context) => Container(
+        padding: const EdgeInsets.all(6),
+        decoration: BoxDecoration(
+            color: const Color(0xFFF3F3F9),
+            borderRadius: BorderRadius.circular(999)),
+        child: Row(
+            children: List.generate(
+                3,
+                (index) => Expanded(
+                        child: Material(
+                      color: index == 0 ? Colors.white : Colors.transparent,
+                      borderRadius: BorderRadius.circular(999),
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(999),
+                        onTap: index == 0
+                            ? null
+                            : () => Navigator.pushReplacement(
+                                context,
+                                AppPageRoute<void>(
+                                    builder: (_) => TradeAmountScreen(
+                                        mode: index == 1
+                                            ? TradeMode.sell
+                                            : TradeMode.convert,
+                                        asset: asset))),
+                        child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            child: Center(
+                                child: Text(['Buy', 'Sell', 'Swap'][index],
+                                    style: TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w600,
+                                        color: index == 0
+                                            ? AppColors.primary
+                                            : AppColors.body)))),
+                      ),
+                    )))),
+      );
 }
 
 class _WalletBadge extends StatelessWidget {
@@ -757,7 +830,11 @@ class _WalletBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Image.asset(wallet.iconAsset, width: 32, height: 32, fit: BoxFit.contain, filterQuality: FilterQuality.high);
+    return Image.asset(wallet.iconAsset,
+        width: 32,
+        height: 32,
+        fit: BoxFit.contain,
+        filterQuality: FilterQuality.high);
   }
 }
 
@@ -771,7 +848,9 @@ class _PercentageButtons extends StatelessWidget {
     const values = [0.10, 0.25, 0.50, 0.75, 1.0];
     const labels = ['10%', '25%', '50%', '75%', 'Max'];
     return Wrap(
-      alignment: WrapAlignment.center, spacing: 12, runSpacing: 8,
+      alignment: WrapAlignment.center,
+      spacing: 12,
+      runSpacing: 8,
       children: List.generate(values.length, (index) {
         return InkWell(
           onTap: () => onPick(balance * values[index]),
@@ -801,7 +880,8 @@ class _PercentageButtons extends StatelessWidget {
 }
 
 class _PrimaryButton extends StatelessWidget {
-  const _PrimaryButton({required this.label, required this.enabled, required this.onPressed});
+  const _PrimaryButton(
+      {required this.label, required this.enabled, required this.onPressed});
   final String label;
   final bool enabled;
   final VoidCallback onPressed;
@@ -820,7 +900,8 @@ class _PrimaryButton extends StatelessWidget {
           disabledForegroundColor: Colors.white,
           foregroundColor: Colors.white,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-          textStyle: const TextStyle(fontFamily: 'Sora', fontSize: 14, fontWeight: FontWeight.w600),
+          textStyle: const TextStyle(
+              fontFamily: 'Sora', fontSize: 14, fontWeight: FontWeight.w600),
         ),
         child: Text(label),
       ),
@@ -851,10 +932,40 @@ class _ReviewExchangeCards extends StatelessWidget {
               ),
               child: Stack(
                 children: [
-                  const Positioned(left: 16, top: 14, child: Text('You will pay', style: TextStyle(fontFamily: 'Sora', fontSize: 12, height: 1.25, color: AppColors.bodyMuted))),
-                  Positioned(left: 18, top: 44.5, width: 32, height: 32, child: _WalletBadge(wallet: order.wallet)),
-                  Positioned(left: 62, top: 41, child: Text('₦${_formatNgn(order.ngnAmount)}', style: const TextStyle(fontFamily: 'Sora', fontSize: 16, fontWeight: FontWeight.w600, height: 1.35, color: AppColors.ink))),
-                  Positioned(left: 62, top: 66, child: Text(order.wallet.name, style: const TextStyle(fontFamily: 'Sora', fontSize: 10, height: 1.3, color: AppColors.bodyMuted))),
+                  const Positioned(
+                      left: 16,
+                      top: 14,
+                      child: Text('You will pay',
+                          style: TextStyle(
+                              fontFamily: 'Sora',
+                              fontSize: 12,
+                              height: 1.25,
+                              color: AppColors.bodyMuted))),
+                  Positioned(
+                      left: 18,
+                      top: 44.5,
+                      width: 32,
+                      height: 32,
+                      child: _WalletBadge(wallet: order.wallet)),
+                  Positioned(
+                      left: 62,
+                      top: 41,
+                      child: Text('₦${_formatNgn(order.ngnAmount)}',
+                          style: const TextStyle(
+                              fontFamily: 'Sora',
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              height: 1.35,
+                              color: AppColors.ink))),
+                  Positioned(
+                      left: 62,
+                      top: 66,
+                      child: Text(order.wallet.name,
+                          style: const TextStyle(
+                              fontFamily: 'Sora',
+                              fontSize: 10,
+                              height: 1.3,
+                              color: AppColors.bodyMuted))),
                 ],
               ),
             ),
@@ -872,11 +983,50 @@ class _ReviewExchangeCards extends StatelessWidget {
               ),
               child: Stack(
                 children: [
-                  const Positioned(left: 16, top: 14, child: Text('You will receive', style: TextStyle(fontFamily: 'Sora', fontSize: 12, height: 1.25, color: AppColors.bodyMuted))),
-                  Positioned(left: 16, top: 44.5, width: 32, height: 32, child: Center(child: BuyAssetIcon(asset: order.asset, size: 20))),
-                  Positioned(left: 54, top: 41, child: Text(order.cryptoAmount.toStringAsFixed(5), style: const TextStyle(fontFamily: 'Sora', fontSize: 16, fontWeight: FontWeight.w600, height: 1.35, color: AppColors.ink))),
-                  const Positioned(left: 54, top: 65.5, child: Text('≈', style: TextStyle(fontFamily: 'Sora', fontSize: 12, height: 1.0, color: AppColors.bodyMuted))),
-                  Positioned(left: 72, top: 66, child: Text('\$${order.usdAmount.toStringAsFixed(2)}', style: const TextStyle(fontFamily: 'Sora', fontSize: 10, height: 1.3, color: AppColors.bodyMuted))),
+                  const Positioned(
+                      left: 16,
+                      top: 14,
+                      child: Text('You will receive',
+                          style: TextStyle(
+                              fontFamily: 'Sora',
+                              fontSize: 12,
+                              height: 1.25,
+                              color: AppColors.bodyMuted))),
+                  Positioned(
+                      left: 16,
+                      top: 44.5,
+                      width: 32,
+                      height: 32,
+                      child: Center(
+                          child: BuyAssetIcon(asset: order.asset, size: 20))),
+                  Positioned(
+                      left: 54,
+                      top: 41,
+                      child: Text(order.cryptoAmount.toStringAsFixed(5),
+                          style: const TextStyle(
+                              fontFamily: 'Sora',
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              height: 1.35,
+                              color: AppColors.ink))),
+                  const Positioned(
+                      left: 54,
+                      top: 65.5,
+                      child: Text('≈',
+                          style: TextStyle(
+                              fontFamily: 'Sora',
+                              fontSize: 12,
+                              height: 1.0,
+                              color: AppColors.bodyMuted))),
+                  Positioned(
+                      left: 72,
+                      top: 66,
+                      child: Text('\$${order.usdAmount.toStringAsFixed(2)}',
+                          style: const TextStyle(
+                              fontFamily: 'Sora',
+                              fontSize: 10,
+                              height: 1.3,
+                              color: AppColors.bodyMuted))),
                 ],
               ),
             ),
@@ -888,8 +1038,10 @@ class _ReviewExchangeCards extends StatelessWidget {
             height: 40,
             child: Container(
               padding: const EdgeInsets.all(8),
-              decoration: const BoxDecoration(color: Color(0xFFF4F7FF), shape: BoxShape.circle),
-              child: Image.asset('assets/figma_exact/buy_exchange_down.png', width: 24, height: 24, fit: BoxFit.contain),
+              decoration: const BoxDecoration(
+                  color: Color(0xFFF4F7FF), shape: BoxShape.circle),
+              child: Image.asset('assets/figma_exact/buy_exchange_down.png',
+                  width: 24, height: 24, fit: BoxFit.contain),
             ),
           ),
         ],
@@ -914,67 +1066,21 @@ class _DetailsRow extends StatelessWidget {
   final bool accent;
 
   @override
-  Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        Text(
-          label,
-          style: const TextStyle(
-            fontFamily: 'Sora',
-            fontSize: 14,
-            height: 1.35,
-            color: AppColors.bodyMuted,
-          ),
-        ),
-        const Spacer(),
-        if (leading != null) ...[
-          leading!,
-          const SizedBox(width: 8),
-        ],
-        Flexible(
-          child: Text(
-            value,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            textAlign: TextAlign.right,
-            style: TextStyle(
-              fontFamily: 'Sora',
-              fontSize: 14,
-              height: 1.35,
-              color: accent ? AppColors.primary : AppColors.ink,
-            ),
-          ),
-        ),
-        if (copyable) ...[
-          const SizedBox(width: 8),
-          InkWell(
-            borderRadius: BorderRadius.circular(18),
-            onTap: () async {
-              await Clipboard.setData(ClipboardData(text: value));
-              if (!context.mounted) return;
-              HapticFeedback.selectionClick();
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Transaction ID copied'),
-                  behavior: SnackBarBehavior.floating,
-                  duration: Duration(milliseconds: 1200),
-                ),
-              );
-            },
-            child: Padding(
-              padding: const EdgeInsets.all(2),
-              child: Image.asset(
-                'assets/figma_exact/buy_copy.png',
-                width: 16,
-                height: 16,
-              ),
-            ),
-          ),
-        ],
-      ],
-    );
-  }
+  Widget build(BuildContext context) => ReceiptDetailRow(
+        label: label,
+        value: value,
+        copyable: copyable,
+        leading: leading,
+        valueColor: accent ? AppColors.primary : AppColors.ink,
+        onCopy: () {
+          HapticFeedback.selectionClick();
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+            content: Text('Transaction ID copied'),
+            behavior: SnackBarBehavior.floating,
+            duration: Duration(milliseconds: 1200),
+          ));
+        },
+      );
 }
 
 class _DetailsDivider extends StatelessWidget {
@@ -988,16 +1094,20 @@ class _DetailsDivider extends StatelessWidget {
 
 class _ThousandsFormatter extends TextInputFormatter {
   @override
-  TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
+  TextEditingValue formatEditUpdate(
+      TextEditingValue oldValue, TextEditingValue newValue) {
     final raw = newValue.text.replaceAll(',', '');
     if (raw.isEmpty) return newValue.copyWith(text: '');
     final parts = raw.split('.');
     if (parts.length > 2) return oldValue;
     final digits = parts.first.replaceAll(RegExp(r'[^0-9]'), '');
     final grouped = _groupDigits(digits);
-    final decimal = parts.length == 2 ? '.${parts[1].replaceAll(RegExp(r'[^0-9]'), '').substring(0, math.min(2, parts[1].replaceAll(RegExp(r'[^0-9]'), '').length))}' : '';
+    final decimal = parts.length == 2
+        ? '.${parts[1].replaceAll(RegExp(r'[^0-9]'), '').substring(0, math.min(2, parts[1].replaceAll(RegExp(r'[^0-9]'), '').length))}'
+        : '';
     final text = '$grouped$decimal';
-    return TextEditingValue(text: text, selection: TextSelection.collapsed(offset: text.length));
+    return TextEditingValue(
+        text: text, selection: TextSelection.collapsed(offset: text.length));
   }
 
   static String _groupDigits(String digits) {
@@ -1005,14 +1115,17 @@ class _ThousandsFormatter extends TextInputFormatter {
     final chars = digits.split('').reversed.toList();
     final groups = <String>[];
     for (var i = 0; i < chars.length; i += 3) {
-      groups.add(chars.sublist(i, math.min(i + 3, chars.length)).reversed.join());
+      groups
+          .add(chars.sublist(i, math.min(i + 3, chars.length)).reversed.join());
     }
     return groups.reversed.join(',');
   }
 }
 
 String _formatEditable(double value) {
-  final fixed = value == value.roundToDouble() ? value.toStringAsFixed(0) : value.toStringAsFixed(2);
+  final fixed = value == value.roundToDouble()
+      ? value.toStringAsFixed(0)
+      : value.toStringAsFixed(2);
   final parts = fixed.split('.');
   final grouped = _ThousandsFormatter._groupDigits(parts.first);
   return parts.length == 2 ? '$grouped.${parts[1]}' : grouped;
@@ -1025,7 +1138,8 @@ String _formatNgn(double value) {
   final reversed = whole.split('').reversed.toList();
   final chunks = <String>[];
   for (var i = 0; i < reversed.length; i += 3) {
-    chunks.add(reversed.sublist(i, math.min(i + 3, reversed.length)).reversed.join());
+    chunks.add(
+        reversed.sublist(i, math.min(i + 3, reversed.length)).reversed.join());
   }
   return '${chunks.reversed.join(',')}.${parts[1]}';
 }
@@ -1033,6 +1147,16 @@ String _formatNgn(double value) {
 String _two(int value) => value.toString().padLeft(2, '0');
 
 String _month(int month) => const [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
     ][month - 1];

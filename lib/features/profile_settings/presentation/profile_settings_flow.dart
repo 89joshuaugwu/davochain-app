@@ -1,3 +1,10 @@
+import '../../../shared/widgets/davo_result_screen.dart';
+import '../../../core/preview/preview_auth_state.dart';
+import '../../auth/presentation/login_flow.dart';
+import '../../auth/presentation/fingerprint_setup_screen.dart';
+import '../../auth/presentation/returning_unlock_screen.dart';
+import '../../onboarding/presentation/brand_splash_screen.dart';
+import '../../../shared/widgets/davo_success_mark.dart';
 import '../../../shared/widgets/davo_date_picker.dart';
 import '../../../core/preview/preview_account_state.dart';
 import 'package:flutter/material.dart';
@@ -24,7 +31,21 @@ class ProfileSettingsScreen extends StatefulWidget {
 }
 
 class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
-  bool biometrics = true;
+  @override
+  void initState() {
+    super.initState();
+    PreviewAuthState.biometricsEnabled.addListener(_refreshBiometrics);
+  }
+  void _refreshBiometrics() { if (mounted) setState(() {}); }
+  @override
+  void dispose() {
+    PreviewAuthState.biometricsEnabled.removeListener(_refreshBiometrics);
+    super.dispose();
+  }
+  void _setBiometrics(bool enabled) {
+    if (enabled) { _push(context, const FingerprintSetupScreen()); }
+    else { PreviewAuthState.biometricsEnabled.value = false; }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -57,8 +78,8 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
               _MenuItem(
                 '$_exactAssets/icon_biometrics.png',
                 'Enable Biometrics',
-                () => setState(() => biometrics = !biometrics),
-                trailing: _DavoSwitch(value: biometrics, onChanged: (v) => setState(() => biometrics = v)),
+                () => _setBiometrics(!PreviewAuthState.biometricsEnabled.value),
+                trailing: Semantics(label: 'Biometric preview', toggled: PreviewAuthState.biometricsEnabled.value, child: _DavoSwitch(value: PreviewAuthState.biometricsEnabled.value, onChanged: _setBiometrics)),
               ),
               _MenuItem('$_exactAssets/icon_lock.png', 'Change Password', () => _push(context, const ChangePasswordScreen())),
               _MenuItem('$_exactAssets/icon_lock.png', 'Transaction Pin', () => _push(context, const ResetPinStartScreen())),
@@ -66,6 +87,14 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
             ],
           ),
           const SizedBox(height: 24),
+          TextButton.icon(
+            onPressed: () {
+              PreviewAuthState.unlocked.value = false;
+              _push(context, BrandSplashScreen(destinationBuilder: (_) => const ReturningUnlockScreen()));
+            },
+            icon: const Icon(Icons.lock_outline_rounded, size: 18),
+            label: const Text('Preview returning login'),
+          ),
           _MenuCard(
             title: 'Preferences',
             items: [
@@ -99,6 +128,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
             destructive: true,
             onTap: () => _deleteAccountDialog(context),
           ),
+          const SizedBox(height: 16),
           const SizedBox(height: 34),
         ],
       ),
@@ -431,8 +461,14 @@ class _NewTransactionPinScreenState extends State<NewTransactionPinScreen>{
   @override void dispose(){a.removeListener(_refresh);b.removeListener(_refresh);a.dispose();b.dispose();super.dispose();}
   @override Widget build(BuildContext context){final av=a.text.replaceAll(RegExp(r'\D'),'');final bv=b.text.replaceAll(RegExp(r'\D'),'');final enabled=av.length==4&&bv.length==4&&av==bv;return _Shell(title:'Transaction PIN',child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[const SizedBox(height:26),const Text('Your 4-digit transaction PIN secures your transactions. It is important that you do not share this PIN with anyone',style:_t14),const SizedBox(height:24),_Input(label:'New PIN',hint:'****',controller:a,obscure:true,keyboard:TextInputType.number,labelSize:16,hintSize:14,hintFontFamily:'Poppins',maxLength:4,inputFormatters:[FilteringTextInputFormatter.digitsOnly]),const SizedBox(height:16),_Input(label:'Confirm New PIN',hint:'****',controller:b,obscure:true,keyboard:TextInputType.number,labelSize:16,hintSize:14,hintFontFamily:'Poppins',maxLength:4,inputFormatters:[FilteringTextInputFormatter.digitsOnly]),const Spacer(),_PrimaryButton('Save',enabled:enabled,disabledBackgroundColor:const Color(0xFF89ADFB),onTap:()=>_push(context,const PinSuccessScreen())),const SizedBox(height:28)]));}
 }
-class PinSuccessScreen extends StatefulWidget{const PinSuccessScreen({super.key});@override State<PinSuccessScreen> createState()=>_PinSuccessScreenState();}
-class _PinSuccessScreenState extends State<PinSuccessScreen> with SingleTickerProviderStateMixin{late final AnimationController c;@override void initState(){super.initState();c=AnimationController(vsync:this,duration:const Duration(milliseconds:700))..forward();}@override void dispose(){c.dispose();super.dispose();}@override Widget build(BuildContext context)=>Scaffold(backgroundColor:Colors.white,body:SafeArea(child:Padding(padding:const EdgeInsets.fromLTRB(16,70,16,28),child:Column(children:[ScaleTransition(scale:CurvedAnimation(parent:c,curve:Curves.elasticOut),child:Image.asset('$_exactAssets/status_animation_exact.gif',width:150,height:150,fit:BoxFit.contain)),const SizedBox(height:16),const Text('Success!',style:_t24b),const SizedBox(height:4),const Text('You’ve successfully reset your Transaction PIN',textAlign:TextAlign.center,style:_t14),const Spacer(),_PrimaryButton('Okay',onTap:()=>Navigator.of(context).popUntil((r)=>r.isFirst))]))));}
+class PinSuccessScreen extends StatelessWidget {
+  const PinSuccessScreen({super.key});
+  @override
+  Widget build(BuildContext context) => DavoResultScreen(
+    title: 'Success!', message: 'You’ve successfully reset your Transaction PIN',
+    actions: _PrimaryButton('Okay', onTap: () => Navigator.of(context).popUntil((r) => r.isFirst)),
+  );
+}
 
 // ---- Support ----
 class CustomerSupportScreen extends StatelessWidget {
@@ -831,22 +867,7 @@ class PersonalInformationSuccessScreen extends StatelessWidget {
                     child: Column(
                       children: [
                         const SizedBox(height: 64),
-                        Semantics(
-                          label: 'Personal information updated successfully',
-                          child: Container(
-                            width: 112,
-                            height: 112,
-                            alignment: Alignment.center,
-                            decoration: const BoxDecoration(color: Color(0xFF16A34A), shape: BoxShape.circle),
-                            child: Container(
-                              width: 56,
-                              height: 56,
-                              alignment: Alignment.center,
-                              decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
-                              child: const Icon(Icons.check_rounded, size: 36, color: Color(0xFF16A34A)),
-                            ),
-                          ),
-                        ),
+                        const DavoSuccessMark(size: 112, semanticLabel: 'Personal information updated successfully'),
                         const SizedBox(height: 24),
                         const Text('Information Updated', style: _t20sb, textAlign: TextAlign.center),
                         const SizedBox(height: 8),
@@ -891,7 +912,7 @@ class KycTierOverviewScreen extends StatelessWidget {
           const SizedBox(height: 26),
           _TierCard(
             tier: 'Tier 1',
-            title: 'BVN Verification',
+            title: 'NIN Verification',
             subtitle: 'Basic access with Standard limits',
             done: completedTier >= 1,
             active: activeTier == 1 && completedTier < 1,
@@ -900,7 +921,7 @@ class KycTierOverviewScreen extends StatelessWidget {
           SizedBox(height: gap),
           _TierCard(
             tier: 'Tier 2',
-            title: 'NIN Verification',
+            title: 'BVN Verification',
             subtitle: 'Higher limits and more',
             done: completedTier >= 2,
             active: activeTier == 2 && completedTier < 2,
@@ -929,26 +950,26 @@ class KycTierIntroScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final title = tier == 1
-        ? 'Tier 1: BVN Verification'
+        ? 'Tier 1: NIN Verification'
         : tier == 2
-            ? 'Tier 2: NIN Verification'
+            ? 'Tier 2: BVN Verification'
             : 'Tier 3: ID & Address Verification';
     final description = tier == 1
-        ? 'Verify your BVN to secure your account and increase your transaction limits'
+        ? 'Verify your National Identification Number (NIN) and complete a quick face verification to increase your limits'
         : tier == 2
-            ? 'Verify your National Identification Number\n(NIN) and complete a quick face verification to increase your limits'
+            ? 'Verify your Bank Verification Number (BVN) to secure your account and increase your transaction limits'
             : 'Upload a government issue ID, proof of address and complete a final face verification';
     final requirements = tier == 1
         ? const [
-            ('$_exactAssets/kyc_req_id_exact.png', 'Valid Nigerian BVN (11 digits)'),
-            ('$_exactAssets/kyc_req_phone_exact.png', 'Your register phone number'),
-            ('$_exactAssets/kyc_req_user_pin_exact.png', 'Must match your personal details'),
+            ('$_exactAssets/kyc_req_id_exact.png', 'Your 11-digit NIN'),
+            ('$_exactAssets/kyc_req_id_v_exact.png', 'A well-lit environment'),
+            ('$_exactAssets/kyc_req_user_exact.png', 'Your face clearly visible'),
           ]
         : tier == 2
             ? const [
-                ('$_exactAssets/kyc_req_id_exact.png', 'Your 11-digit NIN'),
-                ('$_exactAssets/kyc_req_id_v_exact.png', 'A well-lit environment'),
-                ('$_exactAssets/kyc_req_user_exact.png', 'Your face clearly visible'),
+                ('$_exactAssets/kyc_req_id_exact.png', 'Valid Nigerian BVN (11 digits)'),
+                ('$_exactAssets/kyc_req_phone_exact.png', 'Your registered phone number'),
+                ('$_exactAssets/kyc_req_user_pin_exact.png', 'Must match your personal details'),
               ]
             : const [
                 ('$_exactAssets/kyc_req_id_exact.png', 'Government-issued ID'),
@@ -1014,7 +1035,7 @@ class KycTierIntroScreen extends StatelessWidget {
               tier == 1
                   ? const CompleteProfileV12Screen()
                   : tier == 2
-                      ? const NinEntryV12Screen()
+                      ? const BvnEntryV12Screen()
                       : const Tier3SelectIdScreen(),
             ),
           ),
@@ -1099,7 +1120,7 @@ class _CompleteProfileContactV12ScreenState extends State<CompleteProfileContact
           _PrimaryButton(
             'Continue',
             enabled: enabled,
-            onTap: () => _push(context, const BvnEntryV12Screen()),
+            onTap: () => _push(context, const NinEntryV12Screen()),
           ),
           const SizedBox(height: 28),
         ],
@@ -1174,7 +1195,7 @@ class _BvnEntryV12ScreenState extends State<BvnEntryV12Screen> {
               const VerificationProcessingV12Screen(
                 title: 'Verifying your BVN',
                 body: 'This may take a few seconds\nPlease do not leave this page',
-                next: TierCompletionV12Screen(tier: 1),
+                next: TierCompletionV12Screen(tier: 2),
               ),
             ),
           ),
@@ -1326,54 +1347,19 @@ class TierCompletionV12Screen extends StatelessWidget {
   Widget build(BuildContext context) {
     final title = tier == 1 ? 'Tier 1 Completed' : 'Tier 2 Completed';
     final body = tier == 1
-        ? 'Your BVN has been successfully verified.\nYou can now access more features \non Davochain'
-        : 'Your NIN has been successfully verified and your identity matches. You can now access higher transaction limits';
+        ? 'Your NIN preview is complete. You can now explore the next verification tier.'
+        : 'Your BVN preview is complete. You can now explore the next verification tier.';
     final next = tier == 1 ? 'Continue to Tier 2' : 'Continue to Tier 3';
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 72, 15, 24),
-          child: Column(
-            children: [
-              Image.asset(
-                '$_exactAssets/status_animation_exact.gif',
-                width: 150,
-                height: 150,
-                fit: BoxFit.contain,
-                filterQuality: FilterQuality.high,
-              ),
-              const SizedBox(height: 27),
-              Text(title, style: _t16b, textAlign: TextAlign.center),
-              const SizedBox(height: 8),
-              SizedBox(
-                width: 359,
-                child: Text(body, style: _t14, textAlign: TextAlign.center),
-              ),
-              const SizedBox(height: 24),
-              _CurrentTierCard(tier: tier),
-              const Spacer(),
-              _PrimaryButton(
-                next,
-                onTap: () => _push(context, KycTierOverviewScreen(completedTier: tier)),
-              ),
-              const SizedBox(height: 15),
-              SizedBox(
-                width: double.infinity,
-                height: 48,
-                child: TextButton(
-                  onPressed: () => Navigator.of(context).popUntil((r) => r.isFirst),
-                  style: TextButton.styleFrom(
-                    foregroundColor: AppColors.primary,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-                  ),
-                  child: const Text('Maye Later', style: _t14b),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
+    return DavoResultScreen(
+      title: title,
+      message: body,
+      mark: const DavoSuccessMark(size: 150, semanticLabel: 'Verification preview complete'),
+      details: _CurrentTierCard(tier: tier),
+      actions: Column(mainAxisSize: MainAxisSize.min, children: [
+        _PrimaryButton(next, onTap: () => _push(context, KycTierOverviewScreen(completedTier: tier))),
+        const SizedBox(height: 12),
+        TextButton(onPressed: () => Navigator.of(context).popUntil((r) => r.isFirst), child: const Text('Maybe Later')),
+      ]),
     );
   }
 }
@@ -1554,7 +1540,7 @@ class FaceReviewV12Screen extends StatelessWidget {
                 const VerificationProcessingV12Screen(
                   title: 'Matching your identity',
                   body: 'We’re comparing your live selfie with your\nNIN records. this may take a few seconds',
-                  next: TierCompletionV12Screen(tier: 2),
+                  next: TierCompletionV12Screen(tier: 1),
                 ),
               ),
             ),
@@ -2110,7 +2096,7 @@ class _KycInfoCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Container(
         width: double.infinity,
-        height: height,
+        constraints: BoxConstraints(minHeight: height),
         padding: EdgeInsets.fromLTRB(21, title == null ? 24 : 20, 22, 20),
         decoration: BoxDecoration(
           color: const Color(0xFFFEF7EA),
@@ -2161,7 +2147,7 @@ class _ContactPhoneField extends StatelessWidget {
           Row(
             children: [
               Container(
-                width: 86,
+                constraints: const BoxConstraints(minWidth: 86),
                 height: 48,
                 padding: const EdgeInsets.symmetric(horizontal: 8),
                 decoration: BoxDecoration(
@@ -2170,6 +2156,7 @@ class _ContactPhoneField extends StatelessWidget {
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Image.asset('$_exactAssets/nigeria_flag_exact.png', width: 21, height: 14, fit: BoxFit.contain, filterQuality: FilterQuality.high),
                     const SizedBox(width: 3),
@@ -2266,7 +2253,13 @@ class _CountryField extends StatelessWidget {
       );
 }
 
-class _StatusFullScreen extends StatelessWidget{const _StatusFullScreen({required this.title,required this.body,required this.button,required this.onTap});final String title,body,button;final VoidCallback onTap;@override Widget build(BuildContext context)=>Scaffold(backgroundColor:Colors.white,body:SafeArea(child:Padding(padding:const EdgeInsets.fromLTRB(16,72,16,28),child:Column(children:[Image.asset('$_exactAssets/status_animation_exact.gif',width:150,height:150),const SizedBox(height:18),Text(title,style:_t24b,textAlign:TextAlign.center),const SizedBox(height:8),Text(body,style:_t14,textAlign:TextAlign.center),const Spacer(),_PrimaryButton(button,onTap:onTap)]))));}
+class _StatusFullScreen extends StatelessWidget {
+  const _StatusFullScreen({required this.title, required this.body, required this.button, required this.onTap});
+  final String title, body, button;
+  final VoidCallback onTap;
+  @override
+  Widget build(BuildContext context) => DavoResultScreen(title: title, message: body, actions: _PrimaryButton(button, onTap: onTap));
+}
 class _KycRequirementLine extends StatelessWidget {
   const _KycRequirementLine({required this.asset, required this.text});
   final String asset, text;
@@ -2403,76 +2396,28 @@ class _TierCard extends StatelessWidget {
 class _CurrentTierCard extends StatelessWidget {
   const _CurrentTierCard({required this.tier});
   final int tier;
-
   @override
-  Widget build(BuildContext context) {
-    final tier2 = tier == 2;
-    return Container(
-      width: double.infinity,
-      height: tier2 ? 133 : 110,
-      padding: const EdgeInsets.fromLTRB(16, 20, 16, 20),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF8F9FB),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text('Your Current Tier', style: _t14),
-          const SizedBox(height: 9),
-          Expanded(
-            child: Row(
-              children: [
-                Image.asset(
-                  tier2 ? '$_exactAssets/tier2_medal_exact.png' : '$_exactAssets/tier1_medal_exact.png',
-                  width: 40,
-                  height: 40,
-                  fit: BoxFit.contain,
-                  filterQuality: FilterQuality.high,
-                ),
-                const SizedBox(width: 16),
-                SizedBox(
-                  width: 110,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Tier $tier', style: _t14b),
-                      const SizedBox(height: 4),
-                      const Text('BVN Verified', style: _t14),
-                      if (tier2) ...[
-                        const SizedBox(height: 4),
-                        const Text('NIN Verified', style: _t14),
-                      ],
-                    ],
-                  ),
-                ),
-                const Spacer(),
-                Container(
-                  width: 56,
-                  height: 23,
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFD2F3DF),
-                    borderRadius: BorderRadius.circular(100),
-                  ),
-                  child: const Text(
-                    'Active',
-                    style: TextStyle(
-                      fontFamily: 'Sora',
-                      fontSize: 12,
-                      fontWeight: FontWeight.w400,
-                      color: Color(0xFF1BA44D),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  Widget build(BuildContext context) => Container(
+    width: double.infinity,
+    padding: const EdgeInsets.all(16),
+    decoration: BoxDecoration(color: const Color(0xFFF8F9FB), borderRadius: BorderRadius.circular(8)),
+    child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+      const Text('Your Current Tier', style: _t14),
+      const SizedBox(height: 12),
+      Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Image.asset(tier == 2 ? '$_exactAssets/tier2_medal_exact.png' : '$_exactAssets/tier1_medal_exact.png', width: 40, height: 40),
+        const SizedBox(width: 12),
+        Expanded(child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text('Tier $tier', style: _t14b),
+          const SizedBox(height: 4),
+          const Text('NIN preview complete', style: _t12),
+          if (tier == 2) const Text('BVN preview complete', style: _t12),
+        ])),
+        const SizedBox(width: 8),
+        const _Pill('Active'),
+      ]),
+    ]),
+  );
 }
 
 class _V12ChoiceTile extends StatelessWidget {
@@ -3709,7 +3654,7 @@ void _snack(BuildContext c,String s)=>ScaffoldMessenger.of(c).showSnackBar(Snack
 void _simple(BuildContext c,String title)=>_push(c,_Shell(title:title,child:Center(child:Text('$title\nDavochain',textAlign:TextAlign.center,style:_t16b))));
 Future<void> _uploadSheet(BuildContext context,String title)=>showModalBottomSheet(context:context,showDragHandle:true,builder:(c)=>SafeArea(child:Padding(padding:const EdgeInsets.fromLTRB(16,0,16,20),child:Column(mainAxisSize:MainAxisSize.min,children:[Align(alignment:Alignment.centerLeft,child:Text(title,style:_t16b)),const SizedBox(height:18),_PrimaryButton('Take a Photo',onTap:()=>Navigator.pop(c)),const SizedBox(height:10),OutlinedButton(onPressed:()=>Navigator.pop(c),style:OutlinedButton.styleFrom(minimumSize:const Size.fromHeight(48),side:const BorderSide(color:AppColors.primary)),child:const Text('Choose From Gallery')),const SizedBox(height:10),TextButton(onPressed:()=>Navigator.pop(c),child:const Text('Choose a file'))]))));
 Future<void> _socialDialog(BuildContext c,String s)=>showDialog(context:c,barrierColor:Colors.black.withValues(alpha: .35),builder:(d)=>Dialog(backgroundColor:Colors.white,shape:RoundedRectangleBorder(borderRadius:BorderRadius.circular(16)),insetPadding:const EdgeInsets.symmetric(horizontal:77),child:SizedBox(width:236,height:123,child:Padding(padding:const EdgeInsets.all(16),child:Column(mainAxisAlignment:MainAxisAlignment.center,crossAxisAlignment:CrossAxisAlignment.start,children:[Text('“Davochain” Wants to open “$s”',style:_t14),const SizedBox(height:19),Row(children:[Expanded(child:SizedBox(height:36,child:TextButton(onPressed:()=>Navigator.pop(d),style:TextButton.styleFrom(backgroundColor:const Color(0xFFF2F3F7),shape:RoundedRectangleBorder(borderRadius:BorderRadius.circular(4))),child:const Text('Cancel',style:TextStyle(fontFamily:'Sora',fontSize:14,color:AppColors.ink))))),const SizedBox(width:12),Expanded(child:SizedBox(height:36,child:TextButton(onPressed:()=>Navigator.pop(d),style:TextButton.styleFrom(backgroundColor:AppColors.primary,shape:RoundedRectangleBorder(borderRadius:BorderRadius.circular(4))),child:const Text('Open',style:TextStyle(fontFamily:'Sora',fontSize:14,color:Colors.white)))))])])))));
-Future<void> _logoutDialog(BuildContext c)=>showDialog(context:c,builder:(d)=>AlertDialog(title:const Text('Logout'),content:const Text('Are you sure you want to logout?'),actions:[TextButton(onPressed:()=>Navigator.pop(d),child:const Text('Cancel')),TextButton(onPressed:()=>Navigator.pop(d),child:const Text('Logout',style:TextStyle(color:Color(0xFFF44336))))]));
+Future<void> _logoutDialog(BuildContext c)=>showDialog(context:c,builder:(d)=>AlertDialog(title:const Text('Logout'),content:const Text('Are you sure you want to logout?'),actions:[TextButton(onPressed:()=>Navigator.pop(d),child:const Text('Cancel')),TextButton(onPressed:(){PreviewAuthState.unlocked.value=false;Navigator.of(d).pushAndRemoveUntil(AppPageRoute<void>(builder:(_)=>const LoginScreen()),(_)=>false);},child:const Text('Logout',style:TextStyle(color:Color(0xFFF44336))))]));
 Future<void> _deleteAccountDialog(BuildContext c)=>showDialog(context:c,builder:(d)=>AlertDialog(title:const Text('Delete Account'),content:const Text('Are you sure you want to delete your account?'),actions:[TextButton(onPressed:()=>Navigator.pop(d),child:const Text('Cancel')),TextButton(onPressed:()=>Navigator.pop(d),child:const Text('Delete Account',style:TextStyle(color:Color(0xFFF44336))))]));
 
 const _navSora20 = TextStyle(fontFamily:'Sora',fontSize:20,fontWeight:FontWeight.w400,color:Color(0xFF424242),height:1.35);
@@ -3722,7 +3667,6 @@ const _navSora14SemiBold = TextStyle(fontFamily:'Sora',fontSize:14,fontWeight:Fo
 const _t16ProfileSub = TextStyle(fontFamily:'Sora',fontSize:16,fontWeight:FontWeight.w400,color:Color(0xFF686868),height:1.35);
 const _personalInfoLabel = TextStyle(fontFamily:'Sora',fontSize:14,fontWeight:FontWeight.w400,color:Color(0xFF505057),height:1.35);
 const _sectionLabel14 = TextStyle(fontFamily:'Sora',fontSize:14,fontWeight:FontWeight.w600,color:Color(0xFF686868),height:1.35);
-const _t24b=TextStyle(fontFamily:'Sora',fontSize:24,fontWeight:FontWeight.w700,color:AppColors.ink,height:1.35);
 const _t20=TextStyle(fontFamily:'Sora',fontSize:20,fontWeight:FontWeight.w400,color:AppColors.ink,height:1.35);
 const _t20sb=TextStyle(fontFamily:'Sora',fontSize:20,fontWeight:FontWeight.w600,color:AppColors.ink,height:1.35);
 const _t16=TextStyle(fontFamily:'Sora',fontSize:16,fontWeight:FontWeight.w400,color:AppColors.ink,height:1.35);

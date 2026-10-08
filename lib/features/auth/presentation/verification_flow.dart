@@ -1,3 +1,4 @@
+import '../../../shared/widgets/davo_result_screen.dart';
 import 'dart:async';
 import 'dart:math' as math;
 
@@ -146,7 +147,8 @@ class _VerificationScreenState extends State<VerificationScreen>
                 final progress = _shakeController.value;
                 final decay = 1 - progress;
                 final offset = math.sin(progress * math.pi * 8) * 8 * decay;
-                return Transform.translate(offset: Offset(offset, 0), child: child);
+                return Transform.translate(
+                    offset: Offset(offset, 0), child: child);
               },
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -191,7 +193,8 @@ class _VerificationScreenState extends State<VerificationScreen>
             children: [
               const Text(
                 'Didn’t get a code?',
-                style: TextStyle(fontFamily: 'Sora', fontSize: 14, color: AppColors.body),
+                style: TextStyle(
+                    fontFamily: 'Sora', fontSize: 14, color: AppColors.body),
               ),
               const SizedBox(width: 4),
               InkWell(
@@ -201,7 +204,8 @@ class _VerificationScreenState extends State<VerificationScreen>
                   style: TextStyle(
                     fontFamily: 'Sora',
                     fontSize: 14,
-                    color: _seconds == 0 ? AppColors.primary : AppColors.bodyMuted,
+                    color:
+                        _seconds == 0 ? AppColors.primary : AppColors.bodyMuted,
                   ),
                 ),
               ),
@@ -212,7 +216,10 @@ class _VerificationScreenState extends State<VerificationScreen>
                     ? Text(
                         '0:${_seconds.toString().padLeft(2, '0')}',
                         key: ValueKey(_seconds),
-                        style: const TextStyle(fontFamily: 'Sora', fontSize: 14, color: AppColors.body),
+                        style: const TextStyle(
+                            fontFamily: 'Sora',
+                            fontSize: 14,
+                            color: AppColors.body),
                       )
                     : const SizedBox.shrink(),
               ),
@@ -254,9 +261,11 @@ class _OtpBoxes extends StatelessWidget {
               focusNode: focusNodes[index],
               autofocus: index == 0,
               keyboardType: TextInputType.number,
-              textInputAction: index == 3 ? TextInputAction.done : TextInputAction.next,
+              textInputAction:
+                  index == 3 ? TextInputAction.done : TextInputAction.next,
               textAlign: TextAlign.center,
-              style: const TextStyle(fontFamily: 'Sora', fontSize: 14, color: AppColors.bodyMuted),
+              style: const TextStyle(
+                  fontFamily: 'Sora', fontSize: 14, color: AppColors.bodyMuted),
               maxLength: 1,
               inputFormatters: [FilteringTextInputFormatter.digitsOnly],
               decoration: InputDecoration(
@@ -264,11 +273,15 @@ class _OtpBoxes extends StatelessWidget {
                 contentPadding: EdgeInsets.zero,
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: error ? const Color(0xFFE84A4A) : AppColors.border),
+                  borderSide: BorderSide(
+                      color:
+                          error ? const Color(0xFFE84A4A) : AppColors.border),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: error ? const Color(0xFFE84A4A) : AppColors.primary),
+                  borderSide: BorderSide(
+                      color:
+                          error ? const Color(0xFFE84A4A) : AppColors.primary),
                 ),
               ),
               onChanged: (value) => onChanged(index, value),
@@ -283,88 +296,23 @@ class _OtpBoxes extends StatelessWidget {
   }
 }
 
-class VerificationSuccessScreen extends StatefulWidget {
-  const VerificationSuccessScreen({super.key, required this.kind, required this.onContinue});
-
+class VerificationSuccessScreen extends StatelessWidget {
+  const VerificationSuccessScreen(
+      {super.key, required this.kind, required this.onContinue});
   final VerificationKind kind;
   final VoidCallback onContinue;
 
   @override
-  State<VerificationSuccessScreen> createState() => _VerificationSuccessScreenState();
-}
-
-class _VerificationSuccessScreenState extends State<VerificationSuccessScreen>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _controller;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(vsync: this, duration: const Duration(milliseconds: 760))..forward();
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final isEmail = widget.kind == VerificationKind.email;
-    return DavoAuthScaffold(
-      child: Column(
-        children: [
-          const SizedBox(height: 78),
-          ScaleTransition(
-            scale: CurvedAnimation(parent: _controller, curve: Curves.elasticOut),
-            child: Container(
-              width: 150,
-              height: 150,
-              decoration: const BoxDecoration(shape: BoxShape.circle, color: AppColors.primarySoft),
-              alignment: Alignment.center,
-              child: Image.asset(
-                'assets/icons/auth/tick_circle.png',
-                width: 58,
-                height: 58,
-                fit: BoxFit.contain,
-                filterQuality: FilterQuality.high,
-              ),
-            ),
-          ),
-          const SizedBox(height: 24),
-          FadeTransition(
-            opacity: CurvedAnimation(parent: _controller, curve: const Interval(.25, 1)),
-            child: Column(
-              children: [
-                Text(
-                  isEmail ? 'Email verified!' : 'Phone Number verified!',
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontFamily: 'Sora',
-                    fontSize: 20,
-                    height: 1.35,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.ink,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  isEmail
-                      ? 'Your email address has been verified. Click Continue to proceed.'
-                      : 'Your phone number has been verified. Click continue to proceed',
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(fontFamily: 'Sora', fontSize: 14, height: 1.35, color: AppColors.bodyMuted),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 24),
-          DavoPrimaryButton(label: 'Continue', onPressed: widget.onContinue),
-        ],
-      ),
-    );
-  }
+  Widget build(BuildContext context) => DavoResultScreen(
+        title: kind == VerificationKind.email
+            ? 'Email verified!'
+            : 'Phone number verified!',
+        message: kind == VerificationKind.email
+            ? 'Your email address has been verified. Continue to proceed.'
+            : 'Your phone number has been verified. Continue to proceed.',
+        appBar: AppBar(backgroundColor: Colors.white),
+        actions: DavoPrimaryButton(label: 'Continue', onPressed: onContinue),
+      );
 }
 
 class TransactionPinScreen extends StatefulWidget {
@@ -389,7 +337,8 @@ class _TransactionPinScreenState extends State<TransactionPinScreen>
   @override
   void initState() {
     super.initState();
-    _shakeController = AnimationController(vsync: this, duration: const Duration(milliseconds: 430));
+    _shakeController = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 430));
   }
 
   @override
@@ -440,7 +389,8 @@ class _TransactionPinScreenState extends State<TransactionPinScreen>
 
     HapticFeedback.lightImpact();
     if (!mounted) return;
-    Navigator.of(context).pushNamedAndRemoveUntil(AppRoutes.dashboard, (route) => false);
+    Navigator.of(context)
+        .pushNamedAndRemoveUntil(AppRoutes.dashboard, (route) => false);
   }
 
   @override
@@ -462,8 +412,14 @@ class _TransactionPinScreenState extends State<TransactionPinScreen>
             child: Column(
               children: [
                 Text(
-                  _confirming ? 'Confirm Your Secure PIN' : 'Create Your Secure PIN',
-                  style: const TextStyle(fontFamily: 'Sora', fontSize: 14, height: 1.35, color: AppColors.body),
+                  _confirming
+                      ? 'Confirm Your Secure PIN'
+                      : 'Create Your Secure PIN',
+                  style: const TextStyle(
+                      fontFamily: 'Sora',
+                      fontSize: 14,
+                      height: 1.35,
+                      color: AppColors.body),
                 ),
                 const SizedBox(height: 9),
                 AnimatedBuilder(
@@ -471,7 +427,8 @@ class _TransactionPinScreenState extends State<TransactionPinScreen>
                   builder: (context, child) {
                     final p = _shakeController.value;
                     final x = math.sin(p * math.pi * 8) * 8 * (1 - p);
-                    return Transform.translate(offset: Offset(x, 0), child: child);
+                    return Transform.translate(
+                        offset: Offset(x, 0), child: child);
                   },
                   child: _OtpBoxes(
                     controllers: _controllers,
@@ -488,7 +445,10 @@ class _TransactionPinScreenState extends State<TransactionPinScreen>
                           padding: EdgeInsets.only(top: 8),
                           child: Text(
                             'PINs do not match. Try again',
-                            style: TextStyle(fontFamily: 'Sora', fontSize: 14, color: Color(0xFFE84A4A)),
+                            style: TextStyle(
+                                fontFamily: 'Sora',
+                                fontSize: 14,
+                                color: Color(0xFFE84A4A)),
                           ),
                         )
                       : const SizedBox.shrink(),

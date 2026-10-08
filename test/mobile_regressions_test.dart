@@ -106,6 +106,9 @@ void main() {
     final copy = find.text('Copy Address');
     expect(copy.hitTestable(), findsOneWidget);
     final before = tester.getRect(copy);
+    await tester.ensureVisible(
+        find.text('Please review these guidelines before making a deposit.'));
+    await tester.pumpAndSettle();
     await tester.tap(
         find.text('Please review these guidelines before making a deposit.'));
     await tester.pump(const Duration(milliseconds: 300));

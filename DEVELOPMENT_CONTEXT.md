@@ -44,7 +44,7 @@ Review the reported boxed input appearance, clipped or obscured icons, missing a
 
 The wider polish pass should cover transitions and reduced motion; gestures, press feedback and haptics; keyboard dismissal and insets; safe areas, Android back handling and scrolling; consistent loading/empty/success/error states; responsive layouts, accessibility and text scaling; and Android animation performance. Verify with focused tests and device walkthroughs as each area changes.
 
-The source references **Sora**, but no Sora font binaries or font declaration are currently bundled. Add approved font files and configure their weights before judging final typography against Figma; also reconcile any intentionally different font families in the supplied designs.
+The variable **Sora** font and OFL license are now bundled in `assets/fonts/sora/`, with weights 400, 500, 600 and 700 registered in `pubspec.yaml`. Review typography using this packaged font.
 
 ## Validation record
 
@@ -194,3 +194,25 @@ it is not debuggable. Captured the completed animated welcome composition on the
 at ../tmp/emulator-review/phone-release-review.png. Device disconnected after this;
 no physical-device runtime-log result is claimed. The APK uses the project's existing
 local debug signing configuration for device testing; store signing is not configured.
+
+
+## Release preview polish - 8 October 2026
+
+Version 0.11.0+12 adds the returning-user authentication preview and completes the current dashboard/receipt/result repairs.
+
+The dashboard previously selected full-page scrolling whenever available body height was below 760 logical pixels. That included the physical phone viewport. Ordinary portrait phones now use a more compact header while keeping only Assets scrollable; tests prove three full assets before setup and all four after setup at 360x820 and 411x914 with safe-area padding. Landscape/very short screens and enlarged text retain readable full-page scrolling rather than clipped controls. Large-text asset rows and navigation adapt separately.
+
+Logout now clears the navigation stack and opens Login. KYC Tier 1 is NIN with the profile/contact/selfie flow; Tier 2 is BVN. Biometrics defaults off. Settings > Security opens explicit fingerprint preview setup, and the nearby 'Preview returning login' shortcut runs the existing splash then the returning preview. Its fingerprint control appears above password input. It accepts sample input and simulates fingerprint unlock; no credential checking, fingerprint enrollment, operating-system authentication, persisted session or minimize/background locking is implemented. Normal launches still run the full onboarding flow as requested.
+
+ReceiptDetailRow gives labels and values bounded columns, a consistent right edge and a reserved copy-control gutter. Long values wrap and copy retains the complete supplied string. Crypto, buy, gift and deposit-status details use it. Gift receipts scroll above pinned actions. Deposit address and bank-detail content no longer rely on fixed text heights.
+
+DavoSuccessMark/DavoResultScreen unify finite vector success presentation across trade, deposit, gift, auth and profile/KYC outcomes. Motion finishes in 850 ms; reduced motion is static and no replay loop runs. Pending/processing outcomes preserve their status. Native Material route transitions, Android predictive-back behavior and iOS edge-swipe behavior remain in place; returning preview adds restrained finite entrances.
+
+Documentation reviews: docs/reviews/2026-10-08-architecture-research-review.md, 2026-10-08-release-coverage-review.md and 2026-10-08-mobile-motion-review.md. Feature-first organization follows the boss's permitted structure, while production data/domain separation is still incomplete. tmp contains historical evidence/intermediates, not active app copies. No tmp cleanup or dependency installation was performed. README font and native-splash regeneration guidance is reconciled with bundled Sora and the custom Android animated dot.
+
+Source verification: flutter analyze --no-pub reports no issues; flutter test --no-pub passes all 81 tests. Logs are ../tmp/release-polish-analysis.txt and ../tmp/release-polish-tests.txt. APK/package/device evidence is appended after the build and installation are verified.
+
+
+APK/device verification for 0.11.0+12: flutter build apk --release succeeded (62.4 MB, assembleRelease 203.5 s), and flutter build apk --debug succeeded (46.0 s). Release installed with adb install -r on the Redmi 14C; Android reports versionName 0.11.0/versionCode 12 and flags without DEBUGGABLE. Emulator reports the same version with DEBUGGABLE. Both newly built archives contain all 724 declared source assets/font files, with zero missing entries and zero SHA-256 byte mismatches. Build logs: ../tmp/release-polish-build.txt and ../tmp/release-polish-debug-build.txt.
+
+Bounded physical release walkthrough: normal splash reaches onboarding; sample login opens Dashboard. At the phone's 720x1640/density320 display, BTC/ETH/USDT are fully visible. Dragging Assets reveals the complete fourth row while the promo text bounds remain exactly [56,780][325,876]. Fingerprint preview setup enables the Settings switch; the explicit returning preview runs splash then shows the fingerprint above password, with correct white system icons. Simulated fingerprint unlock returns to Dashboard. Confirming Logout opens Login. PID-filtered logs for this walkthrough returned no matches for missing assets, fatal/unhandled exceptions, RenderFlex overflow or missing plugins. This is not an exhaustive all-screen runtime audit. Evidence screenshots: ../tmp/emulator-review/phone-polish-dashboard.png, phone-polish-dashboard-scrolled.png and phone-polish-unlock.png.

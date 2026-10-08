@@ -26,13 +26,11 @@ flutter analyze
 flutter run
 ```
 
-This working project contains the native Android and iOS runner folders retained when importing the latest frontend handoff. When native splash assets change, regenerate the splash from the included `flutter_native_splash` configuration.
+This working project contains the native Android and iOS runner folders retained when importing the latest frontend handoff. The native splash includes custom Android animated-dot resources. Preserve those resources when changing splash artwork; the generator does not reproduce the custom animation.
 
 ## Native splash
 
-```bash
-dart run flutter_native_splash:create
-```
+The generator configuration is retained for reference. Running `dart run flutter_native_splash:create` can overwrite the custom Android 12 animated-dot styles. Reapply the custom drawable, animator and versioned styles before building if regeneration is needed.
 
 Launcher icons are configured with the supplied Davochain artwork. To regenerate them after changing that artwork:
 
@@ -48,7 +46,7 @@ The Buy Crypto flow intentionally uses local/mock quote and balance data. See `B
 
 ## Font integration note
 
-The UI specifies the **Sora** family to match Figma. Font binaries are not bundled in this handoff, so the host Flutter app should provide its licensed/approved Sora font setup (or an existing project font configuration) before pixel-level typography QA.
+The UI specifies the **Sora** family to match Figma. The variable Sora font is bundled under `assets/fonts/sora/` with its OFL license and registered at weights 400, 500, 600 and 700 in `pubspec.yaml`. It is packaged in both debug and release builds.
 
 
 ## Cumulative v8 crypto-board pass

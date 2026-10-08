@@ -8,10 +8,14 @@ import '../../../core/theme/app_theme.dart';
 import 'onboarding_screen.dart';
 
 class BrandSplashScreen extends StatefulWidget {
-  const BrandSplashScreen({super.key, this.firstFrameReady});
+  const BrandSplashScreen(
+      {super.key, this.firstFrameReady, this.destinationBuilder});
 
   /// Supplied by the engine entry point so startup cannot consume the reveal.
   final Future<void>? firstFrameReady;
+
+  /// Overrides the destination only for an explicitly opened returning preview.
+  final WidgetBuilder? destinationBuilder;
   @override
   State<BrandSplashScreen> createState() => _BrandSplashScreenState();
 }
@@ -108,11 +112,15 @@ class _BrandSplashScreenState extends State<BrandSplashScreen>
     if (!mounted || !_foreground || _navigating) return;
     _navigating = true;
     Navigator.of(context).pushReplacement(PageRouteBuilder<void>(
-      settings: const RouteSettings(name: '/onboarding'),
+      settings: RouteSettings(
+          name: widget.destinationBuilder == null
+              ? '/onboarding'
+              : '/returning-preview'),
       transitionDuration:
           Duration(milliseconds: _reduceMotion == true ? 0 : 320),
       reverseTransitionDuration: Duration.zero,
-      pageBuilder: (_, animation, secondaryAnimation) =>
+      pageBuilder: (routeContext, animation, secondaryAnimation) =>
+          widget.destinationBuilder?.call(routeContext) ??
           const OnboardingScreen(),
       transitionsBuilder: (_, animation, secondaryAnimation, child) =>
           _reduceMotion == true
@@ -247,10 +255,10 @@ class _AssemblingMark extends StatelessWidget {
                         clipper: _LogoPartClipper(region),
                         child: OverflowBox(
                             alignment: Alignment.topLeft,
-                minWidth: 391 * scale,
-                maxWidth: 391 * scale,
-                minHeight: 329 * scale,
-                maxHeight: 329 * scale,
+                            minWidth: 391 * scale,
+                            maxWidth: 391 * scale,
+                            minHeight: 329 * scale,
+                            maxHeight: 329 * scale,
                             child: Transform.translate(
                                 offset: Offset(-43 * scale, -69 * scale),
                                 child: ColorFiltered(
