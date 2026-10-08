@@ -19,7 +19,7 @@ void main() {
     expect(
         tester.widget<TradeAmountScreen>(find.byType(TradeAmountScreen)).mode,
         TradeMode.sell);
-    await tester.tap(find.text('Convert'));
+    await tester.tap(find.text('Swap').last);
     await tester.pumpAndSettle();
     expect(
         tester.widget<TradeAmountScreen>(find.byType(TradeAmountScreen)).mode,

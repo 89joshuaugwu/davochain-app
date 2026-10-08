@@ -1,3 +1,4 @@
+import 'package:davochain/features/buy_crypto/presentation/buy_crypto_screens.dart';
 import 'package:davochain/features/profile_settings/presentation/verification/verification_overview_screen.dart';
 import 'package:davochain/core/navigation/app_page_route.dart';
 import 'package:davochain/core/theme/app_theme.dart';
@@ -36,14 +37,14 @@ void main() {
     await tester.pumpAndSettle();
   });
 
-  testWidgets('Trade navigation opens the existing portfolio trade screen',
+  testWidgets('Trade navigation opens the existing tabbed trading screen',
       (tester) async {
     await tester.pumpWidget(MaterialApp(
         theme: AppTheme.light, home: const DavochainDashboardScreen()));
     await tester.pump(const Duration(seconds: 1));
     await tester.tap(find.text('Trade'));
     await tester.pumpAndSettle();
-    expect(find.text('Portfolio'), findsOneWidget);
+    expect(find.byType(BuyAmountScreen), findsOneWidget);
     expect(find.text('Swap'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });

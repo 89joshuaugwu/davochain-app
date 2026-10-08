@@ -1,3 +1,4 @@
+import '../motion/davo_working_indicator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import '../../core/theme/app_theme.dart';
@@ -39,6 +40,7 @@ class _DavoReceiptExportFrameState extends State<DavoReceiptExportFrame> {
       setState(() => _busy = false);
       await showModalBottomSheet<void>(
         context: context,
+    sheetAnimationStyle: (MediaQuery.disableAnimationsOf(context) || MediaQuery.accessibleNavigationOf(context)) ? AnimationStyle.noAnimation : const AnimationStyle(duration: Duration(milliseconds: 280), reverseDuration: Duration(milliseconds: 200)),
         showDragHandle: true,
         isScrollControlled: true,
         backgroundColor: Colors.white,
@@ -120,7 +122,7 @@ class _ExportButton extends StatelessWidget {
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         ),
         child: Column(mainAxisSize: MainAxisSize.min, children: [
-          Icon(busy ? Icons.hourglass_top_rounded : icon, size: 20),
+          busy ? const DavoWorkingIndicator(size: 16) : Icon(icon, size: 20),
           const SizedBox(height: 6),
           Text(busy ? 'Preparing…' : label,
               textAlign: TextAlign.center,

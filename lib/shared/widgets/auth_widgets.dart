@@ -1,3 +1,5 @@
+import '../motion/davo_motion_policy.dart';
+import '../motion/davo_motion_spec.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -170,7 +172,7 @@ class _DavoPrimaryButtonState extends State<DavoPrimaryButton> {
 
   @override
   Widget build(BuildContext context) {
-    final reduce = MediaQuery.disableAnimationsOf(context);
+    final reduce = DavoMotionPolicy.reduce(context);
     final enabled = _enabled;
     return Semantics(
       button: true,
@@ -180,8 +182,10 @@ class _DavoPrimaryButtonState extends State<DavoPrimaryButton> {
       excludeSemantics: true,
       onTap: enabled ? _activate : null,
       child: AnimatedScale(
-        scale: !reduce && enabled && _pressed ? .98 : 1,
-        duration: reduce ? Duration.zero : const Duration(milliseconds: 120),
+        scale: !reduce && enabled && _pressed ? .985 : 1,
+        duration: reduce
+            ? Duration.zero
+            : Duration(milliseconds: _pressed ? 90 : 140),
         curve: Curves.easeOutCubic,
         child: SizedBox(
           width: double.infinity,
@@ -486,35 +490,40 @@ class Entrance extends StatelessWidget {
     super.key,
     required this.child,
     this.delay = Duration.zero,
+    this.duration = const Duration(milliseconds: 430),
     this.offset = const Offset(0, .025),
   });
 
   final Widget child;
   final Duration delay;
+  final Duration duration;
   final Offset offset;
 
   @override
   Widget build(BuildContext context) {
-    final reduce = MediaQuery.disableAnimationsOf(context);
+    final reduce = DavoMotionPolicy.reduce(context);
     if (reduce) return child;
 
     return TweenAnimationBuilder<double>(
       key: ValueKey('${child.runtimeType}-${delay.inMilliseconds}'),
       tween: Tween<double>(begin: 0, end: 1),
-      duration: Duration(milliseconds: 430 + delay.inMilliseconds),
-      curve: Curves.easeOutCubic,
+      duration: Duration(
+          milliseconds: duration.inMilliseconds + delay.inMilliseconds),
+      curve: Curves.linear,
       builder: (context, value, child) {
         final delayed = delay.inMilliseconds == 0
             ? value
-            : ((value * (430 + delay.inMilliseconds) - delay.inMilliseconds) /
-                    430)
+            : ((value * (duration.inMilliseconds + delay.inMilliseconds) -
+                        delay.inMilliseconds) /
+                    duration.inMilliseconds)
                 .clamp(0.0, 1.0)
                 .toDouble();
         return Opacity(
-          opacity: delayed,
+          opacity: DavoMotionSpec.settle.transform(delayed),
           child: FractionalTranslation(
-            translation:
-                Offset(offset.dx * (1 - delayed), offset.dy * (1 - delayed)),
+            translation: Offset(
+                offset.dx * (1 - DavoMotionSpec.settle.transform(delayed)),
+                offset.dy * (1 - DavoMotionSpec.settle.transform(delayed))),
             child: child,
           ),
         );

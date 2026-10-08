@@ -1,3 +1,4 @@
+import '../../../shared/motion/davo_outcome_content.dart';
 import 'verification/verification_overview_screen.dart';
 import 'verification/verification_state.dart';
 import '../../../shared/widgets/davo_state_picker.dart';
@@ -22,7 +23,7 @@ import '../../../shared/widgets/inline_input_decoration.dart';
 import '../../../shared/widgets/davochain_logo_lockup.dart';
 
 const _avatar = 'assets/figma_exact/profile_avatar_exact.png';
-const _notificationEmpty = 'assets/figma_exact/notification_empty_exact.gif';
+const _notificationEmpty = 'assets/figma_exact/notification_empty_poster.png';
 const _profileIcons = 'assets/figma_exact';
 const _kycAssets = 'assets/figma_exact';
 const _exactAssets = 'assets/figma_exact';
@@ -545,7 +546,7 @@ class PinSuccessScreen extends StatelessWidget {
   const PinSuccessScreen({super.key});
   @override
   Widget build(BuildContext context) => DavoResultScreen(
-    title: 'Success!', message: 'You’ve successfully reset your Transaction PIN',
+    tempo: DavoOutcomeTempo.compact, title: 'Success!', message: 'You’ve successfully reset your Transaction PIN',
     actions: _PrimaryButton('Okay', onTap: () => Navigator.of(context).popUntil((r) => r.isFirst)),
   );
 }
@@ -942,20 +943,13 @@ class PersonalInformationSuccessScreen extends StatelessWidget {
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 28),
             child: Column(
               children: [
-                Expanded(
+                const Expanded(
                   child: SingleChildScrollView(
                     child: Column(
                       children: [
-                        const SizedBox(height: 64),
-                        const DavoSuccessMark(size: 112, semanticLabel: 'Personal information updated successfully'),
-                        const SizedBox(height: 24),
-                        const Text('Information Updated', style: _t20sb, textAlign: TextAlign.center),
-                        const SizedBox(height: 8),
-                        ConstrainedBox(
-                          constraints: const BoxConstraints(maxWidth: 280),
-                          child: const Text('Your personal information has been updated successfully', style: _t14, textAlign: TextAlign.center),
-                        ),
-                        const SizedBox(height: 24),
+                        SizedBox(height: 64),
+                        DavoOutcomeContent(tempo:DavoOutcomeTempo.compact,size:112,semanticLabel:'Personal information updated successfully',heading:Column(children:[Text('Information Updated',style:_t20sb,textAlign:TextAlign.center),SizedBox(height:8),Text('Your personal information has been updated successfully',style:_t14,textAlign:TextAlign.center)])),
+                        SizedBox(height: 24),
                       ],
                     ),
                   ),
@@ -1436,7 +1430,7 @@ class TierCompletionV12Screen extends StatelessWidget {
     return DavoResultScreen(
       title: title,
       message: body,
-      mark: const DavoSuccessMark(size: 150, semanticLabel: 'Verification preview complete'),
+      mark: const DavoSuccessMark(tempo: DavoOutcomeTempo.compact, size: 150, semanticLabel: 'Verification preview complete'),
       details: _CurrentTierCard(tier: tier),
       actions: Column(mainAxisSize: MainAxisSize.min, children: [
         _PrimaryButton(next, onTap: () => _push(context, KycTierOverviewScreen(completedTier: tier))),
@@ -3390,7 +3384,7 @@ class _Pill extends StatelessWidget{const _Pill(this.t);final String t;@override
 class _Segment extends StatelessWidget{const _Segment({required this.left,required this.right,required this.rightSelected,required this.onChanged});final String left,right;final bool rightSelected;final ValueChanged<bool> onChanged;@override Widget build(BuildContext context)=>Container(height:55,padding:const EdgeInsets.all(6),decoration:BoxDecoration(color:const Color(0xFFEEF0F5),borderRadius:BorderRadius.circular(8)),child:Row(children:[Expanded(child:_SegButton(left,!rightSelected,()=>onChanged(false))),Expanded(child:_SegButton(right,rightSelected,()=>onChanged(true)))]));}
 class _SegButton extends StatelessWidget{const _SegButton(this.text,this.sel,this.tap);final String text;final bool sel;final VoidCallback tap;@override Widget build(BuildContext context)=>InkWell(onTap:tap,child:AnimatedContainer(duration:const Duration(milliseconds:200),alignment:Alignment.center,decoration:BoxDecoration(color:sel?Colors.white:Colors.transparent,borderRadius:BorderRadius.circular(7)),child:Text(text,style:TextStyle(fontFamily:'Sora',fontSize:12,fontWeight:sel?FontWeight.w600:FontWeight.w400,color:sel?AppColors.primary:AppColors.body))));}
 Widget _limitBanner(String t)=>Container(height:51,padding:const EdgeInsets.symmetric(horizontal:16),alignment:Alignment.centerLeft,decoration:BoxDecoration(color:AppColors.offWhite,borderRadius:BorderRadius.circular(6)),child:Text(t,style:_t14));
-class _ProgressLimit extends StatelessWidget{const _ProgressLimit(this.title,this.max);final String title,max;@override Widget build(BuildContext context)=>Container(padding:const EdgeInsets.all(16),decoration:BoxDecoration(color:AppColors.offWhite,borderRadius:BorderRadius.circular(6)),child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Text(title,style:_t14),const SizedBox(height:14),TweenAnimationBuilder<double>(duration:const Duration(milliseconds:600),tween:Tween(begin:0,end:.06),builder:(_,v,__)=>LinearProgressIndicator(value:v,minHeight:7,borderRadius:BorderRadius.circular(8),backgroundColor:const Color(0xFFE5E8EE),valueColor:const AlwaysStoppedAnimation(AppColors.primary))),const SizedBox(height:10),Row(children:[const Text('0.00 Spent',style:_t12),const Spacer(),Text('$max Spent',style:_t12)])]));}
+class _ProgressLimit extends StatelessWidget{const _ProgressLimit(this.title,this.max);final String title,max;@override Widget build(BuildContext context)=>Container(padding:const EdgeInsets.all(16),decoration:BoxDecoration(color:AppColors.offWhite,borderRadius:BorderRadius.circular(6)),child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Text(title,style:_t14),const SizedBox(height:14),LinearProgressIndicator(value:0,minHeight:7,borderRadius:BorderRadius.circular(8),backgroundColor:const Color(0xFFE5E8EE),valueColor:const AlwaysStoppedAnimation(AppColors.primary)),const SizedBox(height:10),Row(children:[const Text('0.00 Spent',style:_t12),const Spacer(),Text('$max Spent',style:_t12)])]));}
 class _ActionCard extends StatelessWidget{const _ActionCard(this.asset,this.title,this.sub,this.tap);final String asset,title,sub;final VoidCallback tap;@override Widget build(BuildContext context)=>InkWell(onTap:tap,child:Container(padding:const EdgeInsets.all(14),decoration:BoxDecoration(color:AppColors.offWhite,borderRadius:BorderRadius.circular(8)),child:Row(children:[Container(width:42,height:42,alignment:Alignment.center,decoration:BoxDecoration(color:const Color(0xFFEAF2FF),borderRadius:BorderRadius.circular(8)),child:Image.asset(asset,width:22,height:22,filterQuality:FilterQuality.high)),const SizedBox(width:12),Expanded(child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Text(title,style:_t14b),Text(sub,style:_t12)])),Image.asset('$_exactAssets/profile_chevron_exact.png',width:16,height:16,filterQuality:FilterQuality.high)])));}
 Widget _docOption(String a,String b)=>Container(width:double.infinity,margin:const EdgeInsets.only(bottom:12),padding:const EdgeInsets.all(14),decoration:BoxDecoration(border:Border.all(color:const Color(0xFFEBEDF3)),borderRadius:BorderRadius.circular(8)),child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Text(a,style:_t14b),const SizedBox(height:4),Text(b,style:_t12)]));
 class _Input extends StatelessWidget {

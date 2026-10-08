@@ -1,3 +1,6 @@
+import '../../buy_crypto/presentation/buy_crypto_screens.dart';
+import '../../buy_crypto/presentation/buy_crypto_models.dart';
+import '../../../shared/widgets/davo_sheet_header.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -77,8 +80,12 @@ class _DavochainDashboardScreenState extends State<DavochainDashboardScreen> {
                     _Entrance(
                         index: 2,
                         child: InkWell(
-                          onTap: () => Navigator.of(context)
-                              .push(AppPageRoute<void>(settings: const RouteSettings(name: 'verification'), builder: (_) => const VerificationOverviewScreen())),
+                          onTap: () => Navigator.of(context).push(
+                              AppPageRoute<void>(
+                                  settings:
+                                      const RouteSettings(name: 'verification'),
+                                  builder: (_) =>
+                                      const VerificationOverviewScreen())),
                           borderRadius: BorderRadius.circular(8),
                           child: _SetupBanner(compact: compact),
                         )),
@@ -162,7 +169,11 @@ class _DavochainDashboardScreenState extends State<DavochainDashboardScreen> {
           setState(() => _navIndex = index);
           HapticFeedback.selectionClick();
           Navigator.of(context)
-              .push(_davoRoute(const PortfolioScreen()))
+              .push(_davoRoute(const BuyAmountScreen(
+                  initialOrder: BuyCryptoOrder(
+                      asset: BuyCryptoAsset.bitcoin,
+                      wallet: BuyFundingWallet.ngn,
+                      ngnAmount: 0))))
               .whenComplete(() {
             if (mounted) setState(() => _navIndex = 0);
           });
@@ -207,9 +218,15 @@ class _DavochainDashboardScreenState extends State<DavochainDashboardScreen> {
   Future<void> _openWalletSelector() async {
     final selected = await showModalBottomSheet<_WalletOption>(
       context: context,
+      sheetAnimationStyle: (MediaQuery.disableAnimationsOf(context) ||
+              MediaQuery.accessibleNavigationOf(context))
+          ? AnimationStyle.noAnimation
+          : const AnimationStyle(
+              duration: Duration(milliseconds: 280),
+              reverseDuration: Duration(milliseconds: 200)),
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      barrierColor: Colors.black45,
+      barrierColor: Colors.black.withValues(alpha: .32),
       builder: (_) => _WalletSelectorSheet(onAddCrypto: _openCurrencySelector),
     );
     if (!mounted || selected == null) return;
@@ -224,9 +241,15 @@ class _DavochainDashboardScreenState extends State<DavochainDashboardScreen> {
   Future<_WalletOption?> _openCurrencySelector() async {
     final asset = await showModalBottomSheet<CryptoAsset>(
       context: context,
+      sheetAnimationStyle: (MediaQuery.disableAnimationsOf(context) ||
+              MediaQuery.accessibleNavigationOf(context))
+          ? AnimationStyle.noAnimation
+          : const AnimationStyle(
+              duration: Duration(milliseconds: 280),
+              reverseDuration: Duration(milliseconds: 200)),
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      barrierColor: Colors.black45,
+      barrierColor: Colors.black.withValues(alpha: .32),
       builder: (_) => const _CurrencySelectorSheet(),
     );
     if (!mounted || asset == null) return null;
@@ -243,7 +266,8 @@ class _Entrance extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Entrance(
-        delay: Duration(milliseconds: index * 45),
+        delay: Duration(milliseconds: (index.clamp(0, 3)) * 40),
+        duration: const Duration(milliseconds: 280),
         offset: const Offset(0, .025),
         child: child,
       );
@@ -417,7 +441,7 @@ class _BalanceCard extends StatelessWidget {
                 ),
                 SizedBox(height: compact ? 3 : 7),
                 AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 220),
+                  duration: Duration.zero,
                   child: FittedBox(
                       fit: BoxFit.scaleDown,
                       alignment: Alignment.centerLeft,
@@ -1888,29 +1912,7 @@ class _DavoSheet extends StatelessWidget {
                         color: const Color(0xFF686868),
                         borderRadius: BorderRadius.circular(100))),
                 const SizedBox(height: 11),
-                Row(
-                  children: [
-                    const SizedBox(width: 32),
-                    Expanded(
-                        child: Center(
-                            child: Text(title,
-                                style: const TextStyle(
-                                    fontFamily: 'Sora',
-                                    fontSize: 14,
-                                    color: Colors.black)))),
-                    InkWell(
-                        onTap: () => Navigator.pop(context),
-                        borderRadius: BorderRadius.circular(20),
-                        child: SizedBox(
-                            width: 40,
-                            height: 40,
-                            child: Center(
-                                child: Image.asset(
-                                    'assets/figma_exact/buy_close.png',
-                                    width: 24,
-                                    height: 24)))),
-                  ],
-                ),
+                DavoSheetHeader(title: title),
                 Expanded(child: SingleChildScrollView(child: child)),
               ],
             ),
@@ -2136,18 +2138,31 @@ class _CryptoDepositScreenState extends State<CryptoDepositScreen> {
     );
   }
 
-  void _copy(BuildContext context, String value) {
-    Clipboard.setData(ClipboardData(text: value));
-    HapticFeedback.selectionClick();
-    showDavoToast(context, 'Address copied. Check it before sending funds.');
+  Future<void> _copy(BuildContext context, String value) async {
+    try {
+      await Clipboard.setData(ClipboardData(text: value));
+      if (!context.mounted) return;
+      HapticFeedback.selectionClick();
+      showDavoToast(context, 'Address copied. Check it before sending funds.');
+    } on PlatformException {
+      if (context.mounted) {
+        showDavoToast(context, 'Could not copy address. Please try again.');
+      }
+    }
   }
 
   void _openShareSheet(BuildContext context) {
     showModalBottomSheet<void>(
       context: context,
+      sheetAnimationStyle: (MediaQuery.disableAnimationsOf(context) ||
+              MediaQuery.accessibleNavigationOf(context))
+          ? AnimationStyle.noAnimation
+          : const AnimationStyle(
+              duration: Duration(milliseconds: 280),
+              reverseDuration: Duration(milliseconds: 200)),
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
-      barrierColor: Colors.black.withValues(alpha: .40),
+      barrierColor: Colors.black.withValues(alpha: .32),
       builder: (_) => Container(
         decoration: const BoxDecoration(
             color: Colors.white,
@@ -2690,9 +2705,15 @@ class _BankDetailRow extends StatelessWidget {
             ),
           ),
           InkWell(
-            onTap: () {
-              Clipboard.setData(ClipboardData(text: value));
-              showDavoToast(context, '$label copied');
+            onTap: () async {
+              try {
+                await Clipboard.setData(ClipboardData(text: value));
+                if (context.mounted) showDavoToast(context, '$label copied');
+              } on PlatformException {
+                if (context.mounted) {
+                  showDavoToast(context, 'Could not copy. Please try again.');
+                }
+              }
             },
             child: Image.asset('assets/figma_exact/deposit_ngd_copy_exact.png',
                 width: 16,

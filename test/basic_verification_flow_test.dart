@@ -15,9 +15,11 @@ void main() {
     await tester.pumpWidget(app(const VerificationOverviewScreen()));
     expect(find.text('Basic verification'), findsOneWidget);
     expect(find.text('Advanced verification'), findsOneWidget);
-    final button = tester.widget<FilledButton>(
-        find.widgetWithText(FilledButton, 'Start Advanced'));
-    expect(button.onPressed, isNull);
+    expect(find.text('Complete Basic first'), findsOneWidget);
+    expect(find.widgetWithText(FilledButton, 'Start Advanced'), findsNothing);
+    await tester.tap(find.text('Start Advanced'));
+    await tester.pumpAndSettle();
+    expect(find.byType(VerificationOverviewScreen), findsOneWidget);
     await tester.tap(find.text('Complete profile'));
     await tester.pumpAndSettle();
     expect(find.byType(CompleteProfileV12Screen), findsOneWidget);

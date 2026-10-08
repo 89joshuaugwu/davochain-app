@@ -177,13 +177,13 @@ class _PasswordStrength extends StatelessWidget {
                   child: ColoredBox(color: AppColors.mutedSoft),
                 ),
                 AnimatedFractionallySizedBox(
-                  duration: const Duration(milliseconds: 320),
+                  duration: const Duration(milliseconds: 160),
                   curve: Curves.easeOutCubic,
                   heightFactor: 1,
                   widthFactor: progress,
                   alignment: Alignment.centerLeft,
                   child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 240),
+                    duration: const Duration(milliseconds: 100),
                     color: color,
                   ),
                 ),

@@ -16,7 +16,7 @@ void main() {
     await tester.pump();
     expect(tester.widget<TextField>(find.byType(TextField)).controller!.text,
         '1.25');
-    await tester.tap(find.text('Convert'));
+    await tester.tap(find.text('Swap').last);
     await tester.pumpAndSettle();
     expect(
         tester.widget<TradeAmountScreen>(find.byType(TradeAmountScreen)).asset,

@@ -1,6 +1,7 @@
 import '../../../shared/widgets/davo_result_screen.dart';
 import 'dart:async';
-import 'dart:math' as math;
+import '../../../shared/motion/davo_motion_spec.dart';
+import '../../../shared/motion/davo_motion_policy.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -38,7 +39,7 @@ class _VerificationScreenState extends State<VerificationScreen>
     super.initState();
     _shakeController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 430),
+      duration: const Duration(milliseconds: 220),
     );
     _startTimer();
   }
@@ -94,7 +95,9 @@ class _VerificationScreenState extends State<VerificationScreen>
     if (_code == '0000') {
       HapticFeedback.mediumImpact();
       setState(() => _error = true);
-      await _shakeController.forward(from: 0);
+      if (!DavoMotionPolicy.reduce(context)) {
+        await _shakeController.forward(from: 0);
+      }
       return;
     }
 
@@ -152,8 +155,9 @@ class _VerificationScreenState extends State<VerificationScreen>
               animation: _shakeController,
               builder: (context, child) {
                 final progress = _shakeController.value;
-                final decay = 1 - progress;
-                final offset = math.sin(progress * math.pi * 8) * 8 * decay;
+                final offset = DavoMotionPolicy.reduce(context)
+                    ? 0.0
+                    : DavoMotionSpec.rejectionOffset(progress);
                 return Transform.translate(
                     offset: Offset(offset, 0), child: child);
               },
@@ -345,7 +349,7 @@ class _TransactionPinScreenState extends State<TransactionPinScreen>
   void initState() {
     super.initState();
     _shakeController = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 430));
+        vsync: this, duration: const Duration(milliseconds: 220));
   }
 
   @override
@@ -390,7 +394,9 @@ class _TransactionPinScreenState extends State<TransactionPinScreen>
     if (_pin != _createdPin) {
       HapticFeedback.mediumImpact();
       setState(() => _error = true);
-      await _shakeController.forward(from: 0);
+      if (!DavoMotionPolicy.reduce(context)) {
+        await _shakeController.forward(from: 0);
+      }
       return;
     }
 
@@ -433,7 +439,9 @@ class _TransactionPinScreenState extends State<TransactionPinScreen>
                   animation: _shakeController,
                   builder: (context, child) {
                     final p = _shakeController.value;
-                    final x = math.sin(p * math.pi * 8) * 8 * (1 - p);
+                    final x = DavoMotionPolicy.reduce(context)
+                        ? 0.0
+                        : DavoMotionSpec.rejectionOffset(p);
                     return Transform.translate(
                         offset: Offset(x, 0), child: child);
                   },

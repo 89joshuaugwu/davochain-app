@@ -30,7 +30,7 @@ void main() {
       (tester) async {
     await login(tester);
     expect(find.byKey(const ValueKey('password-auth-dots')), findsOneWidget);
-    expect(find.byKey(const ValueKey('fingerprint-auth-ring')), findsNothing);
+    expect(find.byKey(const ValueKey('fingerprint-auth-ridges')), findsNothing);
     await tester.testTextInput.receiveAction(TextInputAction.done);
     await tester.pump(const Duration(milliseconds: 600));
     expect(find.byKey(const ValueKey('auth-completion-check')), findsOneWidget);
@@ -67,7 +67,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('Use fingerprint'));
     await tester.pump();
-    expect(find.byKey(const ValueKey('fingerprint-auth-ring')), findsOneWidget);
+    expect(find.byKey(const ValueKey('fingerprint-auth-ridges')), findsOneWidget);
     expect(find.byKey(const ValueKey('password-auth-dots')), findsNothing);
     expect(PreviewAuthState.unlocked.value, isFalse);
     await tester.pump(const Duration(milliseconds: 600));
@@ -81,8 +81,8 @@ void main() {
   testWidgets('reduced motion uses a static shortcut and cancellation is safe',
       (tester) async {
     await login(tester, reduced: true);
-    expect(find.byKey(const ValueKey('password-auth-dots')), findsOneWidget);
-    await tester.pump(const Duration(milliseconds: 250));
+    expect(find.byKey(const ValueKey('auth-completion-check')), findsOneWidget);
+    await tester.pump(const Duration(milliseconds: 100));
     expect(find.byKey(const ValueKey('auth-completion-check')), findsOneWidget);
     await tester.pumpAndSettle();
     expect(find.text('Destination'), findsOneWidget);

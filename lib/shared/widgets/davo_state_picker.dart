@@ -45,6 +45,7 @@ class _DavoStatePickerState extends State<DavoStatePicker> {
     FocusManager.instance.primaryFocus?.unfocus();
     final selected = await showModalBottomSheet<String>(
         context: context,
+    sheetAnimationStyle: (MediaQuery.disableAnimationsOf(context) || MediaQuery.accessibleNavigationOf(context)) ? AnimationStyle.noAnimation : const AnimationStyle(duration: Duration(milliseconds: 280), reverseDuration: Duration(milliseconds: 200)),
         isScrollControlled: true,
         useSafeArea: true,
         showDragHandle: true,

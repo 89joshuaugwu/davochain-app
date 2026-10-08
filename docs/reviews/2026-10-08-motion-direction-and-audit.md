@@ -1,6 +1,6 @@
 # Davochain motion direction and source audit
 
-Status: design proposal only. No animation, application code, APK or device installation changed for this audit. The reported yellow line remains unfixed at the user's request.
+Original status: design proposal only; no application changes were made during the audit. Subsequent execution was authorized on 2026-10-08. See [implementation progress and delivery evidence](2026-10-08-motion-implementation-progress.md) for implemented sequences, the yellow-line fix and remaining integration/evidence gaps.
 
 ## Design decision
 

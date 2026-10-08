@@ -1,11 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../../shared/motion/davo_motion_policy.dart';
+import '../../shared/motion/davo_motion_spec.dart';
+
+class AuthHandoff {
+  const AuthHandoff();
+}
 
 class AppPageRoute<T> extends MaterialPageRoute<T> {
   AppPageRoute({
     required WidgetBuilder builder,
     super.settings,
     super.fullscreenDialog,
+    this.authHandoff = false,
   }) : super(
             builder: (context) => AnnotatedRegion<SystemUiOverlayStyle>(
                   value: const SystemUiOverlayStyle(
@@ -18,10 +25,20 @@ class AppPageRoute<T> extends MaterialPageRoute<T> {
                   child: builder(context),
                 ));
 
+  final bool authHandoff;
+  @override
+  Duration get transitionDuration => authHandoff
+      ? const Duration(milliseconds: 160)
+      : super.transitionDuration;
   @override
   Widget buildTransitions(BuildContext context, Animation<double> animation,
       Animation<double> secondaryAnimation, Widget child) {
-    if (MediaQuery.disableAnimationsOf(context)) return child;
+    if (DavoMotionPolicy.reduce(context)) return child;
+    if (authHandoff) {
+      return FadeTransition(
+          opacity: animation.drive(CurveTween(curve: DavoMotionSpec.settle)),
+          child: child);
+    }
     return super
         .buildTransitions(context, animation, secondaryAnimation, child);
   }

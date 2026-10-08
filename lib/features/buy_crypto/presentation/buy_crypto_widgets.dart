@@ -1,3 +1,4 @@
+import '../../../shared/widgets/davo_sheet_header.dart';
 import '../../../shared/widgets/solana_icon.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -34,31 +35,10 @@ class BuyCryptoAssetSheet extends StatelessWidget {
             ),
           ),
           const Positioned(
-            left: 0,
-            right: 0,
-            top: 32,
-            child: Text(
-              'Select Cryptocurrency',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                  fontFamily: 'Sora',
-                  fontSize: 14,
-                  height: 1.35,
-                  color: AppColors.ink),
-            ),
-          ),
-          Positioned(
-            left: 342,
-            top: 20,
-            width: 24,
-            height: 24,
-            child: InkResponse(
-              onTap: () => Navigator.pop(context),
-              radius: 20,
-              child: Image.asset('assets/figma_exact/buy_close.png',
-                  width: 24, height: 24),
-            ),
-          ),
+              left: 0,
+              right: 0,
+              top: 16,
+              child: DavoSheetHeader(title: 'Select Cryptocurrency')),
           ...List.generate(BuyCryptoAsset.values.length, (index) {
             final asset = BuyCryptoAsset.values[index];
             return Positioned(
@@ -110,31 +90,10 @@ class BuyFundingWalletSheet extends StatelessWidget {
             ),
           ),
           const Positioned(
-            left: 0,
-            right: 0,
-            top: 32,
-            child: Text(
-              'Select wallet to buy from',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                  fontFamily: 'Sora',
-                  fontSize: 14,
-                  height: 1.35,
-                  color: AppColors.ink),
-            ),
-          ),
-          Positioned(
-            left: 342,
-            top: 20,
-            width: 24,
-            height: 24,
-            child: InkResponse(
-              onTap: () => Navigator.pop(context),
-              radius: 20,
-              child: Image.asset('assets/figma_exact/buy_close.png',
-                  width: 24, height: 24),
-            ),
-          ),
+              left: 0,
+              right: 0,
+              top: 16,
+              child: DavoSheetHeader(title: 'Select wallet to buy from')),
           ...List.generate(BuyFundingWallet.values.length, (index) {
             final wallet = BuyFundingWallet.values[index];
             return Positioned(

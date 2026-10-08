@@ -1,3 +1,4 @@
+import '../../../../shared/motion/davo_outcome_content.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../../core/navigation/app_page_route.dart';
@@ -26,7 +27,7 @@ class VerificationOverviewScreen extends StatelessWidget {
                   const Text(
                       'Start with your profile and one identity number. Advanced verification adds your face and supporting documents.',
                       style: TextStyle(fontSize: 14, height: 1.5)),
-                  const SizedBox(height: 28),
+                  const SizedBox(height: 20),
                   _LevelCard(
                       title: 'Basic verification',
                       status: session.basicSubmitted
@@ -47,11 +48,12 @@ class VerificationOverviewScreen extends StatelessWidget {
                       onTap: () => pushAppPage<void>(
                           context,
                           (_) => session.basicSubmitted
-                              ? const BasicVerificationSubmittedScreen()
+                              ? const BasicVerificationSubmittedScreen(
+                                  animate: false)
                               : session.profileComplete
                                   ? const BasicIdentityChoiceScreen()
                                   : const CompleteProfileV12Screen())),
-                  const SizedBox(height: 18),
+                  const SizedBox(height: 14),
                   _LevelCard(
                       title: 'Advanced verification',
                       status: session.advancedSubmitted
@@ -130,18 +132,50 @@ class _LevelCard extends StatelessWidget {
   final VoidCallback? onTap;
   @override
   Widget build(BuildContext context) => Container(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
+            color: onTap == null ? const Color(0xFFF8F9FB) : Colors.white,
             border: Border.all(color: const Color(0xFFE7EAF1)),
             borderRadius: BorderRadius.circular(16)),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text(title,
-              style:
-                  const TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
-          const SizedBox(height: 8),
-          Text(status,
-              style: const TextStyle(fontSize: 12, color: AppColors.primary)),
-          const SizedBox(height: 18),
+          Row(children: [
+            Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                    color: onTap == null
+                        ? const Color(0xFFEFF1F5)
+                        : AppColors.primarySoft,
+                    borderRadius: BorderRadius.circular(10)),
+                child: Icon(
+                    title.startsWith('Basic')
+                        ? Icons.person_outline_rounded
+                        : Icons.shield_outlined,
+                    size: 20,
+                    color: onTap == null
+                        ? const Color(0xFF667085)
+                        : AppColors.primary)),
+            const SizedBox(width: 12),
+            Expanded(
+                child: Text(title,
+                    style: const TextStyle(
+                        fontSize: 18, fontWeight: FontWeight.w600))),
+          ]),
+          const SizedBox(height: 12),
+          Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                  color: status.contains('Pending')
+                      ? const Color(0xFFFFF5E5)
+                      : const Color(0xFFF2F4F7),
+                  borderRadius: BorderRadius.circular(6)),
+              child: Text(status,
+                  style: TextStyle(
+                      fontSize: 12,
+                      color: status.contains('Pending')
+                          ? const Color(0xFF9A6700)
+                          : const Color(0xFF475467)))),
+          const SizedBox(height: 14),
           for (var i = 0; i < steps.length; i++)
             Padding(
                 padding: const EdgeInsets.only(bottom: 12),
@@ -158,7 +192,20 @@ class _LevelCard extends StatelessWidget {
                           child: Text(steps[i],
                               style: const TextStyle(fontSize: 14)))
                     ])),
-          VerificationButton(action, onPressed: onTap),
+          if (onTap == null)
+            Padding(
+                padding: const EdgeInsets.only(top: 4),
+                child: Row(children: [
+                  const Icon(Icons.lock_outline_rounded,
+                      size: 14, color: Color(0xFF667085)),
+                  const SizedBox(width: 8),
+                  Expanded(
+                      child: Text(action,
+                          style: const TextStyle(
+                              fontSize: 14, color: Color(0xFF667085))))
+                ]))
+          else
+            VerificationButton(action, onPressed: onTap),
         ]),
       );
 }
@@ -312,7 +359,8 @@ class _BasicIdentityNumberState extends State<BasicIdentityNumberScreen> {
 }
 
 class BasicVerificationSubmittedScreen extends StatelessWidget {
-  const BasicVerificationSubmittedScreen({super.key});
+  const BasicVerificationSubmittedScreen({super.key, this.animate = true});
+  final bool animate;
   @override
   Widget build(BuildContext context) {
     final session = VerificationSession.instance;
@@ -336,25 +384,30 @@ class BasicVerificationSubmittedScreen extends StatelessWidget {
                   route.isFirst || route.settings.name == 'verification'),
               child: const Text('Done'))
         ]),
-        child: Column(children: [
-          const SizedBox(height: 24),
-          const DavoSuccessMark(semanticLabel: 'Details submitted'),
-          const SizedBox(height: 24),
-          const Text('Basic verification submitted',
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.w600)),
-          const SizedBox(height: 12),
-          const Text('Pending review',
-              style: TextStyle(fontSize: 14, color: AppColors.primary)),
-          const SizedBox(height: 20),
-          Text(
-              '${session.identityMethod?.shortLabel ?? 'Identity number'} ending in ${session.identifierLastFour ?? '—'}',
-              style: const TextStyle(fontSize: 14)),
-          const SizedBox(height: 16),
-          const Text(
-              'Your details are ready for review. Advanced verification is available if you want to add your face, identity documents and proof of address.',
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 14, height: 1.5)),
-        ]));
+        child: Padding(
+            padding: const EdgeInsets.only(top: 24),
+            child: DavoOutcomeContent(
+                kind: DavoOutcomeKind.submitted,
+                play: animate,
+                semanticLabel: 'Details submitted',
+                heading: const Column(children: [
+                  Text('Basic verification submitted',
+                      textAlign: TextAlign.center,
+                      style:
+                          TextStyle(fontSize: 24, fontWeight: FontWeight.w600)),
+                  SizedBox(height: 12),
+                  Text('Pending review',
+                      style: TextStyle(fontSize: 14, color: AppColors.primary))
+                ]),
+                details: Column(children: [
+                  Text(
+                      '${session.identityMethod?.shortLabel ?? 'Identity number'} ending in ${session.identifierLastFour ?? '\u2014'}',
+                      style: const TextStyle(fontSize: 14)),
+                  const SizedBox(height: 16),
+                  const Text(
+                      'Your details are ready for review. Advanced verification is available if you want to add your face, identity documents and proof of address.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 14, height: 1.5)),
+                ]))));
   }
 }

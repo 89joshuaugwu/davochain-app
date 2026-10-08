@@ -52,7 +52,9 @@ class _DavoAnimatedCheckboxState extends State<DavoAnimatedCheckbox>
       if (_reduceMotion) {
         _selection.value = widget.value ? 1 : 0;
       } else {
-        _selection.animateTo(widget.value ? 1 : 0, curve: Curves.easeOutCubic);
+        _selection.animateTo(widget.value ? 1 : 0,
+            duration: Duration(milliseconds: widget.value ? 220 : 160),
+            curve: Curves.linear);
       }
     }
   }
@@ -141,7 +143,11 @@ class _CheckboxPainter extends CustomPainter {
           ..strokeWidth = 1.4);
     if (progress > 0) {
       canvas.drawCircle(
-          center, radius, Paint()..color = blue.withValues(alpha: progress));
+          center,
+          radius,
+          Paint()
+            ..color =
+                blue.withValues(alpha: (progress * 220 / 100).clamp(0, 1)));
       final path = Path()
         ..moveTo(size.width * .27, size.height * .5)
         ..lineTo(size.width * .43, size.height * .66)
@@ -149,7 +155,7 @@ class _CheckboxPainter extends CustomPainter {
       final metric = path.computeMetrics().first;
       canvas.drawPath(
           metric.extractPath(
-              0, metric.length * ((progress - .15) / .85).clamp(0.0, 1.0)),
+              0, metric.length * ((progress * 220 - 80) / 120).clamp(0.0, 1.0)),
           Paint()
             ..color = Colors.white
             ..style = PaintingStyle.stroke

@@ -1,3 +1,5 @@
+import '../motion/davo_motion_policy.dart';
+import '../motion/davo_motion_spec.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import '../../core/theme/app_theme.dart';
@@ -41,16 +43,38 @@ class _ToastNotice extends StatefulWidget {
   State<_ToastNotice> createState() => _ToastNoticeState();
 }
 
-class _ToastNoticeState extends State<_ToastNotice> {
+class _ToastNoticeState extends State<_ToastNotice>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController motion;
+  bool reduced = false;
   Timer? _timer;
   @override
   void initState() {
     super.initState();
-    _timer = Timer(const Duration(seconds: 3), widget.onClose);
+    motion = AnimationController(
+        vsync: this,
+        duration: const Duration(milliseconds: 180),
+        reverseDuration: const Duration(milliseconds: 140));
+    _timer = Timer(const Duration(seconds: 3), () async {
+      if (!reduced) await motion.reverse();
+      if (mounted) widget.onClose();
+    });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    reduced = DavoMotionPolicy.reduce(context);
+    if (reduced) {
+      motion.value = 1;
+    } else if (motion.value == 0) {
+      motion.forward();
+    }
   }
 
   @override
   void dispose() {
+    motion.dispose();
     _timer?.cancel();
     widget.onDisposed();
     super.dispose();
@@ -58,7 +82,6 @@ class _ToastNoticeState extends State<_ToastNotice> {
 
   @override
   Widget build(BuildContext context) {
-    final reduced = MediaQuery.disableAnimationsOf(context);
     return Positioned(
       top: MediaQuery.paddingOf(context).top + 12,
       left: 16,
@@ -66,15 +89,18 @@ class _ToastNoticeState extends State<_ToastNotice> {
       child: IgnorePointer(
         child: Semantics(
             liveRegion: true,
-            child: TweenAnimationBuilder<double>(
-              tween: Tween(begin: reduced ? 1 : 0, end: 1),
-              duration:
-                  reduced ? Duration.zero : const Duration(milliseconds: 180),
-              curve: Curves.easeOutCubic,
-              builder: (_, value, child) => Opacity(
-                  opacity: value,
+            child: AnimatedBuilder(
+              animation: motion,
+              builder: (_, child) => Opacity(
+                  opacity: DavoMotionSpec.settle.transform(motion.value),
                   child: Transform.translate(
-                      offset: Offset(0, -8 * (1 - value)), child: child)),
+                      offset: Offset(
+                          0,
+                          -8 *
+                              (1 -
+                                  DavoMotionSpec.settle
+                                      .transform(motion.value))),
+                      child: child)),
               child: Center(
                   child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 440),

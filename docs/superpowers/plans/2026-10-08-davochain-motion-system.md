@@ -1,5 +1,7 @@
 # Davochain Motion System Implementation Plan
 
+Execution authorized on 2026-10-08. See [implementation progress and delivery evidence](../../reviews/2026-10-08-motion-implementation-progress.md) for implemented recipes, verification, APK delivery and remaining provider/performance work. Unchecked steps below remain the original acceptance checklist, not a claim that implementation has not started.
+
 > **For agentic workers:** Use `superpowers:executing-plans` to implement this plan task-by-task after the user authorizes implementation. Do not start implementation merely because this plan exists. Do not delegate unless the current user/developer instructions permit it. Steps use checkbox syntax for tracking.
 
 **Goal:** Give Davochain precise, staged brand motion across confirmed outcomes and authentication, while distinguishing pending submissions and preserving readable, responsive UI.

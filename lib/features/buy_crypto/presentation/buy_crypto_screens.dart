@@ -1,3 +1,6 @@
+import '../../../shared/motion/davo_motion_spec.dart';
+import '../../../core/preview/preview_transaction_operation.dart';
+import '../../../shared/motion/davo_working_indicator.dart';
 import '../../../shared/formatters/grouped_amount_formatter.dart';
 import '../../../shared/widgets/davo_toast.dart';
 import '../../../shared/widgets/davo_result_screen.dart';
@@ -68,9 +71,15 @@ class _BuyAmountScreenState extends State<BuyAmountScreen> {
   Future<void> _changeAsset() async {
     final asset = await showModalBottomSheet<BuyCryptoAsset>(
       context: context,
+      sheetAnimationStyle: (MediaQuery.disableAnimationsOf(context) ||
+              MediaQuery.accessibleNavigationOf(context))
+          ? AnimationStyle.noAnimation
+          : const AnimationStyle(
+              duration: Duration(milliseconds: 280),
+              reverseDuration: Duration(milliseconds: 200)),
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      barrierColor: Colors.black.withValues(alpha: .40),
+      barrierColor: Colors.black.withValues(alpha: .32),
       builder: (_) => const BuyCryptoAssetSheet(),
     );
     if (!mounted || asset == null) return;
@@ -80,9 +89,15 @@ class _BuyAmountScreenState extends State<BuyAmountScreen> {
   Future<void> _changeWallet() async {
     final wallet = await showModalBottomSheet<BuyFundingWallet>(
       context: context,
+      sheetAnimationStyle: (MediaQuery.disableAnimationsOf(context) ||
+              MediaQuery.accessibleNavigationOf(context))
+          ? AnimationStyle.noAnimation
+          : const AnimationStyle(
+              duration: Duration(milliseconds: 280),
+              reverseDuration: Duration(milliseconds: 200)),
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      barrierColor: Colors.black.withValues(alpha: .40),
+      barrierColor: Colors.black.withValues(alpha: .32),
       builder: (_) => const BuyFundingWalletSheet(),
     );
     if (!mounted || wallet == null) return;
@@ -328,106 +343,89 @@ class BuyPinScreen extends StatelessWidget {
 }
 
 class BuyProgressScreen extends StatefulWidget {
-  const BuyProgressScreen({super.key, required this.order});
+  const BuyProgressScreen({super.key, required this.order, this.operation});
   final BuyCryptoOrder order;
+  final Future<PreviewTransactionOutcome>? operation;
 
   @override
   State<BuyProgressScreen> createState() => _BuyProgressScreenState();
 }
 
 class _BuyProgressScreenState extends State<BuyProgressScreen> {
-  Timer? _timer;
-
+  bool failed = false;
   @override
   void initState() {
     super.initState();
-    _timer = Timer(const Duration(milliseconds: 2100), () {
-      if (!mounted) return;
-      HapticFeedback.mediumImpact();
+    _process();
+  }
+
+  Future<void> _process() async {
+    try {
+      final accepted =
+          await (widget.operation ?? PreviewTransactionOperation.buy());
+      if (!mounted || ModalRoute.of(context)?.isCurrent == false) return;
+      if (accepted == PreviewTransactionOutcome.failed) {
+        setState(() => failed = true);
+        return;
+      }
       Navigator.of(context).pushReplacement<void, void>(
         AppPageRoute<void>(
-            builder: (_) => BuySuccessScreen(order: widget.order)),
+            builder: (_) => accepted == PreviewTransactionOutcome.submitted
+                ? DavoResultScreen(
+                    kind: DavoOutcomeKind.submitted,
+                    title: 'Purchase submitted',
+                    message:
+                        'Pending confirmation. Your purchase status will update after processing.',
+                    actions: FilledButton(
+                        onPressed: () => Navigator.of(context)
+                            .popUntil((route) => route.isFirst),
+                        child: const Text('Done')))
+                : BuySuccessScreen(order: widget.order)),
       );
-    });
+    } catch (_) {
+      if (mounted && ModalRoute.of(context)?.isCurrent != false) {
+        setState(() => failed = true);
+      }
+    }
   }
 
   @override
-  void dispose() {
-    _timer?.cancel();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
+  Widget build(BuildContext context) => Scaffold(
       backgroundColor: const Color(0xFFF8F9FB),
+      appBar: AppBar(
+          backgroundColor: const Color(0xFFF8F9FB),
+          surfaceTintColor: Colors.transparent),
       body: SafeArea(
-        bottom: false,
-        child: Stack(
-          children: [
-            Positioned(
-              left: 8,
-              top: 16,
-              width: 24,
-              height: 24,
-              child: InkResponse(
-                onTap: () => Navigator.pop(context),
-                radius: 20,
-                child: Image.asset('assets/figma_exact/buy_back.png',
-                    width: 24, height: 24),
-              ),
-            ),
-            Positioned(
-              left: 120,
-              top: 91,
-              width: 150,
-              height: 150,
-              child: Image.asset(
-                'assets/figma_exact/dashboard_crypto_gifs__dashbardandcryptgifs_a56b5b485b8874cc26d0b3c667bfc016ba68cf23.gif',
-                width: 150,
-                height: 150,
-                fit: BoxFit.contain,
-                filterQuality: FilterQuality.high,
-              ),
-            ),
-            Positioned(
-              left: 34,
-              right: 33,
-              top: 257,
-              height: 22,
-              child: Text(
-                'Buying ${formatGroupedAmount(widget.order.cryptoAmount.toStringAsFixed(5))} ${widget.order.asset.symbol}',
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontFamily: 'Sora',
-                  fontSize: 16,
-                  height: 1.35,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.ink,
-                ),
-              ),
-            ),
-            const Positioned(
-              left: 34,
-              right: 33,
-              top: 287,
-              height: 19,
-              child: Text(
-                'Please wait while we process your Conversion',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontFamily: 'Sora',
-                  fontSize: 14,
-                  height: 1.35,
-                  color: AppColors.body,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+          child: SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(24, 36, 24, 24),
+              child: Column(children: [
+                if (failed)
+                  const Icon(Icons.error_outline_rounded,
+                      size: 56, color: AppColors.danger)
+                else
+                  const DavoWorkingIndicator(),
+                const SizedBox(height: 16),
+                Text(
+                    'Buying ${formatGroupedAmount(widget.order.cryptoAmount.toStringAsFixed(5))} ${widget.order.asset.symbol}',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                        fontFamily: 'Sora',
+                        fontSize: 16,
+                        height: 1.35,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.ink)),
+                const SizedBox(height: 8),
+                Text(
+                    failed
+                        ? 'Could not complete this transaction. Go back to try again.'
+                        : 'Please wait while we process your transaction',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                        fontFamily: 'Sora',
+                        fontSize: 14,
+                        height: 1.35,
+                        color: AppColors.body)),
+              ]))));
 }
 
 class BuySuccessScreen extends StatelessWidget {
@@ -774,7 +772,7 @@ class _ModeToggle extends StatelessWidget {
                         child: Padding(
                             padding: const EdgeInsets.symmetric(vertical: 12),
                             child: Center(
-                                child: Text(['Buy', 'Sell', 'Convert'][index],
+                                child: Text(['Buy', 'Sell', 'Swap'][index],
                                     style: TextStyle(
                                         fontSize: 14,
                                         fontWeight: FontWeight.w600,

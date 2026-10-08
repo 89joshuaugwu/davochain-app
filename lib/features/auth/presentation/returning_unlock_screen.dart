@@ -36,7 +36,9 @@ class _ReturningUnlockScreenState extends State<ReturningUnlockScreen> {
   void _finishUnlock() {
     PreviewAuthState.unlocked.value = true;
     Navigator.of(context).pushAndRemoveUntil(
-        AppPageRoute<void>(builder: (_) => const DavochainDashboardScreen()),
+        AppPageRoute<void>(
+            authHandoff: true,
+            builder: (_) => const DavochainDashboardScreen()),
         (_) => false);
   }
 
@@ -63,6 +65,7 @@ class _ReturningUnlockScreenState extends State<ReturningUnlockScreen> {
             systemNavigationBarColor: AppColors.primary,
             systemNavigationBarIconBrightness: Brightness.light),
         child: DavoAuthJourney(
+            onBlue: true,
             method: _method,
             onComplete: _finishUnlock,
             child: Scaffold(

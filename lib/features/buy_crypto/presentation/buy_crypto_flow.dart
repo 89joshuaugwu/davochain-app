@@ -10,10 +10,11 @@ Future<void> startBuyCryptoFlow(BuildContext context) async {
   HapticFeedback.selectionClick();
   final asset = await showModalBottomSheet<BuyCryptoAsset>(
     context: context,
+    sheetAnimationStyle: (MediaQuery.disableAnimationsOf(context) || MediaQuery.accessibleNavigationOf(context)) ? AnimationStyle.noAnimation : const AnimationStyle(duration: Duration(milliseconds: 280), reverseDuration: Duration(milliseconds: 200)),
     isScrollControlled: true,
     useSafeArea: true,
     backgroundColor: Colors.transparent,
-    barrierColor: Colors.black.withValues(alpha: .40),
+    barrierColor: Colors.black.withValues(alpha: .32),
     builder: (_) => const BuyCryptoAssetSheet(),
   );
   if (!context.mounted || asset == null) return;
@@ -23,10 +24,11 @@ Future<void> startBuyCryptoFlow(BuildContext context) async {
 
   final wallet = await showModalBottomSheet<BuyFundingWallet>(
     context: context,
+    sheetAnimationStyle: (MediaQuery.disableAnimationsOf(context) || MediaQuery.accessibleNavigationOf(context)) ? AnimationStyle.noAnimation : const AnimationStyle(duration: Duration(milliseconds: 280), reverseDuration: Duration(milliseconds: 200)),
     isScrollControlled: true,
     useSafeArea: true,
     backgroundColor: Colors.transparent,
-    barrierColor: Colors.black.withValues(alpha: .40),
+    barrierColor: Colors.black.withValues(alpha: .32),
     builder: (_) => const BuyFundingWalletSheet(),
   );
   if (!context.mounted || wallet == null) return;

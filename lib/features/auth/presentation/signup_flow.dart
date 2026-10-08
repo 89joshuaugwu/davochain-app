@@ -102,6 +102,7 @@ class _CountrySelectionScreenState extends State<CountrySelectionScreen> {
   Future<void> _pickCountry() async {
     final selected = await showModalBottomSheet<_CountryOption>(
       context: context,
+    sheetAnimationStyle: (MediaQuery.disableAnimationsOf(context) || MediaQuery.accessibleNavigationOf(context)) ? AnimationStyle.noAnimation : const AnimationStyle(duration: Duration(milliseconds: 280), reverseDuration: Duration(milliseconds: 200)),
       useSafeArea: true,
       showDragHandle: true,
       backgroundColor: Colors.white,

@@ -56,6 +56,7 @@ void main() {
     expect(find.text('Second notice'), findsOneWidget);
     expect(tester.getRect(find.text('Second notice')).bottom, lessThan(130));
     await tester.pump(const Duration(seconds: 3));
+    await tester.pumpAndSettle();
     await tester.pump();
     expect(find.text('Second notice'), findsNothing);
     showDavoToast(context, 'Dispose notice');

@@ -1,3 +1,7 @@
+import '../../../core/preview/preview_transaction_operation.dart';
+import '../../../shared/motion/davo_working_indicator.dart';
+import '../../../shared/motion/davo_motion_spec.dart';
+import '../../../shared/widgets/davo_sheet_header.dart';
 import '../../../shared/widgets/davo_receipt_export_frame.dart';
 import '../../../shared/widgets/davo_bank_logo.dart';
 import '../../../shared/widgets/solana_icon.dart';
@@ -33,10 +37,16 @@ Future<void> startWithdrawFlow(BuildContext context) async {
   HapticFeedback.selectionClick();
   final selected = await showModalBottomSheet<_WithdrawWallet>(
     context: context,
+    sheetAnimationStyle: (MediaQuery.disableAnimationsOf(context) ||
+            MediaQuery.accessibleNavigationOf(context))
+        ? AnimationStyle.noAnimation
+        : const AnimationStyle(
+            duration: Duration(milliseconds: 280),
+            reverseDuration: Duration(milliseconds: 200)),
     isScrollControlled: true,
     useSafeArea: true,
     backgroundColor: Colors.transparent,
-    barrierColor: Colors.black.withValues(alpha: .40),
+    barrierColor: Colors.black.withValues(alpha: .32),
     builder: (_) => const _WithdrawWalletSheet(),
   );
   if (!context.mounted || selected == null) return;
@@ -51,19 +61,31 @@ Future<void> startSellCryptoFlow(BuildContext context) async {
   HapticFeedback.selectionClick();
   final asset = await showModalBottomSheet<BuyCryptoAsset>(
     context: context,
+    sheetAnimationStyle: (MediaQuery.disableAnimationsOf(context) ||
+            MediaQuery.accessibleNavigationOf(context))
+        ? AnimationStyle.noAnimation
+        : const AnimationStyle(
+            duration: Duration(milliseconds: 280),
+            reverseDuration: Duration(milliseconds: 200)),
     isScrollControlled: true,
     useSafeArea: true,
     backgroundColor: Colors.transparent,
-    barrierColor: Colors.black.withValues(alpha: .40),
+    barrierColor: Colors.black.withValues(alpha: .32),
     builder: (_) => const BuyCryptoAssetSheet(),
   );
   if (!context.mounted || asset == null) return;
   final wallet = await showModalBottomSheet<bool>(
     context: context,
+    sheetAnimationStyle: (MediaQuery.disableAnimationsOf(context) ||
+            MediaQuery.accessibleNavigationOf(context))
+        ? AnimationStyle.noAnimation
+        : const AnimationStyle(
+            duration: Duration(milliseconds: 280),
+            reverseDuration: Duration(milliseconds: 200)),
     isScrollControlled: true,
     useSafeArea: true,
     backgroundColor: Colors.transparent,
-    barrierColor: Colors.black.withValues(alpha: .40),
+    barrierColor: Colors.black.withValues(alpha: .32),
     builder: (_) => const _SellWalletSheet(),
   );
   if (!context.mounted || wallet != true) return;
@@ -109,24 +131,8 @@ class _WithdrawWalletSheet extends StatelessWidget {
             const Positioned(
                 left: 0,
                 right: 0,
-                top: 32,
-                child: Text('Select Wallet',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                        fontFamily: 'Sora',
-                        fontSize: 14,
-                        height: 1.35,
-                        color: AppColors.ink))),
-            Positioned(
-                right: 16,
-                top: 20,
-                width: 32,
-                height: 32,
-                child: InkResponse(
-                    onTap: () => Navigator.pop(context),
-                    radius: 20,
-                    child: Image.asset('$_exact/crypto_close_exact.png',
-                        width: 32, height: 32))),
+                top: 16,
+                child: DavoSheetHeader(title: 'Select Wallet')),
             Positioned(
               left: 16,
               top: 67,
@@ -489,9 +495,15 @@ class _NairaWithdrawScreenState extends State<NairaWithdrawScreen> {
   Future<void> _payment() async {
     final value = await showModalBottomSheet<BankAccount>(
         context: context,
+        sheetAnimationStyle: (MediaQuery.disableAnimationsOf(context) ||
+                MediaQuery.accessibleNavigationOf(context))
+            ? AnimationStyle.noAnimation
+            : const AnimationStyle(
+                duration: Duration(milliseconds: 280),
+                reverseDuration: Duration(milliseconds: 200)),
         isScrollControlled: true,
         backgroundColor: Colors.transparent,
-        barrierColor: Colors.black.withValues(alpha: .4),
+        barrierColor: Colors.black.withValues(alpha: .32),
         builder: (_) => _PaymentSheet(current: account));
     if (mounted && value != null) setState(() => account = value);
   }
@@ -500,9 +512,15 @@ class _NairaWithdrawScreenState extends State<NairaWithdrawScreen> {
     if (account == null) return;
     final ok = await showModalBottomSheet<bool>(
         context: context,
+        sheetAnimationStyle: (MediaQuery.disableAnimationsOf(context) ||
+                MediaQuery.accessibleNavigationOf(context))
+            ? AnimationStyle.noAnimation
+            : const AnimationStyle(
+                duration: Duration(milliseconds: 280),
+                reverseDuration: Duration(milliseconds: 200)),
         isScrollControlled: true,
         backgroundColor: Colors.transparent,
-        barrierColor: Colors.black.withValues(alpha: .4),
+        barrierColor: Colors.black.withValues(alpha: .32),
         builder: (_) => _NairaConfirm(amount: amount.text, account: account!));
     if (!mounted || ok != true) return;
     final pin = await Navigator.push<bool>(
@@ -878,9 +896,15 @@ class _AddBankScreenState extends State<AddBankScreen> {
   Future<void> _chooseBank() async {
     final b = await showModalBottomSheet<String>(
       context: context,
+      sheetAnimationStyle: (MediaQuery.disableAnimationsOf(context) ||
+              MediaQuery.accessibleNavigationOf(context))
+          ? AnimationStyle.noAnimation
+          : const AnimationStyle(
+              duration: Duration(milliseconds: 280),
+              reverseDuration: Duration(milliseconds: 200)),
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      barrierColor: Colors.black.withValues(alpha: .4),
+      barrierColor: Colors.black.withValues(alpha: .32),
       builder: (_) => const _BankSheet(),
     );
     if (mounted && b != null) {
@@ -1607,6 +1631,12 @@ class _CryptoWithdrawEntryScreenState extends State<CryptoWithdrawEntryScreen> {
   Future<void> _changeAsset() async {
     final selected = await showModalBottomSheet<BuyCryptoAsset>(
         context: context,
+        sheetAnimationStyle: (MediaQuery.disableAnimationsOf(context) ||
+                MediaQuery.accessibleNavigationOf(context))
+            ? AnimationStyle.noAnimation
+            : const AnimationStyle(
+                duration: Duration(milliseconds: 280),
+                reverseDuration: Duration(milliseconds: 200)),
         isScrollControlled: true,
         useSafeArea: true,
         backgroundColor: Colors.transparent,
@@ -1621,9 +1651,15 @@ class _CryptoWithdrawEntryScreenState extends State<CryptoWithdrawEntryScreen> {
   Future<void> _cancel() async {
     final c = await showModalBottomSheet<bool>(
       context: context,
+      sheetAnimationStyle: (MediaQuery.disableAnimationsOf(context) ||
+              MediaQuery.accessibleNavigationOf(context))
+          ? AnimationStyle.noAnimation
+          : const AnimationStyle(
+              duration: Duration(milliseconds: 280),
+              reverseDuration: Duration(milliseconds: 200)),
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      barrierColor: Colors.black.withValues(alpha: .4),
+      barrierColor: Colors.black.withValues(alpha: .32),
       builder: (_) => const CancelReminderSheet(),
     );
     if (mounted && c == true) Navigator.pop(context);
@@ -1638,9 +1674,15 @@ class _CryptoWithdrawEntryScreenState extends State<CryptoWithdrawEntryScreen> {
   Future<void> _network() async {
     final n = await showModalBottomSheet<String>(
       context: context,
+      sheetAnimationStyle: (MediaQuery.disableAnimationsOf(context) ||
+              MediaQuery.accessibleNavigationOf(context))
+          ? AnimationStyle.noAnimation
+          : const AnimationStyle(
+              duration: Duration(milliseconds: 280),
+              reverseDuration: Duration(milliseconds: 200)),
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      barrierColor: Colors.black.withValues(alpha: .4),
+      barrierColor: Colors.black.withValues(alpha: .32),
       builder: (_) => asset == BuyCryptoAsset.bitcoin
           ? const SelectNetworkSheet()
           : SafeArea(
@@ -1662,9 +1704,15 @@ class _CryptoWithdrawEntryScreenState extends State<CryptoWithdrawEntryScreen> {
     if (!mounted || n == null) return;
     final understood = await showModalBottomSheet<bool>(
       context: context,
+      sheetAnimationStyle: (MediaQuery.disableAnimationsOf(context) ||
+              MediaQuery.accessibleNavigationOf(context))
+          ? AnimationStyle.noAnimation
+          : const AnimationStyle(
+              duration: Duration(milliseconds: 280),
+              reverseDuration: Duration(milliseconds: 200)),
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      barrierColor: Colors.black.withValues(alpha: .4),
+      barrierColor: Colors.black.withValues(alpha: .32),
       builder: (_) => const SanctionWarningSheet(),
     );
     if (mounted && understood == true) setState(() => network = n);
@@ -1674,9 +1722,15 @@ class _CryptoWithdrawEntryScreenState extends State<CryptoWithdrawEntryScreen> {
     final n = parseAmount(amount.text);
     final ok = await showModalBottomSheet<bool>(
       context: context,
+      sheetAnimationStyle: (MediaQuery.disableAnimationsOf(context) ||
+              MediaQuery.accessibleNavigationOf(context))
+          ? AnimationStyle.noAnimation
+          : const AnimationStyle(
+              duration: Duration(milliseconds: 280),
+              reverseDuration: Duration(milliseconds: 200)),
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      barrierColor: Colors.black.withValues(alpha: .4),
+      barrierColor: Colors.black.withValues(alpha: .32),
       builder: (_) => widget.external
           ? _ExternalWithdrawConfirmSheet(
               target: target.text, amount: n, asset: asset)
@@ -1859,39 +1913,50 @@ class TransactionProgressScreen extends StatefulWidget {
       required this.kind,
       required this.target,
       required this.amount,
-      this.asset = BuyCryptoAsset.bitcoin});
+      this.asset = BuyCryptoAsset.bitcoin,
+      this.operation});
   final TxKind kind;
   final String target;
   final double amount;
   final BuyCryptoAsset asset;
+  final Future<PreviewTransactionOutcome>? operation;
   @override
   State<TransactionProgressScreen> createState() =>
       _TransactionProgressScreenState();
 }
 
 class _TransactionProgressScreenState extends State<TransactionProgressScreen> {
-  Timer? timer;
+  bool failed = false;
   @override
   void initState() {
     super.initState();
-    timer = Timer(const Duration(milliseconds: 1500), () {
-      if (mounted) {
-        Navigator.pushReplacement(
-            context,
-            AppPageRoute<void>(
-                builder: (_) => TransactionSuccessScreen(
-                    kind: widget.kind,
-                    target: widget.target,
-                    amount: widget.amount,
-                    asset: widget.asset)));
-      }
-    });
+    _process();
   }
 
-  @override
-  void dispose() {
-    timer?.cancel();
-    super.dispose();
+  Future<void> _process() async {
+    try {
+      final accepted = await (widget.operation ??
+          PreviewTransactionOperation.transfer(
+              external: widget.kind == TxKind.external));
+      if (!mounted || ModalRoute.of(context)?.isCurrent == false) return;
+      if (accepted == PreviewTransactionOutcome.failed) {
+        setState(() => failed = true);
+        return;
+      }
+      Navigator.pushReplacement(
+          context,
+          AppPageRoute<void>(
+              builder: (_) => TransactionSuccessScreen(
+                  kind: widget.kind,
+                  outcomeKind: accepted == PreviewTransactionOutcome.submitted
+                      ? DavoOutcomeKind.submitted
+                      : DavoOutcomeKind.completed,
+                  target: widget.target,
+                  amount: widget.amount,
+                  asset: widget.asset)));
+    } catch (_) {
+      if (mounted && ModalRoute.of(context)?.isCurrent != false) setState(() => failed = true);
+    }
   }
 
   @override
@@ -1921,11 +1986,10 @@ class _TransactionProgressScreenState extends State<TransactionProgressScreen> {
               fontSize: 14,
               fontWeight: FontWeight.w400),
           const SizedBox(height: 47),
-          Image.asset(
-              '$_exact/dashboard_crypto_gifs__dashbardandcryptgifs_a56b5b485b8874cc26d0b3c667bfc016ba68cf23.gif',
-              width: 150,
-              height: 150,
-              fit: BoxFit.contain),
+          failed
+              ? const Icon(Icons.error_outline_rounded,
+                  size: 56, color: AppColors.danger)
+              : const DavoWorkingIndicator(),
           const SizedBox(height: 16),
           SizedBox(
               height: 22,
@@ -1951,9 +2015,13 @@ class _TransactionProgressScreenState extends State<TransactionProgressScreen> {
           ],
           SizedBox(height: sub.isNotEmpty ? 8 : 8),
           Text(
-            widget.kind == TxKind.conversion || widget.kind == TxKind.sell
-                ? 'Please wait while we process your Conversion'
-                : 'Please wait while we process your transaction',
+            failed
+                ? 'Could not complete this transaction. Go back to try again.'
+                : widget.kind == TxKind.conversion || widget.kind == TxKind.sell
+                    ? failed
+                        ? 'Could not complete this transaction. Go back to try again.'
+                        : 'Please wait while we process your transaction'
+                    : 'Please wait while we process your transaction',
             textAlign: TextAlign.center,
             style: const TextStyle(
                 fontFamily: 'Sora',
@@ -1973,24 +2041,40 @@ class TransactionSuccessScreen extends StatelessWidget {
       required this.kind,
       required this.target,
       required this.amount,
-      this.asset = BuyCryptoAsset.bitcoin});
+      this.asset = BuyCryptoAsset.bitcoin,
+      this.outcomeKind = DavoOutcomeKind.completed});
   final TxKind kind;
   final String target;
   final double amount;
   final BuyCryptoAsset asset;
+  final DavoOutcomeKind outcomeKind;
 
   @override
   Widget build(BuildContext context) {
     final transfer = kind == TxKind.internal || kind == TxKind.external;
     return DavoResultScreen(
-      title: transfer
-          ? 'Transfer successful'
-          : kind == TxKind.sell
-              ? 'Sale successful'
-              : 'Conversion successful',
-      message: '',
-      details: _TransactionSuccessMessage(
-          kind: kind, target: target, amount: amount, asset: asset),
+      kind: outcomeKind,
+      title: outcomeKind == DavoOutcomeKind.submitted
+          ? 'Withdrawal submitted'
+          : transfer
+              ? 'Transfer successful'
+              : kind == TxKind.sell
+                  ? 'Sale successful'
+                  : 'Conversion successful',
+      message: outcomeKind == DavoOutcomeKind.submitted
+          ? 'Pending network confirmation'
+          : '',
+      details: outcomeKind == DavoOutcomeKind.submitted
+          ? const Text(
+              'Your withdrawal has been submitted. It will update after network confirmation.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                  fontFamily: 'Sora',
+                  fontSize: 14,
+                  height: 1.35,
+                  color: AppColors.body))
+          : _TransactionSuccessMessage(
+              kind: kind, target: target, amount: amount, asset: asset),
       appBar: AppBar(
           backgroundColor: Colors.white,
           title: transfer
@@ -2004,6 +2088,7 @@ class TransactionSuccessScreen extends StatelessWidget {
                 context,
                 AppPageRoute<void>(
                     builder: (_) => TransactionDetailsScreen(
+                        pending: outcomeKind == DavoOutcomeKind.submitted,
                         kind: kind,
                         target: target,
                         amount: amount,
@@ -2087,12 +2172,14 @@ class TransactionDetailsScreen extends StatelessWidget {
       required this.target,
       required this.amount,
       this.receipt = false,
+      this.pending = false,
       this.asset = BuyCryptoAsset.bitcoin});
   final TxKind kind;
   final String target;
   final double amount;
   final BuyCryptoAsset asset;
   final bool receipt;
+  final bool pending;
 
   @override
   Widget build(BuildContext context) =>
@@ -2135,14 +2222,14 @@ class TransactionDetailsScreen extends StatelessWidget {
                         decoration: BoxDecoration(
                             color: const Color(0xFFEAF7EF),
                             borderRadius: BorderRadius.circular(20)),
-                        child: const Text('Completed',
-                            style: TextStyle(
+                        child: Text(pending ? 'Pending' : 'Completed',
+                            style: const TextStyle(
                                 fontSize: 12,
                                 color: Color(0xFF158542),
                                 fontWeight: FontWeight.w600)))
                   else
-                    const Text('Completed',
-                        style: TextStyle(
+                    Text(pending ? 'Pending' : 'Completed',
+                        style: const TextStyle(
                             fontSize: 12,
                             color: Color(0xFF1BA44D),
                             fontWeight: FontWeight.w600)),
@@ -2169,6 +2256,7 @@ class TransactionDetailsScreen extends StatelessWidget {
                       AppPageRoute<void>(
                           builder: (_) => TransactionDetailsScreen(
                               kind: kind,
+                              pending: pending,
                               target: target,
                               amount: amount,
                               asset: asset,
@@ -2202,7 +2290,11 @@ class TransactionDetailsScreen extends StatelessWidget {
               style: const TextStyle(fontSize: 14, color: AppColors.bodyMuted)),
           const SizedBox(height: 24),
           _CryptoReceiptCard(
-              kind: kind, target: target, amount: amount, asset: asset),
+              kind: kind,
+              target: target,
+              amount: amount,
+              asset: asset,
+              pending: pending),
         ]));
   }
 }
@@ -2212,11 +2304,13 @@ class _CryptoReceiptCard extends StatelessWidget {
       {required this.kind,
       required this.target,
       required this.amount,
-      required this.asset});
+      required this.asset,
+      this.pending = false});
   final TxKind kind;
   final String target;
   final double amount;
   final BuyCryptoAsset asset;
+  final bool pending;
 
   Widget _row(String label, String value,
           {Widget? icon, bool copy = false, Color? color}) =>
@@ -2316,12 +2410,16 @@ class _CryptoReceiptCard extends StatelessWidget {
           Container(
               padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
               decoration: BoxDecoration(
-                  color: const Color(0xFFEAF7EF),
+                  color: pending
+                      ? const Color(0xFFFFF5E5)
+                      : const Color(0xFFEAF7EF),
                   borderRadius: BorderRadius.circular(20)),
-              child: const Text('Completed',
+              child: Text(pending ? 'Pending' : 'Completed',
                   style: TextStyle(
                       fontSize: 10,
-                      color: Color(0xFF158542),
+                      color: pending
+                          ? const Color(0xFF9A6700)
+                          : const Color(0xFF158542),
                       fontWeight: FontWeight.w600))),
         ]),
         const SizedBox(height: 20),
@@ -3146,6 +3244,12 @@ class _TradeAmountScreenState extends State<TradeAmountScreen> {
     FocusScope.of(context).unfocus();
     final picked = await showModalBottomSheet<BuyCryptoAsset>(
         context: context,
+        sheetAnimationStyle: (MediaQuery.disableAnimationsOf(context) ||
+                MediaQuery.accessibleNavigationOf(context))
+            ? AnimationStyle.noAnimation
+            : const AnimationStyle(
+                duration: Duration(milliseconds: 280),
+                reverseDuration: Duration(milliseconds: 200)),
         isScrollControlled: true,
         useSafeArea: true,
         backgroundColor: Colors.transparent,
@@ -3685,9 +3789,15 @@ class DepositStatusScreen extends StatelessWidget {
                   child: Column(children: [
                     const SizedBox(height: 24),
                     if (success) ...[
-                      const DavoSuccessMark(semanticLabel: 'Deposit confirmed'),
+                      const DavoSuccessMark(
+                          progress: 1, semanticLabel: 'Deposit confirmed'),
                       const SizedBox(height: 24)
                     ],
+                    if (!success)
+                      const DavoWorkingIndicator(
+                          kind: DavoWorkingKind.reviewPending,
+                          active: false,
+                          size: 148),
                     const Text('Quantity',
                         style: TextStyle(
                             fontSize: 16, color: AppColors.bodyMuted)),
@@ -4232,7 +4342,7 @@ class _Tabs extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final callbacks = [onBuy, onSell, onConvert];
-    const labels = ['Buy', 'Sell', 'Convert'];
+    const labels = ['Buy', 'Sell', 'Swap'];
     return Container(
         padding: const EdgeInsets.all(6),
         decoration: BoxDecoration(

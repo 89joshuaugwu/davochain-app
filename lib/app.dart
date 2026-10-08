@@ -77,7 +77,10 @@ class DavochainApp extends StatelessWidget {
             break;
         }
         if (builder == null) return null;
-        return AppPageRoute<void>(builder: builder, settings: settings);
+        return AppPageRoute<void>(
+            builder: builder,
+            settings: settings,
+            authHandoff: settings.arguments is AuthHandoff);
       },
     );
   }

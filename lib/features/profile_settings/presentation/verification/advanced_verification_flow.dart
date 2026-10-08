@@ -1,3 +1,5 @@
+import '../../../../shared/motion/davo_outcome_content.dart';
+import '../../../../shared/motion/davo_step_transition.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_theme.dart';
@@ -29,6 +31,8 @@ class _AdvancedVerificationFlowScreenState
   late int _step;
   bool _photoReview = false;
   bool _retaking = false;
+  bool _backwards = false;
+  bool _newSubmission = false;
 
   @override
   void initState() {
@@ -50,11 +54,14 @@ class _AdvancedVerificationFlowScreenState
 
   void _go(int step) {
     setState(() {
+      _backwards = step < _step;
       _step = step;
       _photoReview = false;
       _retaking = false;
     });
-    if (_scroll.hasClients) _scroll.jumpTo(0);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && _scroll.hasClients) _scroll.jumpTo(0);
+    });
   }
 
   void _exit() => Navigator.of(context).pop();
@@ -70,8 +77,6 @@ class _AdvancedVerificationFlowScreenState
 
   @override
   Widget build(BuildContext context) {
-    final reduce = MediaQuery.disableAnimationsOf(context) ||
-        MediaQuery.accessibleNavigationOf(context);
     final eligible = _session.canStartAdvanced;
     final contents = eligible ? _contents() : _gate();
     final actions = eligible
@@ -118,15 +123,8 @@ class _AdvancedVerificationFlowScreenState
                       _progress(),
                       const SizedBox(height: 24)
                     ],
-                    AnimatedSwitcher(
-                      duration: reduce
-                          ? Duration.zero
-                          : const Duration(milliseconds: 220),
-                      reverseDuration: reduce
-                          ? Duration.zero
-                          : const Duration(milliseconds: 180),
-                      switchInCurve: Curves.easeOutCubic,
-                      switchOutCurve: Curves.easeOutCubic,
+                    DavoStepTransition(
+                      backwards: _backwards,
                       child: Column(
                           key: ValueKey('$eligible-$_step-$_photoReview'),
                           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -181,26 +179,29 @@ class _AdvancedVerificationFlowScreenState
     if (_step == 4) {
       return [
         const SizedBox(height: 24),
-        const Center(
-            child: DavoSuccessMark(semanticLabel: 'Details submitted')),
-        const SizedBox(height: 24),
-        const Text('Advanced verification submitted',
-            style: _heading, textAlign: TextAlign.center),
-        const SizedBox(height: 12),
-        const Text('Pending review',
-            style: TextStyle(
-                fontFamily: 'Sora',
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: AppColors.primary),
-            textAlign: TextAlign.center),
-        const SizedBox(height: 12),
-        const Text(
-            'Your face photo, identity document and proof of address have been submitted for review.',
-            style: _body,
-            textAlign: TextAlign.center),
-        const SizedBox(height: 28),
-        ..._summary(),
+        DavoOutcomeContent(
+            kind: DavoOutcomeKind.submitted,
+            play: _newSubmission,
+            semanticLabel: 'Details submitted',
+            heading: const Column(children: [
+              Text('Advanced verification submitted',
+                  style: _heading, textAlign: TextAlign.center),
+              SizedBox(height: 12),
+              Text('Pending review',
+                  style: TextStyle(
+                      fontFamily: 'Sora',
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.primary)),
+              SizedBox(height: 12),
+              Text(
+                  'Your face photo, identity document and proof of address have been submitted for review.',
+                  style: _body,
+                  textAlign: TextAlign.center)
+            ]),
+            details: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: _summary()))
       ];
     }
     if (_step == 3) {
@@ -356,6 +357,7 @@ class _AdvancedVerificationFlowScreenState
           _session.addressDocumentAdded;
       proceed = () {
         _session.submitAdvanced();
+        _newSubmission = true;
         _go(4);
       };
     }

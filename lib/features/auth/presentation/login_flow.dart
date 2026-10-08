@@ -1,3 +1,5 @@
+import '../../../shared/motion/davo_outcome_content.dart';
+import '../../../core/navigation/app_page_route.dart';
 import '../../../shared/widgets/davo_auth_journey.dart';
 import 'dart:async';
 import '../../../shared/widgets/davo_toast.dart';
@@ -43,8 +45,9 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     return DavoAuthJourney(
         method: _loading ? AuthJourneyMethod.password : null,
-        onComplete: () => Navigator.of(context)
-            .pushNamedAndRemoveUntil(AppRoutes.dashboard, (route) => false),
+        onComplete: () => Navigator.of(context).pushNamedAndRemoveUntil(
+            AppRoutes.dashboard, (route) => false,
+            arguments: const AuthHandoff()),
         child: DavoAuthScaffold(
           child: LayoutBuilder(
             builder: (context, constraints) {
@@ -681,7 +684,7 @@ class _CriteriaBlock extends StatelessWidget {
                 const Positioned.fill(
                     child: ColoredBox(color: AppColors.mutedSoft)),
                 AnimatedFractionallySizedBox(
-                  duration: const Duration(milliseconds: 280),
+                  duration: const Duration(milliseconds: 160),
                   heightFactor: 1,
                   widthFactor: !hasPassword ? 0.0 : (score < 1 ? 1 : score) / 3,
                   alignment: Alignment.centerLeft,
@@ -745,22 +748,23 @@ class _PasswordUpdatedStage extends StatelessWidget {
           Expanded(
               child: SingleChildScrollView(
             padding: const EdgeInsets.symmetric(vertical: 24),
-            child: Column(children: [
-              const DavoSuccessMark(semanticLabel: 'Password updated'),
-              const SizedBox(height: 24),
-              Text('Password updated',
-                  style: Theme.of(context).textTheme.titleMedium,
-                  textAlign: TextAlign.center),
-              const SizedBox(height: 12),
-              Text(
-                  'Your password has been reset. You can now sign in with your new password.',
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodyLarge
-                      ?.copyWith(color: AppColors.bodyMuted),
-                  textAlign: TextAlign.center),
-              const SizedBox(height: 24),
-              Container(
+            child: DavoOutcomeContent(
+              tempo: DavoOutcomeTempo.compact,
+              semanticLabel: 'Password updated',
+              heading: Column(children: [
+                Text('Password updated',
+                    style: Theme.of(context).textTheme.titleMedium,
+                    textAlign: TextAlign.center),
+                const SizedBox(height: 12),
+                Text(
+                    'Your password has been reset. You can now sign in with your new password.',
+                    style: Theme.of(context)
+                        .textTheme
+                        .bodyLarge
+                        ?.copyWith(color: AppColors.bodyMuted),
+                    textAlign: TextAlign.center)
+              ]),
+              details: Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
@@ -782,7 +786,7 @@ class _PasswordUpdatedStage extends StatelessWidget {
                   ],
                 ),
               ),
-            ]),
+            ),
           )),
           const SizedBox(height: 12),
           DavoPrimaryButton(label: 'Login Now', onPressed: onLogin),

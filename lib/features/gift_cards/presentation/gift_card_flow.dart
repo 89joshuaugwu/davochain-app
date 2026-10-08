@@ -1,5 +1,7 @@
+import '../../../shared/motion/davo_outcome_content.dart';
+import '../../../shared/motion/davo_working_indicator.dart';
+import '../../../shared/motion/davo_motion_spec.dart';
 import '../../../shared/formatters/grouped_amount_formatter.dart';
-import '../../../shared/widgets/davo_success_mark.dart';
 import '../../../shared/widgets/davo_toast.dart';
 import '../../../shared/widgets/davo_animated_checkbox.dart';
 import '../../../shared/widgets/receipt_detail_row.dart';
@@ -633,31 +635,37 @@ class _GiftCardSellSubmittedScreenState
               child: _BackButton(onTap: () => Navigator.pop(context))),
           const Expanded(
               child: SingleChildScrollView(
-                  child: Column(children: [
-            SizedBox(height: 30),
-            DavoSuccessMark(semanticLabel: 'Trade submitted; review pending'),
-            SizedBox(height: 22),
-            Text('Transaction Submitted', style: _title20),
-            SizedBox(height: 4),
-            Text.rich(TextSpan(style: _caption, children: [
-              TextSpan(text: 'Current Trade Status: '),
-              TextSpan(
-                  text: 'Pending',
-                  style: TextStyle(
-                      color: Color(0xFF986000), fontWeight: FontWeight.w500)),
-            ])),
-            SizedBox(height: 28),
-            _TransactionCard(
-              rows: [
-                ('Transaction ID', '32525258296589677845', true, false),
-                ('Reference Code', '965X-896756', true, false),
-                ('Card Value', '\$500.00', false, false),
-                ('Amount', '₦432,500', false, true),
-                ('Date', '12-05-2026 08:48:48', false, false),
-              ],
-            ),
-            SizedBox(height: 20),
-          ]))),
+                  child: Padding(
+                      padding: EdgeInsets.symmetric(vertical: 28),
+                      child: DavoOutcomeContent(
+                          kind: DavoOutcomeKind.submitted,
+                          semanticLabel: 'Trade submitted; review pending',
+                          heading: Column(children: [
+                            Text('Transaction Submitted', style: _title20),
+                            SizedBox(height: 4),
+                            Text.rich(TextSpan(style: _caption, children: [
+                              TextSpan(text: 'Current Trade Status: '),
+                              TextSpan(
+                                  text: 'Pending',
+                                  style: TextStyle(
+                                      color: Color(0xFF986000),
+                                      fontWeight: FontWeight.w500))
+                            ]))
+                          ]),
+                          details: _TransactionCard(
+                            rows: [
+                              (
+                                'Transaction ID',
+                                '32525258296589677845',
+                                true,
+                                false
+                              ),
+                              ('Reference Code', '965X-896756', true, false),
+                              ('Card Value', '\$500.00', false, false),
+                              ('Amount', '₦432,500', false, true),
+                              ('Date', '12-05-2026 08:48:48', false, false),
+                            ],
+                          ))))),
           const SizedBox(height: 12),
           _PrimaryButton(
             label: 'Start New Trade',
@@ -687,40 +695,10 @@ class GiftCardVerificationScreen extends StatefulWidget {
       _GiftCardVerificationScreenState();
 }
 
-class _GiftCardVerificationScreenState extends State<GiftCardVerificationScreen>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController pulse;
-  bool _reduced = false;
-
-  @override
-  void initState() {
-    super.initState();
-    pulse = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 1300));
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _reduced = MediaQuery.disableAnimationsOf(context) ||
-        MediaQuery.accessibleNavigationOf(context);
-    if (_reduced) {
-      pulse.stop();
-    } else if (!pulse.isAnimating) {
-      pulse.repeat(reverse: true);
-    }
-  }
-
-  @override
-  void dispose() {
-    pulse.dispose();
-    super.dispose();
-  }
-
+class _GiftCardVerificationScreenState
+    extends State<GiftCardVerificationScreen> {
   @override
   Widget build(BuildContext context) {
-    final scale = Tween<double>(begin: .96, end: 1.04)
-        .animate(CurvedAnimation(parent: pulse, curve: Curves.easeInOut));
     return _GiftScaffold(
       scroll: true,
       child: Column(
@@ -729,9 +707,7 @@ class _GiftCardVerificationScreenState extends State<GiftCardVerificationScreen>
               alignment: Alignment.centerLeft,
               child: _BackButton(onTap: () => Navigator.pop(context))),
           const SizedBox(height: 20),
-          ScaleTransition(
-              scale: _reduced ? const AlwaysStoppedAnimation(1.0) : scale,
-              child: const _VerificationOrb()),
+          const DavoWorkingIndicator(kind: DavoWorkingKind.reviewPending),
           const SizedBox(height: 20),
           const Text('Verifying your card...', style: _title20),
           const SizedBox(height: 5),
@@ -1290,33 +1266,54 @@ class _GiftCardBuySuccessScreenState extends State<GiftCardBuySuccessScreen> {
               child: _BackButton(onTap: () => Navigator.pop(context))),
           Expanded(
               child: SingleChildScrollView(
-                  child: Column(children: [
-            const SizedBox(height: 28),
-            const DavoSuccessMark(
-                semanticLabel: 'Gift card purchase confirmed'),
-            const SizedBox(height: 22),
-            const Text('Purchase Successful!', style: _title20),
-            const SizedBox(height: 4),
-            const Text('Your gift card has been purchased successfully',
-                textAlign: TextAlign.center, style: _body14),
-            const SizedBox(height: 28),
-            _TransactionCard(
-              rows: [
-                const ('Transaction ID', '32525258296589677845', true, false),
-                const ('Reference Code', '965X-896756', true, false),
-                (
-                  'Card Value',
-                  '\$${formatGroupedAmount(widget.amount.toStringAsFixed(2))}',
-                  false,
-                  false
-                ),
-                ('Amount', '₦${_money(widget.naira)}', false, true),
-                const ('Status', 'Completed', false, false),
-                const ('Date', '12-05-2026 08:48:48', false, false),
-              ],
-            ),
-            const SizedBox(height: 20),
-          ]))),
+                  child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 28),
+                      child: DavoOutcomeContent(
+                          kind: DavoOutcomeKind.completed,
+                          semanticLabel: 'Gift card purchase confirmed',
+                          heading: const Column(children: [
+                            Text('Purchase Successful!', style: _title20),
+                            SizedBox(height: 4),
+                            Text(
+                                'Your gift card has been purchased successfully',
+                                textAlign: TextAlign.center,
+                                style: _body14)
+                          ]),
+                          details: _TransactionCard(
+                            rows: [
+                              const (
+                                'Transaction ID',
+                                '32525258296589677845',
+                                true,
+                                false
+                              ),
+                              const (
+                                'Reference Code',
+                                '965X-896756',
+                                true,
+                                false
+                              ),
+                              (
+                                'Card Value',
+                                '\$${formatGroupedAmount(widget.amount.toStringAsFixed(2))}',
+                                false,
+                                false
+                              ),
+                              (
+                                'Amount',
+                                '₦${_money(widget.naira)}',
+                                false,
+                                true
+                              ),
+                              const ('Status', 'Completed', false, false),
+                              const (
+                                'Date',
+                                '12-05-2026 08:48:48',
+                                false,
+                                false
+                              ),
+                            ],
+                          ))))),
           const SizedBox(height: 12),
           _PrimaryButton(
             label: 'Start New Trade',
@@ -1817,6 +1814,12 @@ Future<bool?> _showGiftSubcategories(BuildContext context, GiftCardBrand brand,
         {required bool physical}) =>
     showModalBottomSheet<bool>(
       context: context,
+      sheetAnimationStyle: (MediaQuery.disableAnimationsOf(context) ||
+              MediaQuery.accessibleNavigationOf(context))
+          ? AnimationStyle.noAnimation
+          : const AnimationStyle(
+              duration: Duration(milliseconds: 280),
+              reverseDuration: Duration(milliseconds: 200)),
       showDragHandle: true,
       isScrollControlled: true,
       useSafeArea: true,
@@ -2052,34 +2055,6 @@ class _TransactionCard extends StatelessWidget {
               const Divider(height: 1, color: Color(0xFFEBEDF3)),
           ]);
         }).toList()),
-      );
-}
-
-class _VerificationOrb extends StatelessWidget {
-  const _VerificationOrb();
-  @override
-  Widget build(BuildContext context) => Container(
-        width: 126,
-        height: 126,
-        decoration: const BoxDecoration(
-            color: Color(0xFFE7EEFD), shape: BoxShape.circle),
-        alignment: Alignment.center,
-        child: Container(
-          width: 88,
-          height: 88,
-          decoration: const BoxDecoration(
-              color: Color(0xFFBBD0FF), shape: BoxShape.circle),
-          alignment: Alignment.center,
-          child: Container(
-            width: 62,
-            height: 62,
-            decoration: const BoxDecoration(
-                color: Color(0xFFE8EEFD), shape: BoxShape.circle),
-            alignment: Alignment.center,
-            child: const Icon(Icons.schedule_rounded,
-                size: 28, color: AppColors.primary),
-          ),
-        ),
       );
 }
 

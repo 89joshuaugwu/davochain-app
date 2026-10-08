@@ -1,3 +1,4 @@
+import '../../../shared/motion/davo_outcome_content.dart';
 import 'package:flutter/material.dart';
 import '../../../core/preview/preview_auth_state.dart';
 import '../../../core/theme/app_theme.dart';
@@ -27,9 +28,26 @@ class _FingerprintSetupScreenState extends State<FingerprintSetupScreen> {
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 if (_enabled)
-                                  const DavoSuccessMark(
-                                      semanticLabel: 'Fingerprint enabled')
-                                else
+                                  const DavoOutcomeContent(
+                                      tempo: DavoOutcomeTempo.compact,
+                                      semanticLabel: 'Fingerprint enabled',
+                                      heading: Column(children: [
+                                        Text('Fingerprint enabled',
+                                            textAlign: TextAlign.center,
+                                            style: TextStyle(
+                                                fontSize: 24,
+                                                fontWeight: FontWeight.w600,
+                                                color: AppColors.ink)),
+                                        SizedBox(height: 16),
+                                        Text(
+                                            'Use your fingerprint to unlock your Davochain account quickly and securely.',
+                                            textAlign: TextAlign.center,
+                                            style: TextStyle(
+                                                fontSize: 14,
+                                                height: 1.6,
+                                                color: AppColors.bodyMuted))
+                                      ]))
+                                else ...[
                                   Container(
                                       width: 140,
                                       height: 140,
@@ -40,24 +58,22 @@ class _FingerprintSetupScreenState extends State<FingerprintSetupScreen> {
                                           Icons.fingerprint_rounded,
                                           size: 82,
                                           color: AppColors.primary)),
-                                const SizedBox(height: 32),
-                                Text(
-                                    _enabled
-                                        ? 'Fingerprint enabled'
-                                        : 'Enable fingerprint',
-                                    textAlign: TextAlign.center,
-                                    style: const TextStyle(
-                                        fontSize: 24,
-                                        fontWeight: FontWeight.w600,
-                                        color: AppColors.ink)),
-                                const SizedBox(height: 16),
-                                const Text(
-                                    'Use your fingerprint to unlock your Davochain account quickly and securely.',
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                        fontSize: 14,
-                                        height: 1.6,
-                                        color: AppColors.bodyMuted)),
+                                  const SizedBox(height: 32),
+                                  const Text('Enable fingerprint',
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                          fontSize: 24,
+                                          fontWeight: FontWeight.w600,
+                                          color: AppColors.ink)),
+                                  const SizedBox(height: 16),
+                                  const Text(
+                                      'Use your fingerprint to unlock your Davochain account quickly and securely.',
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                          fontSize: 14,
+                                          height: 1.6,
+                                          color: AppColors.bodyMuted)),
+                                ],
                                 const SizedBox(height: 40),
                                 DavoPrimaryButton(
                                     label: _enabled
