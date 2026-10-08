@@ -1,3 +1,5 @@
+import 'account_welcome_screen.dart';
+import '../../../core/navigation/app_page_route.dart';
 import '../../../shared/widgets/davo_result_screen.dart';
 import 'dart:async';
 import '../../../shared/motion/davo_motion_spec.dart';
@@ -205,7 +207,9 @@ class _VerificationScreenState extends State<VerificationScreen>
               Text(
                 'Didn’t get a code?',
                 style: TextStyle(
-                    fontFamily: 'Sora', fontSize: 14, color: DavoColors.of(context).body),
+                    fontFamily: 'Sora',
+                    fontSize: 14,
+                    color: DavoColors.of(context).body),
               ),
               const SizedBox(width: 4),
               InkWell(
@@ -215,8 +219,9 @@ class _VerificationScreenState extends State<VerificationScreen>
                   style: TextStyle(
                     fontFamily: 'Sora',
                     fontSize: 14,
-                    color:
-                        _seconds == 0 ? AppColors.primary : DavoColors.of(context).bodyMuted,
+                    color: _seconds == 0
+                        ? AppColors.primary
+                        : DavoColors.of(context).bodyMuted,
                   ),
                 ),
               ),
@@ -276,7 +281,9 @@ class _OtpBoxes extends StatelessWidget {
                   index == 3 ? TextInputAction.done : TextInputAction.next,
               textAlign: TextAlign.center,
               style: TextStyle(
-                  fontFamily: 'Sora', fontSize: 14, color: DavoColors.of(context).bodyMuted),
+                  fontFamily: 'Sora',
+                  fontSize: 14,
+                  color: DavoColors.of(context).bodyMuted),
               maxLength: 1,
               inputFormatters: [FilteringTextInputFormatter.digitsOnly],
               decoration: InputDecoration(
@@ -285,14 +292,16 @@ class _OtpBoxes extends StatelessWidget {
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
                   borderSide: BorderSide(
-                      color:
-                          error ? DavoColors.of(context).danger : DavoColors.of(context).border),
+                      color: error
+                          ? DavoColors.of(context).danger
+                          : DavoColors.of(context).border),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
                   borderSide: BorderSide(
-                      color:
-                          error ? DavoColors.of(context).danger : AppColors.primary),
+                      color: error
+                          ? DavoColors.of(context).danger
+                          : AppColors.primary),
                 ),
               ),
               onChanged: (value) => onChanged(index, value),
@@ -340,6 +349,7 @@ class _TransactionPinScreenState extends State<TransactionPinScreen>
   late final AnimationController _shakeController;
   String? _createdPin;
   bool _confirming = false;
+  bool _finishing = false;
   bool _error = false;
 
   String get _pin => _controllers.map((e) => e.text).join();
@@ -382,7 +392,7 @@ class _TransactionPinScreenState extends State<TransactionPinScreen>
   }
 
   Future<void> _continue() async {
-    if (!_complete) return;
+    if (!_complete || _finishing) return;
     if (!_confirming) {
       _createdPin = _pin;
       setState(() => _confirming = true);
@@ -402,8 +412,16 @@ class _TransactionPinScreenState extends State<TransactionPinScreen>
 
     HapticFeedback.lightImpact();
     if (!mounted) return;
-    Navigator.of(context)
-        .pushNamedAndRemoveUntil(AppRoutes.dashboard, (route) => false);
+    _finishing = true;
+    FocusManager.instance.primaryFocus?.unfocus();
+    Navigator.of(context).pushReplacement(AppPageRoute<void>(
+      authHandoff: true,
+      builder: (welcomeContext) => AccountWelcomeScreen(onExplore: () {
+        Navigator.of(welcomeContext).pushNamedAndRemoveUntil(
+            AppRoutes.dashboard, (route) => false,
+            arguments: const AuthHandoff());
+      }),
+    ));
   }
 
   @override

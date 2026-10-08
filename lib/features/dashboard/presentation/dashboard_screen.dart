@@ -1,3 +1,4 @@
+import '../../funding/funding_outcomes.dart';
 import '../../buy_crypto/presentation/buy_crypto_screens.dart';
 import '../../buy_crypto/presentation/buy_crypto_models.dart';
 import '../../../shared/widgets/davo_sheet_header.dart';
@@ -147,39 +148,45 @@ class _DavochainDashboardScreenState extends State<DavochainDashboardScreen> {
               ),
             ),
           ),
-          bottomNavigationBar: _BottomNav(
-            index: _navIndex,
-            onChanged: (index) {
-              if (index == 0) return;
-              if (index == 2) {
-                HapticFeedback.selectionClick();
+          bottomNavigationBar:
+              Column(mainAxisSize: MainAxisSize.min, children: [
+            const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16),
+                child: DepositActivityBanner()),
+            _BottomNav(
+              index: _navIndex,
+              onChanged: (index) {
+                if (index == 0) return;
+                if (index == 2) {
+                  HapticFeedback.selectionClick();
+                  setState(() => _navIndex = index);
+                  startGiftCardFlow(context).whenComplete(() {
+                    if (mounted) setState(() => _navIndex = 0);
+                  });
+                  return;
+                }
+                if (index == 3) {
+                  HapticFeedback.selectionClick();
+                  setState(() => _navIndex = index);
+                  startProfileSettingsFlow(context).whenComplete(() {
+                    if (mounted) setState(() => _navIndex = 0);
+                  });
+                  return;
+                }
                 setState(() => _navIndex = index);
-                startGiftCardFlow(context).whenComplete(() {
+                HapticFeedback.selectionClick();
+                Navigator.of(context)
+                    .push(_davoRoute(const BuyAmountScreen(
+                        initialOrder: BuyCryptoOrder(
+                            asset: BuyCryptoAsset.bitcoin,
+                            wallet: BuyFundingWallet.ngn,
+                            ngnAmount: 0))))
+                    .whenComplete(() {
                   if (mounted) setState(() => _navIndex = 0);
                 });
-                return;
-              }
-              if (index == 3) {
-                HapticFeedback.selectionClick();
-                setState(() => _navIndex = index);
-                startProfileSettingsFlow(context).whenComplete(() {
-                  if (mounted) setState(() => _navIndex = 0);
-                });
-                return;
-              }
-              setState(() => _navIndex = index);
-              HapticFeedback.selectionClick();
-              Navigator.of(context)
-                  .push(_davoRoute(const BuyAmountScreen(
-                      initialOrder: BuyCryptoOrder(
-                          asset: BuyCryptoAsset.bitcoin,
-                          wallet: BuyFundingWallet.ngn,
-                          ngnAmount: 0))))
-                  .whenComplete(() {
-                if (mounted) setState(() => _navIndex = 0);
-              });
-            },
-          ),
+              },
+            ),
+          ]),
         ));
   }
 
@@ -331,14 +338,20 @@ class _DashboardHeader extends StatelessWidget {
             height: 32,
             padding: const EdgeInsets.symmetric(horizontal: 11),
             decoration: BoxDecoration(
-              color: DavoColors.of(context).isDark ? DavoColors.of(context).primarySoft : const Color(0x80D0DEFD),
+              color: DavoColors.of(context).isDark
+                  ? DavoColors.of(context).primarySoft
+                  : const Color(0x80D0DEFD),
               borderRadius: BorderRadius.circular(1000),
             ),
             child: Row(
               children: [
                 Image.asset('assets/figma_exact/earn_gift.png',
-                    color: DavoColors.of(context).isDark ? DavoColors.of(context).link : null,
-                    width: 20, height: 20, fit: BoxFit.contain),
+                    color: DavoColors.of(context).isDark
+                        ? DavoColors.of(context).link
+                        : null,
+                    width: 20,
+                    height: 20,
+                    fit: BoxFit.contain),
                 if (MediaQuery.textScalerOf(context).scale(14) <= 18) ...[
                   const SizedBox(width: 4),
                   Text('Earn \$5',
@@ -359,11 +372,18 @@ class _DashboardHeader extends StatelessWidget {
             width: 32,
             height: 32,
             decoration: BoxDecoration(
-                color: DavoColors.of(context).isDark ? DavoColors.of(context).primarySoft : const Color(0x80D0DEFD), shape: BoxShape.circle),
+                color: DavoColors.of(context).isDark
+                    ? DavoColors.of(context).primarySoft
+                    : const Color(0x80D0DEFD),
+                shape: BoxShape.circle),
             child: Center(
                 child: Image.asset('assets/figma_exact/notification.png',
-                    color: DavoColors.of(context).isDark ? DavoColors.of(context).link : null,
-                    width: 21, height: 21, fit: BoxFit.contain)),
+                    color: DavoColors.of(context).isDark
+                        ? DavoColors.of(context).link
+                        : null,
+                    width: 21,
+                    height: 21,
+                    fit: BoxFit.contain)),
           ),
         ),
       ],
@@ -433,7 +453,9 @@ class _BalanceCard extends StatelessWidget {
                         style: TextStyle(
                             fontFamily: 'Sora',
                             fontSize: 10,
-                            color: DavoColors.of(context).isDark ? Colors.white : AppColors.border),
+                            color: DavoColors.of(context).isDark
+                                ? Colors.white
+                                : AppColors.border),
                       )),
                       const SizedBox(width: 4),
                       Opacity(
@@ -782,7 +804,12 @@ class _PromoBanner extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [DavoColors.of(context).primarySoft, DavoColors.of(context).isDark ? DavoColors.of(context).elevated : const Color(0xFFBDD2FF)],
+          colors: [
+            DavoColors.of(context).primarySoft,
+            DavoColors.of(context).isDark
+                ? DavoColors.of(context).elevated
+                : const Color(0xFFBDD2FF)
+          ],
         ),
       ),
       child: Stack(
@@ -2000,6 +2027,7 @@ class _CryptoDepositScreenState extends State<CryptoDepositScreen> {
             children: [
               _SimpleAppBar(
                   title: 'Deposit', onBack: () => Navigator.pop(context)),
+              DepositActivityBanner(currency: asset.symbol),
               const SizedBox(height: 23),
               Expanded(
                 child: SingleChildScrollView(
@@ -2552,6 +2580,7 @@ class NairaDepositScreen extends StatelessWidget {
             children: [
               _SimpleAppBar(
                   title: 'Deposit', onBack: () => Navigator.pop(context)),
+              const DepositActivityBanner(currency: 'NGD'),
               const SizedBox(height: 34),
               Expanded(
                 child: SingleChildScrollView(

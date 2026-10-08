@@ -1,3 +1,4 @@
+import '../../funding/funding_outcomes.dart';
 import 'package:flutter/material.dart';
 
 import '../../../core/navigation/app_page_route.dart';
@@ -24,67 +25,98 @@ class TransactionHistoryScreen extends StatelessWidget {
   ];
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-        appBar: AppBar(
-          title: const Text('History'),
-          centerTitle: true,
-          backgroundColor: DavoColors.of(context).surface,
-          foregroundColor: DavoColors.of(context).ink,
-          surfaceTintColor: Colors.transparent,
-        ),
-        body: SafeArea(
-          top: false,
-          child: ListView(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
-            children: [
-              Container(
-                padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  color: DavoColors.of(context).primarySoft,
-                  borderRadius: BorderRadius.circular(12),
+  Widget build(BuildContext context) =>
+      ValueListenableBuilder<List<FundingRecord>>(
+          valueListenable: FundingActivity.records,
+          builder: (context, records, _) => Scaffold(
+                appBar: AppBar(
+                  title: const Text('History'),
+                  centerTitle: true,
+                  backgroundColor: DavoColors.of(context).surface,
+                  foregroundColor: DavoColors.of(context).ink,
+                  surfaceTintColor: Colors.transparent,
                 ),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Icon(Icons.info_outline,
-                        size: 20, color: DavoColors.of(context).link),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('Sample transactions',
-                              style: TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w600,
-                                  color: DavoColors.of(context).link)),
-                          const SizedBox(height: 4),
-                          Text('Preview data only. No funds have been moved.',
-                              style: TextStyle(
-                                  fontSize: 12,
-                                  color: DavoColors.of(context).body)),
-                        ],
+                body: SafeArea(
+                  top: false,
+                  child: ListView(
+                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+                    children: [
+                      Text('Recent activity',
+                          style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: DavoColors.of(context).ink)),
+                      const SizedBox(height: 12),
+                      for (final record in records) ...[
+                        ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          leading: Icon(
+                              record.deposit
+                                  ? Icons.south_west
+                                  : Icons.arrow_outward,
+                              color: DavoColors.of(context).link),
+                          title: Text(record.title,
+                              style: const TextStyle(fontSize: 14)),
+                          subtitle: Text(
+                              record.preview
+                                  ? '${record.statusLabel}, Preview'
+                                  : record.statusLabel,
+                              style: const TextStyle(fontSize: 12)),
+                          trailing: Text(record.amountLabel,
+                              style: const TextStyle(fontSize: 12)),
+                          onTap: () => Navigator.of(context).push(
+                              AppPageRoute<void>(
+                                  builder: (_) =>
+                                      FundingDetailsScreen(record: record))),
+                        ),
+                        Divider(
+                            height: 1, color: DavoColors.of(context).divider),
+                      ],
+                      if (records.isNotEmpty) const SizedBox(height: 24),
+                      Container(
+                        padding: const EdgeInsets.all(14),
+                        decoration: BoxDecoration(
+                          color: DavoColors.of(context).primarySoft,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Icon(Icons.info_outline,
+                                size: 20, color: DavoColors.of(context).link),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text('Sample transactions',
+                                      style: TextStyle(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w600,
+                                          color: DavoColors.of(context).link)),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                      'Preview data only. No funds have been moved.',
+                                      style: TextStyle(
+                                          fontSize: 12,
+                                          color: DavoColors.of(context).body)),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
+                      const SizedBox(height: 24),
+                      for (final sample in _samples) ...[
+                        _TransactionRow(sample: sample),
+                        if (sample != _samples.last)
+                          Divider(
+                              height: 1, color: DavoColors.of(context).divider),
+                      ],
+                    ],
+                  ),
                 ),
-              ),
-              const SizedBox(height: 24),
-              Text('Recent activity',
-                  style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: DavoColors.of(context).ink)),
-              const SizedBox(height: 12),
-              for (final sample in _samples) ...[
-                _TransactionRow(sample: sample),
-                if (sample != _samples.last)
-                  Divider(height: 1, color: DavoColors.of(context).divider),
-              ],
-            ],
-          ),
-        ),
-      );
+              ));
 }
 
 enum _SampleKind { buy, sell, convert, withdraw, deposit }

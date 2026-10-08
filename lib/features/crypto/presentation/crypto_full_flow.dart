@@ -1,3 +1,4 @@
+import '../../funding/funding_outcomes.dart';
 import '../../../core/preview/preview_transaction_operation.dart';
 import '../../../shared/motion/davo_working_indicator.dart';
 import '../../../shared/motion/davo_motion_spec.dart';
@@ -6,7 +7,6 @@ import '../../../shared/widgets/davo_receipt_export_frame.dart';
 import '../../../shared/widgets/davo_bank_logo.dart';
 import '../../../shared/widgets/solana_icon.dart';
 import '../../../shared/formatters/grouped_amount_formatter.dart';
-import '../../../shared/widgets/davo_toast.dart';
 import '../../../shared/widgets/davo_success_mark.dart';
 import '../../../shared/widgets/davo_result_screen.dart';
 import '../../../shared/widgets/receipt_detail_row.dart';
@@ -394,6 +394,7 @@ class NairaWithdrawScreen extends StatefulWidget {
 class _NairaWithdrawScreenState extends State<NairaWithdrawScreen> {
   final amount = TextEditingController();
   BankAccount? account;
+  bool _reviewing = false;
   @override
   void dispose() {
     amount.dispose();
@@ -402,8 +403,11 @@ class _NairaWithdrawScreenState extends State<NairaWithdrawScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final ready =
-        amount.text.isNotEmpty && amount.text != '0' && account != null;
+    final ready = parseAmount(amount.text).isFinite &&
+        parseAmount(amount.text) > 0 &&
+        parseAmount(amount.text) <= 5000000 &&
+        account != null &&
+        !_reviewing;
     return _Scaffold(
       child: Stack(
         children: [
@@ -490,7 +494,7 @@ class _NairaWithdrawScreenState extends State<NairaWithdrawScreen> {
             height: 48,
             child: _Button(
               label: 'Continue',
-              enabled: true,
+              enabled: ready,
               fontWeight: FontWeight.w700,
               onTap: ready ? _review : () {},
             ),
@@ -517,25 +521,36 @@ class _NairaWithdrawScreenState extends State<NairaWithdrawScreen> {
   }
 
   Future<void> _review() async {
-    if (account == null) return;
-    final ok = await showModalBottomSheet<bool>(
-        context: context,
-        sheetAnimationStyle: (MediaQuery.disableAnimationsOf(context) ||
-                MediaQuery.accessibleNavigationOf(context))
-            ? AnimationStyle.noAnimation
-            : const AnimationStyle(
-                duration: Duration(milliseconds: 280),
-                reverseDuration: Duration(milliseconds: 200)),
-        isScrollControlled: true,
-        backgroundColor: Colors.transparent,
-        barrierColor: Colors.black.withValues(alpha: .32),
-        builder: (_) => _NairaConfirm(amount: amount.text, account: account!));
-    if (!mounted || ok != true) return;
-    final pin = await Navigator.push<bool>(
-        context, AppPageRoute<bool>(builder: (_) => const CryptoPinScreen()));
-    if (!mounted || pin != true) return;
-    _showTransactionToast(context, 'Submitted Successfully');
-    Navigator.pop(context);
+    if (account == null || _reviewing) return;
+    setState(() => _reviewing = true);
+    try {
+      final ok = await showModalBottomSheet<bool>(
+          context: context,
+          sheetAnimationStyle: (MediaQuery.disableAnimationsOf(context) ||
+                  MediaQuery.accessibleNavigationOf(context))
+              ? AnimationStyle.noAnimation
+              : const AnimationStyle(
+                  duration: Duration(milliseconds: 280),
+                  reverseDuration: Duration(milliseconds: 200)),
+          isScrollControlled: true,
+          backgroundColor: Colors.transparent,
+          barrierColor: Colors.black.withValues(alpha: .32),
+          builder: (_) =>
+              _NairaConfirm(amount: amount.text, account: account!));
+      if (!mounted || ok != true) return;
+      final pin = await Navigator.push<bool>(
+          context, AppPageRoute<bool>(builder: (_) => const CryptoPinScreen()));
+      if (!mounted || pin != true) return;
+      await Navigator.of(context).push(AppPageRoute<void>(
+        builder: (_) => NairaWithdrawalProgressScreen(
+            amount: parseAmount(amount.text),
+            bank: account!.bank,
+            accountNumber: account!.number,
+            accountName: account!.name),
+      ));
+    } finally {
+      if (mounted) setState(() => _reviewing = false);
+    }
   }
 }
 
@@ -596,9 +611,6 @@ class _ExactNairaField extends StatelessWidget {
                 ),
               )));
 }
-
-void _showTransactionToast(BuildContext context, String message) =>
-    showDavoToast(context, message);
 
 class BankAccount {
   const BankAccount(this.bank, this.number, this.name);
