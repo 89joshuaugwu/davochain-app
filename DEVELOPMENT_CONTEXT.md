@@ -187,3 +187,10 @@ last letter. Both crypto and Naira deposit headings now center across available 
 Verification: 58 widget tests passed, flutter analyze is clean, and Android debug APK
 built successfully. Splash checks cover delayed renderer readiness, one-time routing,
 disposal, pause/resume, reduced-motion changes, narrow/landscape layout and large text.
+
+Release verification: built app-release.apk (version 0.10.0, build 11), installed with
+adb install -r on the user's Redmi 14C, and launched successfully. Package flags confirm
+it is not debuggable. Captured the completed animated welcome composition on the phone
+at ../tmp/emulator-review/phone-release-review.png. Device disconnected after this;
+no physical-device runtime-log result is claimed. The APK uses the project's existing
+local debug signing configuration for device testing; store signing is not configured.
