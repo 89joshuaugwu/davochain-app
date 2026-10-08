@@ -12,7 +12,8 @@ import 'features/onboarding/presentation/brand_splash_screen.dart';
 import 'features/onboarding/presentation/onboarding_screen.dart';
 
 class DavochainApp extends StatelessWidget {
-  const DavochainApp({super.key});
+  const DavochainApp({super.key, this.firstFrameReady});
+  final Future<void>? firstFrameReady;
 
   @override
   Widget build(BuildContext context) {
@@ -22,12 +23,14 @@ class DavochainApp extends StatelessWidget {
       theme: AppTheme.light,
       builder: (context, child) => MediaQuery.disableAnimationsOf(context)
           ? Theme(
-              data: Theme.of(context).copyWith(splashFactory: NoSplash.splashFactory),
+              data: Theme.of(context)
+                  .copyWith(splashFactory: NoSplash.splashFactory),
               child: child!,
             )
           : child!,
-      scrollBehavior: const MaterialScrollBehavior().copyWith(overscroll: false),
-      home: const BrandSplashScreen(),
+      scrollBehavior:
+          const MaterialScrollBehavior().copyWith(overscroll: false),
+      home: BrandSplashScreen(firstFrameReady: firstFrameReady),
       onGenerateRoute: (settings) {
         WidgetBuilder? builder;
         switch (settings.name) {
@@ -47,10 +50,12 @@ class DavochainApp extends StatelessWidget {
             builder = (_) => const ForgotPasswordScreen();
             break;
           case AppRoutes.emailVerification:
-            builder = (_) => const VerificationScreen(kind: VerificationKind.email);
+            builder =
+                (_) => const VerificationScreen(kind: VerificationKind.email);
             break;
           case AppRoutes.smsVerification:
-            builder = (_) => const VerificationScreen(kind: VerificationKind.sms);
+            builder =
+                (_) => const VerificationScreen(kind: VerificationKind.sms);
             break;
           case AppRoutes.transactionPin:
             builder = (_) => const TransactionPinScreen();

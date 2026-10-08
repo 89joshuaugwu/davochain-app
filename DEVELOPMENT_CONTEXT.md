@@ -157,13 +157,33 @@ Verification: 54 tests passed and flutter analyze reported no issues. This cover
 short-screen trade forms with keyboard insets, mode changes, receipt/deposit variants,
 stable shared PIN layout, wallet branding, onboarding controls and the date picker.
 
-## Approved next motion pass (deferred by user)
+## Approved splash motion pass - implemented 2026-10-07
 
 Reference: https://dribbble.com/shots/25193732-Logo-Animation-on-Splash-Screen
-User approved the following direction but explicitly requested completing fixes first:
+User approved the following direction and authorized implementation after the fixes:
 dot enters; two D components assemble with a soft spring; logo shifts left as Davochain
 reveals and the oval expands; currency artwork rises partly offscreen; brief settle
-then onboarding fade. About three seconds, static reduced-motion alternative. Do not
-treat this proposal as already implemented. Native Android launch splash currently
-shows the mark before the Flutter oval welcome screen. Plan their visual handoff
-together in the next motion pass.
+then onboarding fade. Implemented as a finite 2.9-second Flutter sequence with a
+320ms fade into onboarding; reduced motion shows the completed scene for 700ms and
+uses an instant route change. The real engine entry point passes first-frame raster
+readiness, so the reveal does not advance while the native launch screen covers it.
+Backgrounding pauses the introduction and cancels its static hold until return.
+
+The original transparent logo is clipped into its dot, upper and lower components;
+no approximate replacement logo is drawn. The upper/lower shapes settle with a mild
+spring, then the mark shifts left and shrinks into the wordmark as its text mask and
+oval reveal. Existing outlined currency artwork rises partly offscreen at the bottom.
+One controller owns the sequence; there are no ambient loops or added dependencies.
+
+Android 12+ uses custom davochain_launch_dot_animated.xml and its 420ms native dot
+entrance, followed by a 120ms native exit fade. Older Android launch backgrounds use
+the same static dot. These custom native resources/style references must be preserved
+if flutter_native_splash is regenerated; the package's image-only config cannot
+describe this vector animation. iOS native image remains its existing static mark.
+
+Also fixed the Deposit header: its text was correct but a 66px fixed box clipped the
+last letter. Both crypto and Naira deposit headings now center across available space.
+
+Verification: 58 widget tests passed, flutter analyze is clean, and Android debug APK
+built successfully. Splash checks cover delayed renderer readiness, one-time routing,
+disposal, pause/resume, reduced-motion changes, narrow/landscape layout and large text.

@@ -1401,7 +1401,7 @@ class _CryptoDepositScreenState extends State<CryptoDepositScreen> {
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 18),
           child: Column(
             children: [
-              _SimpleAppBar(title: 'Deposit', titleLeft: 128, onBack: () => Navigator.pop(context)),
+              _SimpleAppBar(title: 'Deposit', onBack: () => Navigator.pop(context)),
               const SizedBox(height: 23),
               Expanded(
                 child: SingleChildScrollView(
@@ -1761,10 +1761,9 @@ class _FooterButton extends StatelessWidget {
 }
 
 class _SimpleAppBar extends StatelessWidget {
-  const _SimpleAppBar({required this.title, required this.titleLeft, required this.onBack});
+  const _SimpleAppBar({required this.title, required this.onBack});
 
   final String title;
-  final double titleLeft;
   final VoidCallback onBack;
 
   @override
@@ -1782,12 +1781,11 @@ class _SimpleAppBar extends StatelessWidget {
             child: InkResponse(onTap: onBack, child: Image.asset('assets/figma_exact/deposit_back_exact.png', width: 32, height: 32, fit: BoxFit.fill, filterQuality: FilterQuality.high)),
           ),
           Positioned(
-            left: titleLeft,
-            top: 20,
-            width: 66,
-            height: 22,
+            left: 48,
+            right: 48,
+            top: 15,
             child: IgnorePointer(
-              child: Text(title, style: const TextStyle(fontFamily: 'Sora', fontSize: 16, fontWeight: FontWeight.w600, height: 1.35, color: AppColors.ink)),
+              child: Text(title, textAlign: TextAlign.center, style: const TextStyle(fontFamily: 'Sora', fontSize: 16, fontWeight: FontWeight.w600, height: 1.35, color: AppColors.ink)),
             ),
           ),
         ],
@@ -1808,7 +1806,7 @@ class NairaDepositScreen extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(16, 16, 15, 18),
           child: Column(
             children: [
-              _SimpleAppBar(title: 'Deposit', titleLeft: 146, onBack: () => Navigator.pop(context)),
+              _SimpleAppBar(title: 'Deposit', onBack: () => Navigator.pop(context)),
               const SizedBox(height: 34),
               Expanded(
                 child: SingleChildScrollView(

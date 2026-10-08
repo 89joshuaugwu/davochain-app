@@ -1,0 +1,4 @@
+<animated-vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:drawable="@drawable/davochain_launch_dot">
+    <target android:name="dot" android:animation="@animator/davochain_dot_enter"/>
+</animated-vector>
