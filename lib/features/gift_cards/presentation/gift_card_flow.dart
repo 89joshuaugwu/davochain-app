@@ -1,4 +1,7 @@
+import '../../../shared/formatters/grouped_amount_formatter.dart';
 import '../../../shared/widgets/davo_success_mark.dart';
+import '../../../shared/widgets/davo_toast.dart';
+import '../../../shared/widgets/davo_animated_checkbox.dart';
 import '../../../shared/widgets/receipt_detail_row.dart';
 import '../../../shared/widgets/transaction_pin_entry.dart';
 import 'dart:async';
@@ -99,6 +102,7 @@ class _GiftCardHomeScreenState extends State<GiftCardHomeScreen> {
   Widget build(BuildContext context) {
     return _GiftScaffold(
       scroll: true,
+      bottom: _ReferralCard(onTap: () => HapticFeedback.lightImpact()),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -131,36 +135,20 @@ class _GiftCardHomeScreenState extends State<GiftCardHomeScreen> {
               Expanded(
                   child: _TopBrandCard(
                       brand: _brands[0],
+                      mode: mode,
                       accent: const Color(0xFFF59E0B),
                       onTap: () => _openBrand(_brands[0]))),
               const SizedBox(width: 12),
               Expanded(
                   child: _TopBrandCard(
                       brand: _brands[1],
+                      mode: mode,
                       accent: const Color(0xFF151515),
                       onTap: () => _openBrand(_brands[1]))),
             ],
           ),
           const SizedBox(height: 24),
-          Row(
-            children: [
-              const Text('Popular Brands', style: _section),
-              const Spacer(),
-              InkWell(
-                onTap: _openSelector,
-                borderRadius: BorderRadius.circular(12),
-                child: const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-                  child: Text('View All',
-                      style: TextStyle(
-                          fontFamily: 'Sora',
-                          fontSize: 12,
-                          color: AppColors.primary,
-                          fontWeight: FontWeight.w600)),
-                ),
-              ),
-            ],
-          ),
+          const Text('Popular Brands', style: _section),
           const SizedBox(height: 12),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -175,8 +163,12 @@ class _GiftCardHomeScreenState extends State<GiftCardHomeScreen> {
                   brand: _brands[4], onTap: () => _openBrand(_brands[4])),
             ],
           ),
-          const SizedBox(height: 28),
-          _ReferralCard(onTap: () => HapticFeedback.lightImpact()),
+          const SizedBox(height: 10),
+          Center(
+              child: TextButton(
+                  onPressed: _openSelector,
+                  child: const Text('View All',
+                      style: TextStyle(fontSize: 12, color: AppColors.body)))),
           const SizedBox(height: 12),
         ],
       ),
@@ -248,7 +240,11 @@ class _GiftCardBrandScreenState extends State<GiftCardBrandScreen> {
                             : 'Sell Gift Card',
                         style: _title24),
                     const SizedBox(height: 3),
-                    const Text('Sell gift cards instantly', style: _body14),
+                    Text(
+                        widget.mode == GiftCardMode.buy
+                            ? 'Buy gift cards instantly'
+                            : 'Sell gift cards instantly',
+                        style: _body14),
                   ],
                 ),
               ),
@@ -259,7 +255,9 @@ class _GiftCardBrandScreenState extends State<GiftCardBrandScreen> {
           const SizedBox(height: 18),
           Container(
             height: 48,
-            decoration: _fieldDecoration,
+            decoration: _fieldDecoration.copyWith(
+                color: const Color(0xFFF6F7FB),
+                borderRadius: BorderRadius.circular(24)),
             padding: const EdgeInsets.symmetric(horizontal: 14),
             child: Row(
               children: [
@@ -347,7 +345,7 @@ class _GiftCardSellFormScreenState extends State<GiftCardSellFormScreen> {
   bool categorySelected = false;
   bool uploaded = false;
 
-  double get numeric => double.tryParse(amount.text.replaceAll(',', '')) ?? 0;
+  double get numeric => parseAmount(amount.text);
   int get naira => (numeric * 865).round();
   bool get ready => categorySelected && numeric > 0 && uploaded;
 
@@ -360,32 +358,59 @@ class _GiftCardSellFormScreenState extends State<GiftCardSellFormScreen> {
   @override
   Widget build(BuildContext context) {
     return _GiftScaffold(
+      scroll: true,
+      bottom: _PrimaryButton(
+        label: 'Continue',
+        enabled: ready,
+        onTap: ready
+            ? () => Navigator.of(context).push<void>(
+                  AppPageRoute<void>(
+                      builder: (_) => GiftCardSellReviewScreen(
+                          brand: widget.brand,
+                          amount: numeric,
+                          cardType:
+                              'France ${widget.brand.name}, ${physical ? 'Physical' : 'E-code'} (50 above)')),
+                )
+            : null,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _TopBar(title: 'Sell Card', onBack: () => Navigator.pop(context)),
           const SizedBox(height: 14),
-          Text('Sell ${widget.brand.name}', style: _section),
+          Text('Sell ${widget.brand.name}', style: _title24),
           const SizedBox(height: 8),
           const _StepProgress(step: 1),
           const SizedBox(height: 24),
-          const Text('Sort by:', style: _caption),
-          const SizedBox(height: 8),
-          _TwoChoice(
-            left: 'Physical',
-            right: 'E-code',
-            leftActive: physical,
-            onLeft: () => setState(() => physical = true),
-            onRight: () => setState(() => physical = false),
-          ),
+          Wrap(
+              spacing: 12,
+              runSpacing: 8,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              children: [
+                const Text('Sort by:', style: _body14),
+                _TwoChoice(
+                    left: 'Physical',
+                    right: 'E-code',
+                    leftActive: physical,
+                    onLeft: () => setState(() => physical = true),
+                    onRight: () => setState(() => physical = false)),
+              ]),
           const SizedBox(height: 20),
           const _Label('Sub Category'),
           const SizedBox(height: 6),
           _SelectField(
+            brand: widget.brand,
             value: categorySelected
-                ? 'France iTunes/Apple, Physical (50 above)'
+                ? 'France ${widget.brand.name}, ${physical ? 'Physical' : 'E-code'} (50 above)'
                 : 'Select Gift Card Sub Category',
-            onTap: () => setState(() => categorySelected = true),
+            onTap: () async {
+              FocusScope.of(context).unfocus();
+              final picked = await _showGiftSubcategories(context, widget.brand,
+                  physical: physical);
+              if (mounted && picked == true) {
+                setState(() => categorySelected = true);
+              }
+            },
           ),
           const SizedBox(height: 16),
           const _Label('Card Amount'),
@@ -429,18 +454,6 @@ class _GiftCardSellFormScreenState extends State<GiftCardSellFormScreen> {
                     ),
             ),
           ),
-          const Spacer(),
-          _PrimaryButton(
-            label: 'Continue',
-            enabled: ready,
-            onTap: ready
-                ? () => Navigator.of(context).push<void>(
-                      AppPageRoute<void>(
-                          builder: (_) => GiftCardSellReviewScreen(
-                              brand: widget.brand, amount: numeric)),
-                    )
-                : null,
-          ),
         ],
       ),
     );
@@ -449,9 +462,10 @@ class _GiftCardSellFormScreenState extends State<GiftCardSellFormScreen> {
 
 class GiftCardSellReviewScreen extends StatefulWidget {
   const GiftCardSellReviewScreen(
-      {super.key, required this.brand, required this.amount});
+      {super.key, required this.brand, required this.amount, this.cardType});
   final GiftCardBrand brand;
   final double amount;
+  final String? cardType;
 
   @override
   State<GiftCardSellReviewScreen> createState() =>
@@ -461,6 +475,7 @@ class GiftCardSellReviewScreen extends StatefulWidget {
 class _GiftCardSellReviewScreenState extends State<GiftCardSellReviewScreen> {
   bool accepted = false;
   bool confirmed = false;
+  bool cardValid = false;
 
   int get payout => (widget.amount * 865).round();
 
@@ -468,12 +483,40 @@ class _GiftCardSellReviewScreenState extends State<GiftCardSellReviewScreen> {
   Widget build(BuildContext context) {
     return _GiftScaffold(
       scroll: true,
+      bottom: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _PrimaryButton(
+              label: confirmed ? 'Submit' : 'Continue',
+              enabled: accepted && (!confirmed || cardValid),
+              onTap: accepted && (!confirmed || cardValid)
+                  ? () {
+                      if (!confirmed) {
+                        HapticFeedback.mediumImpact();
+                        setState(() => confirmed = true);
+                      } else {
+                        Navigator.of(context).pushReplacement<void, void>(
+                          AppPageRoute<void>(
+                              builder: (_) =>
+                                  const GiftCardSellSubmittedScreen()),
+                        );
+                      }
+                    }
+                  : null,
+            ),
+            if (confirmed) ...[
+              const SizedBox(height: 10),
+              _SecondaryButton(
+                  label: 'Edit Details', onTap: () => Navigator.pop(context)),
+            ],
+          ]),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _TopBar(title: 'Sell Card', onBack: () => Navigator.pop(context)),
           const SizedBox(height: 12),
-          Text('Sell ${widget.brand.name}', style: _section),
+          Text('Sell ${widget.brand.name}', style: _title24),
           const SizedBox(height: 8),
           const _StepProgress(step: 2),
           const SizedBox(height: 22),
@@ -482,20 +525,27 @@ class _GiftCardSellReviewScreenState extends State<GiftCardSellReviewScreen> {
           const Center(
               child: Text('Kindly read the terms carefully', style: _caption)),
           const SizedBox(height: 18),
-          _BreakdownCard(amount: widget.amount, naira: payout, sell: true),
-          const SizedBox(height: 14),
-          Center(
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(6),
-              child: Image.asset('$_g/apple_card_photo.png',
-                  width: 120, height: 68, fit: BoxFit.cover),
-            ),
-          ),
-          const SizedBox(height: 12),
-          const _InfoNote(
-            text:
-                'Please note that the payable amount may change if you upload the wrong subcategory. To avoid issues, kindly review the trade terms below carefully.',
-          ),
+          _BreakdownCard(
+              amount: widget.amount,
+              naira: payout,
+              sell: true,
+              cardType: widget.cardType ??
+                  'France ${widget.brand.name}, Physical (50 above)',
+              footer: Column(children: [
+                const SizedBox(height: 14),
+                Center(
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(6),
+                    child: Image.asset('$_g/apple_card_photo.png',
+                        width: 120, height: 68, fit: BoxFit.cover),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                const _InfoNote(
+                  text:
+                      'Please note that the payable amount may change if you upload the wrong subcategory. To avoid issues, kindly review the trade terms below carefully.',
+                ),
+              ])),
           const SizedBox(height: 14),
           const Text('Trade Terms',
               style: TextStyle(
@@ -509,80 +559,53 @@ class _GiftCardSellReviewScreenState extends State<GiftCardSellReviewScreen> {
             style: _caption,
           ),
           const SizedBox(height: 16),
-          InkWell(
-            onTap: () {
-              HapticFeedback.selectionClick();
-              setState(() => accepted = !accepted);
-            },
-            child: Row(
-              children: [
-                AnimatedContainer(
-                  duration: const Duration(milliseconds: 160),
-                  width: 20,
-                  height: 20,
-                  decoration: BoxDecoration(
-                    color: accepted ? AppColors.primary : Colors.white,
-                    border: Border.all(
-                        color: accepted ? AppColors.primary : AppColors.border),
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  child: accepted
-                      ? Padding(
-                          padding: const EdgeInsets.all(2),
-                          child: Image.asset('$_g/check_mark.png'))
-                      : null,
-                ),
-                const SizedBox(width: 8),
-                const Expanded(
-                    child: Text('I have read and accepted the terms',
-                        style: _caption)),
-              ],
-            ),
-          ),
+          if (!confirmed)
+            Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: _outlinedCard,
+                child: Row(children: [
+                  DavoAnimatedCheckbox(
+                      value: accepted,
+                      semanticLabel: 'I have read and accepted the terms',
+                      onChanged: (value) => setState(() => accepted = value)),
+                  const SizedBox(width: 4),
+                  Expanded(
+                      child: GestureDetector(
+                          onTap: () => setState(() => accepted = !accepted),
+                          child: const Text(
+                              'I have read and accepted the terms',
+                              style: _caption))),
+                ])),
           if (confirmed) ...[
             const SizedBox(height: 16),
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 240),
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                  color: const Color(0xFFF8F9FB),
-                  borderRadius: BorderRadius.circular(8)),
-              child: const Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('I confirm this card is valid', style: _section),
-                  SizedBox(height: 4),
-                  Text(
-                      'Submitting invalid or used cards may result in account restrictions.',
-                      style: _caption),
-                ],
-              ),
-            ),
-          ],
-          const SizedBox(height: 18),
-          _PrimaryButton(
-            label: confirmed ? 'Submit' : 'Continue',
-            enabled: accepted,
-            onTap: accepted
-                ? () {
-                    if (!confirmed) {
-                      HapticFeedback.mediumImpact();
-                      setState(() => confirmed = true);
-                    } else {
-                      Navigator.of(context).pushReplacement<void, void>(
-                        AppPageRoute<void>(
-                            builder: (_) =>
-                                const GiftCardSellSubmittedScreen()),
-                      );
-                    }
-                  }
-                : null,
-          ),
-          if (confirmed) ...[
-            const SizedBox(height: 10),
-            _SecondaryButton(
-                label: 'Edit Details',
-                onTap: () => setState(() => confirmed = false)),
+            Container(
+                padding: const EdgeInsets.all(8),
+                decoration: _softCard,
+                child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      DavoAnimatedCheckbox(
+                          value: cardValid,
+                          semanticLabel: 'I confirm this card is valid',
+                          onChanged: (value) =>
+                              setState(() => cardValid = value)),
+                      const SizedBox(width: 6),
+                      Expanded(
+                          child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                            GestureDetector(
+                                onTap: () =>
+                                    setState(() => cardValid = !cardValid),
+                                child: const Text(
+                                    'I confirm this card is valid',
+                                    style: _section)),
+                            const SizedBox(height: 4),
+                            const Text(
+                                'Submitting invalid or used cards may result in account restrictions.',
+                                style: _caption),
+                          ])),
+                    ])),
           ],
         ],
       ),
@@ -616,7 +639,13 @@ class _GiftCardSellSubmittedScreenState
             SizedBox(height: 22),
             Text('Transaction Submitted', style: _title20),
             SizedBox(height: 4),
-            Text('Current Trade Status: Pending', style: _body14),
+            Text.rich(TextSpan(style: _caption, children: [
+              TextSpan(text: 'Current Trade Status: '),
+              TextSpan(
+                  text: 'Pending',
+                  style: TextStyle(
+                      color: Color(0xFF986000), fontWeight: FontWeight.w500)),
+            ])),
             SizedBox(height: 28),
             _TransactionCard(
               rows: [
@@ -661,13 +690,25 @@ class GiftCardVerificationScreen extends StatefulWidget {
 class _GiftCardVerificationScreenState extends State<GiftCardVerificationScreen>
     with SingleTickerProviderStateMixin {
   late final AnimationController pulse;
+  bool _reduced = false;
 
   @override
   void initState() {
     super.initState();
     pulse = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 1300))
-      ..repeat(reverse: true);
+        vsync: this, duration: const Duration(milliseconds: 1300));
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _reduced = MediaQuery.disableAnimationsOf(context) ||
+        MediaQuery.accessibleNavigationOf(context);
+    if (_reduced) {
+      pulse.stop();
+    } else if (!pulse.isAnimating) {
+      pulse.repeat(reverse: true);
+    }
   }
 
   @override
@@ -681,13 +722,16 @@ class _GiftCardVerificationScreenState extends State<GiftCardVerificationScreen>
     final scale = Tween<double>(begin: .96, end: 1.04)
         .animate(CurvedAnimation(parent: pulse, curve: Curves.easeInOut));
     return _GiftScaffold(
+      scroll: true,
       child: Column(
         children: [
           Align(
               alignment: Alignment.centerLeft,
               child: _BackButton(onTap: () => Navigator.pop(context))),
           const SizedBox(height: 20),
-          ScaleTransition(scale: scale, child: const _VerificationOrb()),
+          ScaleTransition(
+              scale: _reduced ? const AlwaysStoppedAnimation(1.0) : scale,
+              child: const _VerificationOrb()),
           const SizedBox(height: 20),
           const Text('Verifying your card...', style: _title20),
           const SizedBox(height: 5),
@@ -696,14 +740,19 @@ class _GiftCardVerificationScreenState extends State<GiftCardVerificationScreen>
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(16),
-            decoration: _outlinedCard,
+            decoration: _outlinedCard.copyWith(boxShadow: [
+              const BoxShadow(
+                  color: Color(0x14000000),
+                  blurRadius: 12,
+                  offset: Offset(0, 3))
+            ]),
             child: const Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text('Verification Progress', style: _section),
-                SizedBox(height: 16),
+                Divider(height: 28, color: Color(0xFFEBEDF3)),
                 _ProgressRow(
-                    color: Color(0xFF20C55D),
+                    color: AppColors.primary,
                     title: 'Submission received',
                     meta: 'Just now'),
                 _TimelineLine(active: true),
@@ -732,16 +781,31 @@ class _GiftCardVerificationScreenState extends State<GiftCardVerificationScreen>
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text('GC-SELL-2826491', style: _section),
-                InkWell(
-                  onTap: () => Clipboard.setData(
-                      const ClipboardData(text: 'GC-SELL-2826491')),
-                  child: Row(children: [
-                    Image.asset('$_f/buy_copy.png', width: 15),
-                    const SizedBox(width: 5),
-                    const Text('Copy', style: _caption)
-                  ]),
-                ),
+                const Expanded(
+                    child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                      Text('Reference', style: _caption),
+                      SizedBox(height: 4),
+                      Text('GC-SELL-2826491', style: _section),
+                    ])),
+                const SizedBox(width: 10),
+                TextButton.icon(
+                    onPressed: () async {
+                      await Clipboard.setData(
+                          const ClipboardData(text: 'GC-SELL-2826491'));
+                      if (context.mounted) {
+                        showDavoToast(context, 'Reference copied');
+                      }
+                    },
+                    style: TextButton.styleFrom(
+                        backgroundColor: const Color(0xFFE1EBFF),
+                        foregroundColor: AppColors.primary,
+                        minimumSize: const Size(0, 44),
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        shape: const StadiumBorder()),
+                    icon: const Icon(Icons.copy_outlined, size: 16),
+                    label: const Text('Copy')),
               ],
             ),
           ),
@@ -777,7 +841,7 @@ class _GiftCardBuyFormScreenState extends State<GiftCardBuyFormScreen> {
   bool categorySelected = false;
   int quantity = 1;
 
-  double get numeric => double.tryParse(amount.text.replaceAll(',', '')) ?? 0;
+  double get numeric => parseAmount(amount.text);
   bool get ready => categorySelected && numeric > 0;
 
   @override
@@ -789,22 +853,44 @@ class _GiftCardBuyFormScreenState extends State<GiftCardBuyFormScreen> {
   @override
   Widget build(BuildContext context) {
     return _GiftScaffold(
+      scroll: true,
+      bottom: _PrimaryButton(
+        label: 'Continue',
+        enabled: ready,
+        onTap: ready
+            ? () => Navigator.of(context).push<void>(
+                  AppPageRoute<void>(
+                      builder: (_) => GiftCardDeliveryScreen(
+                          brand: widget.brand,
+                          amount: numeric,
+                          quantity: quantity)),
+                )
+            : null,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _TopBar(title: 'Buy Card', onBack: () => Navigator.pop(context)),
           const SizedBox(height: 14),
-          Text('Buy ${widget.brand.name}', style: _section),
+          Text('Buy ${widget.brand.name}', style: _title24),
           const SizedBox(height: 8),
           const _StepProgress(step: 1),
           const SizedBox(height: 24),
           const _Label('Sub Category'),
           const SizedBox(height: 6),
           _SelectField(
+            brand: widget.brand,
             value: categorySelected
-                ? 'France iTunes/Apple, Physical (50 above)'
+                ? 'France ${widget.brand.name}, Physical (50 above)'
                 : 'Select Gift Card Sub Category',
-            onTap: () => setState(() => categorySelected = true),
+            onTap: () async {
+              FocusScope.of(context).unfocus();
+              final picked = await _showGiftSubcategories(context, widget.brand,
+                  physical: true);
+              if (mounted && picked == true) {
+                setState(() => categorySelected = true);
+              }
+            },
           ),
           const SizedBox(height: 16),
           const _Label('Card Amount'),
@@ -835,20 +921,6 @@ class _GiftCardBuyFormScreenState extends State<GiftCardBuyFormScreen> {
                     onTap: () => setState(() => quantity++)),
               ],
             ),
-          ),
-          const Spacer(),
-          _PrimaryButton(
-            label: 'Continue',
-            enabled: ready,
-            onTap: ready
-                ? () => Navigator.of(context).push<void>(
-                      AppPageRoute<void>(
-                          builder: (_) => GiftCardDeliveryScreen(
-                              brand: widget.brand,
-                              amount: numeric,
-                              quantity: quantity)),
-                    )
-                : null,
           ),
         ],
       ),
@@ -892,7 +964,7 @@ class _GiftCardDeliveryScreenState extends State<GiftCardDeliveryScreen> {
         children: [
           _TopBar(title: 'Buy Card', onBack: () => Navigator.pop(context)),
           const SizedBox(height: 14),
-          Text('Buy ${widget.brand.name}', style: _section),
+          Text('Buy ${widget.brand.name}', style: _title24),
           const SizedBox(height: 8),
           const _StepProgress(step: 1),
           const SizedBox(height: 20),
@@ -979,13 +1051,22 @@ class GiftCardBuyReviewScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final naira = (amount * 865 * quantity).round();
     return _GiftScaffold(
+      scroll: true,
+      bottom: _PrimaryButton(
+        label: 'Continue',
+        onTap: () => Navigator.of(context).push<void>(
+          AppPageRoute<void>(
+              builder: (_) => GiftCardPaymentScreen(
+                  amount: amount * quantity, naira: naira)),
+        ),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _TopBar(
               title: 'Review Purchase', onBack: () => Navigator.pop(context)),
           const SizedBox(height: 16),
-          Text('Buy ${brand.name}', style: _section),
+          Text('Buy ${brand.name}', style: _title24),
           const SizedBox(height: 8),
           const _StepProgress(step: 1),
           const SizedBox(height: 22),
@@ -994,16 +1075,11 @@ class GiftCardBuyReviewScreen extends StatelessWidget {
           const Center(
               child: Text('Kindly read the terms carefully', style: _caption)),
           const SizedBox(height: 18),
-          _BreakdownCard(amount: amount * quantity, naira: naira, sell: false),
-          const Spacer(),
-          _PrimaryButton(
-            label: 'Continue',
-            onTap: () => Navigator.of(context).push<void>(
-              AppPageRoute<void>(
-                  builder: (_) => GiftCardPaymentScreen(
-                      amount: amount * quantity, naira: naira)),
-            ),
-          ),
+          _BreakdownCard(
+              amount: amount * quantity,
+              naira: naira,
+              sell: false,
+              cardType: 'France ${brand.name}, Physical (50 above)'),
         ],
       ),
     );
@@ -1122,7 +1198,8 @@ class _GiftCardPaymentScreenState extends State<GiftCardPaymentScreen> {
                                   color: Color(0xFF434656))),
                           const SizedBox(height: 4),
                           Row(children: [
-                            Text('\$${widget.amount.toStringAsFixed(2)}',
+                            Text(
+                                '\$${formatGroupedAmount(widget.amount.toStringAsFixed(2))}',
                                 style: _section),
                             const SizedBox(width: 7),
                             Image.asset('$_g/trend.png', width: 18, height: 11)
@@ -1229,7 +1306,7 @@ class _GiftCardBuySuccessScreenState extends State<GiftCardBuySuccessScreen> {
                 const ('Reference Code', '965X-896756', true, false),
                 (
                   'Card Value',
-                  '\$${widget.amount.toStringAsFixed(2)}',
+                  '\$${formatGroupedAmount(widget.amount.toStringAsFixed(2))}',
                   false,
                   false
                 ),
@@ -1261,8 +1338,9 @@ class _GiftCardBuySuccessScreenState extends State<GiftCardBuySuccessScreen> {
 }
 
 class _GiftScaffold extends StatelessWidget {
-  const _GiftScaffold({required this.child, this.scroll = false});
+  const _GiftScaffold({required this.child, this.scroll = false, this.bottom});
   final Widget child;
+  final Widget? bottom;
   final bool scroll;
 
   @override
@@ -1271,9 +1349,20 @@ class _GiftScaffold extends StatelessWidget {
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 18), child: child);
     return Scaffold(
       backgroundColor: Colors.white,
+      bottomNavigationBar: bottom == null
+          ? null
+          : SafeArea(
+              top: false,
+              child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 18),
+                  child: bottom)),
       body: SafeArea(
         child: scroll
-            ? SingleChildScrollView(padding: EdgeInsets.zero, child: body)
+            ? SingleChildScrollView(
+                keyboardDismissBehavior:
+                    ScrollViewKeyboardDismissBehavior.onDrag,
+                padding: EdgeInsets.zero,
+                child: body)
             : body,
       ),
     );
@@ -1394,43 +1483,88 @@ class _ModeTab extends StatelessWidget {
 
 class _TopBrandCard extends StatelessWidget {
   const _TopBrandCard(
-      {required this.brand, required this.accent, required this.onTap});
+      {required this.brand,
+      required this.accent,
+      required this.onTap,
+      required this.mode});
   final GiftCardBrand brand;
   final Color accent;
   final VoidCallback onTap;
-
+  final GiftCardMode mode;
   @override
-  Widget build(BuildContext context) => InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(8),
-        child: Container(
-          height: 158,
-          padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(
-              color: accent, borderRadius: BorderRadius.circular(8)),
-          child:
-              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Container(
-                width: 44,
-                height: 44,
+  Widget build(BuildContext context) => Material(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(10),
+        child: InkWell(
+            onTap: onTap,
+            borderRadius: BorderRadius.circular(10),
+            child: Container(
                 decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(8)),
-                padding: const EdgeInsets.all(6),
-                child: Image.asset(brand.asset)),
-            const Spacer(),
-            Text(brand.name,
-                style: const TextStyle(
-                    fontFamily: 'Sora',
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white)),
-            const SizedBox(height: 3),
-            const Text('Up to ₦865/\$1',
-                style: TextStyle(
-                    fontFamily: 'Sora', fontSize: 10, color: Colors.white70)),
-          ]),
-        ),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: const Color(0xFFEBEDF3))),
+                child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                              color: accent,
+                              borderRadius: BorderRadius.circular(9)),
+                          child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Image.asset(brand.asset,
+                                          width: 30,
+                                          height: 30,
+                                          fit: BoxFit.contain),
+                                      const Spacer(),
+                                      Container(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 5, vertical: 3),
+                                          decoration: BoxDecoration(
+                                              color: Colors.white24,
+                                              borderRadius:
+                                                  BorderRadius.circular(12)),
+                                          child: const Text('BEST',
+                                              style: TextStyle(
+                                                  fontSize: 8,
+                                                  fontWeight: FontWeight.w600,
+                                                  color: Colors.white))),
+                                    ]),
+                                const SizedBox(height: 8),
+                                Text(brand.name,
+                                    style: const TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.white)),
+                              ])),
+                      Padding(
+                          padding: const EdgeInsets.all(12),
+                          child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(mode == GiftCardMode.buy ? 'BUY' : 'SELL',
+                                    style: const TextStyle(
+                                        fontSize: 10, color: AppColors.body)),
+                                const Divider(
+                                    height: 16, color: Color(0xFFF0F1F4)),
+                                const Row(children: [
+                                  Flexible(
+                                      child: Text('Tap to trade',
+                                          style: TextStyle(
+                                              fontSize: 10,
+                                              fontWeight: FontWeight.w500,
+                                              color: AppColors.primary))),
+                                  SizedBox(width: 4),
+                                  Icon(Icons.arrow_forward_rounded,
+                                      size: 14, color: AppColors.primary)
+                                ]),
+                              ])),
+                    ]))),
       );
 }
 
@@ -1438,23 +1572,22 @@ class _PopularBrand extends StatelessWidget {
   const _PopularBrand({required this.brand, required this.onTap});
   final GiftCardBrand brand;
   final VoidCallback onTap;
-
   @override
-  Widget build(BuildContext context) => InkResponse(
+  Widget build(BuildContext context) => InkWell(
         onTap: onTap,
-        radius: 30,
-        child: SizedBox(
-            width: 72,
+        borderRadius: BorderRadius.circular(10),
+        child: Container(
+            width: 68,
+            padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 8),
+            decoration: _outlinedCard,
             child: Column(children: [
-              Container(
-                  width: 46,
-                  height: 46,
-                  padding: const EdgeInsets.all(7),
-                  decoration: _softCard,
-                  child: Image.asset(brand.asset)),
+              Image.asset(brand.asset,
+                  width: 30, height: 30, fit: BoxFit.contain),
               const SizedBox(height: 6),
               Text(brand.name.split(' ').first,
-                  maxLines: 1, overflow: TextOverflow.ellipsis, style: _caption)
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                      fontSize: 10, height: 1.3, color: AppColors.ink)),
             ])),
       );
 }
@@ -1465,6 +1598,7 @@ class _ReferralCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Container(
+        key: const ValueKey('gift-referral-card'),
         width: double.infinity,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         decoration: BoxDecoration(
@@ -1474,6 +1608,7 @@ class _ReferralCard extends StatelessWidget {
           const SizedBox(width: 10),
           const Expanded(
               child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                 Text('Refer & Earn ₦5,000',
@@ -1552,68 +1687,60 @@ class _BrandListTile extends StatelessWidget {
   final GiftCardBrand brand;
   final VoidCallback onTap;
   final bool selected;
-
   @override
   Widget build(BuildContext context) => InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(6),
+        borderRadius: BorderRadius.circular(8),
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
-          decoration: BoxDecoration(
-              color: const Color(0xFFF8F9FB),
-              border: Border.all(
-                  color: selected ? AppColors.primary : Colors.transparent),
-              borderRadius: BorderRadius.circular(6)),
-          child: Row(children: [
-            Container(
-                width: 38,
-                height: 38,
-                padding: const EdgeInsets.all(5),
-                decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(6)),
-                child: Image.asset(brand.asset)),
-            const SizedBox(width: 10),
-            Expanded(
-                child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                  Row(children: [
-                    Flexible(
-                        child: Text(brand.name,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: _section)),
+            constraints: const BoxConstraints(minHeight: 54),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+            decoration: BoxDecoration(
+                color: const Color(0xFFF6F7FB),
+                border: Border.all(
+                    color: selected ? AppColors.primary : Colors.transparent),
+                borderRadius: BorderRadius.circular(8)),
+            child: Row(children: [
+              Image.asset(brand.asset,
+                  width: 30, height: 30, fit: BoxFit.contain),
+              const SizedBox(width: 12),
+              Expanded(
+                  child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                    Text(brand.name,
+                        style: const TextStyle(
+                            fontSize: 12, height: 1.3, color: AppColors.ink)),
                     if (brand.hot) ...[
-                      const SizedBox(width: 6),
+                      const SizedBox(height: 4),
                       Container(
                           padding: const EdgeInsets.symmetric(
                               horizontal: 6, vertical: 2),
                           decoration: BoxDecoration(
                               color: const Color(0xFFFFE8E3),
-                              borderRadius: BorderRadius.circular(6)),
+                              borderRadius: BorderRadius.circular(8)),
                           child: const Text('HOT',
                               style: TextStyle(
-                                  fontFamily: 'Sora',
                                   fontSize: 8,
-                                  color: Color(0xFFF44336),
-                                  fontWeight: FontWeight.w700)))
-                    ]
-                  ]),
-                  if (brand.subtitle != null) ...[
-                    const SizedBox(height: 2),
-                    Text(brand.subtitle!, style: _caption)
-                  ]
-                ])),
-            if (brand.rate != null)
-              Text(brand.rate!,
-                  style: const TextStyle(
-                      fontFamily: 'Sora',
-                      fontSize: 11,
-                      color: AppColors.primary,
-                      fontWeight: FontWeight.w600)),
-          ]),
-        ),
+                                  fontWeight: FontWeight.w700,
+                                  color: Color(0xFFB82C22)))),
+                    ] else if (brand.subtitle != null) ...[
+                      const SizedBox(height: 3),
+                      Text(brand.subtitle!,
+                          style: const TextStyle(
+                              fontSize: 10,
+                              height: 1.3,
+                              color: AppColors.body)),
+                    ],
+                  ])),
+              if (brand.rate != null) ...[
+                const SizedBox(width: 8),
+                Text(brand.rate!,
+                    style: const TextStyle(
+                        fontSize: 10,
+                        color: AppColors.primary,
+                        fontWeight: FontWeight.w600)),
+              ],
+            ])),
       );
 }
 
@@ -1626,20 +1753,18 @@ class _StepProgress extends StatelessWidget {
       Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         ClipRRect(
             borderRadius: BorderRadius.circular(4),
-            child: SizedBox(
-                height: 4,
-                child: Row(
-                    children: List.generate(
-                        3,
-                        (index) => Expanded(
-                            child: Container(
-                                margin:
-                                    EdgeInsets.only(right: index == 2 ? 0 : 4),
-                                color: index < step
-                                    ? AppColors.primary
-                                    : const Color(0xFFEBEDF3))))))),
-        const SizedBox(height: 5),
-        Text('Step $step of 3', style: _caption),
+            child: LinearProgressIndicator(
+                value: step / 3,
+                minHeight: 4,
+                backgroundColor: const Color(0xFFEBEDF3),
+                color: AppColors.primary)),
+        const SizedBox(height: 6),
+        Text('Step $step of 3',
+            style: const TextStyle(
+                fontSize: 10,
+                height: 1.3,
+                fontWeight: FontWeight.w600,
+                color: AppColors.body)),
       ]);
 }
 
@@ -1656,19 +1781,29 @@ class _TwoChoice extends StatelessWidget {
   final VoidCallback onLeft;
   final VoidCallback onRight;
 
+  Widget _pill(String label, bool selected, VoidCallback onTap) => Semantics(
+      selected: selected,
+      button: true,
+      child: Material(
+          color: selected ? AppColors.primary : const Color(0xFFEBEDF3),
+          borderRadius: BorderRadius.circular(24),
+          child: InkWell(
+              onTap: onTap,
+              borderRadius: BorderRadius.circular(24),
+              child: Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  child: Text(label,
+                      style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: selected ? Colors.white : AppColors.ink))))));
   @override
-  Widget build(BuildContext context) => Container(
-      height: 40,
-      padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(
-          color: const Color(0xFFF1F3F7),
-          borderRadius: BorderRadius.circular(20)),
-      child: Row(children: [
-        Expanded(
-            child: _ModeTab(label: left, active: leftActive, onTap: onLeft)),
-        Expanded(
-            child: _ModeTab(label: right, active: !leftActive, onTap: onRight))
-      ]));
+  Widget build(BuildContext context) =>
+      Wrap(spacing: 20, runSpacing: 8, children: [
+        _pill(left, leftActive, onLeft),
+        _pill(right, !leftActive, onRight),
+      ]);
 }
 
 class _Label extends StatelessWidget {
@@ -1678,20 +1813,60 @@ class _Label extends StatelessWidget {
   Widget build(BuildContext context) => Text(text, style: _caption);
 }
 
+Future<bool?> _showGiftSubcategories(BuildContext context, GiftCardBrand brand,
+        {required bool physical}) =>
+    showModalBottomSheet<bool>(
+      context: context,
+      showDragHandle: true,
+      isScrollControlled: true,
+      useSafeArea: true,
+      builder: (sheetContext) => SafeArea(
+          top: false,
+          child: SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+              child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('Select subcategory',
+                        style: TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.w600)),
+                    const SizedBox(height: 16),
+                    ListTile(
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 8),
+                        leading: Image.asset(brand.asset,
+                            width: 36, height: 36, fit: BoxFit.contain),
+                        title: Text('France ${brand.name}',
+                            style: const TextStyle(
+                                fontSize: 14, fontWeight: FontWeight.w600)),
+                        subtitle: Text(
+                            '${physical ? 'Physical' : 'E-code'} (50 above)'),
+                        trailing: const Icon(Icons.chevron_right_rounded,
+                            color: AppColors.primary),
+                        onTap: () => Navigator.pop(sheetContext, true)),
+                  ]))),
+    );
+
 class _SelectField extends StatelessWidget {
-  const _SelectField({required this.value, required this.onTap});
+  const _SelectField(
+      {required this.value, required this.onTap, required this.brand});
+  final GiftCardBrand brand;
   final String value;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) => InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(4),
+        borderRadius: BorderRadius.circular(12),
         child: Container(
             height: 50,
             padding: const EdgeInsets.symmetric(horizontal: 12),
             decoration: _fieldDecoration,
             child: Row(children: [
+              Image.asset(brand.asset,
+                  width: 24, height: 24, fit: BoxFit.contain),
+              const SizedBox(width: 10),
               Expanded(
                   child: Text(value,
                       maxLines: 1,
@@ -1709,18 +1884,26 @@ class _AmountField extends StatelessWidget {
   final ValueChanged<String> onChanged;
 
   @override
-  Widget build(BuildContext context) => Container(
-      height: 50,
-      decoration: _fieldDecoration,
-      child: TextField(
-          controller: controller,
-          keyboardType: const TextInputType.numberWithOptions(decimal: true),
-          onChanged: onChanged,
-          decoration: const DavoInlineInputDecoration(
-              contentPadding:
-                  EdgeInsets.symmetric(horizontal: 12, vertical: 14),
-              hintText: 'Enter Gift Card Amount'),
-          style: _body14));
+  Widget build(BuildContext context) => Focus(
+      child: Builder(
+          builder: (context) => Container(
+              height: 50,
+              decoration: _fieldDecoration.copyWith(
+                  border: Border.all(
+                      color: Focus.of(context).hasFocus
+                          ? AppColors.primary
+                          : const Color(0xFFD9DCE4))),
+              child: TextField(
+                  controller: controller,
+                  keyboardType:
+                      const TextInputType.numberWithOptions(decimal: true),
+                  inputFormatters: const [GroupedAmountInputFormatter()],
+                  onChanged: onChanged,
+                  decoration: const DavoInlineInputDecoration(
+                      contentPadding:
+                          EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+                      hintText: 'Enter Gift Card Amount'),
+                  style: _body14))));
 }
 
 class _RateOutput extends StatelessWidget {
@@ -1728,39 +1911,44 @@ class _RateOutput extends StatelessWidget {
   final int value;
 
   @override
-  Widget build(BuildContext context) => Row(children: [
-        Expanded(
-            child: Container(
-                height: 44,
-                alignment: Alignment.centerLeft,
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                decoration: BoxDecoration(
-                    color: const Color(0xFFEDF2FD),
-                    borderRadius: BorderRadius.circular(4)),
-                child: Text('₦${_money(value)}',
-                    style: const TextStyle(
-                        fontFamily: 'Sora',
-                        fontSize: 14,
-                        color: AppColors.primary,
-                        fontWeight: FontWeight.w600)))),
-        const SizedBox(width: 8),
+  Widget build(BuildContext context) =>
+      Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Container(
-            height: 44,
-            alignment: Alignment.center,
-            padding: const EdgeInsets.symmetric(horizontal: 10),
+            width: double.infinity,
+            constraints: const BoxConstraints(minHeight: 44),
+            alignment: Alignment.centerLeft,
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
             decoration: BoxDecoration(
-                color: const Color(0xFFF8F9FB),
-                borderRadius: BorderRadius.circular(4)),
-            child: const Text('Rate: ₦865/\$1', style: _caption))
+                color: const Color(0xFFE8EFFF),
+                borderRadius: BorderRadius.circular(12)),
+            child: Text('\u20a6${_money(value)}',
+                style: const TextStyle(
+                    fontSize: 14,
+                    color: AppColors.primary,
+                    fontWeight: FontWeight.w500))),
+        const SizedBox(height: 10),
+        Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+            decoration: BoxDecoration(
+                color: const Color(0xFFE8EFFF),
+                borderRadius: BorderRadius.circular(20)),
+            child: const Text('Rate: \u20a6865/\$1',
+                style: TextStyle(fontSize: 11, color: AppColors.primary))),
       ]);
 }
 
 class _BreakdownCard extends StatelessWidget {
   const _BreakdownCard(
-      {required this.amount, required this.naira, required this.sell});
+      {required this.amount,
+      required this.naira,
+      required this.sell,
+      this.cardType = 'France iTunes/Apple, Physical (50 above)',
+      this.footer});
   final double amount;
   final int naira;
   final bool sell;
+  final Widget? footer;
+  final String cardType;
 
   @override
   Widget build(BuildContext context) => Container(
@@ -1768,12 +1956,11 @@ class _BreakdownCard extends StatelessWidget {
         padding: const EdgeInsets.all(14),
         decoration: _outlinedCard,
         child: Column(children: [
-          const _SummaryLine(
-              label: 'Card Type',
-              value: 'France iTunes/Apple, Physical (50 above)'),
+          _SummaryLine(label: 'Card Type', value: cardType),
           const Divider(height: 22, color: Color(0xFFEBEDF3)),
           _SummaryLine(
-              label: 'Card Value', value: '\$${amount.toStringAsFixed(2)}'),
+              label: 'Card Value',
+              value: '\$${formatGroupedAmount(amount.toStringAsFixed(2))}'),
           const Divider(height: 22, color: Color(0xFFEBEDF3)),
           const _SummaryLine(label: 'Exchange Rate', value: '₦865/\$1'),
           const Divider(height: 22, color: Color(0xFFEBEDF3)),
@@ -1785,6 +1972,7 @@ class _BreakdownCard extends StatelessWidget {
               label: sell ? 'Net Payout' : 'Net Debited',
               value: '₦${_money(naira)}',
               blue: true),
+          if (footer != null) footer!,
         ]),
       );
 }
@@ -1797,10 +1985,11 @@ class _SummaryLine extends StatelessWidget {
   final bool blue;
   @override
   Widget build(BuildContext context) =>
-      Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Expanded(child: Text(label, style: _caption)),
+      Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
+        Expanded(flex: 2, child: Text(label, style: _caption)),
         const SizedBox(width: 12),
-        Flexible(
+        Expanded(
+            flex: 3,
             child: Text(value,
                 textAlign: TextAlign.right,
                 style: TextStyle(
@@ -1845,7 +2034,7 @@ class _TransactionCard extends StatelessWidget {
                 label: row.$1,
                 value: row.$2,
                 copyable: row.$3,
-                labelStyle: _body14,
+                labelStyle: _caption,
                 valueStyle: TextStyle(
                     fontFamily: 'Sora',
                     fontSize: 12,
@@ -1887,8 +2076,8 @@ class _VerificationOrb extends StatelessWidget {
             decoration: const BoxDecoration(
                 color: Color(0xFFE8EEFD), shape: BoxShape.circle),
             alignment: Alignment.center,
-            child: Image.asset('$_g/clock.png',
-                width: 40, height: 40, fit: BoxFit.contain),
+            child: const Icon(Icons.schedule_rounded,
+                size: 28, color: AppColors.primary),
           ),
         ),
       );
@@ -1901,15 +2090,43 @@ class _ProgressRow extends StatelessWidget {
   final String title;
   final String meta;
   @override
-  Widget build(BuildContext context) => Row(children: [
-        Container(
-            width: 13,
-            height: 13,
-            decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
-        const SizedBox(width: 10),
-        Expanded(child: Text(title, style: _caption)),
-        Text(meta, style: _caption)
-      ]);
+  Widget build(BuildContext context) {
+    final done = meta == 'Just now';
+    final active = done || meta == 'In progress';
+    return Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Container(
+          width: 22,
+          height: 22,
+          decoration: BoxDecoration(
+              color: active ? color : const Color(0xFFF0F2F6),
+              shape: BoxShape.circle),
+          child: done
+              ? const Icon(Icons.check_rounded, size: 16, color: Colors.white)
+              : active
+                  ? const Icon(Icons.more_horiz_rounded,
+                      size: 16, color: Colors.white)
+                  : null),
+      const SizedBox(width: 14),
+      Expanded(
+          child:
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text(title,
+            style: TextStyle(
+                fontSize: 12,
+                height: 1.35,
+                fontWeight: active ? FontWeight.w600 : FontWeight.w400,
+                color: active ? AppColors.ink : AppColors.bodyMuted)),
+        const SizedBox(height: 4),
+        Text(meta,
+            style: TextStyle(
+                fontSize: 12,
+                height: 1.35,
+                color: meta == 'In progress'
+                    ? const Color(0xFF986000)
+                    : AppColors.bodyMuted)),
+      ])),
+    ]);
+  }
 }
 
 class _TimelineLine extends StatelessWidget {
@@ -1919,8 +2136,8 @@ class _TimelineLine extends StatelessWidget {
   Widget build(BuildContext context) => Container(
       width: 1,
       height: 18,
-      margin: const EdgeInsets.only(left: 6),
-      color: active ? const Color(0xFF20C55D) : const Color(0xFFEBEDF3));
+      margin: const EdgeInsets.only(left: 10.5),
+      color: active ? AppColors.primary : const Color(0xFFEBEDF3));
 }
 
 class _QuantityButton extends StatelessWidget {
@@ -1930,25 +2147,29 @@ class _QuantityButton extends StatelessWidget {
   final VoidCallback? onTap;
   @override
   Widget build(BuildContext context) => InkResponse(
-      onTap: onTap,
-      radius: 22,
-      child: Container(
-          width: 42,
-          height: 42,
-          margin: const EdgeInsets.all(4),
-          decoration: BoxDecoration(
-              color: filled ? AppColors.primary : Colors.transparent,
-              borderRadius: BorderRadius.circular(4)),
-          alignment: Alignment.center,
-          child: Text(label,
-              style: TextStyle(
-                  fontFamily: 'Sora',
-                  fontSize: 22,
-                  color: filled
-                      ? Colors.white
-                      : onTap == null
-                          ? AppColors.muted
-                          : AppColors.ink))));
+        onTap: onTap,
+        radius: 22,
+        child: SizedBox(
+            width: 44,
+            height: 44,
+            child: Center(
+                child: Container(
+                    width: 32,
+                    height: 32,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                        color: filled
+                            ? AppColors.primary
+                            : const Color(0xFFF0F2F6),
+                        borderRadius: BorderRadius.circular(10)),
+                    child: Text(label,
+                        style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w600,
+                            color: filled
+                                ? Colors.white
+                                : AppColors.bodyMuted))))),
+      );
 }
 
 class _DeliverySegment extends StatelessWidget {
@@ -1996,21 +2217,27 @@ class _IconTextField extends StatelessWidget {
   final String hint;
   final TextInputType keyboard;
   @override
-  Widget build(BuildContext context) => Container(
-      height: 50,
-      decoration: _fieldDecoration,
-      child: Row(children: [
-        const SizedBox(width: 12),
-        Image.asset(asset, width: 20, height: 20),
-        const SizedBox(width: 8),
-        Expanded(
-            child: TextField(
-                controller: controller,
-                keyboardType: keyboard,
-                decoration: DavoInlineInputDecoration(hintText: hint),
-                style: _body14)),
-        const SizedBox(width: 12)
-      ]));
+  Widget build(BuildContext context) => Focus(
+      child: Builder(
+          builder: (context) => Container(
+              height: 50,
+              decoration: _fieldDecoration.copyWith(
+                  border: Border.all(
+                      color: Focus.of(context).hasFocus
+                          ? AppColors.primary
+                          : const Color(0xFFD9DCE4))),
+              child: Row(children: [
+                const SizedBox(width: 12),
+                Image.asset(asset, width: 20, height: 20),
+                const SizedBox(width: 8),
+                Expanded(
+                    child: TextField(
+                        controller: controller,
+                        keyboardType: keyboard,
+                        decoration: DavoInlineInputDecoration(hintText: hint),
+                        style: _body14)),
+                const SizedBox(width: 12)
+              ]))));
 }
 
 class _DeliveryChoice extends StatelessWidget {
@@ -2165,7 +2392,7 @@ const _caption = TextStyle(
     fontSize: 12,
     height: 1.25,
     fontWeight: FontWeight.w400,
-    color: AppColors.bodyMuted);
+    color: AppColors.body);
 const _eyebrow = TextStyle(
     fontFamily: 'Sora',
     fontSize: 10,
@@ -2177,7 +2404,7 @@ const _eyebrow = TextStyle(
 final _fieldDecoration = BoxDecoration(
     color: Colors.white,
     border: Border.all(color: const Color(0xFFEBEDF3)),
-    borderRadius: BorderRadius.circular(4));
+    borderRadius: BorderRadius.circular(12));
 final _softCard = BoxDecoration(
     color: const Color(0xFFF8F9FB), borderRadius: BorderRadius.circular(8));
 final _outlinedCard = BoxDecoration(

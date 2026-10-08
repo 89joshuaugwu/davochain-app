@@ -18,10 +18,9 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  testWidgets('preview login explains demo and rejects malformed email',
-      (tester) async {
+  testWidgets('login rejects malformed email', (tester) async {
     await open(tester);
-    expect(find.textContaining('sample details'), findsOneWidget);
+    expect(find.text('Sign in to your Davochain account.'), findsOneWidget);
     await tester.enterText(find.byType(TextField).at(0), 'invalid');
     await tester.enterText(find.byType(TextField).at(1), 'sample-password');
     await tester.pump();

@@ -1,3 +1,9 @@
+import 'verification/verification_overview_screen.dart';
+import 'verification/verification_state.dart';
+import '../../../shared/widgets/davo_state_picker.dart';
+import 'dart:async';
+import '../../../shared/widgets/davo_bank_logo.dart';
+import '../../../shared/widgets/davo_toast.dart';
 import '../../../shared/widgets/davo_result_screen.dart';
 import '../../../core/preview/preview_auth_state.dart';
 import '../../auth/presentation/login_flow.dart';
@@ -67,7 +73,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
             title: 'Accounts',
             items: [
               _MenuItem('$_exactAssets/icon_personal_information.png', 'Personal Information', () => _push(context, const PersonalInformationV12Screen())),
-              _MenuItem('$_exactAssets/icon_kyc.png', 'KYC Verification', () => _push(context, const KycTierOverviewScreen())),
+              _MenuItem('$_exactAssets/icon_kyc.png', 'Verification', () => Navigator.of(context).push(AppPageRoute<void>(settings: const RouteSettings(name: 'verification'), builder: (_) => const VerificationOverviewScreen()))),
               _MenuItem('$_exactAssets/icon_linked_accounts.png', 'Linked Accounts', () => _push(context, const LinkedAccountsScreen())),
             ],
           ),
@@ -79,7 +85,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
                 '$_exactAssets/icon_biometrics.png',
                 'Enable Biometrics',
                 () => _setBiometrics(!PreviewAuthState.biometricsEnabled.value),
-                trailing: Semantics(label: 'Biometric preview', toggled: PreviewAuthState.biometricsEnabled.value, child: _DavoSwitch(value: PreviewAuthState.biometricsEnabled.value, onChanged: _setBiometrics)),
+                trailing: Semantics(label: 'Biometric unlock', toggled: PreviewAuthState.biometricsEnabled.value, child: _DavoSwitch(value: PreviewAuthState.biometricsEnabled.value, onChanged: _setBiometrics)),
               ),
               _MenuItem('$_exactAssets/icon_lock.png', 'Change Password', () => _push(context, const ChangePasswordScreen())),
               _MenuItem('$_exactAssets/icon_lock.png', 'Transaction Pin', () => _push(context, const ResetPinStartScreen())),
@@ -255,10 +261,10 @@ class TransactionLimitsScreen extends StatelessWidget { const TransactionLimitsS
 enum _LimitKind{usd,ngn,crypto}
 class _LimitDetailScreen extends StatefulWidget{ const _LimitDetailScreen({required this.kind}); final _LimitKind kind; @override State<_LimitDetailScreen> createState()=>_LimitDetailScreenState(); }
 class _LimitDetailScreenState extends State<_LimitDetailScreen>{bool second=false; @override Widget build(BuildContext context){final isUsd=widget.kind==_LimitKind.usd,isNgn=widget.kind==_LimitKind.ngn; final title=isUsd?'USD Limits':isNgn?'NGN Limits':'Crypto Currency'; final single=isUsd?'\$2,500.00':isNgn?'₦1,000,000.00':'\$1,000,000.00'; final daily=isUsd?'\$2,500.00':isNgn?'₦3,000,000.00':'\$3,000,000.00'; final weekly=isUsd?'\$10,500.00':isNgn?'₦5,000,000.00':'\$5,000,000.00'; final monthly=isUsd?'\$50,000.00':isNgn?'₦40,000,000.00':'\$40,000,000.00'; return _Shell(title:'Transaction Limits',child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[
- const SizedBox(height:22),Row(children:[Text(widget.kind==_LimitKind.ngn?'🇳🇬':widget.kind==_LimitKind.usd?'🇺🇸':'₿',style:const TextStyle(fontSize:28)),const SizedBox(width:10),Text(title,style:_t16b),const SizedBox(width:10),const _Pill('Tier 1')]),const SizedBox(height:20),
+ const SizedBox(height:22),Row(children:[Text(widget.kind==_LimitKind.ngn?'🇳🇬':widget.kind==_LimitKind.usd?'🇺🇸':'₿',style:const TextStyle(fontSize:28)),const SizedBox(width:10),Text(title,style:_t16b),const SizedBox(width:10),const _Pill('Limits')]),const SizedBox(height:20),
  _Segment(left:widget.kind==_LimitKind.crypto?'Limits on Withdrawal':'Limits on Send',right:widget.kind==_LimitKind.crypto?'Limits on Deposit':'Limits on receive',rightSelected:second,onChanged:(v)=>setState(()=>second=v)),const SizedBox(height:24),
  _limitBanner('Single Transaction Limits of $single'),const SizedBox(height:18),_ProgressLimit('Daily Limit of $daily',daily),const SizedBox(height:16),_ProgressLimit('Weekly Limit of $weekly',weekly),const SizedBox(height:16),_ProgressLimit('Monthly Limit of $monthly',monthly),
- const Spacer(),_PrimaryButton('Increase Transfer Limits',onTap:()=>_push(context,const IncreaseLimitsScreen())),const SizedBox(height:28)
+ const Spacer(),_PrimaryButton('Increase Transfer Limits',onTap:()=>Navigator.of(context).push(AppPageRoute<void>(settings:const RouteSettings(name:'verification'),builder:(_)=>const VerificationOverviewScreen()))),const SizedBox(height:28)
 ]));}}
 
 class IncreaseLimitsScreen extends StatelessWidget {const IncreaseLimitsScreen({super.key});@override Widget build(BuildContext context)=>_Shell(title:'Transaction Limits',child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[const SizedBox(height:20),const Text('Increase Transfer Limits',style:_t20),const SizedBox(height:4),const Text('Complete the sections below to unlock higher account limits. Approval typically takes 2–3 days.',style:_t12),const SizedBox(height:28),_ActionCard('$_exactAssets/profile_location_exact.png','Verify Address','Face to face verification at your address',()=>_push(context,const AddressUpgradeScreen())),const SizedBox(height:14),_ActionCard('$_exactAssets/profile_document_exact.png','Proof of Address','Upload electricity bill, water bill',()=>_push(context,const AddressUpgradeScreen()))]));}
@@ -445,13 +451,87 @@ class _NotificationChannelScreenState extends State<NotificationChannelScreen> {
 
 class ResetPinStartScreen extends StatefulWidget{const ResetPinStartScreen({super.key});@override State<ResetPinStartScreen> createState()=>_ResetPinStartScreenState();}
 class _ResetPinStartScreenState extends State<ResetPinStartScreen>{int method=0;@override Widget build(BuildContext context)=>_Shell(title:'Reset Transaction PIN',child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[const SizedBox(height:26),const Text('To reset your transaction PIN, you’ll need to verify with a verification code sent to you.',style:_t14),const SizedBox(height:24),const Text('Choose how you want to get code',style:_t14m),const SizedBox(height:12),_radioChoice('Send via SMS',method==0,()=>setState(()=>method=0)),const SizedBox(height:12),_radioChoice('Send via Email',method==1,()=>setState(()=>method=1)),const Spacer(),_PrimaryButton('Next',onTap:()=>_push(context,VerifyPinCodeScreen(email:method==1))),const SizedBox(height:28)]));}
-class VerifyPinCodeScreen extends StatefulWidget{const VerifyPinCodeScreen({super.key,required this.email});final bool email;@override State<VerifyPinCodeScreen> createState()=>_VerifyPinCodeScreenState();}
-class _VerifyPinCodeScreenState extends State<VerifyPinCodeScreen>{
-  final c=TextEditingController();
-  @override void initState(){super.initState();c.addListener(_refresh);}
-  void _refresh()=>setState((){});
-  @override void dispose(){c.removeListener(_refresh);c.dispose();super.dispose();}
-  @override Widget build(BuildContext context){final enabled=c.text.replaceAll(RegExp(r'\D'),'').length==4;return _Shell(title:'Reset Transaction PIN',child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[const SizedBox(height:26),Text('To reset your transaction PIN, you’ll need to verify with a verification code sent to your ${widget.email?'email':'phone number'}.',style:_t14),const SizedBox(height:24),_Input(label:'Verification code',hint:'*********',controller:c,keyboard:TextInputType.number,labelSize:16,hintSize:14,hintFontFamily:'Poppins'),const SizedBox(height:12),Row(children:[const Text('Didn’t get a code?',style:_t12),TextButton(onPressed:()=>_snack(context,'Code resent'),child:const Text('Resend Code')),const Spacer(),const Text('0:34',style:_t12)]),const Spacer(),_PrimaryButton('Next',enabled:enabled,disabledBackgroundColor:const Color(0xFF89ADFB),onTap:()=>_push(context,const NewTransactionPinScreen())),const SizedBox(height:28)]));}
+class VerifyPinCodeScreen extends StatefulWidget {
+  const VerifyPinCodeScreen({super.key, required this.email, this.now});
+  final bool email;
+  final DateTime Function()? now;
+  @override
+  State<VerifyPinCodeScreen> createState() => _VerifyPinCodeScreenState();
+}
+
+class _VerifyPinCodeScreenState extends State<VerifyPinCodeScreen> {
+  final c = TextEditingController();
+  Timer? _resendTimer;
+  late DateTime _resendAt;
+  DateTime get _now => widget.now?.call() ?? DateTime.now();
+  int get _remaining => ((_resendAt.difference(_now).inMilliseconds / 1000)
+    .ceil()).clamp(0, 30);
+
+  @override
+  void initState() {
+    super.initState();
+    c.addListener(_refresh);
+    _startCooldown();
+  }
+
+  void _startCooldown() {
+    _resendTimer?.cancel();
+    _resendAt = _now.add(const Duration(seconds: 30));
+    _resendTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (!mounted) { timer.cancel(); return; }
+      setState(() {});
+      if (_remaining == 0) timer.cancel();
+    });
+  }
+
+  void _refresh() => setState(() {});
+
+  void _resend() {
+    if (_remaining > 0) return;
+    setState(_startCooldown);
+    _snack(context, 'Code resent');
+  }
+
+  @override
+  void dispose() {
+    _resendTimer?.cancel();
+    c.removeListener(_refresh);
+    c.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final enabled = c.text.length == 4;
+    final remaining = _remaining;
+    return _Shell(title: 'Reset Transaction PIN', scroll: true,
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        const SizedBox(height: 26),
+        Text('To reset your transaction PIN, you?ll need to verify with a verification code sent to your ${widget.email ? 'email' : 'phone number'}.', style: _t14),
+        const SizedBox(height: 24),
+        _Input(label: 'Verification code', hint: 'Enter 4-digit code',
+          controller: c, keyboard: TextInputType.number, labelSize: 16,
+          hintSize: 14, hintFontFamily: 'Poppins', maxLength: 4,
+          inputFormatters: [FilteringTextInputFormatter.digitsOnly]),
+        const SizedBox(height: 12),
+        Wrap(crossAxisAlignment: WrapCrossAlignment.center, spacing: 8,
+          children: [
+            const Text('Didn?t get a code?', style: _t12),
+            TextButton(onPressed: remaining == 0 ? _resend : null,
+              child: const Text('Resend Code')),
+            if (remaining > 0)
+              Text('0:${remaining.toString().padLeft(2, '0')}', style: _t12),
+          ]),
+        const SizedBox(height: 36),
+        _PrimaryButton('Next', enabled: enabled,
+          disabledBackgroundColor: const Color(0xFF89ADFB),
+          onTap: () {
+            _resendTimer?.cancel();
+            _push(context, const NewTransactionPinScreen());
+          }),
+        const SizedBox(height: 28),
+      ]));
+  }
 }
 class NewTransactionPinScreen extends StatefulWidget{const NewTransactionPinScreen({super.key});@override State<NewTransactionPinScreen> createState()=>_NewTransactionPinScreenState();}
 class _NewTransactionPinScreenState extends State<NewTransactionPinScreen>{
@@ -1049,15 +1129,15 @@ class KycTierIntroScreen extends StatelessWidget {
 class CompleteProfileV12Screen extends StatefulWidget{const CompleteProfileV12Screen({super.key});@override State<CompleteProfileV12Screen> createState()=>_CompleteProfileV12ScreenState();}
 class _CompleteProfileV12ScreenState extends State<CompleteProfileV12Screen>{
   final first=TextEditingController(),middle=TextEditingController(),last=TextEditingController(),dob=TextEditingController();
-  @override void initState(){super.initState();for(final c in [first,middle,last,dob]){c.addListener(_refresh);}}
-  void _refresh()=>setState((){});
+  @override void initState(){super.initState();final draft=VerificationSession.instance.profileDraft;first.text=draft['first']??'';middle.text=draft['middle']??'';last.text=draft['last']??'';dob.text=draft['dob']??'';for(final c in [first,middle,last,dob]){c.addListener(_refresh);}}
+  void _refresh(){VerificationSession.instance.saveProfile({'first':first.text,'middle':middle.text,'last':last.text,'dob':dob.text});setState((){});}
   @override void dispose(){for(final c in [first,middle,last,dob]){c.removeListener(_refresh);c.dispose();}super.dispose();}
   Future<void> _pickDate() async {
     final now = DateTime.now();
     final date = await showDavoDatePicker(context, title:'Date of birth', firstDate:DateTime(1900), lastDate:DateTime(now.year,now.month,now.day), initialDate:DateTime.tryParse(dob.text) ?? DateTime(2000,1,1));
     if(mounted && date != null) dob.text = '${date.year}-${date.month.toString().padLeft(2,"0")}-${date.day.toString().padLeft(2,"0")}';
   }
-  @override Widget build(BuildContext context){final enabled=[first,middle,last,dob].every((c)=>c.text.trim().isNotEmpty);return _Shell(title:'Verify your identity',titleStyle:_navSora16,bodyTopPadding:0,scroll:true,child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[const SizedBox(height:39),const Text('Complete your profile',style:_t16b),const SizedBox(height:8),const Text('Fill in your personal information to get started with verification',style:_t14),const SizedBox(height:24),_Input(label:'First name',hint:'Enter first name',controller:first,figmaFilled:true,labelSize:16,hintSize:12),const SizedBox(height:24),_Input(label:'Middle name',hint:'Enter Middle name',controller:middle,figmaFilled:true,labelSize:16,hintSize:12),const SizedBox(height:22),_Input(label:'Last name',hint:'Enter last name',controller:last,figmaFilled:true,labelSize:16,hintSize:12),const SizedBox(height:24),GestureDetector(onTap:_pickDate,child:AbsorbPointer(child:_Input(label:'Date of birth',hint:'Select date of birth',controller:dob,figmaFilled:true,labelSize:16,hintSize:12))),const SizedBox(height:32),_PrimaryButton('Continue',enabled:enabled,onTap:()=>_push(context,const CompleteProfileContactV12Screen())),const SizedBox(height:28)]));}
+  @override Widget build(BuildContext context){final enabled=[first,last,dob].every((c)=>c.text.trim().isNotEmpty);return _Shell(title:'Basic verification',titleStyle:_navSora16,bodyTopPadding:0,scroll:true,child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[const SizedBox(height:39),const Text('Complete your profile',style:_t16b),const SizedBox(height:8),const Text('Fill in your personal information to get started with verification',style:_t14),const SizedBox(height:24),_Input(label:'First name',hint:'Enter first name',controller:first,figmaFilled:true,labelSize:16,hintSize:12),const SizedBox(height:24),_Input(label:'Middle name (optional)',hint:'Enter middle name',controller:middle,figmaFilled:true,labelSize:16,hintSize:12),const SizedBox(height:22),_Input(label:'Last name',hint:'Enter last name',controller:last,figmaFilled:true,labelSize:16,hintSize:12),const SizedBox(height:24),GestureDetector(onTap:_pickDate,child:AbsorbPointer(child:_Input(label:'Date of birth',hint:'Select date of birth',controller:dob,figmaFilled:true,labelSize:16,hintSize:12))),const SizedBox(height:32),_PrimaryButton('Continue',enabled:enabled,onTap:()=>_push(context,const CompleteProfileContactV12Screen())),const SizedBox(height:28)]));}
 }
 class CompleteProfileContactV12Screen extends StatefulWidget {
   const CompleteProfileContactV12Screen({super.key});
@@ -1073,12 +1153,16 @@ class _CompleteProfileContactV12ScreenState extends State<CompleteProfileContact
   @override
   void initState() {
     super.initState();
+    final draft = VerificationSession.instance.profileDraft;
+    phone.text = draft['phone'] ?? '';
+    address.text = draft['address'] ?? '';
+    state.text = draft['state'] ?? '';
     for (final controller in [phone, address, state]) {
       controller.addListener(_refresh);
     }
   }
 
-  void _refresh() => setState(() {});
+  void _refresh() { VerificationSession.instance.saveProfile({'phone': phone.text, 'address': address.text, 'state': state.text}); setState(() {}); }
 
   @override
   void dispose() {
@@ -1091,11 +1175,11 @@ class _CompleteProfileContactV12ScreenState extends State<CompleteProfileContact
 
   @override
   Widget build(BuildContext context) {
-    final enabled = phone.text.trim().isNotEmpty &&
+    final enabled = RegExp(r'^0?\d{10}$').hasMatch(phone.text.trim()) &&
         address.text.trim().isNotEmpty &&
         state.text.trim().isNotEmpty;
     return _Shell(
-      title: 'Verify your identity',
+      title: 'Basic verification',
       scroll: true,
       titleStyle: _navSora16,
       child: Column(
@@ -1108,11 +1192,10 @@ class _CompleteProfileContactV12ScreenState extends State<CompleteProfileContact
           const SizedBox(height: 24),
           const Text('State', style: _t16),
           const SizedBox(height: 8),
-          DropdownButtonFormField<String>(
-            initialValue: state.text.isEmpty ? null : state.text,
-            isExpanded: true, hint: const Text('Select State'),
-            items: _nigerianStates.map((name)=>DropdownMenuItem(value:name,child:Text(name))).toList(),
-            onChanged:(value)=>state.text=value ?? '',
+          DavoStatePicker(
+            value: state.text.isEmpty ? null : state.text,
+            states: _nigerianStates,
+            onChanged: (value) => state.text = value,
           ),
           const SizedBox(height: 24),
           const _CountryField(),
@@ -1120,7 +1203,7 @@ class _CompleteProfileContactV12ScreenState extends State<CompleteProfileContact
           _PrimaryButton(
             'Continue',
             enabled: enabled,
-            onTap: () => _push(context, const NinEntryV12Screen()),
+            onTap: () { VerificationSession.instance.completeProfile(); _push(context, const BasicIdentityChoiceScreen()); },
           ),
           const SizedBox(height: 28),
         ],
@@ -1918,7 +2001,64 @@ class FullyVerifiedV12Screen extends StatelessWidget {
 
 class LinkedAccountsScreen extends StatelessWidget{const LinkedAccountsScreen({super.key});@override Widget build(BuildContext context)=>_Shell(title:'Linked Accounts',titleStyle:_navSora16SemiBold,scroll:true,child:Column(children:[const SizedBox(height:12),const _BankAccountCard(logo:'$_exactAssets/bank_access_exact.png',name:'Jenny  V.',bank:'Access Bank',number:'......3487409'),const SizedBox(height:12),const _BankAccountCard(logo:'$_exactAssets/bank_gtbank_exact.png',name:'Jenny  V.',bank:'GTBank',number:'......3487409'),const SizedBox(height:12),const _BankAccountCard(logo:'$_exactAssets/bank_opay_exact.png',name:'Jenny  V.',bank:'Opay Bank',number:'......3487409'),const SizedBox(height:18),InkWell(onTap:()=>_push(context,const AddBankAccountScreen()),child:Container(padding:const EdgeInsets.all(16),decoration:BoxDecoration(border:Border.all(color:const Color(0xFFEBEDF3)),borderRadius:BorderRadius.circular(8)),child:Row(children:[Container(width:40,height:40,alignment:Alignment.center,decoration:const BoxDecoration(color:Color(0xFFEAF2FF),shape:BoxShape.circle),child:Image.asset('$_exactAssets/icon_plus.png',width:20,height:20,filterQuality:FilterQuality.high)),const SizedBox(width:12),const Expanded(child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Text('Add Account',style:_t14b),Text('Link a new bank account',style:_t12)])),Image.asset('$_exactAssets/icon_arrow_right.png',width:16,height:16)]))),const SizedBox(height:24)]));}
 class AddBankAccountScreen extends StatefulWidget{const AddBankAccountScreen({super.key});@override State<AddBankAccountScreen> createState()=>_AddBankAccountScreenState();}
-class _AddBankAccountScreenState extends State<AddBankAccountScreen>{final q=TextEditingController();final banks=['AAA Finance','AB Microfinance Bank','Access Bank','Kuda Bank','Bank Of Agriculture','Carbon','Ecobank Bank','Fcmb','Fidelity Bank'];@override Widget build(BuildContext context){final filtered=banks.where((b)=>b.toLowerCase().contains(q.text.toLowerCase())).toList();return _Shell(title:'Add Bank Account',titleStyle:_navSora16SemiBold,scroll:true,child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[const SizedBox(height:18),const Text('Select your bank to link your acount',style:_t16b),const SizedBox(height:14),TextField(controller:q,onChanged:(_)=>setState((){}),decoration:InputDecoration(hintText:'Search for a bank',prefixIcon:Padding(padding:const EdgeInsets.all(14),child:Image.asset('$_exactAssets/icon_search.png',width:16,height:16)),border:OutlineInputBorder(borderRadius:BorderRadius.circular(6)))),const SizedBox(height:14),...filtered.map((b)=>ListTile(contentPadding:EdgeInsets.zero,leading:Image.asset('$_exactAssets/icon_bank.png',width:32,height:32),title:Text(b,style:_t14),trailing:Image.asset('$_exactAssets/icon_arrow_right.png',width:16,height:16),onTap:()=>Navigator.pop(context))),const SizedBox(height:20)]));}}
+class _AddBankAccountScreenState extends State<AddBankAccountScreen> {
+  final q = TextEditingController();
+  final banks = const ['AAA Finance', 'AB Microfinance Bank', 'Access Bank',
+    'Kuda Bank', 'Bank Of Agriculture', 'Carbon', 'Ecobank Bank', 'Fcmb',
+    'Fidelity Bank'];
+
+  @override
+  void dispose() {
+    q.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final filtered = banks.where((bank) =>
+      bank.toLowerCase().contains(q.text.toLowerCase().trim())).toList();
+    return _Shell(
+      title: 'Add Bank Account', titleStyle: _navSora16SemiBold, scroll: true,
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        const SizedBox(height: 18),
+        const Text('Select your bank to link your account', style: _t16b),
+        const SizedBox(height: 16),
+        TextField(
+          controller: q,
+          onChanged: (_) => setState(() {}),
+          onTapOutside: (_) => FocusManager.instance.primaryFocus?.unfocus(),
+          decoration: InputDecoration(
+            hintText: 'Search for a bank',
+            hintStyle: _t14.copyWith(color: const Color(0xFF686868)),
+            prefixIcon: const Icon(Icons.search_rounded, size: 20),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8),
+              borderSide: const BorderSide(color: Color(0xFFD9DDE5))),
+            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8),
+              borderSide: const BorderSide(color: Color(0xFFD9DDE5))),
+            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8),
+              borderSide: const BorderSide(color: AppColors.primary, width: 1.5)),
+          ),
+        ),
+        const SizedBox(height: 14),
+        if (filtered.isEmpty)
+          const Padding(padding: EdgeInsets.symmetric(vertical: 24),
+            child: Text('No banks found. Try another name.', style: _t14)),
+        ...filtered.map((bank) => ListTile(
+          contentPadding: const EdgeInsets.symmetric(vertical: 4),
+          leading: DavoBankLogo(bankName: bank),
+          title: Text(bank == 'Fcmb' ? 'FCMB' : bank, style: _t14),
+          trailing: const Icon(Icons.chevron_right_rounded,
+            size: 20, color: Color(0xFF686868)),
+          onTap: () {
+            FocusManager.instance.primaryFocus?.unfocus();
+            Navigator.pop(context);
+          },
+        )),
+        const SizedBox(height: 20),
+      ]),
+    );
+  }
+}
 
 class CryptoSecurityScreen extends StatefulWidget{const CryptoSecurityScreen({super.key});@override State<CryptoSecurityScreen> createState()=>_CryptoSecurityScreenState();}
 class _CryptoSecurityScreenState extends State<CryptoSecurityScreen>{bool withdraw=true,address=true,network=true;@override Widget build(BuildContext context)=>_Shell(title:'Crypto Security',child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[const SizedBox(height:20),const Text('Extra protection for your digital assets',style:_t14),const SizedBox(height:18),_toggleRow('Withdrawal Confirmation','Require PIN before every withdraw',withdraw,(v)=>setState(()=>withdraw=v)),_toggleRow('New Address Verification','Require additional confirmation when sending to a new address',address,(v)=>setState(()=>address=v)),_toggleRow('Network Warning','Show network warning before every external withdrawal',network,(v)=>setState(()=>network=v))]));}
@@ -2021,12 +2161,21 @@ class _HelpTopicRow extends StatelessWidget {
       );
 }
 
-class _EditableInfoField extends StatelessWidget {
+class _EditableInfoField extends StatefulWidget {
   const _EditableInfoField({required this.label, required this.value});
   final String label, value;
 
   @override
-  Widget build(BuildContext context) => Container(
+  State<_EditableInfoField> createState() => _EditableInfoFieldState();
+}
+
+class _EditableInfoFieldState extends State<_EditableInfoField> {
+  bool _focused = false;
+
+  @override
+  Widget build(BuildContext context) => Focus(
+    onFocusChange: (focused) { if (mounted) setState(() => _focused = focused); },
+    child: Container(
         width: double.infinity,
         height: 78,
         margin: const EdgeInsets.only(bottom: 19),
@@ -2034,11 +2183,12 @@ class _EditableInfoField extends StatelessWidget {
         decoration: BoxDecoration(
           color: const Color(0xFFF8F9FB),
           borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: _focused ? AppColors.primary : const Color(0xFFD9DDE5), width: _focused ? 1.5 : 1),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(label, style: _personalInfoLabel),
+            Text(widget.label, style: _personalInfoLabel),
             const SizedBox(height: 8),
             SizedBox(
               height: 19,
@@ -2046,7 +2196,7 @@ class _EditableInfoField extends StatelessWidget {
                 children: [
                   Expanded(
                     child: TextFormField(
-                      initialValue: value,
+                      initialValue: widget.value,
                       style: _t14,
                       decoration: const DavoInlineInputDecoration(
                         contentPadding: EdgeInsets.zero,
@@ -2055,7 +2205,7 @@ class _EditableInfoField extends StatelessWidget {
                   ),
                   const SizedBox(width: 8),
                   Image.asset(
-                    label == 'Username'
+                    widget.label == 'Username'
                         ? '$_exactAssets/profile_edit_outline_exact.png'
                         : '$_exactAssets/profile_tick_square_exact.png',
                     width: 24,
@@ -2067,7 +2217,8 @@ class _EditableInfoField extends StatelessWidget {
             ),
           ],
         ),
-      );
+      ),
+    );
 }
 class _BvnHintPill extends StatelessWidget {
   const _BvnHintPill();
@@ -2171,10 +2322,10 @@ class _ContactPhoneField extends StatelessWidget {
                   child: TextField(
                     controller: controller,
                     keyboardType: TextInputType.phone,
-                    style: const TextStyle(fontFamily:'Poppins',fontSize:14,color:Color(0xFF424242)),
+                    style: const TextStyle(fontFamily:'Sora',fontSize:14,color:Color(0xFF424242)),
                     decoration: InputDecoration(
                       hintText: 'Enter your phone number',
-                      hintStyle: const TextStyle(fontFamily:'Poppins',fontSize:14,color:Color(0x61121212)),
+                      hintStyle: const TextStyle(fontFamily:'Sora',fontSize:14,color:Color(0xFF686868)),
                       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0x14121212))),
                       enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0x14121212))),
@@ -2211,7 +2362,7 @@ class _ContactAddressField extends StatelessWidget {
                 filled: true,
                 fillColor: const Color(0xFFF8F9FB),
                 hintText: 'House number, street, area',
-                hintStyle: const TextStyle(fontFamily:'Sora',fontSize:12,color:Color(0xFF8D8D8D)),
+                hintStyle: const TextStyle(fontFamily:'Sora',fontSize:12,color:Color(0xFF686868)),
                 contentPadding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(4), borderSide: const BorderSide(color: Color(0xFFEBEDF3))),
                 enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(4), borderSide: const BorderSide(color: Color(0xFFEBEDF3))),
@@ -2902,20 +3053,20 @@ class _SupportInputField extends StatelessWidget {
                   fontFamily: 'Sora',
                   fontSize: 14,
                   height: 1.35,
-                  color: Color(0xFF8D8D8D),
+                  color: Color(0xFF686868),
                 ),
                 contentPadding: EdgeInsets.fromLTRB(14, multiline ? 17 : 0, 14, multiline ? 17 : 0),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(multiline ? 12 : 8),
-                  borderSide: BorderSide.none,
+                  borderSide: const BorderSide(color: Color(0xFFD9DDE5)),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(multiline ? 12 : 8),
-                  borderSide: BorderSide.none,
+                  borderSide: const BorderSide(color: Color(0xFFD9DDE5)),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(multiline ? 12 : 8),
-                  borderSide: const BorderSide(color: AppColors.primary),
+                  borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
                 ),
               ),
             ),
@@ -2956,7 +3107,7 @@ class _CurrentRankCard extends StatelessWidget {
                 child: const Text(
                   '#12',
                   style: TextStyle(
-                    fontFamily: 'Inter',
+                    fontFamily: 'Sora',
                     fontSize: 12,
                     fontWeight: FontWeight.w900,
                     color: Color(0xFF0046C7),
@@ -3268,7 +3419,6 @@ class _Input extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final pinLike = hintFontFamily == 'Poppins';
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -3307,7 +3457,7 @@ class _Input extends StatelessWidget {
               hintStyle: TextStyle(
                 fontFamily: hintFontFamily,
                 fontSize: hintSize,
-                color: pinLike ? const Color(0x61121212) : (figmaFilled ? const Color(0xFF8D8D8D) : const Color(0xFFC4C5CA)),
+                color: const Color(0xFF686868),
               ),
               contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
               suffixIcon: obscure
@@ -3323,16 +3473,16 @@ class _Input extends StatelessWidget {
                   : null,
               suffixIconConstraints: const BoxConstraints(minWidth: 48, minHeight: 48),
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(4),
-                borderSide: BorderSide(color: figmaFilled ? const Color(0xFFEBEDF3) : const Color(0xFFC4C5CA)),
+                borderRadius: BorderRadius.circular(8),
+                borderSide: const BorderSide(color: Color(0xFFD9DDE5)),
               ),
               enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(4),
-                borderSide: BorderSide(color: figmaFilled ? const Color(0xFFEBEDF3) : const Color(0xFFC4C5CA)),
+                borderRadius: BorderRadius.circular(8),
+                borderSide: const BorderSide(color: Color(0xFFD9DDE5)),
               ),
               focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(4),
-                borderSide: const BorderSide(color: AppColors.primary),
+                borderRadius: BorderRadius.circular(8),
+                borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
               ),
             ),
           ),
@@ -3470,7 +3620,7 @@ class _AgentHeader extends StatelessWidget {
       );
 }
 class _ChatBubble extends StatelessWidget{const _ChatBubble({required this.text});final String text;@override Widget build(BuildContext context)=>Container(padding:const EdgeInsets.all(13),decoration:BoxDecoration(color:AppColors.offWhite,borderRadius:BorderRadius.circular(12)),child:Text(text,style:_t12));}
-Widget _referralBox()=>Container(padding:const EdgeInsets.all(14),decoration:BoxDecoration(color:AppColors.offWhite,borderRadius:BorderRadius.circular(8)),child:Column(children:[const Row(children:[Expanded(child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Text('manish1',style:_t14b),Text('Your referral code',style:_t12)])),Icon(Icons.copy,size:18,color:AppColors.primary)]),const Divider(height:24),Row(children:[const Expanded(child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Text('https://davochain.com/...',style:TextStyle(fontFamily:'Sora',fontSize:12,color:AppColors.primary)),Text('Your referral link',style:_t12)])),OutlinedButton(onPressed:(){},child:const Text('Share'))]) ]));
+Widget _referralBox()=>Container(padding:const EdgeInsets.all(14),decoration:BoxDecoration(color:AppColors.offWhite,borderRadius:BorderRadius.circular(8)),child:Column(children:[Row(children:[const Expanded(child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Text('manish1',style:_t14b),Text('Your referral code',style:_t12)])),Builder(builder:(context)=>IconButton(tooltip:'Copy referral code',onPressed:() async {await Clipboard.setData(const ClipboardData(text:'manish1'));if(context.mounted) showDavoToast(context,'Referral code copied');},icon:const Icon(Icons.copy_outlined,size:18,color:AppColors.primary)))]),const Divider(height:24),Row(children:[const Expanded(child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Text('https://davochain.com/...',style:TextStyle(fontFamily:'Sora',fontSize:12,color:AppColors.primary)),Text('Your referral link',style:_t12)])),OutlinedButton(onPressed:(){},child:const Text('Share'))]) ]));
 Widget _sectionLink(String a,String b,VoidCallback tap)=>Container(padding:const EdgeInsets.all(14),decoration:BoxDecoration(color:AppColors.offWhite,borderRadius:BorderRadius.circular(8)),child:Row(children:[Expanded(child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Text(a,style:_t12),Text(b,style:_t14b)])),IconButton(onPressed:tap,icon:Image.asset('$_exactAssets/profile_chevron_exact.png',width:16,height:16,filterQuality:FilterQuality.high))]));
 class _HowItWorks extends StatelessWidget{const _HowItWorks();@override Widget build(BuildContext context)=>Container(padding:const EdgeInsets.all(16),decoration:BoxDecoration(color:AppColors.offWhite,borderRadius:BorderRadius.circular(8)),child:const Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Text('How it works',style:_t16b),SizedBox(height:14),_Step('1','Send Invite','Share your unique link or code with your friends via social media or direct message.'),_Step('2','Friend Joins','Your friend signs up and completes a successful transaction of NGN50,000'),_Step('3','Get Paid','You and your friend get credited with Đ2,000 Davo Points.') ]));}
 class _Step extends StatelessWidget{const _Step(this.n,this.t,this.s);final String n,t,s;@override Widget build(BuildContext context)=>Padding(padding:const EdgeInsets.only(bottom:16),child:Row(crossAxisAlignment:CrossAxisAlignment.start,children:[CircleAvatar(radius:12,backgroundColor:Colors.white,child:Text(n,style:const TextStyle(fontFamily:'Sora',fontSize:10,color:AppColors.primary))),const SizedBox(width:10),Expanded(child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Text(t,style:_t14b),Text(s,style:_t12)]))]));}
@@ -3650,15 +3800,15 @@ const _people=<(String,String,String)>[('Jane Doe','Oct 24, 2023 • 14:32','Rew
 const _rankings=<(String,String,String)>[('Jordan Smith','University of Nigeria Nsukka','32'),('Elena Rodriguez','Obafemi Awolowo University','30'),('Confidence Malik','University of Abuja','28'),('Samuel Meshack','Enugu State University','25'),('ELite Divine','Oko Poly','22'),('Chidera Favour','Akanu Ibiam Federal Poly','20'),('Success Chidinma','Akanu Ibiam Federal Poly','18')];
 
 Future<void> _push(BuildContext c,Widget w)=>pushAppPage<void>(c,(_)=>w);
-void _snack(BuildContext c,String s)=>ScaffoldMessenger.of(c).showSnackBar(SnackBar(content:Text(s),behavior:SnackBarBehavior.floating));
+void _snack(BuildContext c,String s)=>showDavoToast(c,s);
 void _simple(BuildContext c,String title)=>_push(c,_Shell(title:title,child:Center(child:Text('$title\nDavochain',textAlign:TextAlign.center,style:_t16b))));
 Future<void> _uploadSheet(BuildContext context,String title)=>showModalBottomSheet(context:context,showDragHandle:true,builder:(c)=>SafeArea(child:Padding(padding:const EdgeInsets.fromLTRB(16,0,16,20),child:Column(mainAxisSize:MainAxisSize.min,children:[Align(alignment:Alignment.centerLeft,child:Text(title,style:_t16b)),const SizedBox(height:18),_PrimaryButton('Take a Photo',onTap:()=>Navigator.pop(c)),const SizedBox(height:10),OutlinedButton(onPressed:()=>Navigator.pop(c),style:OutlinedButton.styleFrom(minimumSize:const Size.fromHeight(48),side:const BorderSide(color:AppColors.primary)),child:const Text('Choose From Gallery')),const SizedBox(height:10),TextButton(onPressed:()=>Navigator.pop(c),child:const Text('Choose a file'))]))));
 Future<void> _socialDialog(BuildContext c,String s)=>showDialog(context:c,barrierColor:Colors.black.withValues(alpha: .35),builder:(d)=>Dialog(backgroundColor:Colors.white,shape:RoundedRectangleBorder(borderRadius:BorderRadius.circular(16)),insetPadding:const EdgeInsets.symmetric(horizontal:77),child:SizedBox(width:236,height:123,child:Padding(padding:const EdgeInsets.all(16),child:Column(mainAxisAlignment:MainAxisAlignment.center,crossAxisAlignment:CrossAxisAlignment.start,children:[Text('“Davochain” Wants to open “$s”',style:_t14),const SizedBox(height:19),Row(children:[Expanded(child:SizedBox(height:36,child:TextButton(onPressed:()=>Navigator.pop(d),style:TextButton.styleFrom(backgroundColor:const Color(0xFFF2F3F7),shape:RoundedRectangleBorder(borderRadius:BorderRadius.circular(4))),child:const Text('Cancel',style:TextStyle(fontFamily:'Sora',fontSize:14,color:AppColors.ink))))),const SizedBox(width:12),Expanded(child:SizedBox(height:36,child:TextButton(onPressed:()=>Navigator.pop(d),style:TextButton.styleFrom(backgroundColor:AppColors.primary,shape:RoundedRectangleBorder(borderRadius:BorderRadius.circular(4))),child:const Text('Open',style:TextStyle(fontFamily:'Sora',fontSize:14,color:Colors.white)))))])])))));
-Future<void> _logoutDialog(BuildContext c)=>showDialog(context:c,builder:(d)=>AlertDialog(title:const Text('Logout'),content:const Text('Are you sure you want to logout?'),actions:[TextButton(onPressed:()=>Navigator.pop(d),child:const Text('Cancel')),TextButton(onPressed:(){PreviewAuthState.unlocked.value=false;Navigator.of(d).pushAndRemoveUntil(AppPageRoute<void>(builder:(_)=>const LoginScreen()),(_)=>false);},child:const Text('Logout',style:TextStyle(color:Color(0xFFF44336))))]));
+Future<void> _logoutDialog(BuildContext c)=>showDialog(context:c,builder:(d)=>AlertDialog(title:const Text('Logout'),content:const Text('Are you sure you want to logout?'),actions:[TextButton(onPressed:()=>Navigator.pop(d),child:const Text('Cancel')),TextButton(onPressed:(){VerificationSession.instance.reset();PreviewAuthState.unlocked.value=false;Navigator.of(d).pushAndRemoveUntil(AppPageRoute<void>(builder:(_)=>const LoginScreen()),(_)=>false);},child:const Text('Logout',style:TextStyle(color:Color(0xFFF44336))))]));
 Future<void> _deleteAccountDialog(BuildContext c)=>showDialog(context:c,builder:(d)=>AlertDialog(title:const Text('Delete Account'),content:const Text('Are you sure you want to delete your account?'),actions:[TextButton(onPressed:()=>Navigator.pop(d),child:const Text('Cancel')),TextButton(onPressed:()=>Navigator.pop(d),child:const Text('Delete Account',style:TextStyle(color:Color(0xFFF44336))))]));
 
 const _navSora20 = TextStyle(fontFamily:'Sora',fontSize:20,fontWeight:FontWeight.w400,color:Color(0xFF424242),height:1.35);
-const _navInter20 = TextStyle(fontFamily:'Inter',fontSize:20,fontWeight:FontWeight.w500,color:AppColors.ink,height:1.35);
+const _navInter20 = TextStyle(fontFamily:'Sora',fontSize:20,fontWeight:FontWeight.w500,color:AppColors.ink,height:1.35);
 const _navSora16 = TextStyle(fontFamily:'Sora',fontSize:16,fontWeight:FontWeight.w400,color:AppColors.ink,height:1.35);
 const _navSora16Medium = TextStyle(fontFamily:'Sora',fontSize:16,fontWeight:FontWeight.w500,color:AppColors.ink,height:1.35);
 const _navSora16SemiBold = TextStyle(fontFamily:'Sora',fontSize:16,fontWeight:FontWeight.w600,color:AppColors.ink,height:1.35);

@@ -82,6 +82,26 @@ void main() {
         ),
       );
 
+  testWidgets('filled confirmation builds through finite phases and then rests',
+      (tester) async {
+    await tester.pumpWidget(host());
+    final paint = find.descendant(
+        of: find.byType(DavoSuccessMark), matching: find.byType(CustomPaint));
+    final initial = tester.widget<CustomPaint>(paint).painter!;
+    await tester.pump(const Duration(milliseconds: 300));
+    final gathered = tester.widget<CustomPaint>(paint).painter!;
+    expect(gathered.shouldRepaint(initial), isTrue);
+    await tester.pump(const Duration(milliseconds: 350));
+    final checked = tester.widget<CustomPaint>(paint).painter!;
+    expect(checked.shouldRepaint(gathered), isTrue);
+    await tester.pumpAndSettle();
+    final settled = tester.widget<CustomPaint>(paint).painter!;
+    expect(tester.binding.transientCallbackCount, 0);
+    await tester.pump(const Duration(seconds: 3));
+    expect(tester.widget<CustomPaint>(paint).painter!.shouldRepaint(settled),
+        isFalse);
+  });
+
   testWidgets('confirmation settles once and does not replay after rebuild',
       (tester) async {
     await tester.pumpWidget(host());

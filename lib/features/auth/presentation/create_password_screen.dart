@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/navigation/app_routes.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/theme/password_strength_palette.dart';
 import '../../../shared/widgets/auth_widgets.dart';
 
 class CreatePasswordScreen extends StatefulWidget {
@@ -23,10 +24,12 @@ class _CreatePasswordScreenState extends State<CreatePasswordScreen> {
   }
 
   bool get _lengthOk => _password.text.length >= 8;
-  bool get _numberOrSymbol => RegExp(r'[0-9!@#$%^&*(),.?":{}|<>_+\-=\[\]\\;/]').hasMatch(_password.text);
+  bool get _numberOrSymbol => RegExp(r'[0-9!@#$%^&*(),.?":{}|<>_+\-=\[\]\\;/]')
+      .hasMatch(_password.text);
   bool get _capital => RegExp(r'[A-Z]').hasMatch(_password.text);
   bool get _strong => _lengthOk && _numberOrSymbol && _capital;
-  bool get _match => _confirm.text.isNotEmpty && _confirm.text == _password.text;
+  bool get _match =>
+      _confirm.text.isNotEmpty && _confirm.text == _password.text;
   bool get _canContinue => _strong && _match;
 
   int get _score {
@@ -44,11 +47,7 @@ class _CreatePasswordScreenState extends State<CreatePasswordScreen> {
     return 'Strong Password';
   }
 
-  Color get _strengthColor {
-    if (_score <= 1) return AppColors.danger;
-    if (_score == 2) return const Color(0xFFF3A712);
-    return AppColors.success;
-  }
+  Color get _strengthColor => PasswordStrengthPalette.forScore(_score);
 
   void _refresh(String _) => setState(() {});
 
@@ -58,7 +57,6 @@ class _CreatePasswordScreenState extends State<CreatePasswordScreen> {
       child: LayoutBuilder(
         builder: (context, constraints) {
           return SingleChildScrollView(
-
             child: ConstrainedBox(
               constraints: BoxConstraints(minHeight: constraints.maxHeight),
               child: IntrinsicHeight(
@@ -68,7 +66,8 @@ class _CreatePasswordScreenState extends State<CreatePasswordScreen> {
                     const Entrance(
                       child: DavoScreenIntro(
                         title: 'Create Password',
-                        subtitle: 'Set a strong password to keep your Davochain account secure.',
+                        subtitle:
+                            'Set a strong password to keep your Davochain account secure.',
                       ),
                     ),
                     const SizedBox(height: 24),
@@ -108,10 +107,14 @@ class _CreatePasswordScreenState extends State<CreatePasswordScreen> {
                         showVisibilityToggle: true,
                         textInputAction: TextInputAction.done,
                         autofillHints: const [AutofillHints.newPassword],
-                        errorText: _confirm.text.isNotEmpty && !_match ? 'Password did not match' : null,
+                        errorText: _confirm.text.isNotEmpty && !_match
+                            ? 'Password did not match'
+                            : null,
                         successText: _match ? 'Password match' : null,
                         onChanged: _refresh,
-                        onSubmitted: (_) { if (_canContinue) _continue(); },
+                        onSubmitted: (_) {
+                          if (_canContinue) _continue();
+                        },
                       ),
                     ),
                     const Spacer(),
@@ -160,7 +163,7 @@ class _PasswordStrength extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final progress = score / 3;
+    final progress = label.isEmpty ? 0.0 : (score < 1 ? 1 : score) / 3;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -176,6 +179,7 @@ class _PasswordStrength extends StatelessWidget {
                 AnimatedFractionallySizedBox(
                   duration: const Duration(milliseconds: 320),
                   curve: Curves.easeOutCubic,
+                  heightFactor: 1,
                   widthFactor: progress,
                   alignment: Alignment.centerLeft,
                   child: AnimatedContainer(
@@ -218,7 +222,7 @@ class _Criterion extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = met ? AppColors.success : AppColors.bodyMuted;
+    final color = met ? const Color(0xFF13803D) : AppColors.bodyMuted;
     return AnimatedDefaultTextStyle(
       duration: const Duration(milliseconds: 220),
       style: TextStyle(
@@ -234,7 +238,9 @@ class _Criterion extends StatelessWidget {
             duration: const Duration(milliseconds: 220),
             width: 8,
             height: 8,
-            decoration: BoxDecoration(shape: BoxShape.circle, color: met ? AppColors.success : AppColors.border),
+            decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: met ? AppColors.success : AppColors.border),
           ),
           const SizedBox(width: 9),
           Text(label),

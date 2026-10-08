@@ -1,3 +1,7 @@
+import 'package:davochain/features/profile_settings/presentation/verification/verification_overview_screen.dart';
+import 'package:davochain/features/profile_settings/presentation/verification/verification_state.dart';
+import 'package:davochain/shared/widgets/davo_state_picker.dart';
+import 'package:davochain/shared/widgets/auth_widgets.dart';
 import 'package:flutter/services.dart';
 import 'package:davochain/core/preview/preview_auth_state.dart';
 import 'package:davochain/features/auth/presentation/returning_unlock_screen.dart';
@@ -11,6 +15,7 @@ import 'package:davochain/features/auth/presentation/login_flow.dart';
 Widget app(Widget home) => MaterialApp(theme: AppTheme.light, home: home);
 void main() {
   setUp(() {
+    VerificationSession.instance.reset();
     PreviewAuthState.biometricsEnabled.value = false;
     PreviewAuthState.unlocked.value = false;
   });
@@ -53,8 +58,7 @@ void main() {
     await tester.ensureVisible(find.text('Enable Biometrics'));
     await tester.tap(find.text('Enable Biometrics'));
     await tester.pumpAndSettle();
-    expect(find.text('Enable fingerprint preview'), findsOneWidget);
-    expect(find.text('Enable preview'), findsOneWidget);
+    expect(find.text('Enable fingerprint'), findsNWidgets(2));
   });
   testWidgets('returning login preview runs splash then offers password unlock',
       (tester) async {
@@ -65,20 +69,21 @@ void main() {
     await tester.pump(const Duration(seconds: 4));
     await tester.pumpAndSettle();
     expect(find.text('Welcome back, Vincent'), findsOneWidget);
-    expect(find.text('Unlock preview'), findsOneWidget);
-    expect(find.text('Simulate fingerprint'), findsNothing);
+    expect(find.text('Unlock'), findsOneWidget);
+    expect(find.text('Use fingerprint'), findsNothing);
   });
   testWidgets(
       'enabled fingerprint preview unlocks without a password and clears stack',
       (tester) async {
     await tester.pumpWidget(app(const ProfileSettingsScreen()));
     final setting = find.byWidgetPredicate(
-        (w) => w is Semantics && w.properties.label == 'Biometric preview');
+        (w) => w is Semantics && w.properties.label == 'Biometric unlock');
     expect(tester.widget<Semantics>(setting).properties.toggled, isFalse);
     await tester.ensureVisible(find.text('Enable Biometrics'));
     await tester.tap(find.text('Enable Biometrics'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Enable preview'));
+    await tester
+        .tap(find.widgetWithText(DavoPrimaryButton, 'Enable fingerprint'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Done'));
     await tester.pumpAndSettle();
@@ -90,7 +95,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(tester.getRect(find.byIcon(Icons.fingerprint_rounded)).bottom,
         lessThan(tester.getRect(find.byType(TextField)).top));
-    await tester.tap(find.text('Simulate fingerprint'));
+    await tester.tap(find.text('Use fingerprint'));
     await tester.pumpAndSettle();
     expect(find.byType(DavochainDashboardScreen), findsOneWidget);
     expect(
@@ -110,7 +115,7 @@ void main() {
     await tester.pumpWidget(const SizedBox.shrink());
     await tester.pumpWidget(app(const ProfileSettingsScreen()));
     final setting = find.byWidgetPredicate(
-        (w) => w is Semantics && w.properties.label == 'Biometric preview');
+        (w) => w is Semantics && w.properties.label == 'Biometric unlock');
     expect(tester.widget<Semantics>(setting).properties.toggled, isFalse);
   });
   testWidgets(
@@ -130,10 +135,10 @@ void main() {
                 .copyWith(textScaler: TextScaler.linear(textScale)),
             child: child!),
         home: const ReturningUnlockScreen()));
-    expect(find.text('Simulate fingerprint'), findsNothing);
+    expect(find.text('Use fingerprint'), findsNothing);
     await tester.enterText(find.byType(TextField), 'sample');
     await tester.pump();
-    await tester.ensureVisible(find.text('Unlock preview'));
+    await tester.ensureVisible(find.text('Unlock'));
     expect(tester.takeException(), isNull);
     // The compact keyboard contract belongs to unlock; restore ordinary metrics
     // before verifying the destination, whose layout is checked independently.
@@ -142,8 +147,8 @@ void main() {
     tester.view.resetDevicePixelRatio();
     tester.view.resetViewInsets();
     await tester.pump();
-    await tester.ensureVisible(find.text('Unlock preview'));
-    await tester.tap(find.text('Unlock preview'));
+    await tester.ensureVisible(find.text('Unlock'));
+    await tester.tap(find.text('Unlock'));
     await tester.pumpAndSettle();
     expect(find.byType(DavochainDashboardScreen), findsOneWidget);
   });
@@ -206,12 +211,12 @@ void main() {
     expect(region.value.statusBarIconBrightness, Brightness.light);
     expect(region.value.systemNavigationBarIconBrightness, Brightness.light);
     expect(find.byIcon(Icons.fingerprint_rounded), findsOneWidget);
-    expect(find.text('Preview only · use a sample password.'), findsOneWidget);
+    expect(find.text('Enter your password to unlock your account.'),
+        findsOneWidget);
     expect(tester.binding.hasScheduledFrame, isFalse);
     expect(tester.takeException(), isNull);
   });
-  testWidgets(
-      'completed contact form opens NIN and NIN preview continues to selfie',
+  testWidgets('completed contact form offers NIN or BVN without a facial step',
       (tester) async {
     tester.view.physicalSize = const Size(390, 900);
     tester.view.devicePixelRatio = 1;
@@ -220,7 +225,7 @@ void main() {
     await tester.pumpWidget(app(const CompleteProfileContactV12Screen()));
     await tester.enterText(find.byType(TextField).at(0), '08012345678');
     await tester.enterText(find.byType(TextField).at(1), '12 Example Street');
-    await tester.tap(find.byType(DropdownButtonFormField<String>));
+    await tester.tap(find.byType(DavoStatePicker));
     await tester.pumpAndSettle();
     await tester.ensureVisible(find.text('Abia').last);
     await tester.tap(find.text('Abia').last);
@@ -228,14 +233,17 @@ void main() {
     await tester.ensureVisible(find.text('Continue'));
     await tester.tap(find.text('Continue'));
     await tester.pumpAndSettle();
-    expect(find.byType(NinEntryV12Screen), findsOneWidget);
-    await tester.enterText(find.byType(TextField), '12345678901');
+    expect(find.byType(BasicIdentityChoiceScreen), findsOneWidget);
+    await tester.tap(find.text('NIN'));
     await tester.pump();
     await tester.tap(find.text('Continue'));
-    await tester.pump();
-    await tester.pump(const Duration(seconds: 2));
     await tester.pumpAndSettle();
-    expect(find.byType(KycSelfieV12Screen), findsOneWidget);
+    await tester.enterText(find.byType(TextField), '12345678901');
+    await tester.pump();
+    await tester.tap(find.text('Submit Basic verification'));
+    await tester.pumpAndSettle();
+    expect(find.byType(BasicVerificationSubmittedScreen), findsOneWidget);
+    expect(find.byType(KycSelfieV12Screen), findsNothing);
     expect(tester.takeException(), isNull);
   });
 }

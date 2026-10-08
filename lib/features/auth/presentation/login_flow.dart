@@ -1,9 +1,13 @@
+import '../../../shared/widgets/davo_auth_journey.dart';
+import 'dart:async';
+import '../../../shared/widgets/davo_toast.dart';
 import '../../../shared/widgets/davo_success_mark.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../../core/navigation/app_routes.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/theme/password_strength_palette.dart';
 import '../../../shared/widgets/auth_widgets.dart';
 
 const _iconRoot = 'assets/icons/auth';
@@ -37,128 +41,132 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return DavoAuthScaffold(
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          return SingleChildScrollView(
-            child: ConstrainedBox(
-              constraints: BoxConstraints(minHeight: constraints.maxHeight),
-              child: IntrinsicHeight(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Entrance(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Welcome back!',
-                            style: Theme.of(context)
-                                .textTheme
-                                .titleLarge
-                                ?.copyWith(
-                                  fontWeight: FontWeight.w600,
-                                  color: AppColors.ink,
-                                ),
+    return DavoAuthJourney(
+        method: _loading ? AuthJourneyMethod.password : null,
+        onComplete: () => Navigator.of(context)
+            .pushNamedAndRemoveUntil(AppRoutes.dashboard, (route) => false),
+        child: DavoAuthScaffold(
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              return SingleChildScrollView(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                  child: IntrinsicHeight(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Entrance(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Welcome back!',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleLarge
+                                    ?.copyWith(
+                                      fontWeight: FontWeight.w600,
+                                      color: AppColors.ink,
+                                    ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                'Sign in to your Davochain account.',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodyMedium
+                                    ?.copyWith(
+                                      color: AppColors.body,
+                                    ),
+                              ),
+                            ],
                           ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'Demo preview. Use sample details to explore.',
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodyMedium
-                                ?.copyWith(
-                                  color: AppColors.body,
-                                ),
+                        ),
+                        const SizedBox(height: 24),
+                        Entrance(
+                          delay: const Duration(milliseconds: 60),
+                          child: DavoTextField(
+                            label: 'Email Address',
+                            controller: _email,
+                            hint: 'example@gmail.com',
+                            iconAsset: '$_iconRoot/mail.png',
+                            keyboardType: TextInputType.emailAddress,
+                            textInputAction: TextInputAction.next,
+                            autofillHints: const [AutofillHints.email],
+                            errorText: _emailError,
+                            onChanged: _refresh,
                           ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-                    Entrance(
-                      delay: const Duration(milliseconds: 60),
-                      child: DavoTextField(
-                        label: 'Email Address',
-                        controller: _email,
-                        hint: 'example@gmail.com',
-                        iconAsset: '$_iconRoot/mail.png',
-                        keyboardType: TextInputType.emailAddress,
-                        textInputAction: TextInputAction.next,
-                        autofillHints: const [AutofillHints.email],
-                        errorText: _emailError,
-                        onChanged: _refresh,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Entrance(
-                      delay: const Duration(milliseconds: 100),
-                      child: DavoTextField(
-                        label: 'Password',
-                        controller: _password,
-                        hint: 'Enter your password',
-                        iconAsset: '$_iconRoot/lock.png',
-                        obscureText: true,
-                        showVisibilityToggle: true,
-                        textInputAction: TextInputAction.done,
-                        autofillHints: const [AutofillHints.password],
-                        borderRadius: 12,
-                        onChanged: _refresh,
-                        onSubmitted: (_) {
-                          if (_canLogin) _login();
-                        },
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: TextButton(
-                        onPressed: () => Navigator.of(context)
-                            .pushNamed(AppRoutes.forgotPassword),
-                        style: TextButton.styleFrom(
-                          foregroundColor: AppColors.primary,
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 0, vertical: 6),
-                          minimumSize: Size.zero,
-                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                         ),
-                        child: const Text(
-                          'Forgot Password',
-                          style: TextStyle(
-                              fontSize: 14, fontWeight: FontWeight.w700),
+                        const SizedBox(height: 16),
+                        Entrance(
+                          delay: const Duration(milliseconds: 100),
+                          child: DavoTextField(
+                            label: 'Password',
+                            controller: _password,
+                            hint: 'Enter your password',
+                            iconAsset: '$_iconRoot/lock.png',
+                            obscureText: true,
+                            showVisibilityToggle: true,
+                            textInputAction: TextInputAction.done,
+                            autofillHints: const [AutofillHints.password],
+                            borderRadius: 12,
+                            onChanged: _refresh,
+                            onSubmitted: (_) {
+                              if (_canLogin) _login();
+                            },
+                          ),
                         ),
-                      ),
+                        const SizedBox(height: 8),
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: TextButton(
+                            onPressed: () => Navigator.of(context)
+                                .pushNamed(AppRoutes.forgotPassword),
+                            style: TextButton.styleFrom(
+                              foregroundColor: AppColors.primary,
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 0, vertical: 6),
+                              minimumSize: Size.zero,
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            ),
+                            child: const Text(
+                              'Forgot Password',
+                              style: TextStyle(
+                                  fontSize: 14, fontWeight: FontWeight.w700),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+                        Entrance(
+                          delay: const Duration(milliseconds: 150),
+                          child: DavoPrimaryButton(
+                            label: 'Login',
+                            loading: _loading,
+                            enabled: _canLogin,
+                            onPressed: _canLogin ? _login : null,
+                          ),
+                        ),
+                        const Spacer(),
+                        Center(
+                          child: LinkText(
+                            prefix: 'Don’t have an account?',
+                            action: 'Create Account',
+                            onTap: () => Navigator.of(context)
+                                .pushNamed(AppRoutes.signup),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                      ],
                     ),
-                    const SizedBox(height: 24),
-                    Entrance(
-                      delay: const Duration(milliseconds: 150),
-                      child: DavoPrimaryButton(
-                        label: 'Login',
-                        loading: _loading,
-                        enabled: _canLogin,
-                        onPressed: _canLogin ? _login : null,
-                      ),
-                    ),
-                    const Spacer(),
-                    Center(
-                      child: LinkText(
-                        prefix: 'Don’t have an account?',
-                        action: 'Create Account',
-                        onTap: () =>
-                            Navigator.of(context).pushNamed(AppRoutes.signup),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                  ],
+                  ),
                 ),
-              ),
-            ),
-          );
-        },
-      ),
-    );
+              );
+            },
+          ),
+        ));
   }
 
-  Future<void> _login() async {
+  void _login() {
     if (!_canLogin) return;
     if (!RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$').hasMatch(_email.text.trim())) {
       setState(() => _emailError = 'Enter a valid email address.');
@@ -166,18 +174,17 @@ class _LoginScreenState extends State<LoginScreen> {
     }
     FocusManager.instance.primaryFocus?.unfocus();
     setState(() => _loading = true);
-    // Local preview latency only: no credentials are sent or authenticated.
-    await Future<void>.delayed(const Duration(milliseconds: 400));
-    if (!mounted) return;
-    Navigator.of(context)
-        .pushNamedAndRemoveUntil(AppRoutes.dashboard, (route) => false);
+    // Mock validation remains local; the finite journey owns its cancellable
+    // presentation delay and routes once after the completion mark.
   }
 }
 
 enum _ForgotStage { email, code, newPassword, success }
 
 class ForgotPasswordScreen extends StatefulWidget {
-  const ForgotPasswordScreen({super.key});
+  const ForgotPasswordScreen({super.key, this.now = DateTime.now});
+
+  final DateTime Function() now;
 
   @override
   State<ForgotPasswordScreen> createState() => _ForgotPasswordScreenState();
@@ -191,9 +198,13 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   final _otp = List.generate(4, (_) => TextEditingController());
   final _otpFocus = List.generate(4, (_) => FocusNode());
   bool _otpError = false;
+  Timer? _resendTimer;
+  DateTime? _resendAt;
+  int _seconds = 0;
 
   @override
   void dispose() {
+    _resendTimer?.cancel();
     _email.dispose();
     _password.dispose();
     _confirm.dispose();
@@ -252,6 +263,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               controllers: _otp,
               focusNodes: _otpFocus,
               error: _otpError,
+              seconds: _seconds,
               onVerify: _verifyCode,
               onResend: _resendCode,
               onChanged: () => setState(() => _otpError = false),
@@ -279,6 +291,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   void _openCode() {
     if (_email.text.trim().isEmpty) return;
     FocusManager.instance.primaryFocus?.unfocus();
+    _startCooldown();
     setState(() => _stage = _ForgotStage.code);
   }
 
@@ -292,18 +305,31 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     setState(() => _stage = _ForgotStage.newPassword);
   }
 
+  void _startCooldown() {
+    _resendTimer?.cancel();
+    _resendAt = widget.now().add(const Duration(seconds: 30));
+    _seconds = 30;
+    _resendTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (!mounted) {
+        timer.cancel();
+        return;
+      }
+      final remaining = _resendAt!.difference(widget.now()).inMilliseconds;
+      final seconds = (remaining / 1000).ceil().clamp(0, 30);
+      if (seconds == 0) timer.cancel();
+      if (seconds != _seconds) setState(() => _seconds = seconds);
+    });
+  }
+
   void _resendCode() {
+    if (_seconds > 0) return;
+    _startCooldown();
     for (final c in _otp) {
       c.clear();
     }
     setState(() => _otpError = false);
     _otpFocus.first.requestFocus();
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('A new reset code has been requested.'),
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
+    showDavoToast(context, 'A new reset code has been requested.');
   }
 }
 
@@ -382,6 +408,7 @@ class _CodeStage extends StatelessWidget {
     required this.controllers,
     required this.focusNodes,
     required this.error,
+    required this.seconds,
     required this.onVerify,
     required this.onResend,
     required this.onChanged,
@@ -390,6 +417,7 @@ class _CodeStage extends StatelessWidget {
   final List<TextEditingController> controllers;
   final List<FocusNode> focusNodes;
   final bool error;
+  final int seconds;
   final VoidCallback onVerify;
   final VoidCallback onResend;
   final VoidCallback onChanged;
@@ -464,7 +492,7 @@ class _CodeStage extends StatelessWidget {
             Text('Didn’t get a code?',
                 style: Theme.of(context).textTheme.bodyMedium),
             TextButton(
-              onPressed: onResend,
+              onPressed: seconds == 0 ? onResend : null,
               style: TextButton.styleFrom(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
                 minimumSize: Size.zero,
@@ -472,6 +500,8 @@ class _CodeStage extends StatelessWidget {
               ),
               child: const Text('Resend Code'),
             ),
+            const Spacer(),
+            if (seconds > 0) Text('0:${seconds.toString().padLeft(2, '0')}'),
           ],
         ),
         const Spacer(),
@@ -587,6 +617,7 @@ class _ResetPasswordStageState extends State<_ResetPasswordStage> {
           ),
           const SizedBox(height: 20),
           _CriteriaBlock(
+              hasPassword: widget.password.text.isNotEmpty,
               lengthOk: lengthOk,
               numberOrSymbol: numberOrSymbol,
               capital: capital),
@@ -618,10 +649,12 @@ class _ResetPasswordStageState extends State<_ResetPasswordStage> {
 
 class _CriteriaBlock extends StatelessWidget {
   const _CriteriaBlock(
-      {required this.lengthOk,
+      {required this.hasPassword,
+      required this.lengthOk,
       required this.numberOrSymbol,
       required this.capital});
 
+  final bool hasPassword;
   final bool lengthOk;
   final bool numberOrSymbol;
   final bool capital;
@@ -630,6 +663,12 @@ class _CriteriaBlock extends StatelessWidget {
   Widget build(BuildContext context) {
     final score =
         [lengthOk, numberOrSymbol, capital].where((value) => value).length;
+    final strengthColor = PasswordStrengthPalette.forScore(score);
+    final strengthLabel = score <= 1
+        ? 'Low Strength'
+        : score == 2
+            ? 'Medium Strength'
+            : 'Strong Password';
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -643,15 +682,21 @@ class _CriteriaBlock extends StatelessWidget {
                     child: ColoredBox(color: AppColors.mutedSoft)),
                 AnimatedFractionallySizedBox(
                   duration: const Duration(milliseconds: 280),
-                  widthFactor: score / 3,
+                  heightFactor: 1,
+                  widthFactor: !hasPassword ? 0.0 : (score < 1 ? 1 : score) / 3,
                   alignment: Alignment.centerLeft,
-                  child: const ColoredBox(color: AppColors.success),
+                  child: ColoredBox(color: strengthColor),
                 ),
               ],
             ),
           ),
         ),
         const SizedBox(height: 12),
+        if (hasPassword) ...[
+          Text(strengthLabel,
+              style: TextStyle(fontSize: 14, color: strengthColor)),
+          const SizedBox(height: 12),
+        ],
         _ResetCriterion(label: 'At least 8 characters long', met: lengthOk),
         const SizedBox(height: 8),
         _ResetCriterion(label: 'One number or symbol', met: numberOrSymbol),
@@ -670,7 +715,7 @@ class _ResetCriterion extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = met ? AppColors.success : AppColors.bodyMuted;
+    final color = met ? const Color(0xFF13803D) : AppColors.bodyMuted;
     return Row(
       children: [
         AnimatedContainer(
@@ -714,6 +759,29 @@ class _PasswordUpdatedStage extends StatelessWidget {
                       .bodyLarge
                       ?.copyWith(color: AppColors.bodyMuted),
                   textAlign: TextAlign.center),
+              const SizedBox(height: 24),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: AppColors.warningSurface,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(Icons.info_outline_rounded,
+                        color: Color(0xFF986000), size: 20),
+                    SizedBox(width: 12),
+                    Expanded(
+                        child: Text(
+                      'For security, you’ve been signed out of all other devices.',
+                      style: TextStyle(
+                          fontSize: 14, height: 1.5, color: Color(0xFF805000)),
+                    )),
+                  ],
+                ),
+              ),
             ]),
           )),
           const SizedBox(height: 12),

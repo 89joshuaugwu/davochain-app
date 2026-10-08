@@ -328,17 +328,30 @@ class DavoTextField extends StatefulWidget {
 
 class _DavoTextFieldState extends State<DavoTextField> {
   late bool _obscure;
+  final _focusNode = FocusNode();
 
   @override
   void initState() {
     super.initState();
     _obscure = widget.obscureText;
+    _focusNode.addListener(_focusChanged);
+  }
+
+  void _focusChanged() {
+    if (mounted) setState(() {});
+  }
+
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    super.dispose();
   }
 
   @override
   void didUpdateWidget(covariant DavoTextField oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.obscureText != widget.obscureText && !widget.showVisibilityToggle) {
+    if (oldWidget.obscureText != widget.obscureText &&
+        !widget.showVisibilityToggle) {
       _obscure = widget.obscureText;
     }
   }
@@ -350,7 +363,9 @@ class _DavoTextFieldState extends State<DavoTextField> {
         ? AppColors.danger
         : success
             ? AppColors.success
-            : const Color(0x14121212);
+            : _focusNode.hasFocus
+                ? AppColors.primary
+                : const Color(0xFFD2D6DF);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -373,6 +388,8 @@ class _DavoTextFieldState extends State<DavoTextField> {
             border: Border.all(color: borderColor),
           ),
           child: TextField(
+            focusNode: _focusNode,
+            onTapOutside: (_) => _focusNode.unfocus(),
             controller: widget.controller,
             keyboardType: widget.keyboardType,
             textInputAction: widget.textInputAction,
@@ -399,7 +416,8 @@ class _DavoTextFieldState extends State<DavoTextField> {
               focusedBorder: InputBorder.none,
               errorBorder: InputBorder.none,
               focusedErrorBorder: InputBorder.none,
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
               prefixIcon: widget.iconAsset == null
                   ? null
                   : Padding(
@@ -411,7 +429,8 @@ class _DavoTextFieldState extends State<DavoTextField> {
                         filterQuality: FilterQuality.high,
                       ),
                     ),
-              prefixIconConstraints: const BoxConstraints(minWidth: 42, minHeight: 20),
+              prefixIconConstraints:
+                  const BoxConstraints(minWidth: 42, minHeight: 20),
               suffixIcon: widget.showVisibilityToggle
                   ? IconButton(
                       tooltip: _obscure ? 'Show password' : 'Hide password',
@@ -449,7 +468,9 @@ class _DavoTextFieldState extends State<DavoTextField> {
                     style: TextStyle(
                       fontSize: 12,
                       height: 1.3,
-                      color: widget.errorText != null ? AppColors.danger : AppColors.success,
+                      color: widget.errorText != null
+                          ? AppColors.danger
+                          : AppColors.success,
                     ),
                   ),
                 )
@@ -485,12 +506,15 @@ class Entrance extends StatelessWidget {
       builder: (context, value, child) {
         final delayed = delay.inMilliseconds == 0
             ? value
-            : ((value * (430 + delay.inMilliseconds) - delay.inMilliseconds) / 430)
-                .clamp(0.0, 1.0).toDouble();
+            : ((value * (430 + delay.inMilliseconds) - delay.inMilliseconds) /
+                    430)
+                .clamp(0.0, 1.0)
+                .toDouble();
         return Opacity(
           opacity: delayed,
           child: FractionalTranslation(
-            translation: Offset(offset.dx * (1 - delayed), offset.dy * (1 - delayed)),
+            translation:
+                Offset(offset.dx * (1 - delayed), offset.dy * (1 - delayed)),
             child: child,
           ),
         );

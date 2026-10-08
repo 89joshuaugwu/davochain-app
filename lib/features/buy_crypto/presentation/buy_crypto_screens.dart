@@ -1,3 +1,5 @@
+import '../../../shared/formatters/grouped_amount_formatter.dart';
+import '../../../shared/widgets/davo_toast.dart';
 import '../../../shared/widgets/davo_result_screen.dart';
 import '../../../shared/widgets/receipt_detail_row.dart';
 import '../../../shared/widgets/trade_form_layout.dart';
@@ -14,6 +16,7 @@ import '../../../core/navigation/app_routes.dart';
 import '../../../core/theme/app_theme.dart';
 import 'buy_crypto_models.dart';
 import 'buy_crypto_widgets.dart';
+import 'buy_receipt_screen.dart';
 
 class BuyAmountScreen extends StatefulWidget {
   const BuyAmountScreen({super.key, required this.initialOrder});
@@ -48,7 +51,7 @@ class _BuyAmountScreenState extends State<BuyAmountScreen> {
   double get _amount {
     final normalized =
         _amountController.text.replaceAll(',', '').replaceAll('₦', '').trim();
-    return double.tryParse(normalized) ?? 0;
+    return parseAmount(normalized);
   }
 
   bool get _canContinue => _amount > 0 && _amount <= _order.wallet.balance;
@@ -158,10 +161,7 @@ class _BuyAmountScreenState extends State<BuyAmountScreen> {
                   focusNode: _focusNode,
                   keyboardType:
                       const TextInputType.numberWithOptions(decimal: true),
-                  inputFormatters: [
-                    FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')),
-                    _ThousandsFormatter()
-                  ],
+                  inputFormatters: const [GroupedAmountInputFormatter()],
                   onChanged: (_) => setState(() {}),
                   textAlign: TextAlign.center,
                   style: const TextStyle(
@@ -207,7 +207,7 @@ class _BuyAmountScreenState extends State<BuyAmountScreen> {
                       color: AppColors.bodyMuted)),
               const SizedBox(width: 4),
               Text(
-                '${crypto.toStringAsFixed(5)} ${_order.asset.symbol}',
+                '${formatGroupedAmount(crypto.toStringAsFixed(5))} ${_order.asset.symbol}',
                 style: const TextStyle(
                     fontFamily: 'Sora',
                     fontSize: 14,
@@ -272,65 +272,48 @@ class _BuyAmountScreenState extends State<BuyAmountScreen> {
 class BuyReviewScreen extends StatelessWidget {
   const BuyReviewScreen({super.key, required this.order});
   final BuyCryptoOrder order;
-
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FB),
-      body: SafeArea(
-        bottom: false,
-        child: Stack(
-          children: [
-            Positioned(
-                left: 0,
-                right: 0,
-                top: 16,
-                height: 40,
-                child: _ExactTradeHeader(
-                    title: 'Buy', onBack: () => Navigator.pop(context))),
-            Positioned(
-                left: 16,
-                right: 16,
-                top: 76,
-                height: 193,
-                child: _ReviewExchangeCards(order: order)),
-            Positioned(
-              left: 16,
-              right: 16,
-              top: 290,
-              height: 192,
-              child: _ExactReviewSummary(
-                rows: [
-                  (
-                    'Exchange Rate',
-                    '1 USDT   ₦${_formatNgn(BuyCryptoOrder.usdtNgnRate)}',
-                    false
-                  ),
-                  ('Network Fee', 'Free', true),
-                  ('Total you Pay', '₦${_formatNgn(order.ngnAmount)}', false),
-                ],
-              ),
-            ),
-            Positioned(
-              left: 16,
-              right: 16,
-              top: 661,
-              height: 48,
-              child: _PrimaryButton(
-                label: 'Confirm',
-                enabled: true,
-                onPressed: () {
-                  HapticFeedback.mediumImpact();
-                  Navigator.of(context).push<void>(AppPageRoute<void>(
-                      builder: (_) => BuyPinScreen(order: order)));
-                },
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+  Widget build(BuildContext context) => Scaffold(
+        backgroundColor: AppColors.offWhite,
+        bottomNavigationBar: SafeArea(
+            top: false,
+            child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+                child: _PrimaryButton(
+                    label: 'Confirm',
+                    enabled: true,
+                    onPressed: () {
+                      HapticFeedback.mediumImpact();
+                      Navigator.of(context).push<void>(AppPageRoute<void>(
+                          builder: (_) => BuyPinScreen(order: order)));
+                    }))),
+        body: SafeArea(
+            bottom: false,
+            child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+                child: Column(children: [
+                  SizedBox(
+                      height: 40,
+                      child: _ExactTradeHeader(
+                          title: 'Buy', onBack: () => Navigator.pop(context))),
+                  const SizedBox(height: 20),
+                  _ReviewExchangeCards(order: order),
+                  const SizedBox(height: 24),
+                  _ExactReviewSummary(rows: [
+                    (
+                      'Exchange Rate',
+                      '1 USDT \u2248 \u20a6${_formatNgn(BuyCryptoOrder.usdtNgnRate)}',
+                      false
+                    ),
+                    ('Network Fee', 'Free', true),
+                    (
+                      'Total you Pay',
+                      '\u20a6${_formatNgn(order.ngnAmount)}',
+                      false
+                    ),
+                  ]),
+                ]))),
+      );
 }
 
 class BuyPinScreen extends StatelessWidget {
@@ -413,7 +396,7 @@ class _BuyProgressScreenState extends State<BuyProgressScreen> {
               top: 257,
               height: 22,
               child: Text(
-                'Buying ${widget.order.cryptoAmount.toStringAsFixed(5)} ${widget.order.asset.symbol}',
+                'Buying ${formatGroupedAmount(widget.order.cryptoAmount.toStringAsFixed(5))} ${widget.order.asset.symbol}',
                 textAlign: TextAlign.center,
                 style: const TextStyle(
                   fontFamily: 'Sora',
@@ -455,7 +438,7 @@ class BuySuccessScreen extends StatelessWidget {
   Widget build(BuildContext context) => DavoResultScreen(
         title: 'Purchase successful',
         message:
-            'You bought ${order.cryptoAmount.toStringAsFixed(4)} ${order.asset.symbol} for \u20A6${_formatNgn(order.ngnAmount)}.',
+            'You bought ${formatGroupedAmount(order.cryptoAmount.toStringAsFixed(4))} ${order.asset.symbol} for \u20A6${_formatNgn(order.ngnAmount)}.',
         appBar: AppBar(
             backgroundColor: Colors.white,
             leading: IconButton(
@@ -520,7 +503,7 @@ class BuyTransactionDetailsScreen extends StatelessWidget {
                   child: Column(
                     children: [
                       Text(
-                        '${order.cryptoAmount.toStringAsFixed(4)} ${order.asset.symbol}',
+                        '${formatGroupedAmount(order.cryptoAmount.toStringAsFixed(4))} ${order.asset.symbol}',
                         style: const TextStyle(
                           fontFamily: 'Sora',
                           fontSize: 24,
@@ -531,7 +514,7 @@ class BuyTransactionDetailsScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        '\$${order.usdAmount.toStringAsFixed(2)} USD',
+                        '\$${formatGroupedAmount(order.usdAmount.toStringAsFixed(2))} USD',
                         style: const TextStyle(
                           fontFamily: 'Sora',
                           fontSize: 14,
@@ -617,13 +600,11 @@ class BuyTransactionDetailsScreen extends StatelessWidget {
                 child: FilledButton(
                   onPressed: () {
                     HapticFeedback.selectionClick();
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Receipt ready to share'),
-                        behavior: SnackBarBehavior.floating,
-                        duration: Duration(milliseconds: 1200),
-                      ),
-                    );
+                    Navigator.of(context).push(AppPageRoute<void>(
+                        builder: (_) => BuyReceiptScreen(
+                            order: order,
+                            date: now,
+                            transactionId: transactionId)));
                   },
                   style: FilledButton.styleFrom(
                     elevation: 0,
@@ -686,58 +667,39 @@ class _ExactTradeHeader extends StatelessWidget {
 class _ExactReviewSummary extends StatelessWidget {
   const _ExactReviewSummary({required this.rows});
   final List<(String, String, bool)> rows;
-
   @override
   Widget build(BuildContext context) => Container(
-        width: double.infinity,
-        height: 192,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
         decoration: BoxDecoration(
             color: Colors.white, borderRadius: BorderRadius.circular(8)),
-        child: Stack(
-          children: List.generate(rows.length, (i) {
-            final row = rows[i];
-            final top = 31.5 + (i * 47.0);
-            return Positioned(
-              left: 15,
-              right: 15,
-              top: top,
-              height: i == rows.length - 1 ? 35 : 35,
-              child: Column(
-                children: [
-                  SizedBox(
-                    height: 19,
-                    child: Row(
-                      children: [
-                        Text(row.$1,
-                            style: const TextStyle(
-                                fontFamily: 'Sora',
-                                fontSize: 14,
-                                height: 1.35,
-                                color: AppColors.bodyMuted)),
-                        const Spacer(),
-                        Flexible(
-                            child: Text(row.$2,
-                                textAlign: TextAlign.right,
-                                style: TextStyle(
-                                    fontFamily: 'Sora',
-                                    fontSize: 14,
-                                    height: 1.35,
-                                    color: row.$3
-                                        ? AppColors.primary
-                                        : AppColors.ink))),
-                      ],
-                    ),
-                  ),
-                  if (i != rows.length - 1) ...[
-                    const SizedBox(height: 15),
-                    const Divider(
-                        height: 1, thickness: .5, color: Color(0xFFF2F2F2)),
-                  ],
-                ],
-              ),
-            );
-          }),
-        ),
+        child: Column(children: [
+          for (var i = 0; i < rows.length; i++) ...[
+            if (i > 0)
+              const Divider(height: 1, thickness: .5, color: Color(0xFFEBEDF3)),
+            Padding(
+                padding: const EdgeInsets.symmetric(vertical: 18),
+                child: LayoutBuilder(
+                    builder: (context, constraints) => Row(children: [
+                          SizedBox(
+                              width: constraints.maxWidth * .30,
+                              child: Text(rows[i].$1,
+                                  style: const TextStyle(
+                                      fontSize: 12,
+                                      color: AppColors.bodyMuted))),
+                          const SizedBox(width: 12),
+                          Expanded(
+                              child: Text(rows[i].$2,
+                                  textAlign: TextAlign.right,
+                                  style: TextStyle(
+                                      fontSize: 12,
+                                      height: 1.5,
+                                      fontWeight: FontWeight.w500,
+                                      color: rows[i].$3
+                                          ? AppColors.primary
+                                          : AppColors.ink))),
+                        ]))),
+          ],
+        ]),
       );
 }
 
@@ -812,7 +774,7 @@ class _ModeToggle extends StatelessWidget {
                         child: Padding(
                             padding: const EdgeInsets.symmetric(vertical: 12),
                             child: Center(
-                                child: Text(['Buy', 'Sell', 'Swap'][index],
+                                child: Text(['Buy', 'Sell', 'Convert'][index],
                                     style: TextStyle(
                                         fontSize: 14,
                                         fontWeight: FontWeight.w600,
@@ -912,142 +874,61 @@ class _PrimaryButton extends StatelessWidget {
 class _ReviewExchangeCards extends StatelessWidget {
   const _ReviewExchangeCards({required this.order});
   final BuyCryptoOrder order;
-
+  Widget _card(String label, Widget icon, String value, String subtitle) =>
+      Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+            color: Colors.white, borderRadius: BorderRadius.circular(8)),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text(label,
+              style: const TextStyle(fontSize: 12, color: AppColors.bodyMuted)),
+          const SizedBox(height: 12),
+          Row(children: [
+            icon,
+            const SizedBox(width: 12),
+            Expanded(
+                child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                  Text(value,
+                      style: const TextStyle(
+                          fontSize: 16, fontWeight: FontWeight.w600)),
+                  const SizedBox(height: 2),
+                  Text(subtitle,
+                      style: const TextStyle(
+                          fontSize: 12, color: AppColors.bodyMuted)),
+                ]))
+          ]),
+        ]),
+      );
   @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      height: 193,
-      child: Stack(
-        children: [
+  Widget build(BuildContext context) => Column(children: [
+        _card('You will pay', _WalletBadge(wallet: order.wallet),
+            '\u20a6${_formatNgn(order.ngnAmount)}', order.wallet.name),
+        Stack(clipBehavior: Clip.none, children: [
+          Padding(
+              padding: const EdgeInsets.only(top: 10),
+              child: _card(
+                  'You will receive',
+                  BuyAssetIcon(asset: order.asset, size: 32),
+                  '${formatGroupedAmount(order.cryptoAmount.toStringAsFixed(5))} ${order.asset.symbol}',
+                  '\u2248 \$${formatGroupedAmount(order.usdAmount.toStringAsFixed(2))} USD')),
           Positioned(
-            left: 0,
-            right: 0,
-            top: 0,
-            height: 92,
-            child: Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                border: Border.all(color: const Color(0xFFF5F6F9)),
-                borderRadius: BorderRadius.circular(6),
-              ),
-              child: Stack(
-                children: [
-                  const Positioned(
-                      left: 16,
-                      top: 14,
-                      child: Text('You will pay',
-                          style: TextStyle(
-                              fontFamily: 'Sora',
-                              fontSize: 12,
-                              height: 1.25,
-                              color: AppColors.bodyMuted))),
-                  Positioned(
-                      left: 18,
-                      top: 44.5,
-                      width: 32,
-                      height: 32,
-                      child: _WalletBadge(wallet: order.wallet)),
-                  Positioned(
-                      left: 62,
-                      top: 41,
-                      child: Text('₦${_formatNgn(order.ngnAmount)}',
-                          style: const TextStyle(
-                              fontFamily: 'Sora',
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                              height: 1.35,
-                              color: AppColors.ink))),
-                  Positioned(
-                      left: 62,
-                      top: 66,
-                      child: Text(order.wallet.name,
-                          style: const TextStyle(
-                              fontFamily: 'Sora',
-                              fontSize: 10,
-                              height: 1.3,
-                              color: AppColors.bodyMuted))),
-                ],
-              ),
-            ),
-          ),
-          Positioned(
-            left: 0,
-            right: 0,
-            top: 101,
-            height: 92,
-            child: Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                border: Border.all(color: const Color(0xFFF5F6F9)),
-                borderRadius: BorderRadius.circular(6),
-              ),
-              child: Stack(
-                children: [
-                  const Positioned(
-                      left: 16,
-                      top: 14,
-                      child: Text('You will receive',
-                          style: TextStyle(
-                              fontFamily: 'Sora',
-                              fontSize: 12,
-                              height: 1.25,
-                              color: AppColors.bodyMuted))),
-                  Positioned(
-                      left: 16,
-                      top: 44.5,
-                      width: 32,
-                      height: 32,
-                      child: Center(
-                          child: BuyAssetIcon(asset: order.asset, size: 20))),
-                  Positioned(
-                      left: 54,
-                      top: 41,
-                      child: Text(order.cryptoAmount.toStringAsFixed(5),
-                          style: const TextStyle(
-                              fontFamily: 'Sora',
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                              height: 1.35,
-                              color: AppColors.ink))),
-                  const Positioned(
-                      left: 54,
-                      top: 65.5,
-                      child: Text('≈',
-                          style: TextStyle(
-                              fontFamily: 'Sora',
-                              fontSize: 12,
-                              height: 1.0,
-                              color: AppColors.bodyMuted))),
-                  Positioned(
-                      left: 72,
-                      top: 66,
-                      child: Text('\$${order.usdAmount.toStringAsFixed(2)}',
-                          style: const TextStyle(
-                              fontFamily: 'Sora',
-                              fontSize: 10,
-                              height: 1.3,
-                              color: AppColors.bodyMuted))),
-                ],
-              ),
-            ),
-          ),
-          Positioned(
-            left: 159,
-            top: 78,
-            width: 40,
-            height: 40,
-            child: Container(
-              padding: const EdgeInsets.all(8),
-              decoration: const BoxDecoration(
-                  color: Color(0xFFF4F7FF), shape: BoxShape.circle),
-              child: Image.asset('assets/figma_exact/buy_exchange_down.png',
-                  width: 24, height: 24, fit: BoxFit.contain),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+              top: -15,
+              left: 0,
+              right: 0,
+              height: 40,
+              child: Center(
+                  child: Container(
+                      width: 40,
+                      height: 40,
+                      decoration: const BoxDecoration(
+                          color: Color(0xFFF4F7FF), shape: BoxShape.circle),
+                      child: const Icon(Icons.arrow_downward_rounded,
+                          size: 22, color: AppColors.primary)))),
+        ]),
+      ]);
 }
 
 class _DetailsRow extends StatelessWidget {
@@ -1074,11 +955,7 @@ class _DetailsRow extends StatelessWidget {
         valueColor: accent ? AppColors.primary : AppColors.ink,
         onCopy: () {
           HapticFeedback.selectionClick();
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-            content: Text('Transaction ID copied'),
-            behavior: SnackBarBehavior.floating,
-            duration: Duration(milliseconds: 1200),
-          ));
+          showDavoToast(context, 'Transaction ID copied');
         },
       );
 }
@@ -1092,44 +969,10 @@ class _DetailsDivider extends StatelessWidget {
       );
 }
 
-class _ThousandsFormatter extends TextInputFormatter {
-  @override
-  TextEditingValue formatEditUpdate(
-      TextEditingValue oldValue, TextEditingValue newValue) {
-    final raw = newValue.text.replaceAll(',', '');
-    if (raw.isEmpty) return newValue.copyWith(text: '');
-    final parts = raw.split('.');
-    if (parts.length > 2) return oldValue;
-    final digits = parts.first.replaceAll(RegExp(r'[^0-9]'), '');
-    final grouped = _groupDigits(digits);
-    final decimal = parts.length == 2
-        ? '.${parts[1].replaceAll(RegExp(r'[^0-9]'), '').substring(0, math.min(2, parts[1].replaceAll(RegExp(r'[^0-9]'), '').length))}'
-        : '';
-    final text = '$grouped$decimal';
-    return TextEditingValue(
-        text: text, selection: TextSelection.collapsed(offset: text.length));
-  }
-
-  static String _groupDigits(String digits) {
-    if (digits.length <= 3) return digits;
-    final chars = digits.split('').reversed.toList();
-    final groups = <String>[];
-    for (var i = 0; i < chars.length; i += 3) {
-      groups
-          .add(chars.sublist(i, math.min(i + 3, chars.length)).reversed.join());
-    }
-    return groups.reversed.join(',');
-  }
-}
-
-String _formatEditable(double value) {
-  final fixed = value == value.roundToDouble()
-      ? value.toStringAsFixed(0)
-      : value.toStringAsFixed(2);
-  final parts = fixed.split('.');
-  final grouped = _ThousandsFormatter._groupDigits(parts.first);
-  return parts.length == 2 ? '$grouped.${parts[1]}' : grouped;
-}
+String _formatEditable(double value) =>
+    formatGroupedAmount(value == value.roundToDouble()
+        ? value.toStringAsFixed(0)
+        : value.toStringAsFixed(2));
 
 String _formatNgn(double value) {
   final fixed = value.toStringAsFixed(2);

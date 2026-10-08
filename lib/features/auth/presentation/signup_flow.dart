@@ -1,3 +1,4 @@
+import '../../../shared/widgets/davo_animated_checkbox.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -48,7 +49,8 @@ class _CountrySelectionScreenState extends State<CountrySelectionScreen> {
           const Entrance(
             child: DavoScreenIntro(
               title: 'Create Account',
-              subtitle: 'Choose where you’re located to personalize your Davochain experience.',
+              subtitle:
+                  'Choose where you’re located to personalize your Davochain experience.',
             ),
           ),
           const SizedBox(height: 24),
@@ -70,7 +72,10 @@ class _CountrySelectionScreenState extends State<CountrySelectionScreen> {
                   onChanged: (value) => setState(() => _agreed = value),
                 ),
                 const SizedBox(width: 12),
-                Expanded(child: _AgreementCopy()),
+                Expanded(
+                    child: Padding(
+                        padding: const EdgeInsets.only(top: 6),
+                        child: _AgreementCopy())),
               ],
             ),
           ),
@@ -161,43 +166,15 @@ class _CountryField extends StatelessWidget {
 
 class _AgreementCheckbox extends StatelessWidget {
   const _AgreementCheckbox({required this.checked, required this.onChanged});
-
   final bool checked;
   final ValueChanged<bool> onChanged;
-
   @override
-  Widget build(BuildContext context) {
-    return Semantics(
-      checked: checked,
-      button: true,
-      label: 'Agree to terms and privacy policy',
-      child: InkWell(
-        onTap: () => onChanged(!checked),
-        borderRadius: BorderRadius.circular(6),
-        child: AnimatedSwitcher(
-          duration: const Duration(milliseconds: 180),
-          child: checked
-              ? Image.asset(
-                  '$_iconRoot/tick_square.png',
-                  key: const ValueKey('checked'),
-                  width: 24,
-                  height: 24,
-                  filterQuality: FilterQuality.high,
-                )
-              : Container(
-                  key: const ValueKey('unchecked'),
-                  width: 24,
-                  height: 24,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(4),
-                    border: Border.all(color: AppColors.muted, width: 1.5),
-                  ),
-                ),
-        ),
-      ),
-    );
-  }
+  Widget build(BuildContext context) => DavoAnimatedCheckbox(
+        value: checked,
+        onChanged: onChanged,
+        size: 24,
+        semanticLabel: 'Agree to terms and privacy policy',
+      );
 }
 
 class _AgreementCopy extends StatelessWidget {
@@ -218,7 +195,8 @@ class _AgreementCopy extends StatelessWidget {
           const TextSpan(text: ' as well as our '),
           TextSpan(text: 'Privacy policy', style: link),
           const TextSpan(
-            text: ' including verification of your identity through our third party provider',
+            text:
+                ' including verification of your identity through our third party provider',
           ),
         ],
       ),
@@ -237,7 +215,8 @@ class _CountryPickerSheet extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Select your country', style: Theme.of(context).textTheme.titleMedium),
+          Text('Select your country',
+              style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: 12),
           ..._countries.map(
             (country) => ListTile(
@@ -246,7 +225,8 @@ class _CountryPickerSheet extends StatelessWidget {
               onTap: () => Navigator.pop(context, country),
               leading: Text(country.flag, style: const TextStyle(fontSize: 26)),
               title: Text(country.name),
-              trailing: Text(country.dialCode, style: Theme.of(context).textTheme.bodyMedium),
+              trailing: Text(country.dialCode,
+                  style: Theme.of(context).textTheme.bodyMedium),
             ),
           ),
         ],
@@ -275,7 +255,8 @@ class _AccountDetailsScreenState extends State<_AccountDetailsScreen> {
   bool get _canContinue =>
       _name.text.trim().length >= 2 &&
       _isValidEmail(_email.text.trim()) &&
-      _phone.text.replaceAll(RegExp(r'\D'), '').length >= widget.country.maxDigits;
+      _phone.text.replaceAll(RegExp(r'\D'), '').length >=
+          widget.country.maxDigits;
 
   @override
   void dispose() {
@@ -293,7 +274,8 @@ class _AccountDetailsScreenState extends State<_AccountDetailsScreen> {
   void _refresh() {
     final email = _email.text.trim();
     setState(() {
-      _emailError = email.isNotEmpty && !_isValidEmail(email) ? 'Wrong Email' : null;
+      _emailError =
+          email.isNotEmpty && !_isValidEmail(email) ? 'Wrong Email' : null;
     });
   }
 
@@ -303,7 +285,6 @@ class _AccountDetailsScreenState extends State<_AccountDetailsScreen> {
       child: LayoutBuilder(
         builder: (context, constraints) {
           return SingleChildScrollView(
-
             child: ConstrainedBox(
               constraints: BoxConstraints(minHeight: constraints.maxHeight),
               child: IntrinsicHeight(
@@ -348,7 +329,10 @@ class _AccountDetailsScreenState extends State<_AccountDetailsScreen> {
                     const SizedBox(height: 16),
                     Entrance(
                       delay: const Duration(milliseconds: 130),
-                      child: _PhoneField(country: widget.country, controller: _phone, onChanged: _refresh),
+                      child: _PhoneField(
+                          country: widget.country,
+                          controller: _phone,
+                          onChanged: _refresh),
                     ),
                     const SizedBox(height: 16),
                     Entrance(
@@ -386,7 +370,10 @@ class _AccountDetailsScreenState extends State<_AccountDetailsScreen> {
 }
 
 class _PhoneField extends StatelessWidget {
-  const _PhoneField({required this.country, required this.controller, required this.onChanged});
+  const _PhoneField(
+      {required this.country,
+      required this.controller,
+      required this.onChanged});
 
   final _CountryOption country;
   final TextEditingController controller;
@@ -418,7 +405,9 @@ class _PhoneField extends StatelessWidget {
                 children: [
                   Text(country.flag, style: const TextStyle(fontSize: 18)),
                   const SizedBox(width: 5),
-                  Text(country.dialCode, style: const TextStyle(fontSize: 12, color: AppColors.body)),
+                  Text(country.dialCode,
+                      style:
+                          const TextStyle(fontSize: 12, color: AppColors.body)),
                 ],
               ),
             ),
@@ -436,11 +425,16 @@ class _PhoneField extends StatelessWidget {
                     LengthLimitingTextInputFormatter(country.maxDigits),
                   ],
                   onChanged: (_) => onChanged(),
-                  style: const TextStyle(fontSize: 14, color: AppColors.bodyMuted),
+                  style:
+                      const TextStyle(fontSize: 14, color: AppColors.bodyMuted),
                   decoration: InputDecoration(
-                    hintText: country.name == 'Nigeria' ? '9062568004' : 'Phone number',
-                    hintStyle: const TextStyle(fontSize: 14, color: AppColors.muted),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    hintText: country.name == 'Nigeria'
+                        ? '9062568004'
+                        : 'Phone number',
+                    hintStyle:
+                        const TextStyle(fontSize: 14, color: AppColors.muted),
+                    contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 12),
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
                       borderSide: const BorderSide(color: Color(0x14121212)),

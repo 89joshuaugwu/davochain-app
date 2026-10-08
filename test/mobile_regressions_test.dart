@@ -1,3 +1,4 @@
+import 'package:davochain/features/profile_settings/presentation/verification/verification_overview_screen.dart';
 import 'package:davochain/core/navigation/app_page_route.dart';
 import 'package:davochain/core/theme/app_theme.dart';
 import 'package:davochain/features/buy_crypto/presentation/buy_crypto_models.dart';
@@ -49,7 +50,7 @@ void main() {
 
   for (final entry in <String, Type>{
     'History': TransactionHistoryScreen,
-    'Finish setting up your account': KycTierOverviewScreen,
+    'Complete basic verification': VerificationOverviewScreen,
     'Earn \$5': ReferralDashboardScreen,
   }.entries) {
     testWidgets('${entry.key} opens its preview destination', (tester) async {

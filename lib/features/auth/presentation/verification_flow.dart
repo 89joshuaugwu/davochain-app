@@ -12,9 +12,11 @@ import '../../../shared/widgets/auth_widgets.dart';
 enum VerificationKind { email, sms }
 
 class VerificationScreen extends StatefulWidget {
-  const VerificationScreen({super.key, required this.kind});
+  const VerificationScreen(
+      {super.key, required this.kind, this.now = DateTime.now});
 
   final VerificationKind kind;
+  final DateTime Function() now;
 
   @override
   State<VerificationScreen> createState() => _VerificationScreenState();
@@ -26,7 +28,8 @@ class _VerificationScreenState extends State<VerificationScreen>
   final _controllers = List.generate(4, (_) => TextEditingController());
   final _focusNodes = List.generate(4, (_) => FocusNode());
   Timer? _timer;
-  int _seconds = 34;
+  int _seconds = 30;
+  DateTime? _resendAt;
   bool _error = false;
   bool _verified = false;
 
@@ -55,14 +58,17 @@ class _VerificationScreenState extends State<VerificationScreen>
 
   void _startTimer() {
     _timer?.cancel();
-    setState(() => _seconds = 34);
+    _resendAt = widget.now().add(const Duration(seconds: 30));
+    setState(() => _seconds = 30);
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (!mounted) return;
-      if (_seconds <= 0) {
+      if (!mounted) {
         timer.cancel();
-      } else {
-        setState(() => _seconds--);
+        return;
       }
+      final remaining = _resendAt!.difference(widget.now()).inMilliseconds;
+      final seconds = (remaining / 1000).ceil().clamp(0, 30);
+      if (seconds == 0) timer.cancel();
+      if (seconds != _seconds) setState(() => _seconds = seconds);
     });
   }
 
@@ -93,6 +99,7 @@ class _VerificationScreenState extends State<VerificationScreen>
     }
 
     HapticFeedback.lightImpact();
+    _timer?.cancel();
     setState(() => _verified = true);
   }
 

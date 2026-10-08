@@ -1,3 +1,4 @@
+import '../../../shared/widgets/solana_icon.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -39,7 +40,11 @@ class BuyCryptoAssetSheet extends StatelessWidget {
             child: Text(
               'Select Cryptocurrency',
               textAlign: TextAlign.center,
-              style: TextStyle(fontFamily: 'Sora', fontSize: 14, height: 1.35, color: AppColors.ink),
+              style: TextStyle(
+                  fontFamily: 'Sora',
+                  fontSize: 14,
+                  height: 1.35,
+                  color: AppColors.ink),
             ),
           ),
           Positioned(
@@ -50,7 +55,8 @@ class BuyCryptoAssetSheet extends StatelessWidget {
             child: InkResponse(
               onTap: () => Navigator.pop(context),
               radius: 20,
-              child: Image.asset('assets/figma_exact/buy_close.png', width: 24, height: 24),
+              child: Image.asset('assets/figma_exact/buy_close.png',
+                  width: 24, height: 24),
             ),
           ),
           ...List.generate(BuyCryptoAsset.values.length, (index) {
@@ -110,7 +116,11 @@ class BuyFundingWalletSheet extends StatelessWidget {
             child: Text(
               'Select wallet to buy from',
               textAlign: TextAlign.center,
-              style: TextStyle(fontFamily: 'Sora', fontSize: 14, height: 1.35, color: AppColors.ink),
+              style: TextStyle(
+                  fontFamily: 'Sora',
+                  fontSize: 14,
+                  height: 1.35,
+                  color: AppColors.ink),
             ),
           ),
           Positioned(
@@ -121,7 +131,8 @@ class BuyFundingWalletSheet extends StatelessWidget {
             child: InkResponse(
               onTap: () => Navigator.pop(context),
               radius: 20,
-              child: Image.asset('assets/figma_exact/buy_close.png', width: 24, height: 24),
+              child: Image.asset('assets/figma_exact/buy_close.png',
+                  width: 24, height: 24),
             ),
           ),
           ...List.generate(BuyFundingWallet.values.length, (index) {
@@ -163,11 +174,50 @@ class _ExactAssetSheetRow extends StatelessWidget {
           height: 55,
           child: Stack(
             children: [
-              Positioned(left: 0, top: 7, width: 37, height: 37, child: BuyAssetIcon(asset: asset, size: 37)),
-              Positioned(left: 49, top: 7.5, child: Text(asset.name, style: const TextStyle(fontFamily: 'Sora', fontSize: 14, height: 1.35, color: AppColors.ink))),
-              Positioned(left: 49, top: 28.5, child: Text(asset.symbol, style: const TextStyle(fontFamily: 'Sora', fontSize: 12, height: 1.25, color: AppColors.body))),
-              const Positioned(right: 0, top: 8.5, child: Text('0.00 USD', textAlign: TextAlign.right, style: TextStyle(fontFamily: 'Sora', fontSize: 14, height: 1.35, color: AppColors.body))),
-              Positioned(right: 0, top: 29.5, child: Text(_bottom, textAlign: TextAlign.right, style: const TextStyle(fontFamily: 'Sora', fontSize: 10, height: 1.3, color: AppColors.bodyMuted))),
+              Positioned(
+                  left: 0,
+                  top: 7,
+                  width: 37,
+                  height: 37,
+                  child: BuyAssetIcon(asset: asset, size: 37)),
+              Positioned(
+                  left: 49,
+                  top: 7.5,
+                  child: Text(asset.name,
+                      style: const TextStyle(
+                          fontFamily: 'Sora',
+                          fontSize: 14,
+                          height: 1.35,
+                          color: AppColors.ink))),
+              Positioned(
+                  left: 49,
+                  top: 28.5,
+                  child: Text(asset.symbol,
+                      style: const TextStyle(
+                          fontFamily: 'Sora',
+                          fontSize: 12,
+                          height: 1.25,
+                          color: AppColors.body))),
+              const Positioned(
+                  right: 0,
+                  top: 8.5,
+                  child: Text('0.00 USD',
+                      textAlign: TextAlign.right,
+                      style: TextStyle(
+                          fontFamily: 'Sora',
+                          fontSize: 14,
+                          height: 1.35,
+                          color: AppColors.body))),
+              Positioned(
+                  right: 0,
+                  top: 29.5,
+                  child: Text(_bottom,
+                      textAlign: TextAlign.right,
+                      style: const TextStyle(
+                          fontFamily: 'Sora',
+                          fontSize: 10,
+                          height: 1.3,
+                          color: AppColors.bodyMuted))),
             ],
           ),
         ),
@@ -191,19 +241,50 @@ class _ExactWalletSheetRow extends StatelessWidget {
                 top: 7,
                 width: 32,
                 height: 32,
-                child: Image.asset(wallet.iconAsset, width: 32, height: 32, fit: BoxFit.contain),
+                child: Image.asset(wallet.iconAsset,
+                    width: 32, height: 32, fit: BoxFit.contain),
               ),
-              Positioned(left: 44, top: 7, child: Text(wallet.name, style: const TextStyle(fontFamily: 'Sora', fontSize: 14, height: 1.35, color: AppColors.ink))),
-              Positioned(left: 44, top: 28, child: Text(wallet.symbol, style: const TextStyle(fontFamily: 'Sora', fontSize: 12, height: 1.25, color: AppColors.body))),
+              Positioned(
+                  left: 44,
+                  top: 7,
+                  child: Text(wallet.name,
+                      style: const TextStyle(
+                          fontFamily: 'Sora',
+                          fontSize: 14,
+                          height: 1.35,
+                          color: AppColors.ink))),
+              Positioned(
+                  left: 44,
+                  top: 28,
+                  child: Text(wallet.symbol,
+                      style: const TextStyle(
+                          fontFamily: 'Sora',
+                          fontSize: 12,
+                          height: 1.25,
+                          color: AppColors.body))),
               Positioned(
                 right: 0,
                 top: 8,
-                child: Text(wallet == BuyFundingWallet.ngn ? '0.00 USD' : '100.50 USD', textAlign: TextAlign.right, style: const TextStyle(fontFamily: 'Sora', fontSize: 14, height: 1.35, color: AppColors.body)),
+                child: Text(
+                    wallet == BuyFundingWallet.ngn ? '0.00 USD' : '100.50 USD',
+                    textAlign: TextAlign.right,
+                    style: const TextStyle(
+                        fontFamily: 'Sora',
+                        fontSize: 14,
+                        height: 1.35,
+                        color: AppColors.body)),
               ),
               Positioned(
                 right: 0,
                 top: 29,
-                child: Text(wallet == BuyFundingWallet.ngn ? '0.00₦' : '135,000.00 ₦', textAlign: TextAlign.right, style: const TextStyle(fontFamily: 'Sora', fontSize: 10, height: 1.3, color: AppColors.bodyMuted)),
+                child: Text(
+                    wallet == BuyFundingWallet.ngn ? '0.00₦' : '135,000.00 ₦',
+                    textAlign: TextAlign.right,
+                    style: const TextStyle(
+                        fontFamily: 'Sora',
+                        fontSize: 10,
+                        height: 1.3,
+                        color: AppColors.bodyMuted)),
               ),
             ],
           ),
@@ -226,6 +307,7 @@ class BuyAssetIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (asset == BuyCryptoAsset.solana) return SolanaIcon(size: size);
     final visualSize = switch (asset) {
       BuyCryptoAsset.bitcoin => size * (36 / 37),
       BuyCryptoAsset.ethereum => size,

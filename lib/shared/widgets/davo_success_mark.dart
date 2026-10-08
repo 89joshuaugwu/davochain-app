@@ -36,7 +36,7 @@ class _DavoSuccessMarkState extends State<DavoSuccessMark>
       _started = true;
       _controller = AnimationController(
         vsync: this,
-        duration: const Duration(milliseconds: 850),
+        duration: const Duration(milliseconds: 800),
       )..forward();
     }
   }
@@ -87,68 +87,42 @@ class _SuccessPainter extends CustomPainter {
     canvas.translate((size.width - side) / 2, (size.height - side) / 2);
     canvas.scale(side / 148);
     const center = Offset(74, 74);
-    final arrival = Curves.easeOutCubic.transform(_phase(0, .5));
-    final halo = Curves.easeOutCubic.transform(_phase(0, .8));
-    final accentOpacity = math.sin(math.pi * _phase(.08, .9));
+    final gather = Curves.easeOutCubic.transform(_phase(0, .32));
+    final fill = Curves.easeOutCubic.transform(_phase(.12, .48));
+    final inner = Curves.easeOutCubic.transform(_phase(.32, .62));
 
-    canvas.drawCircle(
-        center, 57, Paint()..color = _blue.withValues(alpha: .08));
-    if (progress < 1) {
+    // The outer disc establishes the mark before the inset and check arrive.
+    // A single gathering ring disappears into the disc, then the final rests.
+    if (progress < .48) {
       canvas.drawCircle(
-        center,
-        52 + 17 * halo,
-        Paint()
-          ..color = _blue.withValues(alpha: .12 * (1 - halo))
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 2,
-      );
-      for (final angle in [-math.pi / 3, math.pi / 7, math.pi * .82]) {
-        final radius = 61 + 7 * halo;
-        final point =
-            center + Offset(math.cos(angle), math.sin(angle)) * radius;
-        canvas.drawCircle(
-          point,
-          1.8,
-          Paint()..color = _blue.withValues(alpha: .55 * accentOpacity),
-        );
-      }
+          center,
+          67 - 10 * gather,
+          Paint()
+            ..color = _blue.withValues(alpha: .15 * (1 - fill))
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 2);
+    }
+    canvas.drawCircle(center, 53 + 4 * fill,
+        Paint()..color = _blue.withValues(alpha: .18 + .82 * fill));
+    if (inner > 0) {
+      canvas.drawCircle(center, 24 * inner,
+          Paint()..color = Colors.white.withValues(alpha: inner));
     }
 
-    canvas.drawCircle(center, 43 + 2 * arrival, Paint()..color = Colors.white);
-    canvas.drawCircle(
-      center,
-      45,
-      Paint()
-        ..color = _blue.withValues(alpha: .12)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 3.5,
-    );
-    canvas.drawArc(
-      Rect.fromCircle(center: center, radius: 45),
-      -math.pi / 2,
-      2 * math.pi * Curves.easeOutCubic.transform(_phase(0, .65)),
-      false,
-      Paint()
-        ..color = _blue
-        ..style = PaintingStyle.stroke
-        ..strokeCap = StrokeCap.round
-        ..strokeWidth = 3.5,
-    );
-
     final check = Path()
-      ..moveTo(55, 74)
-      ..lineTo(68, 87)
-      ..lineTo(94, 61);
+      ..moveTo(62, 74)
+      ..lineTo(71, 83)
+      ..lineTo(88, 66);
     final metric = check.computeMetrics().first;
     canvas.drawPath(
       metric.extractPath(
         0,
-        metric.length * Curves.easeOutCubic.transform(_phase(.25, .85)),
+        metric.length * Curves.easeOutCubic.transform(_phase(.52, .88)),
       ),
       Paint()
         ..color = _blue
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 5.5
+        ..strokeWidth = 6.5
         ..strokeCap = StrokeCap.round
         ..strokeJoin = StrokeJoin.round,
     );

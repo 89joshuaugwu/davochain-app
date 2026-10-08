@@ -13,7 +13,8 @@ void main() {
         (tester) async {
       tester.view.physicalSize = size;
       tester.view.devicePixelRatio = 1;
-      tester.view.padding = const FakeViewPadding(top: 32, bottom: 24);
+      tester.view.padding =
+          FakeViewPadding(top: 32, bottom: size.width == 360 ? 0 : 24);
       addTearDown(tester.view.resetPadding);
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
@@ -27,9 +28,10 @@ void main() {
       final scrollable = tester.state<ScrollableState>(
           find.descendant(of: viewport, matching: find.byType(Scrollable)));
       expect(scrollable.position.maxScrollExtent, greaterThan(0));
-      final fourthBefore =
-          tester.getRect(find.byKey(const ValueKey('dashboard-asset-USDC')));
-      expect(fourthBefore.bottom, greaterThan(visible.bottom));
+      expect(find.byKey(const ValueKey('dashboard-asset-USDC')).hitTestable(),
+          findsNothing);
+      expect(find.byKey(const ValueKey('dashboard-asset-SOL')).hitTestable(),
+          findsNothing);
       for (final code in ['BTC', 'ETH', 'USDT']) {
         final row =
             tester.getRect(find.byKey(ValueKey('dashboard-asset-$code')));
@@ -42,13 +44,15 @@ void main() {
       await tester.pumpAndSettle();
       expect(tester.getRect(promo), before);
       expect(find.text('USD Coin').hitTestable(), findsOneWidget);
+      expect(find.text('Solana').hitTestable(), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
-    testWidgets('successful preview setup reveals all four assets at $size',
+    testWidgets('setup reveals four rows and fifth stays scrollable at $size',
         (tester) async {
       tester.view.physicalSize = size;
       tester.view.devicePixelRatio = 1;
-      tester.view.padding = const FakeViewPadding(top: 32, bottom: 24);
+      tester.view.padding =
+          FakeViewPadding(top: 32, bottom: size.width == 360 ? 0 : 24);
       addTearDown(tester.view.resetPadding);
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
@@ -62,7 +66,7 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.text('Back to Home'));
       await tester.pumpAndSettle();
-      expect(find.text('Finish setting up your account'), findsNothing);
+      expect(find.text('Complete basic verification'), findsNothing);
       final viewport =
           tester.getRect(find.byKey(const ValueKey('dashboard-assets')));
       for (final code in ['BTC', 'ETH', 'USDT', 'USDC']) {
@@ -71,6 +75,12 @@ void main() {
         expect(row.top, greaterThanOrEqualTo(viewport.top));
         expect(row.bottom, lessThanOrEqualTo(viewport.bottom));
       }
+      expect(find.byKey(const ValueKey('dashboard-asset-SOL')).hitTestable(),
+          findsNothing);
+      await tester.drag(find.byKey(const ValueKey('dashboard-assets')),
+          const Offset(0, -140));
+      await tester.pumpAndSettle();
+      expect(find.text('Solana').hitTestable(), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
   }

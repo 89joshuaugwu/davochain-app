@@ -28,8 +28,7 @@ class _FingerprintSetupScreenState extends State<FingerprintSetupScreen> {
                               children: [
                                 if (_enabled)
                                   const DavoSuccessMark(
-                                      semanticLabel:
-                                          'Fingerprint preview enabled')
+                                      semanticLabel: 'Fingerprint enabled')
                                 else
                                   Container(
                                       width: 140,
@@ -44,8 +43,8 @@ class _FingerprintSetupScreenState extends State<FingerprintSetupScreen> {
                                 const SizedBox(height: 32),
                                 Text(
                                     _enabled
-                                        ? 'Fingerprint preview enabled'
-                                        : 'Enable fingerprint preview',
+                                        ? 'Fingerprint enabled'
+                                        : 'Enable fingerprint',
                                     textAlign: TextAlign.center,
                                     style: const TextStyle(
                                         fontSize: 24,
@@ -53,7 +52,7 @@ class _FingerprintSetupScreenState extends State<FingerprintSetupScreen> {
                                         color: AppColors.ink)),
                                 const SizedBox(height: 16),
                                 const Text(
-                                    'Demo only. This setting enables a simulated fingerprint unlock. It does not enrol fingerprints or use device authentication.',
+                                    'Use your fingerprint to unlock your Davochain account quickly and securely.',
                                     textAlign: TextAlign.center,
                                     style: TextStyle(
                                         fontSize: 14,
@@ -61,7 +60,9 @@ class _FingerprintSetupScreenState extends State<FingerprintSetupScreen> {
                                         color: AppColors.bodyMuted)),
                                 const SizedBox(height: 40),
                                 DavoPrimaryButton(
-                                    label: _enabled ? 'Done' : 'Enable preview',
+                                    label: _enabled
+                                        ? 'Done'
+                                        : 'Enable fingerprint',
                                     onPressed: () {
                                       if (_enabled) {
                                         Navigator.pop(context);
