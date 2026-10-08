@@ -48,4 +48,14 @@ Receiving instructions, address copy and QR sharing never create a credited depo
 - `flutter analyze`: no issues found.
 - Full suite: 184 tests passed; two opt-in capture tests skipped. The separate enabled funding/welcome capture run is used for visual review.
 - Independent source review completed; the presentation-rebuild and fixture-label findings were fixed and regression-tested.
-- `git diff --check`: clean. No phone installation is part of this request.
+- `git diff --check`: clean.
+
+## Subsequent release installation
+
+At the user's request, the updated release APK was built and installed as an update on Redmi 14C (`CI49FIXKM7BUOVA6`) and `emulator-5554`. Both installations succeeded and both apps cold-launched successfully. Bounded per-process startup logs contained no matching fatal exception, unhandled Flutter exception, missing asset/plugin, or RenderFlex overflow. This is a startup check, not a live financial transaction test.
+
+- Package `com.example.davochain`, existing version `0.13.0+18`, non-debuggable release.
+- APK: `build/app/outputs/flutter-apk/app-release.apk`, 70,630,688 bytes; arm64-v8a, armeabi-v7a and x86_64 libraries included.
+- All 728 declared asset/font files are included in the APK.
+- SHA-256: `7BD3F7F1805E9BB2AF03F74EE78653A0E5A63063D7DA7A7C1C400C8ECC69746C`.
+- Installed APKs pulled from both devices match this hash exactly. Existing application data was retained using `adb install -r`.
