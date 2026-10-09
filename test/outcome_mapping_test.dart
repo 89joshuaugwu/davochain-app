@@ -1,3 +1,5 @@
+import 'package:davochain/shared/receipts/transaction_record_details_screen.dart';
+import 'package:davochain/shared/receipts/receipt_record.dart';
 import 'package:davochain/core/theme/app_theme.dart';
 import 'package:davochain/features/crypto/presentation/crypto_full_flow.dart';
 import 'package:davochain/features/gift_cards/presentation/gift_card_flow.dart';
@@ -52,8 +54,13 @@ void main() {
     await tester.pumpWidget(MaterialApp(
         theme: AppTheme.light, home: const DepositStatusScreen(success: true)));
     expect(
-        tester.widget<DavoSuccessMark>(find.byType(DavoSuccessMark)).progress,
-        1);
+        tester
+            .widget<TransactionRecordDetailsScreen>(
+                find.byType(TransactionRecordDetailsScreen))
+            .record
+            .status,
+        ReceiptStatus.completed);
+    expect(find.byType(DavoSuccessMark), findsNothing);
     expect(tester.binding.transientCallbackCount, 0);
     await tester.pumpWidget(MaterialApp(
         theme: AppTheme.light,

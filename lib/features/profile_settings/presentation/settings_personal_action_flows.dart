@@ -324,8 +324,13 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
 
 class EmailSupportScreen extends StatefulWidget {
   const EmailSupportScreen(
-      {super.key, this.gateway = const PreviewSettingsGateway()});
+      {super.key,
+      this.gateway = const PreviewSettingsGateway(),
+      this.initialSubject,
+      this.initialOrderId,
+      this.initialMessage});
   final SettingsGateway gateway;
+  final String? initialSubject, initialOrderId, initialMessage;
   @override
   State<EmailSupportScreen> createState() => _EmailSupportScreenState();
 }
@@ -340,6 +345,14 @@ class _EmailSupportScreenState extends State<EmailSupportScreen> {
   bool viewingSaved = false;
   bool get valid =>
       subject.text.trim().isNotEmpty && message.text.trim().isNotEmpty;
+  @override
+  void initState() {
+    super.initState();
+    subject.text = widget.initialSubject ?? '';
+    order.text = widget.initialOrderId ?? '';
+    message.text = widget.initialMessage ?? '';
+  }
+
   @override
   void dispose() {
     subject.dispose();

@@ -33,7 +33,7 @@ abstract final class AppTheme {
   static ThemeData _build(Brightness brightness) {
     final colors = brightness == Brightness.dark ? DavoColors.dark : DavoColors.light;
     final isDark = brightness == Brightness.dark;
-    const baseText = TextStyle(fontFamily: 'Sora');
+    const baseText = TextStyle(fontFamily: 'Sora', fontFamilyFallback: ['DavoNotoSans', 'DavoNotoEmoji']);
 
     return ThemeData(
       useMaterial3: true,
@@ -71,6 +71,7 @@ abstract final class AppTheme {
         error: colors.danger,
       ),
       fontFamily: 'Sora',
+      fontFamilyFallback: const ['DavoNotoSans', 'DavoNotoEmoji'],
       splashFactory: InkSparkle.splashFactory,
       textTheme: TextTheme(
         headlineSmall: baseText.copyWith(

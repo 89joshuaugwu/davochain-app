@@ -175,13 +175,13 @@ void main() {
             receipt: true)));
     await tester.pumpAndSettle();
     expect(find.text('Davochain'), findsOneWidget);
-    expect(find.text('Conversion Receipt'), findsOneWidget);
+    expect(find.text('Conversion Receipt'), findsNothing);
     final card = find
         .ancestor(of: find.text('Completed'), matching: find.byType(Container))
         .last;
     expect(
         find.descendant(
-            of: card, matching: find.text('Thank you for using Davochain')),
+            of: card, matching: find.text('Your Davochain transaction record')),
         findsOneWidget);
     expect(
         find.descendant(of: card, matching: find.text('From')), findsOneWidget);
@@ -190,7 +190,7 @@ void main() {
     expect(
         find.descendant(
             of: card, matching: find.byIcon(Icons.open_in_new_rounded)),
-        findsOneWidget);
+        findsNothing);
     expect(tester.takeException(), isNull);
   });
   testWidgets('sell input and proceeds are centered with computed balance USD',
@@ -239,13 +239,18 @@ void main() {
         home: TransactionDetailsScreen(
             kind: TxKind.sell, target: 'NGN', amount: .03045)));
     await tester.pumpAndSettle();
-    expect(find.text('Nigerian Naira'), findsOneWidget);
     expect(find.text('Asset'), findsOneWidget);
-    expect(find.text('Amount'), findsOneWidget);
-    expect(find.text('0.0304500'), findsOneWidget);
+    expect(find.text('From'), findsOneWidget);
+    expect(find.text('0.03045 BTC'), findsOneWidget);
     expect(find.text('Total Received'), findsOneWidget);
     expect(find.text('\u20a6730,800.00'), findsNWidgets(2));
-    expect(find.text('1 USDT \u2248 \u20a61,540.00'), findsOneWidget);
+    await tester.scrollUntilVisible(
+        find.text('More details').hitTestable(), 200);
+    await tester.tap(find.text('More details').hitTestable());
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(
+        find.text('Exchange Rate').hitTestable(), 200);
+    expect(find.text('1 BTC \u2248 \u20a624,000,000.00'), findsOneWidget);
     expect(find.text('Done'), findsOneWidget);
     expect(find.text('Share Receipt'), findsOneWidget);
     expect(tester.takeException(), isNull);
@@ -273,7 +278,7 @@ void main() {
                   find.byType(DavoReceiptExportFrame))
               .receiptType,
           entry.value);
-      expect(find.text('${entry.value} Receipt'), findsOneWidget);
+      expect(find.text('${entry.value} Receipt'), findsNothing);
       expect(tester.takeException(), isNull);
       await tester.pumpWidget(const SizedBox());
     }

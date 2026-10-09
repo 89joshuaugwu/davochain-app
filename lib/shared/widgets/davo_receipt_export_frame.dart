@@ -4,6 +4,8 @@ import 'package:flutter/rendering.dart';
 import '../../core/theme/app_theme.dart';
 import '../services/receipt_export_service.dart';
 import 'davo_toast.dart';
+import '../receipts/receipt_record.dart';
+import '../receipts/receipt_pdf.dart';
 
 class DavoReceiptExportFrame extends StatefulWidget {
   const DavoReceiptExportFrame(
@@ -11,10 +13,16 @@ class DavoReceiptExportFrame extends StatefulWidget {
       required this.receipt,
       required this.receiptType,
       this.title = 'Transaction Receipt',
-      this.service});
+      this.service,
+      this.presentation,
+      this.controls,
+      this.beforeCapture});
   final Widget receipt;
   final String receiptType, title;
   final ReceiptExportService? service;
+  final ReceiptPresentation? presentation;
+  final Widget? controls;
+  final Future<void> Function()? beforeCapture;
 
   @override
   State<DavoReceiptExportFrame> createState() => _DavoReceiptExportFrameState();
@@ -25,34 +33,62 @@ class _DavoReceiptExportFrameState extends State<DavoReceiptExportFrame> {
   late final ReceiptExportService _service =
       widget.service ?? ReceiptExportService();
   bool _busy = false;
+  Widget? _captureReceipt;
 
   Future<void> _export(ReceiptExportFormat format) async {
     if (_busy) return;
-    setState(() => _busy = true);
+    final presentation = widget.presentation;
+    final receipt = widget.receipt;
+    final receiptType = widget.receiptType;
+    final beforeCapture = widget.beforeCapture;
+    FocusManager.instance.primaryFocus?.unfocus();
+    setState(() {
+      _busy = true;
+      _captureReceipt = receipt;
+    });
     try {
+      await beforeCapture?.call();
+      if (!mounted) return;
       await WidgetsBinding.instance.endOfFrame;
       if (!mounted) return;
       final boundary = _receiptKey.currentContext?.findRenderObject()
           as RenderRepaintBoundary?;
       if (boundary == null) throw StateError('Receipt is unavailable.');
-      final file = await _service.export(boundary, format, widget.receiptType);
+      final file = presentation == null
+          ? await _service.export(boundary, format, receiptType)
+          : await _service.exportRecord(boundary, format, presentation);
       if (!mounted) return;
-      setState(() => _busy = false);
+      setState(() {
+        _busy = false;
+        _captureReceipt = null;
+      });
       await showModalBottomSheet<void>(
         context: context,
-    sheetAnimationStyle: (MediaQuery.disableAnimationsOf(context) || MediaQuery.accessibleNavigationOf(context)) ? AnimationStyle.noAnimation : const AnimationStyle(duration: Duration(milliseconds: 280), reverseDuration: Duration(milliseconds: 200)),
+        sheetAnimationStyle: (MediaQuery.disableAnimationsOf(context) ||
+                MediaQuery.accessibleNavigationOf(context))
+            ? AnimationStyle.noAnimation
+            : const AnimationStyle(
+                duration: Duration(milliseconds: 280),
+                reverseDuration: Duration(milliseconds: 200)),
         showDragHandle: true,
         isScrollControlled: true,
         backgroundColor: DavoColors.of(context).elevated,
         builder: (_) => _ReceiptShareSheet(receipt: file, service: _service),
       );
+    } on ReceiptPdfTextException catch (error) {
+      if (mounted) showDavoToast(context, error.message);
     } catch (_) {
       if (mounted) {
         showDavoToast(
             context, 'Could not prepare your receipt. Please try again.');
       }
     } finally {
-      if (mounted) setState(() => _busy = false);
+      if (mounted) {
+        setState(() {
+          _busy = false;
+          _captureReceipt = null;
+        });
+      }
     }
   }
 
@@ -63,19 +99,30 @@ class _DavoReceiptExportFrameState extends State<DavoReceiptExportFrame> {
             backgroundColor: DavoColors.of(context).surface,
             surfaceTintColor: Colors.transparent,
             centerTitle: true,
-            title: Text(widget.title,
-                style: const TextStyle(
-                    fontFamily: 'Sora',
-                    fontSize: 18,
-                    fontWeight: FontWeight.w500))),
+            title: widget.title.isEmpty
+                ? null
+                : Text(widget.title,
+                    style: const TextStyle(
+                        fontFamily: 'Sora',
+                        fontSize: 18,
+                        fontWeight: FontWeight.w500))),
         body: SafeArea(
             top: false,
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(16),
-              child: RepaintBoundary(
-                  key: _receiptKey,
-                  child:
-                      Theme(data: AppTheme.light, child: ColoredBox(color: Colors.white, child: widget.receipt))),
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    if (widget.controls != null)
+                      AbsorbPointer(absorbing: _busy, child: widget.controls!),
+                    RepaintBoundary(
+                        key: _receiptKey,
+                        child: Theme(
+                            data: AppTheme.light,
+                            child: ColoredBox(
+                                color: Colors.white,
+                                child: _captureReceipt ?? widget.receipt))),
+                  ]),
             )),
         bottomNavigationBar: SafeArea(
           top: false,
@@ -211,8 +258,9 @@ class _ReceiptShareSheetState extends State<_ReceiptShareSheet> {
                             ? Icons.download_rounded
                             : Icons.more_horiz_rounded,
                         size: 24,
-                        color:
-                            action == 'More' ? DavoColors.of(actionContext).ink : Colors.white))),
+                        color: action == 'More'
+                            ? DavoColors.of(actionContext).ink
+                            : Colors.white))),
         const SizedBox(height: 6),
         Text(action,
             textAlign: TextAlign.center,
@@ -251,10 +299,10 @@ class _ReceiptShareSheetState extends State<_ReceiptShareSheet> {
                           const SizedBox(height: 8),
                           Text(
                               'Share your ${widget.receipt.receiptType.toLowerCase()} receipt as ${widget.receipt.format == ReceiptExportFormat.pdf ? 'PDF' : 'an image'} or save it for later.',
-                              style: const TextStyle(
+                              style: TextStyle(
                                   fontSize: 12,
                                   height: 1.4,
-                                  color: Color(0xFF424242))),
+                                  color: DavoColors.of(context).body)),
                           const SizedBox(height: 10),
                           Row(
                               crossAxisAlignment: CrossAxisAlignment.start,

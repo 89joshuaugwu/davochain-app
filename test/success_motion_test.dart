@@ -1,3 +1,5 @@
+import 'package:davochain/shared/receipts/transaction_record_details_screen.dart';
+import 'package:davochain/shared/receipts/receipt_record.dart';
 import 'package:davochain/shared/widgets/davo_result_screen.dart';
 import 'package:davochain/shared/widgets/davo_success_mark.dart';
 import 'package:davochain/features/auth/presentation/verification_flow.dart';
@@ -48,7 +50,7 @@ void main() {
       expect(tester.takeException(), isNull,
           reason: screen.runtimeType.toString());
       if (screen is BuySuccessScreen) {
-        expect(find.textContaining('0.0300 BTC'), findsOneWidget);
+        expect(find.textContaining('0.03 BTC'), findsOneWidget);
         expect(find.text('Purchase successful'), findsOneWidget);
         expect(find.text('Sold  Successful'), findsNothing);
       }
@@ -65,7 +67,14 @@ void main() {
     expect(find.text('Pending'), findsOneWidget);
     await tester.pumpWidget(
         const MaterialApp(home: DepositStatusScreen(success: true)));
-    expect(find.byType(DavoSuccessMark), findsOneWidget);
+    expect(
+        tester
+            .widget<TransactionRecordDetailsScreen>(
+                find.byType(TransactionRecordDetailsScreen))
+            .record
+            .status,
+        ReceiptStatus.completed);
+    expect(find.byType(DavoSuccessMark), findsNothing);
     await tester
         .pumpWidget(const MaterialApp(home: GiftCardSellSubmittedScreen()));
     expect(find.text('Current Trade Status: Pending'), findsOneWidget);

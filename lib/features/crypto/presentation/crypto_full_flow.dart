@@ -1,10 +1,16 @@
+import '../../../shared/receipts/receipt_record.dart';
+import '../../../shared/receipts/receipt_activity.dart';
+import '../../../shared/receipts/receipt_screen.dart';
+import '../../../shared/receipts/transaction_record_details_screen.dart';
+import 'crypto_receipt_records.dart';
+import 'crypto_transaction_kind.dart';
+export 'crypto_transaction_kind.dart';
 import '../../../core/preview/settings_preview_session.dart';
 import '../../funding/funding_outcomes.dart';
 import '../../../core/preview/preview_transaction_operation.dart';
 import '../../../shared/motion/davo_working_indicator.dart';
 import '../../../shared/motion/davo_motion_spec.dart';
 import '../../../shared/widgets/davo_sheet_header.dart';
-import '../../../shared/widgets/davo_receipt_export_frame.dart';
 import '../../../shared/widgets/davo_bank_logo.dart';
 import '../../../shared/widgets/solana_icon.dart';
 import '../../../shared/formatters/grouped_amount_formatter.dart';
@@ -30,7 +36,6 @@ const _exact = 'assets/figma_exact';
 
 enum TradeMode { sell, convert }
 
-enum TxKind { internal, external, sell, conversion }
 
 enum _WithdrawWallet { naira, crypto }
 
@@ -1715,7 +1720,7 @@ class _CryptoWithdrawEntryScreenState extends State<CryptoWithdrawEntryScreen> {
                 kind: widget.external ? TxKind.external : TxKind.internal,
                 target: target.text,
                 amount: n,
-                asset: asset)));
+                asset: asset, network: network, fee: widget.external ? .00002 : 0)));
   }
 }
 
@@ -1864,7 +1869,7 @@ class TransferReviewScreen extends StatelessWidget {
         context,
         AppPageRoute<void>(
             builder: (_) => TransactionProgressScreen(
-                kind: kind, target: target, amount: amount)));
+                kind: kind, target: target, amount: amount, fee: kind == TxKind.external ? .00002 : 0)));
   }
 }
 
@@ -1876,18 +1881,23 @@ class CryptoPinScreen extends StatelessWidget {
 }
 
 class TransactionProgressScreen extends StatefulWidget {
-  const TransactionProgressScreen(
-      {super.key,
-      required this.kind,
-      required this.target,
-      required this.amount,
-      this.asset = BuyCryptoAsset.bitcoin,
-      this.operation});
+  const TransactionProgressScreen({
+    super.key,
+    required this.kind,
+    required this.target,
+    required this.amount,
+    this.asset = BuyCryptoAsset.bitcoin,
+    this.network,
+    this.fee,
+    this.operation,
+  });
   final TxKind kind;
   final String target;
   final double amount;
   final BuyCryptoAsset asset;
   final Future<PreviewTransactionOutcome>? operation;
+  final String? network;
+  final double? fee;
   @override
   State<TransactionProgressScreen> createState() =>
       _TransactionProgressScreenState();
@@ -1903,25 +1913,32 @@ class _TransactionProgressScreenState extends State<TransactionProgressScreen> {
 
   Future<void> _process() async {
     try {
-      final accepted = await (widget.operation ??
-          PreviewTransactionOperation.transfer(
-              external: widget.kind == TxKind.external));
+      final accepted =
+          await (widget.operation ??
+              PreviewTransactionOperation.transfer(
+                external: widget.kind == TxKind.external,
+              ));
       if (!mounted || ModalRoute.of(context)?.isCurrent == false) return;
       if (accepted == PreviewTransactionOutcome.failed) {
         setState(() => failed = true);
         return;
       }
       Navigator.pushReplacement(
-          context,
-          AppPageRoute<void>(
-              builder: (_) => TransactionSuccessScreen(
-                  kind: widget.kind,
-                  outcomeKind: accepted == PreviewTransactionOutcome.submitted
-                      ? DavoOutcomeKind.submitted
-                      : DavoOutcomeKind.completed,
-                  target: widget.target,
-                  amount: widget.amount,
-                  asset: widget.asset)));
+        context,
+        AppPageRoute<void>(
+          builder: (_) => TransactionSuccessScreen(
+            kind: widget.kind,
+            outcomeKind: accepted == PreviewTransactionOutcome.submitted
+                ? DavoOutcomeKind.submitted
+                : DavoOutcomeKind.completed,
+            target: widget.target,
+            amount: widget.amount,
+            asset: widget.asset,
+            network: widget.network,
+            fee: widget.fee,
+          ),
+        ),
+      );
     } catch (_) {
       if (mounted && ModalRoute.of(context)?.isCurrent != false) {
         setState(() => failed = true);
@@ -1936,12 +1953,12 @@ class _TransactionProgressScreenState extends State<TransactionProgressScreen> {
     final title = transfer
         ? 'Sending ${formatGroupedAmount(widget.amount.toStringAsFixed(4))} ${widget.asset.symbol}'
         : widget.kind == TxKind.sell
-            ? 'Selling ${formatGroupedAmount(widget.amount.toStringAsFixed(5))} BTC'
-            : 'Converting';
+        ? 'Selling ${formatGroupedAmount(widget.amount.toStringAsFixed(5))} BTC'
+        : 'Converting';
     final sub = switch (widget.kind) {
       TxKind.internal => 'to ${widget.target}',
       TxKind.external => 'to ${_short(widget.target)}',
-      _ => ''
+      _ => '',
     };
     final subColor = widget.kind == TxKind.external
         ? DavoColors.of(context).bodyMuted
@@ -1950,54 +1967,67 @@ class _TransactionProgressScreenState extends State<TransactionProgressScreen> {
       child: Column(
         children: [
           _TopBar(
-              title: transfer ? 'Crypto Withdraw Mode' : '',
-              onBack: () => Navigator.pop(context),
-              height: 32,
-              fontSize: 14,
-              fontWeight: FontWeight.w400),
+            title: transfer ? 'Crypto Withdraw Mode' : '',
+            onBack: () => Navigator.pop(context),
+            height: 32,
+            fontSize: 14,
+            fontWeight: FontWeight.w400,
+          ),
           const SizedBox(height: 47),
           failed
-              ? Icon(Icons.error_outline_rounded,
-                  size: 56, color: DavoColors.of(context).danger)
+              ? Icon(
+                  Icons.error_outline_rounded,
+                  size: 56,
+                  color: DavoColors.of(context).danger,
+                )
               : const DavoWorkingIndicator(),
           const SizedBox(height: 16),
           SizedBox(
-              height: 22,
-              child: Text(title,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                      fontFamily: 'Sora',
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      height: 1.35,
-                      color: DavoColors.of(context).ink))),
+            height: 22,
+            child: Text(
+              title,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontFamily: 'Sora',
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                height: 1.35,
+                color: DavoColors.of(context).ink,
+              ),
+            ),
+          ),
           if (sub.isNotEmpty) ...[
             const SizedBox(height: 4),
             SizedBox(
-                height: 19,
-                child: Text(sub,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                        fontFamily: 'Sora',
-                        fontSize: 14,
-                        height: 1.35,
-                        color: subColor))),
+              height: 19,
+              child: Text(
+                sub,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontFamily: 'Sora',
+                  fontSize: 14,
+                  height: 1.35,
+                  color: subColor,
+                ),
+              ),
+            ),
           ],
           SizedBox(height: sub.isNotEmpty ? 8 : 8),
           Text(
             failed
                 ? 'Could not complete this transaction. Go back to try again.'
                 : widget.kind == TxKind.conversion || widget.kind == TxKind.sell
-                    ? failed
-                        ? 'Could not complete this transaction. Go back to try again.'
-                        : 'Please wait while we process your transaction'
-                    : 'Please wait while we process your transaction',
+                ? failed
+                      ? 'Could not complete this transaction. Go back to try again.'
+                      : 'Please wait while we process your transaction'
+                : 'Please wait while we process your transaction',
             textAlign: TextAlign.center,
             style: TextStyle(
-                fontFamily: 'Sora',
-                fontSize: 14,
-                height: 1.35,
-                color: DavoColors.of(context).body),
+              fontFamily: 'Sora',
+              fontSize: 14,
+              height: 1.35,
+              color: DavoColors.of(context).body,
+            ),
           ),
         ],
       ),
@@ -2005,83 +2035,149 @@ class _TransactionProgressScreenState extends State<TransactionProgressScreen> {
   }
 }
 
-class TransactionSuccessScreen extends StatelessWidget {
-  const TransactionSuccessScreen(
-      {super.key,
-      required this.kind,
-      required this.target,
-      required this.amount,
-      this.asset = BuyCryptoAsset.bitcoin,
-      this.outcomeKind = DavoOutcomeKind.completed});
+class TransactionSuccessScreen extends StatefulWidget {
+  const TransactionSuccessScreen({
+    super.key,
+    required this.kind,
+    required this.target,
+    required this.amount,
+    this.asset = BuyCryptoAsset.bitcoin,
+    this.record,
+    this.network,
+    this.fee,
+    this.outcomeKind = DavoOutcomeKind.completed,
+  });
   final TxKind kind;
   final String target;
   final double amount;
   final BuyCryptoAsset asset;
   final DavoOutcomeKind outcomeKind;
+  final ReceiptRecord? record;
+  final String? network;
+  final double? fee;
+  @override
+  State<TransactionSuccessScreen> createState() =>
+      _TransactionSuccessScreenState();
+}
+
+class _TransactionSuccessScreenState extends State<TransactionSuccessScreen> {
+  TxKind get kind => widget.kind;
+  String get target => widget.target;
+  double get amount => widget.amount;
+  BuyCryptoAsset get asset => widget.asset;
+  DavoOutcomeKind get outcomeKind => record.status == ReceiptStatus.pending
+      ? DavoOutcomeKind.submitted
+      : DavoOutcomeKind.completed;
+  late final ReceiptRecord _fallback = buildCryptoReceiptRecord(
+    kind: kind,
+    target: target,
+    amount: amount,
+    asset: asset,
+    network: widget.network,
+    fee: widget.fee,
+    status: widget.outcomeKind == DavoOutcomeKind.submitted
+        ? ReceiptStatus.pending
+        : ReceiptStatus.completed,
+  );
+  ReceiptRecord get record => widget.record ?? _fallback;
+  @override
+  void initState() {
+    super.initState();
+    ReceiptActivity.accept(record);
+  }
 
   @override
   Widget build(BuildContext context) {
     final transfer = kind == TxKind.internal || kind == TxKind.external;
     return DavoResultScreen(
       kind: outcomeKind,
-      title: outcomeKind == DavoOutcomeKind.submitted
+      mark: record.status == ReceiptStatus.failed
+          ? const Icon(
+              Icons.error_outline_rounded,
+              color: Color(0xFFB42318),
+              size: 100,
+            )
+          : null,
+      title: record.status == ReceiptStatus.failed
+          ? '${record.type} failed'
+          : outcomeKind == DavoOutcomeKind.submitted
           ? 'Withdrawal submitted'
           : transfer
-              ? 'Transfer successful'
-              : kind == TxKind.sell
-                  ? 'Sale successful'
-                  : 'Conversion successful',
-      message: outcomeKind == DavoOutcomeKind.submitted
-          ? 'Pending network confirmation'
-          : '',
-      details: outcomeKind == DavoOutcomeKind.submitted
+          ? 'Transfer successful'
+          : kind == TxKind.sell
+          ? 'Sale successful'
+          : 'Conversion successful',
+      message:
+          '${record.type} ${record.status.label.toLowerCase()}: ${record.amount}.${record.preview ? ' Preview only. No funds have been moved.' : ''}',
+      details: record.status == ReceiptStatus.failed || widget.record != null
+          ? null
+          : outcomeKind == DavoOutcomeKind.submitted
           ? Text(
               'Your withdrawal has been submitted. It will update after network confirmation.',
               textAlign: TextAlign.center,
               style: TextStyle(
-                  fontFamily: 'Sora',
-                  fontSize: 14,
-                  height: 1.35,
-                  color: DavoColors.of(context).body))
+                fontFamily: 'Sora',
+                fontSize: 14,
+                height: 1.35,
+                color: DavoColors.of(context).body,
+              ),
+            )
           : _TransactionSuccessMessage(
-              kind: kind, target: target, amount: amount, asset: asset),
+              kind: kind,
+              target: target,
+              amount: amount,
+              asset: asset,
+            ),
       appBar: AppBar(
-          backgroundColor: DavoColors.of(context).surface,
-          title: transfer
-              ? const Text('Crypto withdrawal',
-                  style: TextStyle(fontFamily: 'Sora', fontSize: 16))
-              : null),
-      actions: Column(mainAxisSize: MainAxisSize.min, children: [
-        _Button(
+        backgroundColor: DavoColors.of(context).surface,
+        title: transfer
+            ? const Text(
+                'Crypto withdrawal',
+                style: TextStyle(fontFamily: 'Sora', fontSize: 16),
+              )
+            : null,
+      ),
+      actions: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _Button(
             label: 'View Details',
             onTap: () => Navigator.push(
-                context,
-                AppPageRoute<void>(
-                    builder: (_) => TransactionDetailsScreen(
-                        pending: outcomeKind == DavoOutcomeKind.submitted,
-                        kind: kind,
-                        target: target,
-                        amount: amount,
-                        asset: asset)))),
-        const SizedBox(height: 12),
-        _Secondary(
+              context,
+              AppPageRoute<void>(
+                builder: (_) => TransactionDetailsScreen(
+                  pending: outcomeKind == DavoOutcomeKind.submitted,
+                  kind: kind,
+                  target: target,
+                  amount: amount,
+                  asset: asset,
+                  record: record,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          _Secondary(
             label: transfer
                 ? 'Send another transfer'
                 : kind == TxKind.sell
-                    ? 'Sell more crypto'
-                    : 'Convert more crypto',
-            onTap: () => Navigator.of(context).popUntil((r) => r.isFirst)),
-      ]),
+                ? 'Sell more crypto'
+                : 'Convert more crypto',
+            onTap: () => Navigator.of(context).popUntil((r) => r.isFirst),
+          ),
+        ],
+      ),
     );
   }
 }
 
 class _TransactionSuccessMessage extends StatelessWidget {
-  const _TransactionSuccessMessage(
-      {required this.kind,
-      required this.target,
-      required this.amount,
-      this.asset = BuyCryptoAsset.bitcoin});
+  const _TransactionSuccessMessage({
+    required this.kind,
+    required this.target,
+    required this.amount,
+    this.asset = BuyCryptoAsset.bitcoin,
+  });
   final TxKind kind;
   final String target;
   final double amount;
@@ -2091,579 +2187,111 @@ class _TransactionSuccessMessage extends StatelessWidget {
   Widget build(BuildContext context) {
     final muted = DavoColors.of(context).bodyMuted;
     final ink = DavoColors.of(context).ink;
-    final base =
-        TextStyle(fontFamily: 'Sora', fontSize: 14, height: 1.35, color: muted);
-    final dark =
-        TextStyle(fontFamily: 'Sora', fontSize: 14, height: 1.35, color: ink);
+    final base = TextStyle(
+      fontFamily: 'Sora',
+      fontSize: 14,
+      height: 1.35,
+      color: muted,
+    );
+    final dark = TextStyle(
+      fontFamily: 'Sora',
+      fontSize: 14,
+      height: 1.35,
+      color: ink,
+    );
     final strong = TextStyle(
-        fontFamily: 'Sora',
-        fontSize: 14,
-        height: 1.35,
-        fontWeight: FontWeight.w600,
-        color: ink);
-    final amountText = (kind == TxKind.sell || kind == TxKind.conversion)
-        ? '0.0300 BTC'
-        : '${formatGroupedAmount(amount.toStringAsFixed(4))} ${asset.symbol}';
+      fontFamily: 'Sora',
+      fontSize: 14,
+      height: 1.35,
+      fontWeight: FontWeight.w600,
+      color: ink,
+    );
+    final amountText = '${formatCryptoQuantity(amount)} ${asset.symbol}';
     final spans = switch (kind) {
       TxKind.internal => <InlineSpan>[
-          TextSpan(text: 'You have sent', style: base),
-          TextSpan(text: ' $amountText ', style: dark),
-          TextSpan(text: 'to', style: base),
-          TextSpan(text: ' $target', style: dark),
-        ],
+        TextSpan(text: 'You have sent', style: base),
+        TextSpan(text: ' $amountText ', style: dark),
+        TextSpan(text: 'to', style: base),
+        TextSpan(text: ' $target', style: dark),
+      ],
       TxKind.external => <InlineSpan>[
-          TextSpan(text: 'You have sent ', style: base),
-          TextSpan(text: amountText, style: strong),
-          TextSpan(text: ' to ', style: base),
-          TextSpan(text: _short(target), style: strong),
-        ],
+        TextSpan(text: 'You have sent ', style: base),
+        TextSpan(text: amountText, style: strong),
+        TextSpan(text: ' to ', style: base),
+        TextSpan(text: _short(target), style: strong),
+      ],
       TxKind.conversion => <InlineSpan>[
-          TextSpan(text: 'You have successfully converted  ', style: base),
-          TextSpan(text: amountText, style: strong),
-          TextSpan(text: ' to ', style: base),
-          TextSpan(text: r'$500 USDT', style: strong),
-        ],
+        TextSpan(text: 'You have successfully converted  ', style: base),
+        TextSpan(text: amountText, style: strong),
+        TextSpan(text: ' to ', style: base),
+        TextSpan(
+          text:
+              '${formatCryptoQuantity(amount * asset.ngnPerUnit / (BuyCryptoAsset.values.where((a) => a.symbol == target || a.name == target).firstOrNull ?? BuyCryptoAsset.tether).ngnPerUnit)} $target',
+          style: strong,
+        ),
+      ],
       TxKind.sell => <InlineSpan>[
-          TextSpan(text: 'You have successfully sold ', style: base),
-          TextSpan(text: '$amountText ', style: strong),
-          TextSpan(text: 'for ', style: base),
-          TextSpan(text: '₦731,540.00', style: strong),
-        ],
+        TextSpan(text: 'You have successfully sold ', style: base),
+        TextSpan(text: '$amountText ', style: strong),
+        TextSpan(text: 'for ', style: base),
+        TextSpan(
+          text:
+              '₦${formatGroupedAmount((amount * asset.ngnPerUnit).toStringAsFixed(2))}',
+          style: strong,
+        ),
+      ],
     };
     return Text.rich(TextSpan(children: spans), textAlign: TextAlign.center);
   }
 }
 
-class TransactionDetailsScreen extends StatelessWidget {
-  const TransactionDetailsScreen(
-      {super.key,
-      required this.kind,
-      required this.target,
-      required this.amount,
-      this.receipt = false,
-      this.pending = false,
-      this.asset = BuyCryptoAsset.bitcoin});
-  final TxKind kind;
-  final String target;
-  final double amount;
-  final BuyCryptoAsset asset;
-  final bool receipt;
-  final bool pending;
-
-  @override
-  Widget build(BuildContext context) =>
-      receipt ? _buildReceipt(context) : _buildDetails(context);
-
-  Widget _buildDetails(BuildContext context) {
-    return Scaffold(
-      backgroundColor: DavoColors.of(context).canvas,
-      body: SafeArea(
-          child: Column(children: [
-        _TopBar(
-            title: 'Transaction Details',
-            onBack: () => Navigator.pop(context),
-            height: 48,
-            fontSize: 14,
-            fontWeight: FontWeight.w600),
-        Expanded(
-            child: SingleChildScrollView(
-                padding: const EdgeInsets.all(16),
-                child: Column(children: [
-                  const SizedBox(height: 24),
-                  Text(
-                      '${formatGroupedAmount(amount.toStringAsFixed(4))} ${asset.symbol}',
-                      style: const TextStyle(
-                          fontSize: 24, fontWeight: FontWeight.w700)),
-                  const SizedBox(height: 6),
-                  if (kind == TxKind.sell)
-                    Text(
-                        '\u2248 \$${formatGroupedAmount((amount * asset.ngnPerUnit / 1463.08).toStringAsFixed(2))} USD',
-                        style: TextStyle(
-                            fontSize: 14, color: DavoColors.of(context).body))
-                  else
-                    Text(r'$500.00 USD',
-                        style: TextStyle(
-                            fontSize: 14, color: DavoColors.of(context).body)),
-                  const SizedBox(height: 16),
-                  if (kind == TxKind.sell)
-                    Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 6),
-                        decoration: BoxDecoration(
-                            color: DavoColors.of(context).elevated,
-                            borderRadius: BorderRadius.circular(20)),
-                        child: Text(pending ? 'Pending' : 'Completed',
-                            style: TextStyle(
-                                fontSize: 12,
-                                color: DavoColors.of(context).success,
-                                fontWeight: FontWeight.w600)))
-                  else
-                    Text(pending ? 'Pending' : 'Completed',
-                        style: TextStyle(
-                            fontSize: 12,
-                            color: DavoColors.of(context).success,
-                            fontWeight: FontWeight.w600)),
-                  const SizedBox(height: 28),
-                  _TransactionDetailCard(
-                      kind: kind,
-                      target: target,
-                      amount: amount,
-                      asset: asset,
-                      height: 0),
-                ]))),
-        Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-            child: Column(mainAxisSize: MainAxisSize.min, children: [
-              _Button(
-                  label: 'Done',
-                  onTap: () =>
-                      Navigator.of(context).popUntil((r) => r.isFirst)),
-              const SizedBox(height: 12),
-              _Secondary(
-                  label: 'Share Receipt',
-                  onTap: () => Navigator.push(
-                      context,
-                      AppPageRoute<void>(
-                          builder: (_) => TransactionDetailsScreen(
-                              kind: kind,
-                              pending: pending,
-                              target: target,
-                              amount: amount,
-                              asset: asset,
-                              receipt: true)))),
-            ])),
-      ])),
-    );
-  }
-
-  Widget _buildReceipt(BuildContext context) {
-    final receiptType = switch (kind) {
-      TxKind.conversion => 'Conversion',
-      TxKind.sell => 'Sell',
-      TxKind.external => 'External Transfer',
-      TxKind.internal => 'Transfer',
-    };
-    return DavoReceiptExportFrame(
-        receiptType: receiptType,
-        receipt: Column(children: [
-          Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-            Image.asset('assets/images/brand/davochain_logo.png',
-                width: 32, height: 32),
-            const SizedBox(width: 8),
-            const Flexible(
-                child: Text('Davochain',
-                    style:
-                        TextStyle(fontSize: 24, fontWeight: FontWeight.w700))),
-          ]),
-          const SizedBox(height: 8),
-          Text('$receiptType Receipt',
-              style: const TextStyle(fontSize: 14, color: AppColors.bodyMuted)),
-          const SizedBox(height: 24),
-          _CryptoReceiptCard(
-              kind: kind,
-              target: target,
-              amount: amount,
-              asset: asset,
-              pending: pending),
-        ]));
-  }
-}
-
-class _CryptoReceiptCard extends StatelessWidget {
-  const _CryptoReceiptCard(
-      {required this.kind,
-      required this.target,
-      required this.amount,
-      required this.asset,
-      this.pending = false});
-  final TxKind kind;
-  final String target;
-  final double amount;
-  final BuyCryptoAsset asset;
-  final bool pending;
-
-  Widget _row(String label, String value,
-          {Widget? icon, bool copy = false, Color? color}) =>
-      Padding(
-        padding: const EdgeInsets.symmetric(vertical: 16),
-        child: ReceiptDetailRow(
-            label: label,
-            value: value,
-            leading: icon,
-            copyable: copy,
-            valueColor: color),
-      );
-  Widget _amountRow(String label, String value, String usd, Widget icon) =>
-      Padding(
-        padding: const EdgeInsets.symmetric(vertical: 16),
-        child: Row(children: [
-          Expanded(
-              flex: 2,
-              child: Text(label,
-                  style: const TextStyle(
-                      fontSize: 14, color: AppColors.bodyMuted))),
-          const SizedBox(width: 12),
-          Expanded(
-              flex: 3,
-              child: Row(mainAxisAlignment: MainAxisAlignment.end, children: [
-                SizedBox(width: 24, height: 24, child: icon),
-                const SizedBox(width: 6),
-                Flexible(
-                    child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                      Text(value,
-                          textAlign: TextAlign.right,
-                          style: const TextStyle(
-                              fontSize: 14, fontWeight: FontWeight.w500)),
-                      const SizedBox(height: 4),
-                      Text('\u2248 \$$usd USD',
-                          textAlign: TextAlign.right,
-                          style: const TextStyle(
-                              fontSize: 11, color: AppColors.bodyMuted)),
-                    ])),
-              ])),
-          const SizedBox(width: 32),
-        ]),
-      );
-  Widget _rateRow(String value) => Padding(
-      padding: const EdgeInsets.symmetric(vertical: 16),
-      child: LayoutBuilder(
-          builder: (context, constraints) => Row(children: [
-                SizedBox(
-                    width: constraints.maxWidth * .30,
-                    child: const Text('Exchange Rate',
-                        style: TextStyle(
-                            fontSize: 14, color: AppColors.bodyMuted))),
-                const SizedBox(width: 12),
-                Expanded(
-                    child: Text(value,
-                        textAlign: TextAlign.right,
-                        style: const TextStyle(
-                            fontSize: 12, height: 1.5, color: AppColors.ink))),
-                const SizedBox(width: 32),
-              ])));
-  static const _divider =
-      Divider(height: 1, thickness: .5, color: Color(0xFFEBEDF3));
-
-  @override
-  Widget build(BuildContext context) {
-    final trading = kind == TxKind.sell || kind == TxKind.conversion;
-    final destination = BuyCryptoAsset.values.firstWhere(
-        (candidate) => candidate.symbol == target,
-        orElse: () => BuyCryptoAsset.tether);
-    final ngn = amount * asset.ngnPerUnit;
-    final usd = formatGroupedAmount((ngn / 1463.08).toStringAsFixed(2));
-    final amountText =
-        '${formatGroupedAmount(amount.toStringAsFixed(4))} ${asset.symbol}';
-    return Container(
-      padding: const EdgeInsets.fromLTRB(16, 20, 16, 24),
-      decoration: BoxDecoration(
-          color: Colors.white, borderRadius: BorderRadius.circular(12)),
-      child: Column(children: [
-        Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
-          BuyAssetIcon(asset: asset, size: 32),
-          const SizedBox(width: 12),
-          Expanded(
-              child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                Text(amountText,
-                    style: const TextStyle(
-                        fontSize: 20, fontWeight: FontWeight.w600)),
-                const SizedBox(height: 4),
-                Text('\u2248 \$$usd USD',
-                    style: const TextStyle(
-                        fontSize: 12, color: AppColors.bodyMuted)),
-              ])),
-          const SizedBox(width: 8),
-          Container(
-              padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
-              decoration: BoxDecoration(
-                  color: pending
-                      ? const Color(0xFFFFF5E5)
-                      : const Color(0xFFEAF7EF),
-                  borderRadius: BorderRadius.circular(20)),
-              child: Text(pending ? 'Pending' : 'Completed',
-                  style: TextStyle(
-                      fontSize: 10,
-                      color: pending
-                          ? const Color(0xFF9A6700)
-                          : const Color(0xFF158542),
-                      fontWeight: FontWeight.w600))),
-        ]),
-        const SizedBox(height: 20),
-        _divider,
-        if (trading) ...[
-          _amountRow(
-              'From',
-              '${formatGroupedAmount(amount.toStringAsFixed(5))} ${asset.symbol}',
-              usd,
-              BuyAssetIcon(asset: asset, size: 24)),
-          _divider,
-          _amountRow(
-              'To',
-              kind == TxKind.sell
-                  ? '\u20a6${formatGroupedAmount(ngn.toStringAsFixed(2))}'
-                  : '${formatGroupedAmount((ngn / destination.ngnPerUnit).toStringAsFixed(2))} ${destination.symbol}',
-              usd,
-              kind == TxKind.sell
-                  ? const _TxNigeria24()
-                  : BuyAssetIcon(asset: destination, size: 24)),
-        ] else ...[
-          _row('To', target, copy: kind == TxKind.external),
-          _divider,
-          _row('Asset', '${asset.name} (${asset.symbol})',
-              icon: BuyAssetIcon(asset: asset, size: 24)),
-        ],
-        _divider,
-        _row('Date', 'Sep 16, 2026, 14:26'),
-        _divider,
-        _row('Network Fee',
-            kind == TxKind.external ? '0.00002 ${asset.symbol}' : 'Free',
-            color: AppColors.primary),
-        if (trading) ...[
-          _divider,
-          _rateRow(kind == TxKind.conversion
-              ? '1 ${destination.symbol} \u2248 ${formatGroupedAmount((destination.ngnPerUnit / asset.ngnPerUnit).toStringAsFixed(8))} ${asset.symbol}'
-              : '1 ${asset.symbol} \u2248 \u20a6${formatGroupedAmount(asset.ngnPerUnit.toStringAsFixed(2))}'),
-        ],
-        _divider,
-        _row('Transaction ID', '0x3a4f...9c7d', copy: true),
-        if (kind == TxKind.external) ...[
-          _divider,
-          _row('Transaction Hash',
-              '7c0d217aca078b46197d9283d7b818311de96eae39deddfea593303815d04c35',
-              copy: true),
-        ],
-        if (kind == TxKind.external || kind == TxKind.conversion) ...[
-          _divider,
-          _row('View in Blockchain', 'Blockchain Explorer',
-              icon: const Icon(Icons.open_in_new_rounded,
-                  size: 18, color: AppColors.primary),
-              color: AppColors.primary),
-        ],
-        _divider,
-        const SizedBox(height: 24),
-        const Text('Thank you for using Davochain',
-            textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
-        const SizedBox(height: 6),
-        const Text('Build. Trade. Belong.',
-            textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 12, color: AppColors.bodyMuted)),
-      ]),
-    );
-  }
-}
-
-class _TransactionDetailCard extends StatelessWidget {
-  const _TransactionDetailCard(
-      {required this.kind,
-      required this.target,
-      required this.amount,
-      required this.height,
-      this.asset = BuyCryptoAsset.bitcoin});
-  final TxKind kind;
-  final String target;
-  final double amount;
-  final BuyCryptoAsset asset;
-  final double height;
-
-  @override
-  Widget build(BuildContext context) {
-    final trading = kind == TxKind.sell || kind == TxKind.conversion;
-    Widget row(String label, String value,
-            {bool copy = false, Widget? icon, Color? color}) =>
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: 12),
-          child: _ExactTransactionRow(
-              label: label,
-              value: value,
-              copy: copy,
-              valueLeading: icon,
-              valueColor: color),
-        );
-    if (kind == TxKind.sell) {
-      final ngn = amount * asset.ngnPerUnit;
-      final usd = formatGroupedAmount((ngn / 1463.08).toStringAsFixed(2));
-      final rows = <Widget>[
-        _SellDetailAmountRow(
-            label: 'From',
-            value:
-                '${formatGroupedAmount(amount.toStringAsFixed(5))} ${asset.symbol}',
-            secondary: '\u2248 \$$usd USD',
-            icon: BuyAssetIcon(asset: asset, size: 24)),
-        _SellDetailAmountRow(
-            label: 'To',
-            value: '\u20a6${formatGroupedAmount(ngn.toStringAsFixed(2))}',
-            secondary: 'Nigerian Naira',
-            icon: const _TxNigeria24()),
-        row('Asset', asset.symbol, icon: BuyAssetIcon(asset: asset, size: 24)),
-        row('Amount', formatGroupedAmount(amount.toStringAsFixed(7))),
-        row('Date', 'Sep 16, 2026, 14:26'),
-        row('Network Fee', 'Free', color: AppColors.primary),
-        row('Exchange Rate',
-            '1 USDT \u2248 \u20a6${formatGroupedAmount(BuyCryptoAsset.tether.ngnPerUnit.toStringAsFixed(2))}'),
-        row('Total Received',
-            '\u20a6${formatGroupedAmount(ngn.toStringAsFixed(2))}'),
-        row('Transaction ID', '0x3a4f...9c7d', copy: true),
-      ];
-      return Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          decoration: BoxDecoration(
-              color: DavoColors.of(context).surface,
-              borderRadius: BorderRadius.circular(8)),
-          child: Column(children: [
-            for (var i = 0; i < rows.length; i++) ...[
-              if (i > 0)
-                Divider(
-                    height: 1,
-                    thickness: .5,
-                    color: DavoColors.of(context).divider),
-              rows[i],
-            ]
-          ]));
-    }
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      decoration: BoxDecoration(
-          color: DavoColors.of(context).surface,
-          borderRadius: BorderRadius.circular(8)),
-      child: Column(children: [
-        if (trading) ...[
-          row('From', '${formatGroupedAmount(amount.toStringAsFixed(5))} BTC',
-              icon: const _TxWrappedBtc24()),
-          row('To', kind == TxKind.sell ? '\u20a6731,540.00' : '500.00 USDT',
-              icon: kind == TxKind.sell
-                  ? const _TxNigeria24()
-                  : const _TxUsdt24()),
-        ] else ...[
-          row('To', target, copy: kind == TxKind.external),
-          row('Asset', '${asset.name} (${asset.symbol})',
-              icon: BuyAssetIcon(asset: asset, size: 24)),
-        ],
-        row('Date', 'Sep 16, 2026, 14:26'),
-        row('Network Fee', 'Free', color: AppColors.primary),
-        if (trading)
-          const Padding(
-              padding: EdgeInsets.symmetric(vertical: 12),
-              child: _ExactRateRow()),
-        row('Transaction ID', '0x3a4f...9c7d', copy: true),
-        if (kind == TxKind.external)
-          row('Transaction Hash',
-              '7c0d217aca078b46197d9283d7b818311de96eae39deddfea593303815d04c35',
-              copy: true),
-        if (kind == TxKind.external || kind == TxKind.conversion)
-          const Padding(
-              padding: EdgeInsets.symmetric(vertical: 12),
-              child: _BlockchainExplorerRow()),
-      ]),
-    );
-  }
-}
-
-class _SellDetailAmountRow extends StatelessWidget {
-  const _SellDetailAmountRow(
-      {required this.label,
-      required this.value,
-      required this.secondary,
-      required this.icon});
-  final String label, value, secondary;
-  final Widget icon;
-  @override
-  Widget build(BuildContext context) => Padding(
-      padding: const EdgeInsets.symmetric(vertical: 12),
-      child: Row(children: [
-        Expanded(
-            flex: 2,
-            child: Text(label,
-                style: TextStyle(
-                    fontSize: 14, color: DavoColors.of(context).bodyMuted))),
-        const SizedBox(width: 12),
-        Expanded(
-            flex: 3,
-            child: Row(mainAxisAlignment: MainAxisAlignment.end, children: [
-              SizedBox(width: 24, height: 24, child: icon),
-              const SizedBox(width: 6),
-              Flexible(
-                  child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                    Text(value,
-                        textAlign: TextAlign.right,
-                        style: const TextStyle(
-                            fontSize: 14, fontWeight: FontWeight.w500)),
-                    const SizedBox(height: 4),
-                    Text(secondary,
-                        textAlign: TextAlign.right,
-                        style: TextStyle(
-                            fontSize: 11,
-                            color: DavoColors.of(context).bodyMuted)),
-                  ])),
-            ])),
-        const SizedBox(width: 32),
-      ]));
-}
-
-class _ExactTransactionRow extends StatelessWidget {
-  const _ExactTransactionRow({
-    required this.label,
-    required this.value,
-    this.copy = false,
-    this.valueColor,
-    this.valueLeading,
+class TransactionDetailsScreen extends StatefulWidget {
+  const TransactionDetailsScreen({
+    super.key,
+    required this.kind,
+    required this.target,
+    required this.amount,
+    this.receipt = false,
+    this.pending = false,
+    this.asset = BuyCryptoAsset.bitcoin,
+    this.record,
   });
-  final String label, value;
-  final bool copy;
-  final Color? valueColor;
-  final Widget? valueLeading;
-
+  final TxKind kind;
+  final String target;
+  final double amount;
+  final bool receipt, pending;
+  final BuyCryptoAsset asset;
+  final ReceiptRecord? record;
   @override
-  Widget build(BuildContext context) => ReceiptDetailRow(
-        label: label,
-        value: value,
-        copyable: copy,
-        leading: valueLeading,
-        valueColor: valueColor,
-      );
+  State<TransactionDetailsScreen> createState() =>
+      _TransactionDetailsScreenState();
 }
 
-class _TxWrappedBtc24 extends StatelessWidget {
-  const _TxWrappedBtc24();
+class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> {
+  late final ReceiptRecord _fallback = buildCryptoReceiptRecord(
+    kind: widget.kind,
+    target: widget.target,
+    amount: widget.amount,
+    asset: widget.asset,
+    status: widget.pending ? ReceiptStatus.pending : ReceiptStatus.completed,
+  );
+  ReceiptRecord get record => widget.record ?? _fallback;
   @override
-  Widget build(BuildContext context) =>
-      Image.asset('$_exact/tx_wrapped_btc_24_exact.png',
-          width: 24, height: 24, fit: BoxFit.contain);
-}
-
-class _TxUsdt24 extends StatelessWidget {
-  const _TxUsdt24();
-  @override
-  Widget build(BuildContext context) =>
-      Image.asset('$_exact/tx_usdt_24_exact.png',
-          width: 24, height: 24, fit: BoxFit.contain);
-}
-
-class _TxNigeria24 extends StatelessWidget {
-  const _TxNigeria24();
-  @override
-  Widget build(BuildContext context) => Image.asset('$_f/buy_nigeria.png',
-      width: 24, height: 24, fit: BoxFit.contain);
-}
-
-class _ExactRateRow extends StatelessWidget {
-  const _ExactRateRow();
-  @override
-  Widget build(BuildContext context) => const _ExactTransactionRow(
-      label: 'Exchange Rate', value: '1 USDT ≈ 0.0000345 BTC');
-}
-
-class _BlockchainExplorerRow extends StatelessWidget {
-  const _BlockchainExplorerRow();
-  @override
-  Widget build(BuildContext context) => const _ExactTransactionRow(
-      label: 'View in Blockchain', value: 'Blockchain Explorer');
+  Widget build(BuildContext context) => widget.receipt
+      ? ReceiptScreen(record: record)
+      : TransactionRecordDetailsScreen(
+          record: record,
+          onDone: () => Navigator.of(context).popUntil((r) => r.isFirst),
+          receiptBuilder: (_) => TransactionDetailsScreen(
+            kind: widget.kind,
+            target: widget.target,
+            amount: widget.amount,
+            asset: widget.asset,
+            pending: widget.pending,
+            record: record,
+            receipt: true,
+          ),
+        );
 }
 
 class ScanPasteAddressScreen extends StatefulWidget {
@@ -3773,85 +3401,14 @@ class _ExactTradeSummary extends StatelessWidget {
 }
 
 class DepositStatusScreen extends StatelessWidget {
-  const DepositStatusScreen({super.key, required this.success});
+  const DepositStatusScreen({super.key,required this.success,this.record});
   final bool success;
-
-  @override
-  Widget build(BuildContext context) => Scaffold(
-        backgroundColor: DavoColors.of(context).surface,
-        body: SafeArea(
-            child: Column(children: [
-          _TopBar(
-              title: 'Deposit Details',
-              onBack: () => Navigator.pop(context),
-              height: 48,
-              fontSize: 20),
-          Expanded(
-              child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(children: [
-                    const SizedBox(height: 24),
-                    if (success) ...[
-                      const DavoSuccessMark(
-                          progress: 1, semanticLabel: 'Deposit confirmed'),
-                      const SizedBox(height: 24)
-                    ],
-                    if (!success)
-                      const DavoWorkingIndicator(
-                          kind: DavoWorkingKind.reviewPending,
-                          active: false,
-                          size: 148),
-                    Text('Quantity',
-                        style: TextStyle(
-                            fontSize: 16,
-                            color: DavoColors.of(context).bodyMuted)),
-                    const SizedBox(height: 8),
-                    const Text('0.0317934 BTC',
-                        style: TextStyle(
-                            fontSize: 20, fontWeight: FontWeight.w600)),
-                    const SizedBox(height: 8),
-                    Text(success ? 'Deposit Successful' : 'Pending',
-                        style: TextStyle(
-                            color: success
-                                ? DavoColors.of(context).success
-                                : DavoColors.of(context).warning)),
-                    const SizedBox(height: 24),
-                    Text(
-                        success
-                            ? 'Crypto has arrived in your Davochain account. View your wallet balance for more details.'
-                            : 'Your deposit is awaiting network confirmation.',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                            fontSize: 12,
-                            color: DavoColors.of(context).bodyMuted)),
-                    const SizedBox(height: 24),
-                    Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                            color: DavoColors.of(context).fieldFill,
-                            borderRadius: BorderRadius.circular(12)),
-                        child: const Column(children: [
-                          _ExactTransactionRow(label: 'Network', value: 'BTC'),
-                          SizedBox(height: 20),
-                          _ExactTransactionRow(
-                              label: 'Time', value: '2026-05-02 22:36:58'),
-                          SizedBox(height: 20),
-                          _ExactTransactionRow(
-                              label: 'Deposit Address',
-                              value: '1ChGMXGfgy2tdoE4rVQEqouRpBQaAA6zLZ',
-                              copy: true),
-                          SizedBox(height: 20),
-                          _ExactTransactionRow(
-                              label: 'Transaction Hash',
-                              value:
-                                  '7c0d217aca078b46197d9283d7b818311de96eae39deddfea593303815d04c35',
-                              copy: true),
-                          SizedBox(height: 20),
-                          _BlockchainExplorerRow(),
-                        ])),
-                  ]))),
-        ])),
-      );
+  final ReceiptRecord? record;
+  @override Widget build(BuildContext context) => TransactionRecordDetailsScreen(record: record ?? ReceiptRecord(
+    id:'PREVIEW-DEPOSIT-SAMPLE',reference:'PREVIEW-DEPOSIT-SAMPLE',type:'Deposit',
+    status:success?ReceiptStatus.completed:ReceiptStatus.pending,occurredAt:DateTime(2026,5,2,22,36,58),amount:'0.0317934 BTC',preview:true,
+    fields:const [ReceiptField(label:'Network',value:'Bitcoin'),ReceiptField(label:'Deposit Address',value:'1ChGMXGfgy2tdoE4rVQEqouRpBQaAA6zLZ',sensitive:true,copyable:true),ReceiptField(label:'Transaction Hash',value:'7c0d217aca078b46197d9283d7b818311de96eae39deddfea593303815d04c35',copyable:true)],
+    events:[ReceiptEvent(label:success?'Deposit confirmed':'Awaiting network confirmation',description:success?'Crypto received in this preview.':'Confirmation is pending.',occurredAt:success?DateTime(2026,5,2,22,36,58):null,state:success?ReceiptEventState.complete:ReceiptEventState.current)]));
 }
 
 class _Scaffold extends StatelessWidget {

@@ -9,6 +9,7 @@ class DavoOutcomeContent extends StatelessWidget {
       {super.key,
       required this.heading,
       this.details,
+      this.mark,
       this.kind = DavoOutcomeKind.completed,
       this.tempo = DavoOutcomeTempo.regular,
       this.semanticLabel = 'Success',
@@ -16,6 +17,7 @@ class DavoOutcomeContent extends StatelessWidget {
       this.play = true});
   final Widget heading;
   final Widget? details;
+  final Widget? mark;
   final DavoOutcomeKind kind;
   final DavoOutcomeTempo tempo;
   final String semanticLabel;
@@ -40,7 +42,7 @@ class DavoOutcomeContent extends StatelessWidget {
                       child: child));
             });
         return Column(children: [
-          AnimatedBuilder(
+          mark ?? AnimatedBuilder(
               animation: timeline,
               builder: (context, child) => DavoSuccessMark(
                   kind: kind,

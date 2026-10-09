@@ -1,5 +1,5 @@
 name: davochain
-version: 0.13.0+20
+version: 0.13.0+22
 publish_to: 'none'
 description: Davochain Flutter mobile application.
 
@@ -11,7 +11,8 @@ dependencies:
     sdk: flutter
   cupertino_icons: ^1.0.8
   flutter_svg: ^2.3.0
-  pdf: ^3.13.1
+  # ReceiptPdfFont repairs non-BMP ToUnicode mappings in this exact API.
+  pdf: 3.13.1
   share_plus: ^13.3.1
   path_provider: ^2.1.6
   shared_preferences: ^2.5.6
@@ -36,7 +37,14 @@ flutter:
           weight: 600
         - asset: assets/fonts/sora/Sora-Variable.ttf
           weight: 700
+    - family: DavoNotoSans
+      fonts:
+        - asset: assets/fonts/noto/NotoSans-Regular.ttf
+    - family: DavoNotoEmoji
+      fonts:
+        - asset: assets/fonts/noto/NotoEmoji.ttf
   assets:
+    - assets/fonts/noto/
     - assets/images/banks/
     - assets/images/brand/
     - assets/images/appearance/

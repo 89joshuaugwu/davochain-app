@@ -1,3 +1,8 @@
+import '../../../shared/receipts/transaction_record_details_screen.dart';
+import '../../../shared/receipts/receipt_record.dart';
+import '../../../shared/receipts/receipt_screen.dart';
+import '../../../shared/receipts/receipt_activity.dart';
+import 'gift_card_receipt_records.dart';
 import '../../../shared/motion/davo_outcome_content.dart';
 import '../../../shared/motion/davo_working_indicator.dart';
 import '../../../shared/motion/davo_motion_spec.dart';
@@ -378,6 +383,8 @@ class _GiftCardSellFormScreenState extends State<GiftCardSellFormScreen> {
                       builder: (_) => GiftCardSellReviewScreen(
                           brand: widget.brand,
                           amount: numeric,
+                          country: 'France',
+                          physical: physical,
                           cardType:
                               'France ${widget.brand.name}, ${physical ? 'Physical' : 'E-code'} (50 above)')),
                 )
@@ -479,10 +486,12 @@ class _GiftCardSellFormScreenState extends State<GiftCardSellFormScreen> {
 
 class GiftCardSellReviewScreen extends StatefulWidget {
   const GiftCardSellReviewScreen(
-      {super.key, required this.brand, required this.amount, this.cardType});
+      {super.key, required this.brand, required this.amount, this.cardType, this.country, this.physical});
   final GiftCardBrand brand;
   final double amount;
   final String? cardType;
+  final String? country;
+  final bool? physical;
 
   @override
   State<GiftCardSellReviewScreen> createState() =>
@@ -516,7 +525,11 @@ class _GiftCardSellReviewScreenState extends State<GiftCardSellReviewScreen> {
                         Navigator.of(context).pushReplacement<void, void>(
                           AppPageRoute<void>(
                               builder: (_) =>
-                                  const GiftCardSellSubmittedScreen()),
+                                  GiftCardSellSubmittedScreen(
+                                    brand: widget.brand, amount: widget.amount,
+                                    naira: payout, subcategory: widget.cardType,
+                                    country: widget.country,
+                                    cardType: widget.physical == null ? null : widget.physical! ? 'Physical' : 'E-code')),
                         );
                       }
                     }
@@ -630,7 +643,13 @@ class _GiftCardSellReviewScreenState extends State<GiftCardSellReviewScreen> {
 }
 
 class GiftCardSellSubmittedScreen extends StatefulWidget {
-  const GiftCardSellSubmittedScreen({super.key});
+  const GiftCardSellSubmittedScreen({super.key, this.record, this.brand,
+    this.amount, this.naira, this.subcategory, this.country, this.cardType});
+  final ReceiptRecord? record;
+  final GiftCardBrand? brand;
+  final double? amount;
+  final int? naira;
+  final String? subcategory, country, cardType;
 
   @override
   State<GiftCardSellSubmittedScreen> createState() =>
@@ -639,6 +658,19 @@ class GiftCardSellSubmittedScreen extends StatefulWidget {
 
 class _GiftCardSellSubmittedScreenState
     extends State<GiftCardSellSubmittedScreen> {
+  late final ReceiptRecord record;
+  @override
+  void initState() {
+    super.initState();
+    final now = DateTime.now();
+    record = widget.record ?? giftCardPreviewReceipt(
+      sell: true, occurredAt: now, id: 'PREVIEW-GC-SELL-${now.microsecondsSinceEpoch}',
+      cardValue: widget.amount, naira: widget.naira,
+      brand: widget.brand?.name, category: widget.brand?.category.name,
+      subcategory: widget.subcategory, country: widget.country, cardType: widget.cardType,
+    );
+    ReceiptActivity.accept(record);
+  }
   @override
   Widget build(BuildContext context) {
     return _GiftScaffold(
@@ -652,36 +684,26 @@ class _GiftCardSellSubmittedScreenState
                   child: Padding(
                       padding: const EdgeInsets.symmetric(vertical: 28),
                       child: DavoOutcomeContent(
-                          kind: DavoOutcomeKind.submitted,
-                          semanticLabel: 'Trade submitted; review pending',
+                          mark: record.status == ReceiptStatus.failed
+                              ? const _GiftTerminalMark(status: ReceiptStatus.failed)
+                              : null,
+                          kind: record.status == ReceiptStatus.completed ? DavoOutcomeKind.completed : DavoOutcomeKind.submitted,
+                          semanticLabel: record.status == ReceiptStatus.pending ? 'Trade submitted; review pending' : 'Gift card sale ${record.status.label}',
                           heading: Column(children: [
-                            Text('Transaction Submitted',
+                            Text(record.status == ReceiptStatus.pending ? 'Transaction Submitted' : 'Transaction ${record.status.label}',
                                 style: _title20(context)),
                             const SizedBox(height: 4),
                             Text.rich(
                                 TextSpan(style: _caption(context), children: [
                               const TextSpan(text: 'Current Trade Status: '),
                               TextSpan(
-                                  text: 'Pending',
+                                  text: record.status.label,
                                   style: TextStyle(
                                       color: DavoColors.of(context).warning,
                                       fontWeight: FontWeight.w500))
                             ]))
                           ]),
-                          details: const _TransactionCard(
-                            rows: [
-                              (
-                                'Transaction ID',
-                                '32525258296589677845',
-                                true,
-                                false
-                              ),
-                              ('Reference Code', '965X-896756', true, false),
-                              ('Card Value', '\$500.00', false, false),
-                              ('Amount', '₦432,500', false, true),
-                              ('Date', '12-05-2026 08:48:48', false, false),
-                            ],
-                          ))))),
+                          details: _GiftOutcomeDetails(record: record))))),
           const SizedBox(height: 12),
           _PrimaryButton(
             label: 'Start New Trade',
@@ -693,9 +715,15 @@ class _GiftCardSellSubmittedScreenState
           ),
           const SizedBox(height: 10),
           _SecondaryButton(
-            label: 'Save New Trade',
+            label: 'View Receipt',
             onTap: () => Navigator.of(context).push<void>(AppPageRoute<void>(
-                builder: (_) => const GiftCardVerificationScreen())),
+                builder: (_) => ReceiptScreen(record: record))),
+          ),
+          const SizedBox(height: 10),
+          _SecondaryButton(
+            label: 'Track Verification',
+            onTap: () => Navigator.of(context).push<void>(AppPageRoute<void>(
+                builder: (_) => GiftCardVerificationScreen(record: record))),
           ),
         ],
       ),
@@ -704,7 +732,8 @@ class _GiftCardSellSubmittedScreenState
 }
 
 class GiftCardVerificationScreen extends StatefulWidget {
-  const GiftCardVerificationScreen({super.key});
+  const GiftCardVerificationScreen({super.key, this.record});
+  final ReceiptRecord? record;
 
   @override
   State<GiftCardVerificationScreen> createState() =>
@@ -713,6 +742,14 @@ class GiftCardVerificationScreen extends StatefulWidget {
 
 class _GiftCardVerificationScreenState
     extends State<GiftCardVerificationScreen> {
+  late final ReceiptRecord record;
+  @override
+  void initState() {
+    super.initState();
+    final now = DateTime.now();
+    record = widget.record ?? giftCardPreviewReceipt(sell: true,
+      occurredAt: now, id: 'PREVIEW-GC-SELL-${now.microsecondsSinceEpoch}');
+  }
   @override
   Widget build(BuildContext context) {
     return _GiftScaffold(
@@ -723,11 +760,14 @@ class _GiftCardVerificationScreenState
               alignment: Alignment.centerLeft,
               child: _BackButton(onTap: () => Navigator.pop(context))),
           const SizedBox(height: 20),
-          const DavoWorkingIndicator(kind: DavoWorkingKind.reviewPending),
+          if (record.status == ReceiptStatus.pending)
+            const DavoWorkingIndicator(kind: DavoWorkingKind.reviewPending)
+          else
+            _GiftTerminalMark(status: record.status),
           const SizedBox(height: 20),
-          Text('Verifying your card...', style: _title20(context)),
+          Text(record.status == ReceiptStatus.pending ? 'Verifying your card...' : 'Card trade ${record.status.label}', style: _title20(context)),
           const SizedBox(height: 5),
-          Text('This usually takes 5–30 minutes', style: _caption(context)),
+          Text(record.preview ? 'Preview: ${record.status.label}' : record.status.label, style: _caption(context)),
           const SizedBox(height: 24),
           Container(
             width: double.infinity,
@@ -743,25 +783,17 @@ class _GiftCardVerificationScreenState
               children: [
                 Text('Verification Progress', style: _section(context)),
                 Divider(height: 28, color: DavoColors.of(context).divider),
-                const _ProgressRow(
-                    color: AppColors.primary,
-                    title: 'Submission received',
-                    meta: 'Just now'),
-                const _TimelineLine(active: true),
-                _ProgressRow(
-                    color: DavoColors.of(context).warning,
-                    title: 'Photo verification',
-                    meta: 'In progress'),
-                const _TimelineLine(active: false),
-                _ProgressRow(
-                    color: DavoColors.of(context).muted,
-                    title: 'Card validation',
-                    meta: 'Up next'),
-                const _TimelineLine(active: false),
-                _ProgressRow(
-                    color: DavoColors.of(context).muted,
-                    title: 'Funds credited',
-                    meta: '~25 mins'),
+                for (final event in record.events) ...[
+                  _ProgressRow(
+                    color: event.state == ReceiptEventState.current
+                        ? DavoColors.of(context).warning : AppColors.primary,
+                    state: event.state,
+                    title: event.label,
+                    meta: event.occurredAt == null ? event.description
+                        : '${formatReceiptDate(event.occurredAt!)} ? ${event.description}',
+                  ),
+                  if (event != record.events.last) const _TimelineLine(active: false),
+                ],
               ],
             ),
           ),
@@ -779,13 +811,13 @@ class _GiftCardVerificationScreenState
                         children: [
                       Text('Reference', style: _caption(context)),
                       const SizedBox(height: 4),
-                      Text('GC-SELL-2826491', style: _section(context)),
+                      Text(record.reference, style: _section(context)),
                     ])),
                 const SizedBox(width: 10),
                 TextButton.icon(
                     onPressed: () async {
                       await Clipboard.setData(
-                          const ClipboardData(text: 'GC-SELL-2826491'));
+                          ClipboardData(text: record.reference));
                       if (context.mounted) {
                         showDavoToast(context, 'Reference copied');
                       }
@@ -802,17 +834,10 @@ class _GiftCardVerificationScreenState
             ),
           ),
           const SizedBox(height: 12),
-          Text.rich(
-            TextSpan(children: [
-              TextSpan(text: 'Need help? ', style: _caption(context)),
-              TextSpan(
-                  text: 'Contact support',
-                  style: TextStyle(
-                      fontFamily: 'Sora',
-                      fontSize: 12,
-                      color: DavoColors.of(context).link,
-                      fontWeight: FontWeight.w600))
-            ]),
+          _SecondaryButton(
+            label: 'Transaction Details',
+            onTap: () => Navigator.of(context).push<void>(AppPageRoute<void>(
+              builder: (_) => TransactionRecordDetailsScreen(record: record))),
           ),
         ],
       ),
@@ -1049,7 +1074,9 @@ class GiftCardBuyReviewScreen extends StatelessWidget {
         onTap: () => Navigator.of(context).push<void>(
           AppPageRoute<void>(
               builder: (_) => GiftCardPaymentScreen(
-                  amount: amount * quantity, naira: naira)),
+                  amount: amount * quantity, naira: naira, brand: brand,
+                  quantity: quantity, country: 'France', cardType: 'Physical',
+                  subcategory: 'France ${brand.name}, Physical (50 above)')),
         ),
       ),
       child: Column(
@@ -1081,9 +1108,15 @@ class GiftCardBuyReviewScreen extends StatelessWidget {
 
 class GiftCardPaymentScreen extends StatefulWidget {
   const GiftCardPaymentScreen(
-      {super.key, required this.amount, required this.naira});
+      {super.key, required this.amount, required this.naira, this.brand,
+      this.quantity, this.country, this.cardType, this.subcategory, this.record});
   final double amount;
   final int naira;
+
+  final GiftCardBrand? brand;
+  final int? quantity;
+  final String? country, cardType, subcategory;
+  final ReceiptRecord? record;
 
   @override
   State<GiftCardPaymentScreen> createState() => _GiftCardPaymentScreenState();
@@ -1226,7 +1259,10 @@ class _GiftCardPaymentScreenState extends State<GiftCardPaymentScreen> {
                     Navigator.of(context).pushReplacement<void, void>(
                       AppPageRoute<void>(
                           builder: (_) => GiftCardBuySuccessScreen(
-                              amount: widget.amount, naira: widget.naira)),
+                              amount: widget.amount, naira: widget.naira,
+                              brand: widget.brand, quantity: widget.quantity,
+                              country: widget.country, cardType: widget.cardType,
+                              subcategory: widget.subcategory, record: widget.record)),
                     );
                   },
                 ),
@@ -1267,9 +1303,15 @@ class GiftCardPinScreen extends StatelessWidget {
 
 class GiftCardBuySuccessScreen extends StatefulWidget {
   const GiftCardBuySuccessScreen(
-      {super.key, required this.amount, required this.naira});
+      {super.key, required this.amount, required this.naira, this.brand,
+      this.quantity, this.country, this.cardType, this.subcategory, this.record});
   final double amount;
   final int naira;
+
+  final GiftCardBrand? brand;
+  final int? quantity;
+  final String? country, cardType, subcategory;
+  final ReceiptRecord? record;
 
   @override
   State<GiftCardBuySuccessScreen> createState() =>
@@ -1277,6 +1319,20 @@ class GiftCardBuySuccessScreen extends StatefulWidget {
 }
 
 class _GiftCardBuySuccessScreenState extends State<GiftCardBuySuccessScreen> {
+  late final ReceiptRecord record;
+  @override
+  void initState() {
+    super.initState();
+    final now = DateTime.now();
+    record = widget.record ?? giftCardPreviewReceipt(
+      sell: false, occurredAt: now, id: 'PREVIEW-GC-BUY-${now.microsecondsSinceEpoch}',
+      cardValue: widget.amount, naira: widget.naira,
+      brand: widget.brand?.name, category: widget.brand?.category.name,
+      quantity: widget.quantity, country: widget.country,
+      cardType: widget.cardType, subcategory: widget.subcategory,
+    );
+    ReceiptActivity.accept(record);
+  }
   @override
   Widget build(BuildContext context) {
     return _GiftScaffold(
@@ -1290,52 +1346,21 @@ class _GiftCardBuySuccessScreenState extends State<GiftCardBuySuccessScreen> {
                   child: Padding(
                       padding: const EdgeInsets.symmetric(vertical: 28),
                       child: DavoOutcomeContent(
-                          kind: DavoOutcomeKind.completed,
-                          semanticLabel: 'Gift card purchase confirmed',
+                          mark: record.status == ReceiptStatus.failed
+                              ? const _GiftTerminalMark(status: ReceiptStatus.failed)
+                              : null,
+                          kind: record.status == ReceiptStatus.completed ? DavoOutcomeKind.completed : DavoOutcomeKind.submitted,
+                          semanticLabel: 'Gift card purchase ${record.status.label}',
                           heading: Column(children: [
-                            Text('Purchase Successful!',
+                            Text(record.status == ReceiptStatus.completed ? 'Purchase Successful!' : 'Purchase ${record.status.label}',
                                 style: _title20(context)),
                             const SizedBox(height: 4),
                             Text(
-                                'Your gift card has been purchased successfully',
+                                record.preview ? 'Local gift card purchase preview' : 'Gift card purchase ${record.status.label.toLowerCase()}',
                                 textAlign: TextAlign.center,
                                 style: _body14(context))
                           ]),
-                          details: _TransactionCard(
-                            rows: [
-                              const (
-                                'Transaction ID',
-                                '32525258296589677845',
-                                true,
-                                false
-                              ),
-                              const (
-                                'Reference Code',
-                                '965X-896756',
-                                true,
-                                false
-                              ),
-                              (
-                                'Card Value',
-                                '\$${formatGroupedAmount(widget.amount.toStringAsFixed(2))}',
-                                false,
-                                false
-                              ),
-                              (
-                                'Amount',
-                                '₦${_money(widget.naira)}',
-                                false,
-                                true
-                              ),
-                              const ('Status', 'Completed', false, false),
-                              const (
-                                'Date',
-                                '12-05-2026 08:48:48',
-                                false,
-                                false
-                              ),
-                            ],
-                          ))))),
+                          details: _GiftOutcomeDetails(record: record))))),
           const SizedBox(height: 12),
           _PrimaryButton(
             label: 'Start New Trade',
@@ -1347,13 +1372,53 @@ class _GiftCardBuySuccessScreenState extends State<GiftCardBuySuccessScreen> {
           ),
           const SizedBox(height: 10),
           _SecondaryButton(
-              label: 'Save New Trade',
-              onTap: () =>
-                  Navigator.of(context).popUntil((route) => route.isFirst)),
+              label: 'View Receipt',
+              onTap: () => Navigator.of(context).push<void>(AppPageRoute<void>(
+                  builder: (_) => ReceiptScreen(record: record)))),
         ],
       ),
     );
   }
+}
+
+class _GiftTerminalMark extends StatelessWidget {
+  const _GiftTerminalMark({required this.status});
+  final ReceiptStatus status;
+  @override
+  Widget build(BuildContext context) {
+    final failed = status == ReceiptStatus.failed;
+    final color = failed ? DavoColors.of(context).danger : DavoColors.of(context).success;
+    return Semantics(
+      label: 'Gift card trade ${status.label}',
+      child: Container(
+        width: 148,
+        height: 148,
+        decoration: BoxDecoration(color: color.withValues(alpha: .1), shape: BoxShape.circle),
+        alignment: Alignment.center,
+        child: Icon(failed ? Icons.error_outline_rounded : Icons.check_circle_outline_rounded,
+          size: 72, color: color),
+      ),
+    );
+  }
+}
+
+class _GiftOutcomeDetails extends StatelessWidget {
+  const _GiftOutcomeDetails({required this.record});
+  final ReceiptRecord record;
+  @override
+  Widget build(BuildContext context) => Column(children: [
+    if (record.preview) Padding(padding: const EdgeInsets.only(bottom: 8),
+      child: Text('Preview: local transaction', style: _caption(context))),
+    _TransactionCard(rows: [
+      ('Transaction ID', record.id, true, false),
+      ('Reference Code', record.reference, true, false),
+      ...record.fields.map((field) => (field.label,
+        field.sensitive ? '????' : field.value, field.copyable && !field.sensitive, false)),
+      ('Amount', record.amount, false, true),
+      ('Status', record.status.label, false, false),
+      ('Date', formatReceiptDate(record.occurredAt), false, false),
+    ]),
+  ]);
 }
 
 class _GiftScaffold extends StatelessWidget {
@@ -2103,14 +2168,15 @@ class _TransactionCard extends StatelessWidget {
 
 class _ProgressRow extends StatelessWidget {
   const _ProgressRow(
-      {required this.color, required this.title, required this.meta});
+      {required this.color, required this.title, required this.meta, required this.state});
   final Color color;
   final String title;
   final String meta;
+  final ReceiptEventState state;
   @override
   Widget build(BuildContext context) {
-    final done = meta == 'Just now';
-    final active = done || meta == 'In progress';
+    final done = state == ReceiptEventState.complete;
+    final active = done || state == ReceiptEventState.current;
     return Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
       Container(
           width: 22,
@@ -2144,7 +2210,7 @@ class _ProgressRow extends StatelessWidget {
             style: TextStyle(
                 fontSize: 12,
                 height: 1.35,
-                color: meta == 'In progress'
+                color: state == ReceiptEventState.current
                     ? DavoColors.of(context).warning
                     : DavoColors.of(context).bodyMuted)),
       ])),

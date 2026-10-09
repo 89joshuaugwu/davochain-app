@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import '../../core/navigation/app_page_route.dart';
 import '../../core/theme/app_theme.dart';
 import '../../shared/formatters/grouped_amount_formatter.dart';
+import '../../shared/formatters/crypto_quantity_formatter.dart';
+import '../../shared/receipts/receipt_record.dart';
+import '../../shared/receipts/transaction_record_details_screen.dart';
 import '../../shared/motion/davo_motion_spec.dart';
 import '../../shared/motion/davo_working_indicator.dart';
 import '../../shared/widgets/auth_widgets.dart';
@@ -45,7 +48,7 @@ class FundingRecord {
   bool get deposit => direction == FundingDirection.deposit;
   String get amountLabel =>
       '${currency == 'NGN' || currency == 'NGD' ? '₦' : ''}'
-      '${formatGroupedAmount(amount.toStringAsFixed(currency == 'NGN' || currency == 'NGD' ? 2 : 8))}'
+      '${formatGroupedAmount(currency == 'NGN' || currency == 'NGD' ? amount.toStringAsFixed(2) : formatCryptoQuantity(amount))}'
       '${currency == 'NGN' || currency == 'NGD' ? '' : ' $currency'}';
   String get title => status == FundingStatus.failed
       ? (deposit ? 'Deposit unsuccessful' : 'Withdrawal unsuccessful')
@@ -342,61 +345,70 @@ class FundingOutcomeScreen extends StatelessWidget {
 class FundingDetailsScreen extends StatelessWidget {
   const FundingDetailsScreen({super.key, required this.record});
   final FundingRecord record;
+
   @override
-  Widget build(BuildContext context) => ValueListenableBuilder<
-          List<FundingRecord>>(
+  Widget build(BuildContext context) => ValueListenableBuilder<List<FundingRecord>>(
       valueListenable: FundingActivity.records,
       builder: (context, records, _) {
         final matches = records.where((r) => r.id == record.id);
         final value = matches.isEmpty ? record : matches.first;
-        final details = <(String, String)>[
-          ('Amount', value.amountLabel),
-          ('Status', value.statusLabel),
-          ('Wallet', value.currency),
-          ('Destination', value.destination),
-          if (value.bank != null) ('Bank', value.bank!),
-          if (value.accountNumber != null)
-            (
-              'Account',
-              '•••• ${value.accountNumber!.length > 4 ? value.accountNumber!.substring(value.accountNumber!.length - 4) : value.accountNumber!}'
-            ),
-          if (value.accountName != null) ('Account name', value.accountName!),
-          if (!value.deposit)
-            ('Fee', '₦${formatGroupedAmount(value.fee.toStringAsFixed(2))}'),
-          if (value.network != null) ('Network', value.network!),
-          if (value.reference != null) ('Reference', value.reference!),
-          if (value.transactionHash != null)
-            ('Transaction hash', value.transactionHash!),
-          ('Date', value.occurredAt.toLocal().toString().split('.').first),
-        ];
-        return Scaffold(
-            appBar: AppBar(
-                title: Text(
-                    value.deposit ? 'Deposit details' : 'Withdrawal details')),
-            body: SafeArea(
-                child: ListView(padding: const EdgeInsets.all(24), children: [
-              for (final row in details)
-                Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Expanded(
-                              child: Text(row.$1,
-                                  style: TextStyle(
-                                      fontSize: 14,
-                                      color: DavoColors.of(context).body))),
-                          const SizedBox(width: 16),
-                          Expanded(
-                              child: Text(row.$2,
-                                  textAlign: TextAlign.right,
-                                  style: const TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w500))),
-                        ])),
-              if (value.preview)
-                const Text('Preview only. No funds have been moved.',
-                    style: TextStyle(fontSize: 12)),
-            ])));
+        return TransactionRecordDetailsScreen(record: _receipt(value));
       });
+
+  ReceiptRecord _receipt(FundingRecord value) {
+    final status = switch (value.status) {
+      FundingStatus.pending => ReceiptStatus.pending,
+      FundingStatus.completed => ReceiptStatus.completed,
+      FundingStatus.failed => ReceiptStatus.failed,
+    };
+    final fiat = value.currency == 'NGN' || value.currency == 'NGD';
+    final fee = '${fiat ? '₦' : ''}'
+        '${formatGroupedAmount(fiat ? value.fee.toStringAsFixed(2) : formatCryptoQuantity(value.fee))}'
+        '${fiat ? '' : ' ${value.currency}'}';
+    return ReceiptRecord(
+      id: value.id,
+      reference: value.reference ?? value.id,
+      type: value.deposit ? 'Deposit' : 'Withdrawal',
+      status: status,
+      occurredAt: value.occurredAt,
+      amount: value.amountLabel,
+      preview: value.preview,
+      fields: [
+        ReceiptField(label: 'Wallet', value: value.currency),
+        ReceiptField(label: 'Destination', value: value.destination,
+            sensitive: !fiat || value.destination == value.accountNumber),
+        if (value.bank != null) ReceiptField(label: 'Bank', value: value.bank!),
+        if (value.accountNumber != null)
+          ReceiptField(label: 'Account', value: value.accountNumber!, sensitive: true),
+        if (value.accountName != null)
+          ReceiptField(label: 'Account name', value: value.accountName!, sensitive: true),
+        if (!value.deposit || value.fee > 0) ReceiptField(label: 'Fee', value: fee),
+        if (value.network != null) ReceiptField(label: 'Network', value: value.network!),
+        if (value.transactionHash != null)
+          ReceiptField(label: 'Transaction hash', value: value.transactionHash!, copyable: true),
+      ],
+      events: [
+        ReceiptEvent(
+          label: switch (status) {
+            ReceiptStatus.pending => 'Request accepted',
+            ReceiptStatus.completed => value.deposit ? 'Deposit received' : 'Withdrawal confirmed',
+            ReceiptStatus.failed => value.deposit ? 'Deposit unsuccessful' : 'Withdrawal unsuccessful',
+          },
+          description: switch (status) {
+            ReceiptStatus.pending => 'This request is pending confirmation.',
+            ReceiptStatus.completed => 'This transaction is recorded as completed.',
+            ReceiptStatus.failed => 'This transaction is recorded as failed.',
+          },
+          occurredAt: value.occurredAt,
+          state: status == ReceiptStatus.failed
+              ? ReceiptEventState.current
+              : ReceiptEventState.complete,
+        ),
+        if (status == ReceiptStatus.pending)
+          const ReceiptEvent(label: 'Awaiting confirmation',
+              description: 'Confirmation has not been received.',
+              state: ReceiptEventState.current),
+      ],
+    );
+  }
 }

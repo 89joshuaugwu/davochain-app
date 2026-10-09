@@ -49,7 +49,7 @@ void main() {
     await tester.tap(find.text('Share Receipt'));
     await tester.pumpAndSettle();
     expect(find.byType(BuyReceiptScreen), findsOneWidget);
-    expect(find.text('Purchase Receipt'), findsOneWidget);
+    expect(find.text('Purchase Receipt'), findsNothing);
     expect(find.text('Amount paid'), findsOneWidget);
     expect(find.text('731,540.00 NGN'), findsOneWidget);
     expect(find.text('Paid from'), findsOneWidget);

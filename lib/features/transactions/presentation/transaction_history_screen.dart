@@ -1,3 +1,8 @@
+import '../../../shared/receipts/receipt_activity.dart';
+import '../../../shared/receipts/receipt_record.dart';
+import '../../../shared/receipts/transaction_record_details_screen.dart';
+import '../../buy_crypto/presentation/buy_receipt_records.dart';
+import '../../crypto/presentation/crypto_receipt_records.dart';
 import '../../funding/funding_outcomes.dart';
 import 'package:flutter/material.dart';
 
@@ -25,10 +30,13 @@ class TransactionHistoryScreen extends StatelessWidget {
   ];
 
   @override
-  Widget build(BuildContext context) =>
-      ValueListenableBuilder<List<FundingRecord>>(
-          valueListenable: FundingActivity.records,
-          builder: (context, records, _) => Scaffold(
+  Widget build(BuildContext context) => ValueListenableBuilder<
+          List<FundingRecord>>(
+      valueListenable: FundingActivity.records,
+      builder: (context, records, _) => ValueListenableBuilder<
+              List<ReceiptRecord>>(
+          valueListenable: ReceiptActivity.records,
+          builder: (context, receipts, _) => Scaffold(
                 appBar: AppBar(
                   title: const Text('History'),
                   centerTitle: true,
@@ -47,6 +55,26 @@ class TransactionHistoryScreen extends StatelessWidget {
                               fontWeight: FontWeight.w600,
                               color: DavoColors.of(context).ink)),
                       const SizedBox(height: 12),
+                      for (final receipt in receipts) ...[
+                        ListTile(
+                            contentPadding: EdgeInsets.zero,
+                            leading: Icon(Icons.receipt_long,
+                                color: DavoColors.of(context).link),
+                            title: Text(receipt.type,
+                                style: const TextStyle(fontSize: 14)),
+                            subtitle: Text(
+                                '${receipt.status.label}${receipt.preview ? ', Preview' : ''}',
+                                style: const TextStyle(fontSize: 12)),
+                            trailing: Text(receipt.amount,
+                                style: const TextStyle(fontSize: 12)),
+                            onTap: () => Navigator.of(context).push(
+                                AppPageRoute<void>(
+                                    builder: (_) =>
+                                        TransactionRecordDetailsScreen(
+                                            record: receipt)))),
+                        Divider(
+                            height: 1, color: DavoColors.of(context).divider),
+                      ],
                       for (final record in records) ...[
                         ListTile(
                           contentPadding: EdgeInsets.zero,
@@ -116,7 +144,7 @@ class TransactionHistoryScreen extends StatelessWidget {
                     ],
                   ),
                 ),
-              ));
+              )));
 }
 
 enum _SampleKind { buy, sell, convert, withdraw, deposit }
@@ -131,21 +159,72 @@ class _SampleTransaction {
   final IconData icon;
   final _SampleKind kind;
 
-  Widget details() => switch (kind) {
-        _SampleKind.buy => const BuyTransactionDetailsScreen(
-            order: BuyCryptoOrder(
-                asset: BuyCryptoAsset.bitcoin,
-                wallet: BuyFundingWallet.ngn,
-                ngnAmount: 720000),
-          ),
-        _SampleKind.sell => const TransactionDetailsScreen(
-            kind: TxKind.sell, target: 'Nigerian Naira', amount: 0.03),
-        _SampleKind.convert => const TransactionDetailsScreen(
-            kind: TxKind.conversion, target: 'Tether', amount: 0.03),
-        _SampleKind.withdraw => const TransactionDetailsScreen(
-            kind: TxKind.external, target: 'bc1qpreviewaddress', amount: 0.03),
-        _SampleKind.deposit => const DepositStatusScreen(success: true),
-      };
+  Widget details() {
+    final date = switch (kind) {
+      _SampleKind.buy => DateTime(2026, 10, 7, 10, 30),
+      _SampleKind.sell => DateTime(2026, 10, 6, 14, 20),
+      _SampleKind.convert => DateTime(2026, 10, 5, 9, 15),
+      _SampleKind.withdraw => DateTime(2026, 10, 4, 16, 45),
+      _SampleKind.deposit => DateTime(2026, 10, 3, 11, 10)
+    };
+    final id = 'PREVIEW-HISTORY-${kind.name.toUpperCase()}';
+    switch (kind) {
+      case _SampleKind.buy:
+        const order = BuyCryptoOrder(
+            asset: BuyCryptoAsset.bitcoin,
+            wallet: BuyFundingWallet.ngn,
+            ngnAmount: 720000);
+        return BuyTransactionDetailsScreen(
+            order: order,
+            record: buildBuyReceiptRecord(order, occurredAt: date, id: id));
+      case _SampleKind.sell:
+      case _SampleKind.convert:
+      case _SampleKind.withdraw:
+        final txKind = kind == _SampleKind.sell
+            ? TxKind.sell
+            : kind == _SampleKind.convert
+                ? TxKind.conversion
+                : TxKind.external;
+        final target = kind == _SampleKind.sell
+            ? 'Nigerian Naira'
+            : kind == _SampleKind.convert
+                ? 'USDT'
+                : 'bc1qpreviewaddress';
+        return TransactionDetailsScreen(
+            kind: txKind,
+            target: target,
+            amount: .03,
+            record: buildCryptoReceiptRecord(
+                kind: txKind,
+                target: target,
+                amount: .03,
+                occurredAt: date,
+                id: id,
+                network: txKind == TxKind.external ? 'Bitcoin' : null,
+                fee: 0));
+      case _SampleKind.deposit:
+        return DepositStatusScreen(
+            success: true,
+            record: ReceiptRecord(
+                id: id,
+                reference: id,
+                type: 'Deposit',
+                status: ReceiptStatus.completed,
+                occurredAt: date,
+                amount: '0.03 BTC',
+                preview: true,
+                fields: const [
+                  ReceiptField(label: 'Network', value: 'Bitcoin')
+                ],
+                events: [
+                  ReceiptEvent(
+                      label: 'Deposit confirmed',
+                      description: 'Sample funds credited.',
+                      occurredAt: date,
+                      state: ReceiptEventState.complete)
+                ]));
+    }
+  }
 }
 
 class _TransactionRow extends StatelessWidget {

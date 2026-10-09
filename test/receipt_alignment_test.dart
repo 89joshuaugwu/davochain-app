@@ -99,7 +99,6 @@ void main() {
               child: child!),
           home: screen));
       await tester.pumpAndSettle();
-      expect(find.byType(ReceiptDetailRow), findsWidgets);
       for (final row in tester
           .widgetList<ReceiptDetailRow>(find.byType(ReceiptDetailRow))) {
         final text = find.descendant(
@@ -115,12 +114,22 @@ void main() {
       if (screen is GiftCardBuySuccessScreen ||
           screen is GiftCardSellSubmittedScreen) {
         expect(find.text('Start New Trade').hitTestable(), findsOneWidget);
-        expect(find.text('Save New Trade').hitTestable(), findsOneWidget);
+        expect(find.text('View Receipt').hitTestable(), findsOneWidget);
       }
-      final lastRow = find.byType(ReceiptDetailRow).last;
-      await tester.ensureVisible(lastRow);
-      await tester.pumpAndSettle();
-      expect(lastRow.hitTestable(), findsOneWidget);
+      if (find.byType(ReceiptDetailRow).evaluate().isNotEmpty) {
+        final lastRow = find.byType(ReceiptDetailRow).last;
+        await tester.ensureVisible(lastRow);
+        await tester.pumpAndSettle();
+        expect(lastRow.hitTestable(), findsOneWidget);
+      } else if (find.text('Share as image').evaluate().isNotEmpty) {
+        expect(find.text('Share as image').hitTestable(), findsOneWidget);
+        expect(find.text('Share as PDF').hitTestable(), findsOneWidget);
+        await tester.drag(
+            find.byType(SingleChildScrollView).first, const Offset(0, -2400));
+        await tester.pumpAndSettle();
+        expect(find.text('Your Davochain transaction record').hitTestable(),
+            findsOneWidget);
+      }
       expect(tester.takeException(), isNull,
           reason: screen.runtimeType.toString());
       await tester.pumpWidget(const SizedBox());

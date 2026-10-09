@@ -9,6 +9,8 @@ import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:share_plus/share_plus.dart';
+import '../receipts/receipt_record.dart';
+import '../receipts/receipt_pdf.dart';
 
 enum ReceiptExportFormat {
   image('png', 'image/png', 'Image · PNG'),
@@ -71,6 +73,25 @@ class ReceiptExportService {
       image.dispose();
     }
     return writeFile(png, format, receiptType);
+  }
+
+  Future<ReceiptExportFile> exportRecord(RenderRepaintBoundary boundary,
+      ReceiptExportFormat format, ReceiptPresentation presentation) async {
+    // Validate PDF text before preparing any cache file or thumbnail.
+    final bytes = format == ReceiptExportFormat.pdf
+        ? await ReceiptPdf.build(presentation)
+        : null;
+    final image = await export(
+        boundary, ReceiptExportFormat.image, presentation.record.type);
+    if (bytes == null) return image;
+    final file = File(
+        '${image.file.parent.path}/${fileName(presentation.record.type, format, DateTime.now())}');
+    await file.writeAsBytes(bytes, flush: true);
+    return ReceiptExportFile(
+        file: file,
+        previewPng: image.previewPng,
+        format: format,
+        receiptType: presentation.record.type);
   }
 
   @visibleForTesting

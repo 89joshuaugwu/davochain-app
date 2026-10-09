@@ -1,10 +1,12 @@
+import '../../../shared/receipts/receipt_record.dart';
+import '../../../shared/receipts/receipt_activity.dart';
+import '../../../shared/receipts/transaction_record_details_screen.dart';
+import 'buy_receipt_records.dart';
 import '../../../shared/motion/davo_motion_spec.dart';
 import '../../../core/preview/preview_transaction_operation.dart';
 import '../../../shared/motion/davo_working_indicator.dart';
 import '../../../shared/formatters/grouped_amount_formatter.dart';
-import '../../../shared/widgets/davo_toast.dart';
 import '../../../shared/widgets/davo_result_screen.dart';
-import '../../../shared/widgets/receipt_detail_row.dart';
 import '../../../shared/widgets/trade_form_layout.dart';
 import '../../crypto/presentation/crypto_full_flow.dart';
 import '../../../shared/widgets/transaction_pin_entry.dart';
@@ -430,15 +432,40 @@ class _BuyProgressScreenState extends State<BuyProgressScreen> {
               ]))));
 }
 
-class BuySuccessScreen extends StatelessWidget {
-  const BuySuccessScreen({super.key, required this.order});
+class BuySuccessScreen extends StatefulWidget {
+  const BuySuccessScreen({super.key, required this.order, this.record});
   final BuyCryptoOrder order;
+  final ReceiptRecord? record;
+  @override
+  State<BuySuccessScreen> createState() => _BuySuccessScreenState();
+}
+
+class _BuySuccessScreenState extends State<BuySuccessScreen> {
+  BuyCryptoOrder get order => widget.order;
+  late final ReceiptRecord _fallback = buildBuyReceiptRecord(order);
+  ReceiptRecord get record => widget.record ?? _fallback;
+  @override
+  void initState() {
+    super.initState();
+    ReceiptActivity.accept(record);
+  }
 
   @override
   Widget build(BuildContext context) => DavoResultScreen(
-        title: 'Purchase successful',
+        title: switch (record.status) {
+          ReceiptStatus.completed => 'Purchase successful',
+          ReceiptStatus.pending => 'Purchase submitted',
+          ReceiptStatus.failed => 'Purchase failed',
+        },
+        kind: record.status == ReceiptStatus.pending
+            ? DavoOutcomeKind.submitted
+            : DavoOutcomeKind.completed,
+        mark: record.status == ReceiptStatus.failed
+            ? const Icon(Icons.error_outline_rounded,
+                color: Color(0xFFB42318), size: 100)
+            : null,
         message:
-            'You bought ${formatGroupedAmount(order.cryptoAmount.toStringAsFixed(4))} ${order.asset.symbol} for \u20A6${_formatNgn(order.ngnAmount)}.',
+            '${record.status == ReceiptStatus.completed ? 'You bought' : record.status == ReceiptStatus.pending ? 'Purchase awaiting confirmation:' : 'Purchase failed:'} ${record.amount}.${record.preview ? ' Preview only. No funds have been moved.' : ''}',
         appBar: AppBar(
             backgroundColor: DavoColors.of(context).surface,
             leading: IconButton(
@@ -453,8 +480,8 @@ class BuySuccessScreen extends StatelessWidget {
               enabled: true,
               onPressed: () => Navigator.of(context).push<void>(
                   AppPageRoute<void>(
-                      builder: (_) =>
-                          BuyTransactionDetailsScreen(order: order)))),
+                      builder: (_) => BuyTransactionDetailsScreen(
+                          order: order, record: record)))),
           const SizedBox(height: 12),
           FilledButton(
             onPressed: () => Navigator.of(context).pushReplacement<void, void>(
@@ -477,157 +504,29 @@ class BuySuccessScreen extends StatelessWidget {
       );
 }
 
-class BuyTransactionDetailsScreen extends StatelessWidget {
-  const BuyTransactionDetailsScreen({super.key, required this.order});
+class BuyTransactionDetailsScreen extends StatefulWidget {
+  const BuyTransactionDetailsScreen(
+      {super.key, required this.order, this.record});
   final BuyCryptoOrder order;
-
+  final ReceiptRecord? record;
   @override
-  Widget build(BuildContext context) {
-    final now = DateTime.now();
-    final transactionId = '0x3a4f...9c7d';
-    return Scaffold(
-      backgroundColor: DavoColors.of(context).canvas,
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
-          child: Column(
-            children: [
-              _TradeTopBar(
-                title: 'Transaction Details',
-                onBack: () => Navigator.pop(context),
-                compactTitle: true,
-              ),
-              const SizedBox(height: 48),
-              Expanded(
-                child: SingleChildScrollView(
-                  child: Column(
-                    children: [
-                      Text(
-                        '${formatGroupedAmount(order.cryptoAmount.toStringAsFixed(4))} ${order.asset.symbol}',
-                        style: TextStyle(
-                          fontFamily: 'Sora',
-                          fontSize: 24,
-                          height: 1.35,
-                          fontWeight: FontWeight.w700,
-                          color: DavoColors.of(context).ink,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        '\$${formatGroupedAmount(order.usdAmount.toStringAsFixed(2))} USD',
-                        style: TextStyle(
-                          fontFamily: 'Sora',
-                          fontSize: 14,
-                          height: 1.35,
-                          color: DavoColors.of(context).body,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Container(
-                        width: 94,
-                        height: 31,
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          color: DavoColors.of(context).elevated,
-                          borderRadius: BorderRadius.circular(100),
-                        ),
-                        child: Text(
-                          'Completed',
-                          style: TextStyle(
-                            fontFamily: 'Sora',
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                            color: DavoColors.of(context).success,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 32),
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.fromLTRB(15, 22, 15, 22),
-                        decoration: BoxDecoration(
-                          color: DavoColors.of(context).surface,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Column(
-                          children: [
-                            const _DetailsRow(label: 'To', value: 'Callieweb3'),
-                            const _DetailsDivider(),
-                            _DetailsRow(
-                              label: 'Asset',
-                              value:
-                                  '${order.asset.name} (${order.asset.symbol})',
-                              leading:
-                                  BuyAssetIcon(asset: order.asset, size: 24),
-                            ),
-                            const _DetailsDivider(),
-                            _DetailsRow(
-                              label: 'Date',
-                              value:
-                                  '${_month(now.month)} ${now.day}, ${now.year}, ${_two(now.hour)}:${_two(now.minute)}',
-                            ),
-                            const _DetailsDivider(),
-                            const _DetailsRow(
-                              label: 'Network Fee',
-                              value: 'Free',
-                              accent: true,
-                            ),
-                            const _DetailsDivider(),
-                            _DetailsRow(
-                              label: 'Transaction ID',
-                              value: transactionId,
-                              copyable: true,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              _PrimaryButton(
-                label: 'Done',
-                enabled: true,
-                onPressed: () => Navigator.of(context).pushNamedAndRemoveUntil(
-                  AppRoutes.dashboard,
-                  (route) => false,
-                ),
-              ),
-              const SizedBox(height: 13),
-              SizedBox(
-                width: double.infinity,
-                height: 48,
-                child: FilledButton(
-                  onPressed: () {
-                    HapticFeedback.selectionClick();
-                    Navigator.of(context).push(AppPageRoute<void>(
-                        builder: (_) => BuyReceiptScreen(
-                            order: order,
-                            date: now,
-                            transactionId: transactionId)));
-                  },
-                  style: FilledButton.styleFrom(
-                    elevation: 0,
-                    backgroundColor: DavoColors.of(context).primarySoft,
-                    foregroundColor: DavoColors.of(context).link,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    textStyle: const TextStyle(
-                      fontFamily: 'Sora',
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  child: const Text('Share Receipt'),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
+  State<BuyTransactionDetailsScreen> createState() =>
+      _BuyTransactionDetailsScreenState();
+}
+
+class _BuyTransactionDetailsScreenState
+    extends State<BuyTransactionDetailsScreen> {
+  late final ReceiptRecord _fallback = buildBuyReceiptRecord(widget.order);
+  ReceiptRecord get record => widget.record ?? _fallback;
+  @override
+  Widget build(BuildContext context) => TransactionRecordDetailsScreen(
+      record: record,
+      onDone: () => Navigator.of(context).popUntil((r) => r.isFirst),
+      receiptBuilder: (_) => BuyReceiptScreen(
+          order: widget.order,
+          date: record.occurredAt,
+          transactionId: record.id,
+          record: record));
 }
 
 class _ExactTradeHeader extends StatelessWidget {
@@ -646,8 +545,8 @@ class _ExactTradeHeader extends StatelessWidget {
             child: InkResponse(
                 onTap: onBack,
                 radius: 22,
-                child: Image.asset('assets/figma_exact/buy_back.png', color: DavoColors.of(context).ink,
-                    width: 32, height: 32)),
+                child: Image.asset('assets/figma_exact/buy_back.png',
+                    color: DavoColors.of(context).ink, width: 32, height: 32)),
           ),
           Positioned.fill(
             child: Center(
@@ -706,46 +605,6 @@ class _ExactReviewSummary extends StatelessWidget {
           ],
         ]),
       );
-}
-
-class _TradeTopBar extends StatelessWidget {
-  const _TradeTopBar(
-      {required this.title, required this.onBack, this.compactTitle = false});
-  final String title;
-  final VoidCallback onBack;
-  final bool compactTitle;
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      height: 42,
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          Align(
-            alignment: Alignment.centerLeft,
-            child: IconButton(
-              onPressed: onBack,
-              padding: EdgeInsets.zero,
-              visualDensity: VisualDensity.compact,
-              icon: Image.asset('assets/figma_exact/buy_back.png', color: DavoColors.of(context).ink,
-                  width: 24, height: 24),
-            ),
-          ),
-          Text(
-            title,
-            style: TextStyle(
-              fontFamily: 'Sora',
-              fontSize: compactTitle ? 14 : 20,
-              height: 1.35,
-              fontWeight: compactTitle ? FontWeight.w600 : FontWeight.w400,
-              color: DavoColors.of(context).ink,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 }
 
 class _ModeToggle extends StatelessWidget {
@@ -946,50 +805,6 @@ class _ReviewExchangeCards extends StatelessWidget {
       ]);
 }
 
-class _DetailsRow extends StatelessWidget {
-  const _DetailsRow({
-    required this.label,
-    required this.value,
-    this.copyable = false,
-    this.leading,
-    this.accent = false,
-  });
-
-  final String label;
-  final String value;
-  final bool copyable;
-  final Widget? leading;
-  final bool accent;
-
-  @override
-  Widget build(BuildContext context) => ReceiptDetailRow(
-        label: label,
-        value: value,
-        copyable: copyable,
-        leading: leading,
-        valueColor: accent ? AppColors.primary : DavoColors.of(context).ink,
-        onCopy: () {
-          HapticFeedback.selectionClick();
-          showDavoToast(context, 'Transaction ID copied');
-        },
-      );
-}
-
-class _DetailsDivider extends StatelessWidget {
-  const _DetailsDivider();
-  @override
-  Widget build(BuildContext context) => Padding(
-        padding: const EdgeInsets.symmetric(vertical: 15),
-        child: Divider(
-            height: 1, thickness: .5, color: DavoColors.of(context).divider),
-      );
-}
-
-String _formatEditable(double value) =>
-    formatGroupedAmount(value == value.roundToDouble()
-        ? value.toStringAsFixed(0)
-        : value.toStringAsFixed(2));
-
 String _formatNgn(double value) {
   final fixed = value.toStringAsFixed(2);
   final parts = fixed.split('.');
@@ -1003,19 +818,7 @@ String _formatNgn(double value) {
   return '${chunks.reversed.join(',')}.${parts[1]}';
 }
 
-String _two(int value) => value.toString().padLeft(2, '0');
-
-String _month(int month) => const [
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'May',
-      'Jun',
-      'Jul',
-      'Aug',
-      'Sep',
-      'Oct',
-      'Nov',
-      'Dec',
-    ][month - 1];
+String _formatEditable(double value) =>
+    formatGroupedAmount(value == value.roundToDouble()
+        ? value.toStringAsFixed(0)
+        : value.toStringAsFixed(2));
