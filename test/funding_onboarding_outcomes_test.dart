@@ -101,13 +101,13 @@ void main() {
     expect(tester.takeException(), isNull);
   });
   testWidgets(
-      'accepted deposits appear above the separately labelled fixture section',
+      'accepted deposits appear above existing history activity',
       (tester) async {
     FundingActivity.accept(deposit(FundingStatus.completed));
     await tester.pumpWidget(MaterialApp(
         theme: AppTheme.light, home: const TransactionHistoryScreen()));
     expect(tester.getTopLeft(find.text('Deposit received')).dy,
-        lessThan(tester.getTopLeft(find.text('Sample transactions')).dy));
+        lessThan(tester.getTopLeft(find.text('Bought Bitcoin')).dy));
   });
   testWidgets(
       'first PIN mismatch stays on form; matching PIN opens welcome before Home',

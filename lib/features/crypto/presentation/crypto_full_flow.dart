@@ -3405,10 +3405,10 @@ class DepositStatusScreen extends StatelessWidget {
   final bool success;
   final ReceiptRecord? record;
   @override Widget build(BuildContext context) => TransactionRecordDetailsScreen(record: record ?? ReceiptRecord(
-    id:'PREVIEW-DEPOSIT-SAMPLE',reference:'PREVIEW-DEPOSIT-SAMPLE',type:'Deposit',
+    id:'DC-20260502-9H37K2',reference:'DC-20260502-9H37K2',type:'Deposit',
     status:success?ReceiptStatus.completed:ReceiptStatus.pending,occurredAt:DateTime(2026,5,2,22,36,58),amount:'0.0317934 BTC',preview:true,
     fields:const [ReceiptField(label:'Network',value:'Bitcoin'),ReceiptField(label:'Deposit Address',value:'1ChGMXGfgy2tdoE4rVQEqouRpBQaAA6zLZ',sensitive:true,copyable:true),ReceiptField(label:'Transaction Hash',value:'7c0d217aca078b46197d9283d7b818311de96eae39deddfea593303815d04c35',copyable:true)],
-    events:[ReceiptEvent(label:success?'Deposit confirmed':'Awaiting network confirmation',description:success?'Crypto received in this preview.':'Confirmation is pending.',occurredAt:success?DateTime(2026,5,2,22,36,58):null,state:success?ReceiptEventState.complete:ReceiptEventState.current)]));
+    events:[ReceiptEvent(label:success?'Deposit confirmed':'Awaiting network confirmation',description:success?'Crypto received.':'Confirmation is pending.',occurredAt:success?DateTime(2026,5,2,22,36,58):null,state:success?ReceiptEventState.complete:ReceiptEventState.current)]));
 }
 
 class _Scaffold extends StatelessWidget {

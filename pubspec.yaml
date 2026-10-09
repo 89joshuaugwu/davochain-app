@@ -1,5 +1,5 @@
 name: davochain
-version: 0.13.0+22
+version: 0.13.0+23
 publish_to: 'none'
 description: Davochain Flutter mobile application.
 
@@ -10,6 +10,7 @@ dependencies:
   flutter:
     sdk: flutter
   cupertino_icons: ^1.0.8
+  crypto: ^3.0.7
   flutter_svg: ^2.3.0
   # ReceiptPdfFont repairs non-BMP ToUnicode mappings in this exact API.
   pdf: 3.13.1

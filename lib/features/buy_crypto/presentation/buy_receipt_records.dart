@@ -10,7 +10,7 @@ ReceiptRecord buildBuyReceiptRecord(BuyCryptoOrder order,
     ReceiptStatus status = ReceiptStatus.completed,
     bool preview = true}) {
   final date = occurredAt ?? DateTime.now();
-  final identity = id ?? 'PREVIEW-BUY-${date.microsecondsSinceEpoch}';
+  final identity = id ?? receiptDemoId(date);
   return ReceiptRecord(
       id: identity,
       reference: reference ?? identity,

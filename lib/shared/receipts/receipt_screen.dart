@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 import '../../core/theme/app_theme.dart';
 import '../widgets/davo_receipt_export_frame.dart';
 import 'receipt_record.dart';
+import 'receipt_asset.dart';
+import 'receipt_identity.dart';
 
 class ReceiptScreen extends StatefulWidget {
   const ReceiptScreen({super.key, required this.record});
@@ -65,6 +67,7 @@ class ReceiptPaper extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final record = presentation.record;
+    final identity = ReceiptIdentity(record);
     return Container(
         color: Colors.white,
         width: double.infinity,
@@ -100,18 +103,6 @@ class ReceiptPaper extends StatelessWidget {
                               fontWeight: FontWeight.w700)),
                     ]),
                 const SizedBox(height: 14),
-                if (record.preview) ...[
-                  Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(8),
-                      color: AppColors.primarySoft,
-                      child: const Text('Preview',
-                          style: TextStyle(
-                              fontSize: 11,
-                              color: AppColors.primary,
-                              fontWeight: FontWeight.w600))),
-                  const SizedBox(height: 14),
-                ],
                 if (presentation.style != ReceiptStyle.standard) ...[
                   SizedBox(
                       width: double.infinity,
@@ -120,12 +111,46 @@ class ReceiptPaper extends StatelessWidget {
                           CustomPaint(painter: _BlueMotif(presentation.style))),
                   const SizedBox(height: 12),
                 ],
-                Text(presentation.style.heading,
-                    style: const TextStyle(
-                        fontSize: 14,
-                        color: AppColors.primary,
-                        fontWeight: FontWeight.w600)),
+                Semantics(
+                    label: 'Transaction: ${identity.headline}',
+                    excludeSemantics: true,
+                    child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                              width: 36,
+                              height: 36,
+                              decoration: BoxDecoration(
+                                  color: AppColors.primarySoft,
+                                  borderRadius: BorderRadius.circular(10)),
+                              child: Icon(identity.action.icon,
+                                  size: 21, color: AppColors.primary)),
+                          const SizedBox(width: 10),
+                          Expanded(
+                              child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                const Text('Transaction receipt',
+                                    style: TextStyle(
+                                        fontSize: 10,
+                                        color: AppColors.bodyMuted)),
+                                Text(identity.headline,
+                                    style: const TextStyle(
+                                        fontSize: 15,
+                                        color: AppColors.primary,
+                                        fontWeight: FontWeight.w600)),
+                              ])),
+                          if (identity.brandImage != null) ...[
+                            const SizedBox(width: 8),
+                            Image.asset(identity.brandImage!,
+                                width: 32, height: 32),
+                          ],
+                        ])),
                 const SizedBox(height: 14),
+                if (record.assets.isNotEmpty) ...[
+                  ReceiptAssetBadges(assets: record.assets),
+                  const SizedBox(height: 12),
+                ],
                 Text(record.amount,
                     style: const TextStyle(
                         fontSize: 23, fontWeight: FontWeight.w600)),

@@ -86,7 +86,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('0.00001234 BTC'), findsWidgets);
     expect(find.text('Pending'), findsWidgets);
-    expect(find.textContaining('Preview'), findsWidgets);
+    expect(find.textContaining('Preview').hitTestable(), findsNothing);
     expect(find.text(record.destination), findsNothing);
   });
 

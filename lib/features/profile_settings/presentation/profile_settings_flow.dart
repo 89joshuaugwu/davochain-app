@@ -1,3 +1,5 @@
+import '../../security_questions/presentation/security_questions_screens.dart';
+import '../../security_questions/security_questions_service.dart';
 import '../../../shared/receipts/receipt_activity.dart';
 import 'appearance_screen.dart';
 export 'appearance_screen.dart';
@@ -100,6 +102,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
               ),
               _MenuItem('$_exactAssets/icon_lock.png', 'Change Password', () => _push(context, const ChangePasswordScreen())),
               _MenuItem('$_exactAssets/icon_lock.png', 'Transaction Pin', () => _push(context, const ResetPinStartScreen())),
+              _MenuItem('$_exactAssets/icon_lock.png', 'Security questions', () => _push(context, const SecurityQuestionsSettingsScreen())),
               _MenuItem('$_exactAssets/icon_lock.png', 'Crypto Security', () => _push(context, const CryptoSecurityScreen())),
             ],
           ),
@@ -2965,7 +2968,7 @@ class _MenuCard extends StatelessWidget {
     };
     final exactHeight = switch (title) {
       'Accounts' => 230.0,
-      'Security' => 270.0,
+      'Security' => null,
       'Preferences' => 286.0,
       'GENERAL' => 330.0,
       _ => null,
@@ -2989,7 +2992,7 @@ class _MenuCard extends StatelessWidget {
           ],
           for (var i = 0; i < items.length; i++) ...[
             SizedBox(
-              height: MediaQuery.textScalerOf(context).scale(14) > 21 ? null : 32,
+              height: title == 'Security' || MediaQuery.textScalerOf(context).scale(14) > 21 ? null : 32,
               child: InkWell(
                 onTap: items[i].onTap,
                 child: Row(
@@ -3502,6 +3505,8 @@ Future<void> _uploadSheet(BuildContext context,String title)=>showModalBottomShe
 Future<void> _socialDialog(BuildContext context,String s)=>showDialog(context:context,barrierColor:Colors.black.withValues(alpha: .35),builder:(d)=>Dialog(backgroundColor: DavoColors.of(context).surface,shape:RoundedRectangleBorder(borderRadius:BorderRadius.circular(16)),insetPadding:const EdgeInsets.symmetric(horizontal:77),child:SizedBox(width:236,height:123,child:Padding(padding:const EdgeInsets.all(16),child:Column(mainAxisAlignment:MainAxisAlignment.center,crossAxisAlignment:CrossAxisAlignment.start,children:[Text('“Davochain” Wants to open “$s”',style:_t14(context)),const SizedBox(height:19),Row(children:[Expanded(child:SizedBox(height:36,child:TextButton(onPressed:()=>Navigator.pop(d),style:TextButton.styleFrom(backgroundColor:DavoColors.of(context).divider,shape:RoundedRectangleBorder(borderRadius:BorderRadius.circular(4))),child:Text('Cancel',style:TextStyle(fontFamily:'Sora',fontSize:14,color:DavoColors.of(context).ink))))),const SizedBox(width:12),Expanded(child:SizedBox(height:36,child:TextButton(onPressed:()=>Navigator.pop(d),style:TextButton.styleFrom(backgroundColor:AppColors.primary,shape:RoundedRectangleBorder(borderRadius:BorderRadius.circular(4))),child:const Text('Open',style:TextStyle(fontFamily:'Sora',fontSize:14,color: Colors.white)))))])])))));
 Future<void> _logoutDialog(BuildContext context)=>showDialog(context:context,builder:(d)=>AlertDialog(title:const Text('Logout'),content:const Text('Are you sure you want to logout?'),actions:[TextButton(onPressed:()=>Navigator.pop(d),child:const Text('Cancel')),TextButton(onPressed:(){VerificationSession.instance.reset();FundingActivity.reset();ReceiptActivity.reset();SettingsPreviewSession.instance.reset();PreviewAuthState.unlocked.value=false;Navigator.of(d).pushAndRemoveUntil(AppPageRoute<void>(builder:(_)=>const LoginScreen()),(_)=>false);},child:Text('Logout',style:TextStyle(color:DavoColors.of(context).danger)))]));
 Future<void> _deleteAccountDialog(BuildContext context) => Navigator.of(context).push(AppPageRoute<void>(builder: (_) => DeleteAccountScreen(onSignOut: () {
+  SecurityQuestionsService.instance.clear();
+  PreviewAuthState.accountEmail = null;
   VerificationSession.instance.reset();
   FundingActivity.reset();ReceiptActivity.reset();
   SettingsPreviewSession.instance.reset();

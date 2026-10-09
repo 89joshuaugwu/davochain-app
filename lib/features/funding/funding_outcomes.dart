@@ -192,7 +192,7 @@ class _NairaWithdrawalProgressScreenState
       }
       final now = DateTime.now();
       final record = FundingRecord(
-          id: 'preview-withdrawal-${now.microsecondsSinceEpoch}',
+          id: receiptDemoId(now),
           direction: FundingDirection.withdrawal,
           status: status,
           amount: widget.amount,

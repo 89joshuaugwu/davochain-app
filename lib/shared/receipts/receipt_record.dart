@@ -1,4 +1,6 @@
 import 'package:flutter/widgets.dart' show StringCharacters;
+import 'receipt_asset.dart';
+export 'receipt_asset.dart' show ReceiptAsset;
 
 enum ReceiptStatus {
   pending('Pending'),
@@ -52,16 +54,56 @@ class ReceiptRecord {
       required this.occurredAt,
       required this.amount,
       this.preview = true,
+      List<ReceiptAsset>? assets,
       required List<ReceiptField> fields,
       List<ReceiptEvent> events = const []})
-      : fields = List.unmodifiable(fields),
+      : assets =
+            List.unmodifiable(assets ?? _inferAssets(type, amount, fields)),
+        fields = List.unmodifiable(fields),
         events = List.unmodifiable(events);
   final String id, reference, type, amount;
   final ReceiptStatus status;
   final DateTime occurredAt;
   final bool preview;
+  final List<ReceiptAsset> assets;
   final List<ReceiptField> fields;
   final List<ReceiptEvent> events;
+}
+
+List<ReceiptAsset> _inferAssets(
+    String type, String amount, List<ReceiptField> fields) {
+  final result = <ReceiptAsset>[];
+  void add(String text) {
+    final asset = ReceiptAsset.fromText(text);
+    if (asset != null && !result.contains(asset)) result.add(asset);
+  }
+
+  if (type.toLowerCase().contains('gift')) result.add(ReceiptAsset.giftCard);
+  for (final field in fields) {
+    if (!field.sensitive &&
+        const ['asset', 'from', 'currency', 'wallet']
+            .contains(field.label.toLowerCase())) {
+      add(field.value);
+    }
+  }
+  if (!(ReceiptAsset.fromText(amount) == ReceiptAsset.ngn &&
+      result.contains(ReceiptAsset.ngd))) {
+    add(amount);
+  }
+  for (final field in fields) {
+    if (!field.sensitive &&
+        const ['currency', 'wallet', 'paid from', 'to', 'total received']
+            .contains(field.label.toLowerCase())) {
+      add(field.value);
+    }
+  }
+  return result;
+}
+
+/// Local fixture identity; callers keep it with the accepted record.
+String receiptDemoId(DateTime value) {
+  String two(int part) => part.toString().padLeft(2, '0');
+  return 'DC-${value.year}${two(value.month)}${two(value.day)}-${value.microsecondsSinceEpoch.toRadixString(36).toUpperCase()}';
 }
 
 String formatReceiptDate(DateTime value) {

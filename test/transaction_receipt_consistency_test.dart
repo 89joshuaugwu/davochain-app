@@ -69,12 +69,15 @@ void main() {
       (tester) async {
     await tester
         .pumpWidget(const MaterialApp(home: TransactionHistoryScreen()));
+    expect(find.textContaining('Preview'), findsNothing);
+    expect(find.text('Sample transactions'), findsNothing);
     await tester.tap(find.text('Bought Bitcoin'));
     await tester.pumpAndSettle();
     final details = tester.widget<TransactionRecordDetailsScreen>(
         find.byType(TransactionRecordDetailsScreen));
     expect(details.record.occurredAt, DateTime(2026, 10, 7, 10, 30));
     expect(details.record.amount, '0.03 BTC');
+    expect(details.record.id, matches(RegExp(r'^DC-[0-9]{8}-[A-Z0-9]+$')));
     expect(tester.takeException(), isNull);
   });
 }

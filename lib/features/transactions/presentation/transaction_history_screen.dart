@@ -63,7 +63,7 @@ class TransactionHistoryScreen extends StatelessWidget {
                             title: Text(receipt.type,
                                 style: const TextStyle(fontSize: 14)),
                             subtitle: Text(
-                                '${receipt.status.label}${receipt.preview ? ', Preview' : ''}',
+                                receipt.status.label,
                                 style: const TextStyle(fontSize: 12)),
                             trailing: Text(receipt.amount,
                                 style: const TextStyle(fontSize: 12)),
@@ -86,9 +86,7 @@ class TransactionHistoryScreen extends StatelessWidget {
                           title: Text(record.title,
                               style: const TextStyle(fontSize: 14)),
                           subtitle: Text(
-                              record.preview
-                                  ? '${record.statusLabel}, Preview'
-                                  : record.statusLabel,
+                              record.statusLabel,
                               style: const TextStyle(fontSize: 12)),
                           trailing: Text(record.amountLabel,
                               style: const TextStyle(fontSize: 12)),
@@ -101,40 +99,6 @@ class TransactionHistoryScreen extends StatelessWidget {
                             height: 1, color: DavoColors.of(context).divider),
                       ],
                       if (records.isNotEmpty) const SizedBox(height: 24),
-                      Container(
-                        padding: const EdgeInsets.all(14),
-                        decoration: BoxDecoration(
-                          color: DavoColors.of(context).primarySoft,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Icon(Icons.info_outline,
-                                size: 20, color: DavoColors.of(context).link),
-                            const SizedBox(width: 10),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text('Sample transactions',
-                                      style: TextStyle(
-                                          fontSize: 13,
-                                          fontWeight: FontWeight.w600,
-                                          color: DavoColors.of(context).link)),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                      'Preview data only. No funds have been moved.',
-                                      style: TextStyle(
-                                          fontSize: 12,
-                                          color: DavoColors.of(context).body)),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 24),
                       for (final sample in _samples) ...[
                         _TransactionRow(sample: sample),
                         if (sample != _samples.last)
@@ -167,7 +131,7 @@ class _SampleTransaction {
       _SampleKind.withdraw => DateTime(2026, 10, 4, 16, 45),
       _SampleKind.deposit => DateTime(2026, 10, 3, 11, 10)
     };
-    final id = 'PREVIEW-HISTORY-${kind.name.toUpperCase()}';
+    final id = receiptDemoId(date);
     switch (kind) {
       case _SampleKind.buy:
         const order = BuyCryptoOrder(
@@ -189,7 +153,7 @@ class _SampleTransaction {
             ? 'Nigerian Naira'
             : kind == _SampleKind.convert
                 ? 'USDT'
-                : 'bc1qpreviewaddress';
+                : 'bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh';
         return TransactionDetailsScreen(
             kind: txKind,
             target: target,
@@ -219,7 +183,7 @@ class _SampleTransaction {
                 events: [
                   ReceiptEvent(
                       label: 'Deposit confirmed',
-                      description: 'Sample funds credited.',
+                      description: 'Deposit confirmed.',
                       occurredAt: date,
                       state: ReceiptEventState.complete)
                 ]));

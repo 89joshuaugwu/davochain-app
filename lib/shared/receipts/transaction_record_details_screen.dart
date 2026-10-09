@@ -8,6 +8,8 @@ import '../../features/profile_settings/presentation/settings_personal_action_fl
 import '../widgets/auth_widgets.dart';
 import '../widgets/davo_toast.dart';
 import 'receipt_record.dart';
+import 'receipt_asset.dart';
+import 'receipt_identity.dart';
 import 'receipt_screen.dart';
 
 /// Details and support always use the same accepted facts as the receipt.
@@ -55,7 +57,6 @@ class _TransactionRecordDetailsScreenState
           'Amount: ${record.amount}',
           'Status: ${_statusLabel(record.status)}',
           'Date: ${formatReceiptDate(record.occurredAt)}',
-          if (record.preview) 'Preview transaction',
           for (final field in facts) '${field.label}: ${field.value}',
           '',
           'Please describe the issue:',
@@ -91,6 +92,7 @@ class _TransactionRecordDetailsScreenState
   Widget build(BuildContext context) {
     final record = widget.record;
     final colors = DavoColors.of(context);
+    final identity = ReceiptIdentity(record);
     final statusColor = switch (record.status) {
       ReceiptStatus.completed => colors.success,
       ReceiptStatus.failed => colors.danger,
@@ -131,17 +133,29 @@ class _TransactionRecordDetailsScreenState
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Column(children: [
-                Icon(_directionIcon(record.type), color: colors.link, size: 28),
+                Icon(identity.action.icon, color: colors.link, size: 26),
+                if (identity.brandImage != null) ...[
+                  const SizedBox(height: 10),
+                  Image.asset(identity.brandImage!, width: 36, height: 36),
+                ],
+                const SizedBox(height: 10),
+                if (record.assets.isNotEmpty)
+                  ReceiptAssetBadges(assets: record.assets),
                 const SizedBox(height: 12),
-                Text(record.type,
+                Text(identity.headline,
                     style: TextStyle(fontSize: 12, color: colors.bodyMuted)),
                 const SizedBox(height: 8),
-                Text(record.amount,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.w600,
-                        color: colors.ink)),
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(record.amount,
+                      maxLines: 1,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                          fontSize: 24,
+                          fontFamilyFallback: const ['DavoNotoSans'],
+                          fontWeight: FontWeight.w600,
+                          color: colors.ink)),
+                ),
                 const SizedBox(height: 10),
                 Text(_statusLabel(record.status),
                     style: TextStyle(
@@ -152,12 +166,6 @@ class _TransactionRecordDetailsScreenState
                 Text(formatReceiptDate(record.occurredAt),
                     textAlign: TextAlign.center,
                     style: TextStyle(fontSize: 11, color: colors.bodyMuted)),
-                if (record.preview) ...[
-                  const SizedBox(height: 12),
-                  const Text('Preview only. No funds have been moved.',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 11)),
-                ],
               ]),
             ),
             const SizedBox(height: 20),
@@ -343,23 +351,6 @@ String _statusLabel(ReceiptStatus status) => switch (status) {
       ReceiptStatus.completed => 'Completed',
       ReceiptStatus.failed => 'Failed',
     };
-
-IconData _directionIcon(String type) {
-  final value = type.toLowerCase();
-  if (value.contains('deposit') ||
-      value.contains('receive') ||
-      value.contains('buy') ||
-      value.contains('purchase')) {
-    return Icons.south_west;
-  }
-  if (value.contains('withdraw') ||
-      value.contains('send') ||
-      value.contains('sell') ||
-      value.contains('transfer')) {
-    return Icons.north_east;
-  }
-  return Icons.swap_horiz;
-}
 
 Uri? _explorerUri(ReceiptRecord record) {
   String? network, hash;

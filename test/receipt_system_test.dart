@@ -125,7 +125,7 @@ void main() {
     expect(raw, contains('/Font'));
   });
   testWidgets(
-      'standard receipt keeps pending preview and masking visible at 320px with large text',
+      'standard receipt keeps pending and masking visible without preview at 320px with large text',
       (tester) async {
     tester.view.physicalSize = const Size(320, 800);
     tester.view.devicePixelRatio = 1;
@@ -140,7 +140,7 @@ void main() {
     expect(find.text('Share as PDF').hitTestable(), findsOneWidget);
     expect(find.byType(ChoiceChip), findsNothing);
     expect(find.text('Pending'), findsOneWidget);
-    expect(find.text('Preview'), findsOneWidget);
+    expect(find.textContaining('Preview'), findsNothing);
     expect(find.text('0xprivateaddress'), findsNothing);
     expect(find.text('0.0000000123456789 BTC'), findsOneWidget);
     await tester.ensureVisible(find.byType(Switch));

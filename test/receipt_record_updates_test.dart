@@ -24,7 +24,7 @@ ReceiptRecord update(ReceiptStatus status) => ReceiptRecord(
 void main() {
   tearDown(ReceiptActivity.reset);
   for (final entry in <String, IconData>{
-    'Purchase': Icons.south_west,
+    'Purchase': Icons.add_circle_outline,
     'Transfer': Icons.north_east,
     'External Transfer': Icons.north_east
   }.entries) {

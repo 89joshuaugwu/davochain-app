@@ -111,14 +111,15 @@ void main() {
         home: const GiftCardVerificationScreen()));
     await tester.pumpAndSettle();
     final title = tester.getRect(find.text('Submitted'));
-    final meta = tester.getRect(find.textContaining('Local preview submitted'));
+    final meta =
+        tester.getRect(find.textContaining('Submitted; review is pending.'));
     expect(meta.top, greaterThan(title.bottom));
     expect(meta.left, closeTo(title.left, .01));
     await tester.ensureVisible(find.text('Copy'));
     await tester.pumpAndSettle();
     expect(find.text('Reference'), findsOneWidget);
     expect(find.text('Copy').hitTestable(), findsOneWidget);
-    expect(find.text('Preview: Pending'), findsOneWidget);
+    expect(find.text('Pending'), findsOneWidget);
     expect(find.textContaining('mins'), findsNothing);
     expect(tester.binding.hasScheduledFrame, isFalse);
     expect(tester.takeException(), isNull);

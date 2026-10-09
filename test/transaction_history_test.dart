@@ -5,14 +5,15 @@ import 'package:davochain/features/buy_crypto/presentation/buy_crypto_screens.da
 import 'package:davochain/features/transactions/presentation/transaction_history_screen.dart';
 
 void main() {
-  testWidgets('history clearly displays five sample transaction types',
+  testWidgets('history displays five populated transaction types',
       (tester) async {
     await tester.pumpWidget(MaterialApp(
       theme: AppTheme.light,
       home: const TransactionHistoryScreen(),
     ));
     expect(find.text('History'), findsOneWidget);
-    expect(find.text('Sample transactions'), findsOneWidget);
+    expect(find.text('Sample transactions'), findsNothing);
+    expect(find.textContaining('Preview'), findsNothing);
     for (final title in [
       'Bought Bitcoin',
       'Sold Bitcoin',

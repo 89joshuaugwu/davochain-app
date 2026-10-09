@@ -21,21 +21,30 @@ ReceiptRecord giftCardPreviewReceipt({
     type: sell ? 'Gift card sale' : 'Gift card purchase',
     status: sell ? ReceiptStatus.pending : ReceiptStatus.completed,
     occurredAt: occurredAt,
-    amount: naira == null ? 'Amount unavailable' : '₦${formatGroupedAmount(naira.toString())}',
+    amount: naira == null
+        ? 'Amount unavailable'
+        : '₦${formatGroupedAmount(naira.toString())}',
     fields: [
-      if (cardValue != null) ReceiptField(label: 'Card Value', value: '\$${formatGroupedAmount(cardValue.toStringAsFixed(2))}'),
+      if (cardValue != null)
+        ReceiptField(
+            label: 'Card Value',
+            value: '\$${formatGroupedAmount(cardValue.toStringAsFixed(2))}'),
       if (brand != null) ReceiptField(label: 'Brand', value: brand),
       if (category != null) ReceiptField(label: 'Category', value: category),
-      if (subcategory != null) ReceiptField(label: 'Subcategory', value: subcategory),
+      if (subcategory != null)
+        ReceiptField(label: 'Subcategory', value: subcategory),
       if (country != null) ReceiptField(label: 'Country', value: country),
       if (cardType != null) ReceiptField(label: 'Card type', value: cardType),
       if (quantity != null) ReceiptField(label: 'Quantity', value: '$quantity'),
     ],
-    events: [ReceiptEvent(
-      label: sell ? 'Submitted' : 'Purchase preview',
-      description: sell ? 'Local preview submitted; review is pending.' : 'Local purchase preview completed.',
-      occurredAt: occurredAt,
-      state: sell ? ReceiptEventState.current : ReceiptEventState.complete,
-    )],
+    events: [
+      ReceiptEvent(
+        label: sell ? 'Submitted' : 'Purchase completed',
+        description:
+            sell ? 'Submitted; review is pending.' : 'Purchase completed.',
+        occurredAt: occurredAt,
+        state: sell ? ReceiptEventState.current : ReceiptEventState.complete,
+      )
+    ],
   );
 }

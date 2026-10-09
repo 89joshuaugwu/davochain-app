@@ -25,8 +25,7 @@ ReceiptRecord buildCryptoReceiptRecord(
     TxKind.external => 'External Transfer',
     TxKind.internal => 'Transfer'
   };
-  final identity =
-      id ?? 'PREVIEW-${kind.name.toUpperCase()}-${date.microsecondsSinceEpoch}';
+  final identity = id ?? receiptDemoId(date);
   final quantity = '${formatCryptoQuantity(amount)} ${asset.symbol}';
   final ngn = amount * asset.ngnPerUnit;
   final destination = BuyCryptoAsset.values

@@ -16,17 +16,27 @@ void main() {
   }
 
   ReceiptRecord terminalRecord(ReceiptStatus status) => ReceiptRecord(
-    id: 'terminal-gift-${status.name}', reference: 'gift-provider-reference',
-    type: 'Gift card trade', status: status,
-    occurredAt: DateTime.utc(2026, 9, 1, 12), amount: '₦12,300',
-    preview: false, fields: const [],
-  );
+        id: 'terminal-gift-${status.name}',
+        reference: 'gift-provider-reference',
+        type: 'Gift card trade',
+        status: status,
+        occurredAt: DateTime.utc(2026, 9, 1, 12),
+        amount: '₦12,300',
+        preview: false,
+        fields: const [],
+      );
 
   for (final sell in [false, true]) {
-    testWidgets('failed gift ${sell ? 'sell' : 'buy'} never uses pending or success art', (tester) async {
+    testWidgets(
+        'failed gift ${sell ? 'sell' : 'buy'} never uses pending or success art',
+        (tester) async {
       final record = terminalRecord(ReceiptStatus.failed);
-      await show(tester, sell ? GiftCardSellSubmittedScreen(record: record)
-        : GiftCardBuySuccessScreen(amount: 10, naira: 12300, record: record));
+      await show(
+          tester,
+          sell
+              ? GiftCardSellSubmittedScreen(record: record)
+              : GiftCardBuySuccessScreen(
+                  amount: 10, naira: 12300, record: record));
       expect(find.byType(DavoSuccessMark), findsNothing);
       expect(find.byIcon(Icons.error_outline_rounded), findsOneWidget);
       expect(find.textContaining('Failed'), findsWidgets);
@@ -34,8 +44,10 @@ void main() {
   }
 
   for (final status in [ReceiptStatus.completed, ReceiptStatus.failed]) {
-    testWidgets('${status.label} gift verification stops pending indicator', (tester) async {
-      await show(tester, GiftCardVerificationScreen(record: terminalRecord(status)));
+    testWidgets('${status.label} gift verification stops pending indicator',
+        (tester) async {
+      await show(
+          tester, GiftCardVerificationScreen(record: terminalRecord(status)));
       expect(find.byType(DavoWorkingIndicator), findsNothing);
       expect(find.text('Verifying your card...'), findsNothing);
       expect(find.text('Card trade ${status.label}'), findsOneWidget);
@@ -50,7 +62,7 @@ void main() {
     await tester.tap(find.text('View Receipt'));
     await tester.pumpAndSettle();
     expect(find.textContaining('64,875'), findsWidgets);
-    expect(find.textContaining('Preview'), findsWidgets);
+    expect(find.textContaining('Preview'), findsNothing);
   });
 
   testWidgets(
@@ -62,7 +74,7 @@ void main() {
     await tester.tap(find.text('View Receipt'));
     await tester.pumpAndSettle();
     expect(find.text('Pending'), findsWidgets);
-    expect(find.textContaining('Preview'), findsWidgets);
+    expect(find.textContaining('Preview'), findsNothing);
   });
 
   testWidgets('submitted sell receipt retains reviewed brand and amount',

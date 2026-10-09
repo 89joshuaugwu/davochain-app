@@ -3,6 +3,7 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'receipt_record.dart';
 import 'receipt_pdf_font.dart';
+import 'receipt_identity.dart';
 
 /// Explicitly preserve the user's text by declining an incomplete PDF.
 class ReceiptPdfTextException implements Exception {
@@ -15,9 +16,10 @@ class ReceiptPdfTextException implements Exception {
       '$message${unsupportedCodePoint == null ? '' : ' (U+${unsupportedCodePoint!.toRadixString(16).toUpperCase()})'}';
 }
 
-/// Vector text and decoration, with repeatable status/preview on every page.
+/// Vector text and decoration, with repeatable status on every page.
 abstract final class ReceiptPdf {
   static Future<Uint8List> build(ReceiptPresentation view) async {
+    final identity = ReceiptIdentity(view.record);
     // Asset bundles can return SynchronousFuture; normalize to regular futures
     // so downstream rendering errors follow the caller's await/catch chain.
     final fontData = <ByteData>[
@@ -39,6 +41,9 @@ abstract final class ReceiptPdf {
       view.record.amount,
       view.record.status.label,
       view.style.heading,
+      identity.headline,
+      identity.action.glyph,
+      for (final asset in view.record.assets) ...[asset.label, asset.glyph],
       for (final field in view.allDisplayFields) ...[field.label, field.value],
       view.note,
     ];
@@ -55,6 +60,16 @@ abstract final class ReceiptPdf {
     final fallback = ReceiptPdfFont(fontData[1]);
     final emoji = ReceiptPdfFont(fontData[2]);
     final math = ReceiptPdfFont(fontData[3]);
+    final assetSvgs = <ReceiptAsset, String>{};
+    final brandImage = identity.brandImage == null
+        ? null
+        : pw.MemoryImage(
+            (await rootBundle.load(identity.brandImage!)).buffer.asUint8List());
+    for (final asset in view.record.assets) {
+      if (asset.svgPath != null) {
+        assetSvgs[asset] = await rootBundle.loadString(asset.svgPath!);
+      }
+    }
     final blue = PdfColor.fromHex('#135CF7');
     final pale = PdfColor.fromHex('#EDF2FD');
     final document = pw.Document(
@@ -87,13 +102,6 @@ abstract final class ReceiptPdf {
                         pw.Text(view.record.status.label,
                             style: pw.TextStyle(color: blue, fontSize: 11)),
                       ]),
-                  if (view.record.preview)
-                    pw.Container(
-                        margin: const pw.EdgeInsets.only(top: 8),
-                        padding: const pw.EdgeInsets.all(8),
-                        color: pale,
-                        child: pw.Text('Preview · Local transaction record',
-                            style: const pw.TextStyle(fontSize: 10))),
                 ])),
         footer: (context) => pw.Padding(
             padding: const pw.EdgeInsets.only(top: 12),
@@ -115,9 +123,85 @@ abstract final class ReceiptPdf {
                                   svg: _motif(view.style),
                                   width: 140,
                                   height: 55)),
-                        pw.Text(view.style.heading,
-                            style: pw.TextStyle(fontSize: 17, color: blue)),
+                        pw.Row(
+                            crossAxisAlignment: pw.CrossAxisAlignment.start,
+                            children: [
+                              pw.Container(
+                                  width: 36,
+                                  height: 36,
+                                  decoration: pw.BoxDecoration(
+                                      color: PdfColors.white,
+                                      borderRadius:
+                                          pw.BorderRadius.circular(10)),
+                                  child: pw.Center(
+                                      child: pw.Text(identity.action.glyph,
+                                          style: pw.TextStyle(
+                                              font: math,
+                                              fontFallback: [fallback],
+                                              fontSize: 21,
+                                              color: blue)))),
+                              pw.SizedBox(width: 10),
+                              pw.Expanded(
+                                  child: pw.Column(
+                                      crossAxisAlignment:
+                                          pw.CrossAxisAlignment.start,
+                                      children: [
+                                    pw.Text('Transaction receipt',
+                                        style: const pw.TextStyle(
+                                            fontSize: 9,
+                                            color: PdfColors.grey700)),
+                                    pw.SizedBox(height: 3),
+                                    pw.Text(identity.headline,
+                                        style: pw.TextStyle(
+                                            fontSize: 17, color: blue)),
+                                  ])),
+                              if (brandImage != null) ...[
+                                pw.SizedBox(width: 8),
+                                pw.Image(brandImage, width: 32, height: 32),
+                              ],
+                            ]),
                         pw.SizedBox(height: 14),
+                        if (view.record.assets.isNotEmpty) ...[
+                          pw.Wrap(spacing: 8, runSpacing: 8, children: [
+                            for (final asset in view.record.assets)
+                              pw.Container(
+                                  padding: const pw.EdgeInsets.symmetric(
+                                      horizontal: 9, vertical: 5),
+                                  decoration: pw.BoxDecoration(
+                                      color: PdfColors.white,
+                                      borderRadius:
+                                          pw.BorderRadius.circular(18)),
+                                  child: pw.Row(
+                                      mainAxisSize: pw.MainAxisSize.min,
+                                      children: [
+                                        pw.Container(
+                                            width: 28,
+                                            height: 28,
+                                            padding: const pw.EdgeInsets.all(5),
+                                            decoration: pw.BoxDecoration(
+                                                color: asset == ReceiptAsset.sol
+                                                    ? PdfColors.black
+                                                    : PdfColors.white,
+                                                shape: pw.BoxShape.circle),
+                                            child: assetSvgs.containsKey(asset)
+                                                ? pw.SvgImage(
+                                                    svg: assetSvgs[asset]!,
+                                                    width: 18,
+                                                    height: 18)
+                                                : pw.Center(
+                                                    child: pw.Text(asset.glyph,
+                                                        style: pw.TextStyle(
+                                                            font: fallback,
+                                                            fontSize: 17,
+                                                            color: blue)))),
+                                        pw.SizedBox(width: 6),
+                                        pw.Text(asset.label,
+                                            style: const pw.TextStyle(
+                                                fontSize: 10)),
+                                      ])),
+                          ]),
+                          pw.SizedBox(height: 12),
+                        ],
                         pw.Text(view.record.amount,
                             style: const pw.TextStyle(
                                 fontSize: 21, fontWeight: pw.FontWeight.bold)),

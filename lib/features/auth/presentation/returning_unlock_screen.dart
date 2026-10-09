@@ -1,3 +1,6 @@
+import '../../security_questions/presentation/security_questions_login_gate.dart';
+import '../../security_questions/security_questions_service.dart';
+import '../../../shared/widgets/transaction_pin_entry.dart';
 import '../../profile_settings/presentation/verification/verification_state.dart';
 import '../../../shared/widgets/davo_auth_journey.dart';
 import 'package:flutter/material.dart';
@@ -19,7 +22,8 @@ class ReturningUnlockScreen extends StatefulWidget {
 class _ReturningUnlockScreenState extends State<ReturningUnlockScreen> {
   final _password = TextEditingController();
   AuthJourneyMethod? _method;
-  bool get _opening => _method != null;
+  bool _pinOpening = false;
+  bool get _opening => _method != null || _pinOpening;
   @override
   void dispose() {
     _password.dispose();
@@ -33,13 +37,39 @@ class _ReturningUnlockScreenState extends State<ReturningUnlockScreen> {
     HapticFeedback.lightImpact();
   }
 
-  void _finishUnlock() {
+  bool _checkingQuestions = false;
+  Future<void> _finishUnlock() async {
+    if (_checkingQuestions) return;
+    _checkingQuestions = true;
+    PreviewAuthState.unlocked.value = false;
+    final accepted = await checkSecurityQuestions(context);
+    if (!mounted) return;
+    _checkingQuestions = false;
+    if (!accepted) {
+      setState(() => _method = null);
+      return;
+    }
     PreviewAuthState.unlocked.value = true;
     Navigator.of(context).pushAndRemoveUntil(
         AppPageRoute<void>(
             authHandoff: true,
             builder: (_) => const DavochainDashboardScreen()),
         (_) => false);
+  }
+
+  Future<void> _pinUnlock() async {
+    if (_opening || _checkingQuestions) return;
+    setState(() => _pinOpening = true);
+    final accepted = await Navigator.of(context).push<bool>(AppPageRoute<bool>(
+      builder: (pinContext) => TransactionPinEntryScreen(
+        title: 'Unlock with PIN',
+        message: 'Preview only. Enter four digits to try the login flow.',
+        onConfirm: () => Navigator.of(pinContext).pop(true),
+      ),
+    ));
+    if (!mounted) return;
+    setState(() => _pinOpening = false);
+    if (accepted == true) _unlock();
   }
 
   void _cancel() {
@@ -51,6 +81,9 @@ class _ReturningUnlockScreenState extends State<ReturningUnlockScreen> {
   }
 
   void _otherAccount() {
+    SecurityQuestionsService.instance.clear();
+    PreviewAuthState.accountEmail = null;
+    PreviewAuthState.unlocked.value = false;
     VerificationSession.instance.reset();
     Navigator.of(context).pushAndRemoveUntil(
         AppPageRoute<void>(builder: (_) => const LoginScreen()), (_) => false);
@@ -170,7 +203,9 @@ class _ReturningUnlockScreenState extends State<ReturningUnlockScreen> {
                                                             fontWeight:
                                                                 FontWeight.w600,
                                                             color:
-                                                                DavoColors.of(context).ink)),
+                                                                DavoColors.of(
+                                                                        context)
+                                                                    .ink)),
                                                     const SizedBox(height: 12),
                                                     const Text(
                                                         'Enter your password to unlock your account.',
@@ -200,7 +235,14 @@ class _ReturningUnlockScreenState extends State<ReturningUnlockScreen> {
                                                             _unlock();
                                                           }
                                                         }),
-                                                    const SizedBox(height: 24),
+                                                    TextButton(
+                                                      onPressed: _opening
+                                                          ? null
+                                                          : _pinUnlock,
+                                                      child:
+                                                          const Text('Use PIN'),
+                                                    ),
+                                                    const SizedBox(height: 12),
                                                     DavoPrimaryButton(
                                                         label: 'Unlock',
                                                         enabled: !_opening &&

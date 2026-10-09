@@ -25,7 +25,8 @@ void main() {
             ..addFont(rootBundle.load('assets/fonts/sora/Sora-Variable.ttf')))
           .load();
       await (FontLoader('DavoNotoSans')
-            ..addFont(rootBundle.load('assets/fonts/noto/NotoSans-Regular.ttf')))
+            ..addFont(
+                rootBundle.load('assets/fonts/noto/NotoSans-Regular.ttf')))
           .load();
       await (FontLoader('DavoNotoEmoji')
             ..addFont(rootBundle.load('assets/fonts/noto/NotoEmoji.ttf')))
@@ -34,7 +35,7 @@ void main() {
     final directory = Directory('../tmp/receipt-fidelity-review')
       ..createSync(recursive: true);
     final record = ReceiptRecord(
-        id: 'PREVIEW-WITHDRAWAL-123456789',
+        id: 'DC-20261009-418629',
         reference: 'REF-987654321',
         type: 'Naira withdrawal',
         status: ReceiptStatus.pending,
@@ -96,14 +97,39 @@ void main() {
       await tester.pumpWidget(const SizedBox());
     }
 
-    for (final style in ReceiptStyle.values) {
-      final view = ReceiptPresentation(
-          record: record, style: style, note: 'Thank you! 🎂');
+    for (final entry in <String, List<String>>{
+      'buy': ['Purchase', '0.03 BTC', 'BTC'],
+      'sell': ['Sell', '0.03 ETH', 'ETH'],
+      'deposit': ['Naira deposit', '\u20a610,000.00', 'NGN'],
+      'withdrawal': ['Withdrawal', '0.03 SOL', 'SOL'],
+      'swap': ['Conversion', '0.03 BTC', 'BTC'],
+      'gift': ['Gift card purchase', '\u20a620,000.00', 'NGN'],
+    }.entries) {
+      final typed = ReceiptRecord(
+        id: 'DC-20261009-418629',
+        reference: 'DC-20261009-418629',
+        type: entry.value[0],
+        status: ReceiptStatus.completed,
+        occurredAt: DateTime(2026, 10, 9, 11, 30),
+        amount: entry.value[1],
+        fields: [
+          ReceiptField(label: 'Asset', value: entry.value[2]),
+          if (entry.key == 'swap')
+            const ReceiptField(label: 'To', value: 'USDT'),
+          if (entry.key == 'gift')
+            const ReceiptField(label: 'Brand', value: 'Amazon'),
+        ],
+      );
+      final view = ReceiptPresentation(record: typed);
       await capture(
           Scaffold(
               body: SingleChildScrollView(
                   child: ReceiptPaper(presentation: view))),
-          'paper-${style.name}');
+          'identity-${entry.key}');
+      await tester.runAsync(() async {
+        File('${directory.path}/identity-${entry.key}.pdf')
+            .writeAsBytesSync(await ReceiptPdf.build(view));
+      });
     }
     await capture(ReceiptScreen(record: record), 'screen-light');
     await capture(ReceiptScreen(record: record), 'screen-dark', dark: true);

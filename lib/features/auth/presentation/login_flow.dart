@@ -1,3 +1,6 @@
+import '../../security_questions/presentation/security_questions_login_gate.dart';
+import '../../security_questions/security_questions_service.dart';
+import '../../../core/preview/preview_auth_state.dart';
 import '../../../shared/motion/davo_outcome_content.dart';
 import '../../../core/navigation/app_page_route.dart';
 import '../../../shared/widgets/davo_auth_journey.dart';
@@ -41,13 +44,35 @@ class _LoginScreenState extends State<LoginScreen> {
         _emailError = null;
       });
 
+  bool _checkingQuestions = false;
+  Future<void> _completeLogin() async {
+    if (_checkingQuestions) return;
+    _checkingQuestions = true;
+    final email = _email.text.trim().toLowerCase();
+    if (PreviewAuthState.accountEmail != null &&
+        PreviewAuthState.accountEmail != email) {
+      SecurityQuestionsService.instance.clear();
+    }
+    PreviewAuthState.accountEmail = email;
+    PreviewAuthState.unlocked.value = false;
+    final accepted = await checkSecurityQuestions(context);
+    if (!mounted) return;
+    _checkingQuestions = false;
+    if (!accepted) {
+      setState(() => _loading = false);
+      return;
+    }
+    PreviewAuthState.unlocked.value = true;
+    Navigator.of(context).pushNamedAndRemoveUntil(
+        AppRoutes.dashboard, (route) => false,
+        arguments: const AuthHandoff());
+  }
+
   @override
   Widget build(BuildContext context) {
     return DavoAuthJourney(
         method: _loading ? AuthJourneyMethod.password : null,
-        onComplete: () => Navigator.of(context).pushNamedAndRemoveUntil(
-            AppRoutes.dashboard, (route) => false,
-            arguments: const AuthHandoff()),
+        onComplete: _completeLogin,
         child: DavoAuthScaffold(
           child: LayoutBuilder(
             builder: (context, constraints) {
@@ -478,7 +503,8 @@ class _CodeStage extends StatelessWidget {
                   child: Center(
                     child: Text(
                       'Incorrect code. Try again',
-                      style: TextStyle(fontSize: 12, color: DavoColors.of(context).danger),
+                      style: TextStyle(
+                          fontSize: 12, color: DavoColors.of(context).danger),
                     ),
                   ),
                 )
@@ -548,13 +574,15 @@ class _OtpBox extends StatelessWidget {
           contentPadding: EdgeInsets.zero,
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8),
-            borderSide:
-                BorderSide(color: error ? DavoColors.of(context).danger : AppColors.primary),
+            borderSide: BorderSide(
+                color:
+                    error ? DavoColors.of(context).danger : AppColors.primary),
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8),
             borderSide: BorderSide(
-                color: error ? DavoColors.of(context).danger : AppColors.primary,
+                color:
+                    error ? DavoColors.of(context).danger : AppColors.primary,
                 width: 1.4),
           ),
         ),
@@ -666,7 +694,8 @@ class _CriteriaBlock extends StatelessWidget {
   Widget build(BuildContext context) {
     final score =
         [lengthOk, numberOrSymbol, capital].where((value) => value).length;
-    final strengthColor = PasswordStrengthPalette.forScore(score, context: context);
+    final strengthColor =
+        PasswordStrengthPalette.forScore(score, context: context);
     final strengthLabel = score <= 1
         ? 'Low Strength'
         : score == 2
@@ -718,7 +747,8 @@ class _ResetCriterion extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = met ? DavoColors.of(context).success : DavoColors.of(context).bodyMuted;
+    final color =
+        met ? DavoColors.of(context).success : DavoColors.of(context).bodyMuted;
     return Row(
       children: [
         AnimatedContainer(
@@ -727,7 +757,9 @@ class _ResetCriterion extends StatelessWidget {
           height: 8,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: met ? DavoColors.of(context).success : DavoColors.of(context).border,
+            color: met
+                ? DavoColors.of(context).success
+                : DavoColors.of(context).border,
           ),
         ),
         const SizedBox(width: 9),
@@ -781,7 +813,9 @@ class _PasswordUpdatedStage extends StatelessWidget {
                         child: Text(
                       'For security, you’ve been signed out of all other devices.',
                       style: TextStyle(
-                          fontSize: 14, height: 1.5, color: DavoColors.of(context).warning),
+                          fontSize: 14,
+                          height: 1.5,
+                          color: DavoColors.of(context).warning),
                     )),
                   ],
                 ),
