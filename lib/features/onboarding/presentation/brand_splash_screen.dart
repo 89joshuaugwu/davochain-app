@@ -3,6 +3,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../../core/theme/app_theme.dart';
 import 'onboarding_screen.dart';
@@ -136,8 +137,10 @@ class _BrandSplashScreenState extends State<BrandSplashScreen>
   Widget build(BuildContext context) {
     final size = MediaQuery.sizeOf(context);
     final reduced = MediaQuery.disableAnimationsOf(context);
-    final labelWidth = math.min(size.width - 118, 268.0);
-    final lockupWidth = labelWidth + 70;
+    const lockupScale = .94;
+    final labelWidth = math.min(size.width - 118, 268.0) * lockupScale;
+    final markAndGap = 70 * lockupScale;
+    final lockupWidth = labelWidth + markAndGap;
     final finalLeft = (size.width - lockupWidth) / 2;
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: _systemStyle,
@@ -161,9 +164,10 @@ class _BrandSplashScreenState extends State<BrandSplashScreen>
                     final move = phase(.29, .55);
                     final name = phase(.35, .63);
                     final currencies = phase(.48, .79);
-                    final markWidth = 90 - 32 * move;
+                    final markWidth = 90 - (90 - 58 * lockupScale) * move;
                     const lockupLift = 24.0;
-                    final centerY = size.height * (.50 + .055 * move) - lockupLift;
+                    final centerY =
+                        size.height * (.50 + .055 * move) - lockupLift;
                     final markLeft = (size.width - markWidth) / 2 * (1 - move) +
                         finalLeft * move;
                     return Stack(clipBehavior: Clip.hardEdge, children: [
@@ -175,21 +179,13 @@ class _BrandSplashScreenState extends State<BrandSplashScreen>
                               offset: Offset(0, (1 - currencies) * 130),
                               child: Opacity(
                                   opacity: currencies,
-                                  child: RepaintBoundary(
+                                  child: const RepaintBoundary(
                                       child: ClipRect(
-                                          key: const ValueKey(
+                                          key: ValueKey(
                                               'welcome-currencies'),
-                                          child: Align(
-                                              alignment: Alignment.bottomCenter,
-                                              heightFactor: .24,
-                                              child: SizedBox(
-                                                  width: size.width,
-                                                  height: size.height,
-                                                  child: Image.asset(
-                                                      'assets/images/figma/splash_background.png',
-                                                      fit: BoxFit.fill)))))))),
+                                          child: _CurrencyFooter()))))),
                       Positioned(
-                          left: finalLeft + 70,
+                          left: finalLeft + markAndGap,
                           top: size.height * .555 - 30 - lockupLift,
                           width: labelWidth,
                           height: 60,
@@ -203,7 +199,7 @@ class _BrandSplashScreenState extends State<BrandSplashScreen>
                                       child: Text('Davochain',
                                           style: TextStyle(
                                               fontFamily: 'Sora',
-                                              fontSize: 40,
+                                              fontSize: 40 * lockupScale,
                                               fontWeight: FontWeight.w700,
                                               color: Colors.white,
                                               height: 1,
@@ -220,6 +216,35 @@ class _BrandSplashScreenState extends State<BrandSplashScreen>
       ),
     );
   }
+}
+
+/// Original Figma vectors, with the source frame's bottom crop preserved.
+class _CurrencyFooter extends StatelessWidget {
+  const _CurrencyFooter();
+
+  @override
+  Widget build(BuildContext context) => LayoutBuilder(
+        builder: (context, constraints) {
+          final scale = constraints.maxWidth / 390;
+          Widget currency(String name, double left, double top, double width,
+                  double height) =>
+              Positioned(
+                left: left * scale,
+                top: top * scale,
+                width: width * scale,
+                height: height * scale,
+                child: SvgPicture.asset('assets/images/brand/splash_$name.svg'),
+              );
+          return SizedBox(
+            height: 133 * scale,
+            child: Stack(clipBehavior: Clip.hardEdge, children: [
+              currency('dollar', -6, 0, 117.181, 197),
+              currency('naira', 111, 2, 173.042, 198),
+              currency('bitcoin', 288, 2, 123.509, 176),
+            ]),
+          );
+        },
+      );
 }
 
 /// Clips the supplied transparent logo into its three original parts. The brand
