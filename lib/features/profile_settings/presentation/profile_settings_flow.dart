@@ -1,9 +1,12 @@
+import 'appearance_screen.dart';
+export 'appearance_screen.dart';
+import 'support_conversation_screens.dart';
+export 'support_conversation_screens.dart';
 import '../../../shared/widgets/davo_points_coin.dart';
 import 'settings_action_flows.dart';
 export 'settings_action_flows.dart';
 import '../../../core/preview/settings_preview_session.dart';
 import '../../funding/funding_outcomes.dart';
-import '../../../core/theme/appearance_controller.dart';
 import '../../../shared/motion/davo_outcome_content.dart';
 import 'verification/verification_overview_screen.dart';
 import 'verification/verification_state.dart';
@@ -20,6 +23,7 @@ import '../../../shared/widgets/davo_success_mark.dart';
 import '../../../shared/widgets/davo_date_picker.dart';
 import '../../../core/preview/preview_account_state.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter/services.dart';
 
 import '../../../core/navigation/app_page_route.dart';
@@ -626,68 +630,6 @@ Widget _supportTile(BuildContext context, String asset, String title, String sub
 
 class _HubAssetRow extends StatelessWidget{const _HubAssetRow(this.text,this.asset,{required this.onTap});final String text,asset;final VoidCallback onTap;@override Widget build(BuildContext context)=>InkWell(onTap:onTap,child:SizedBox(height:32,child:Row(children:[const SizedBox(width:10),Expanded(child:Text(text,style:TextStyle(fontFamily:'Sora',fontSize:10,color:DavoColors.of(context).body))),Image.asset(asset,width:14,height:14,filterQuality:FilterQuality.high),const SizedBox(width:10)])));}
 
-class SupportMessagesScreen extends StatelessWidget{const SupportMessagesScreen({super.key});@override Widget build(BuildContext context)=>_Shell(title:'Messages',titleStyle:_navSora16SemiBold(context),child:Column(children:[const Spacer(),Image.asset('$_exactAssets/icon_message.png',width:46,height:46),const SizedBox(height:14),Text('No Messages',style:_t16b(context)),const SizedBox(height:6),Text('Messages from the team will be shown here',textAlign:TextAlign.center,style:_t12(context)),const SizedBox(height:20),SizedBox(width:150,child:_PrimaryButton('Ask a question',onTap:()=>_push(context,const SupportChatScreen()))),const Spacer()]));}
-class SupportChatScreen extends StatefulWidget{const SupportChatScreen({super.key});@override State<SupportChatScreen> createState()=>_SupportChatScreenState();}
-class _SupportChatScreenState extends State<SupportChatScreen>{
-  String? choice;
-  @override
-  Widget build(BuildContext context)=>_Shell(
-    title:'Callie',
-    titleStyle:_navSora14SemiBold(context),
-    scroll:true,
-    child:Column(
-      crossAxisAlignment:CrossAxisAlignment.start,
-      children:[
-        const SizedBox(height:14),
-        const _AgentHeader(),
-        const SizedBox(height:16),
-        const _ChatBubble(text:"Hi there,\nThank you for choosing Davochain.\nWe're currently handling a high volume of requests, so responses might take a bit longer than usual.\nThanks for your patience, we'll get to you as soon as possible."),
-        const SizedBox(height:12),
-        const _AgentHeader(small:true),
-        const SizedBox(height:8),
-        const _ChatBubble(text:'Hello Chukwu, this is Bella from Davochain.\nPlease choose the option below that best matches your request.'),
-        const SizedBox(height:12),
-        if(choice==null)
-          ...['Account Management & Verification','Virtual Cards (Creation, Funding, refundd)','Gift Cards, Crypto','Deposits and Funding','Bank Accounts (Creation & Management)','Withdrawals from Davochain to Bank Account','Account Suspension, Issues & Restrictions','Something Else'].map(
-            (e)=>Padding(
-              padding:const EdgeInsets.only(bottom:8),
-              child:OutlinedButton(
-                onPressed:()=>setState(()=>choice=e),
-                style:OutlinedButton.styleFrom(
-                  alignment:Alignment.centerLeft,
-                  minimumSize:const Size.fromHeight(44),
-                  side:BorderSide(color:DavoColors.of(context).border),
-                  shape:RoundedRectangleBorder(borderRadius:BorderRadius.circular(8)),
-                ),
-                child:Text(e,style:_t12(context)),
-              ),
-            ),
-          )
-        else ...[
-          Align(
-            alignment:Alignment.centerRight,
-            child:Container(
-              padding:const EdgeInsets.all(12),
-              decoration:BoxDecoration(color:AppColors.primary,borderRadius:BorderRadius.circular(12)),
-              child:Text(choice!,style:const TextStyle(fontFamily:'Sora',fontSize:12,color: Colors.white)),
-            ),
-          ),
-          const SizedBox(height:14),
-          const _ChatBubble(text:'To help me provide the best answer to your question, please share as much details as possible.'),
-          const SizedBox(height:14),
-          TextField(keyboardAppearance: Theme.of(context).brightness,
-            decoration:InputDecoration(
-              hintText:'Ask a question....',
-              suffixIcon:IconButton(onPressed:(){},icon:Image.asset('$_exactAssets/icon_send.png',width:20,height:20)),
-              border:OutlineInputBorder(borderRadius:BorderRadius.circular(8)),
-            ),
-          ),
-        ],
-        const SizedBox(height:30),
-      ],
-    ),
-  );
-}
 class HelpCenterScreen extends StatefulWidget{const HelpCenterScreen({super.key});@override State<HelpCenterScreen> createState()=>_HelpCenterScreenState();}
 class _HelpCenterScreenState extends State<HelpCenterScreen>{final q=TextEditingController();@override Widget build(BuildContext context){final cats=_helpCats.where((e)=>e.$1.toLowerCase().contains(q.text.toLowerCase())).toList();return _Shell(title:'Help',titleStyle:_navSora16SemiBold(context),scroll:true,child:Column(children:[TextField(keyboardAppearance: Theme.of(context).brightness, controller:q,onChanged:(_)=>setState((){}),decoration:InputDecoration(hintText:'Search for help',prefixIcon:Padding(padding:const EdgeInsets.all(14),child:Image.asset('$_exactAssets/icon_search.png', color: DavoColors.of(context).body,width:16,height:16,filterQuality:FilterQuality.high)),border:OutlineInputBorder(borderRadius:BorderRadius.circular(8)))),const SizedBox(height:16),...cats.map((e)=>_HelpCategory(e.$1,e.$2,e.$3)),const SizedBox(height:30)]));}}
 
@@ -1890,136 +1832,136 @@ class FullyVerifiedV12Screen extends StatelessWidget {
       );
 }
 
-class CryptoSecurityScreen extends StatefulWidget{const CryptoSecurityScreen({super.key});@override State<CryptoSecurityScreen> createState()=>_CryptoSecurityScreenState();}
-class _CryptoSecurityScreenState extends State<CryptoSecurityScreen>{bool withdraw=true,address=true,network=true;@override Widget build(BuildContext context)=>_Shell(title:'Crypto Security',child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[const SizedBox(height:20),Text('Extra protection for your digital assets',style:_t14(context)),const SizedBox(height:18),_toggleRow(context, 'Withdrawal Confirmation','Require PIN before every withdraw',withdraw,(v)=>setState(()=>withdraw=v)),_toggleRow(context, 'New Address Verification','Require additional confirmation when sending to a new address',address,(v)=>setState(()=>address=v)),_toggleRow(context, 'Network Warning','Show network warning before every external withdrawal',network,(v)=>setState(()=>network=v))]));}
-class NotificationsPreferencesScreen extends StatefulWidget{const NotificationsPreferencesScreen({super.key});@override State<NotificationsPreferencesScreen> createState()=>_NotificationsPreferencesScreenState();}
-class _NotificationsPreferencesScreenState extends State<NotificationsPreferencesScreen>{final vals=List<bool>.filled(10,true);@override Widget build(BuildContext context){final items=<({String group,String title,String sub})>[(group:'Transaction Alerts',title:'Crypto purchases',sub:'Get notification When you buy crypto'),(group:'',title:'Crypto Sales',sub:'Get notified when you sell crypto'),(group:'',title:'Crypto Swaps',sub:'Get notified when you swap crypto'),(group:'',title:'Deposits',sub:'Get notified when you receive crypto'),(group:'',title:'Withdrawals',sub:'Get notified when you send crypto'),(group:'',title:'Gift card transaction',sub:'Get notified about gift card activity'),(group:'Account Alerts',title:'Security alerts',sub:'Important security notifications'),(group:'',title:'Login activity',sub:'Get notified about new logins'),(group:'Marketing & Updates',title:'Promotion & Offers',sub:'Receive special offers and discounts'),(group:'',title:'Product updates',sub:'Get the latest news and features')];return _Shell(title:'Notifications',scroll:true,child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[const SizedBox(height:10),...items.asMap().entries.expand((e)=><Widget>[if(e.value.group.isNotEmpty)...[if(e.key>0)const SizedBox(height:20),Text(e.value.group,style:_t16b(context)),const SizedBox(height:6)],_toggleRow(context, e.value.title,e.value.sub,vals[e.key],(v)=>setState(()=>vals[e.key]=v))]),const SizedBox(height:18),_toggleRow(context, 'Tips & Education','Learn about crypto and gift cards',true,(_){ }),const SizedBox(height:20)]));}}
-class PrivacyScreen extends StatefulWidget{const PrivacyScreen({super.key});@override State<PrivacyScreen> createState()=>_PrivacyScreenState();}
-class _PrivacyScreenState extends State<PrivacyScreen>{bool contacts=true,personalized=true,marketing=false,analytics=true;@override Widget build(BuildContext context)=>_Shell(title:'Privacy',scroll:true,child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[const SizedBox(height:10),_toggleRow(context, 'Contact Access','Allow Davochain to access your contacts to help you find people you may want to transact with',contacts,(v)=>setState(()=>contacts=v)),_toggleRow(context, 'Personalized Experience','Allow personalized recommendation based on your activity',personalized,(v)=>setState(()=>personalized=v)),_toggleRow(context, 'Markets Communications','Receive promotional emails and app notification',marketing,(v)=>setState(()=>marketing=v)),const SizedBox(height:18),_settingsAssetRow(context, '$_exactAssets/icon_analytics.png','Data & Permissions','Manage how your data is used',(){}),_settingsAssetRow(context, '$_exactAssets/icon_user_block.png','Block Users','Manage block contacts',(){}),_toggleRow(context, 'App Analytics','Help improve Davochain by sharing anonymous usage data',analytics,(v)=>setState(()=>analytics=v)),const SizedBox(height:20)]));}
-class AppearanceScreen extends StatefulWidget {
-  const AppearanceScreen({super.key, this.controller});
-  final AppearanceController? controller;
-  @override
-  State<AppearanceScreen> createState() => _AppearanceScreenState();
+class CryptoSecurityScreen extends StatefulWidget {
+  const CryptoSecurityScreen({super.key});
+  @override State<CryptoSecurityScreen> createState() => _CryptoSecurityScreenState();
 }
-
-class _AppearanceScreenState extends State<AppearanceScreen> {
-  AppearanceController get controller => widget.controller ?? AppearanceController.instance;
-  late ThemeMode selected = controller.mode;
-  bool saving = false;
-
-  Future<void> _save() async {
-    setState(() => saving = true);
-    try {
-      await controller.setMode(selected);
-      if (mounted) {
-        setState(() => saving = false);
-        Navigator.pop(context);
-      }
-    } catch (_) {
-      if (mounted) {
-        setState(() => saving = false);
-        showDavoToast(context, 'Could not save appearance. Please try again.');
-      }
-    }
-  }
-
+class _CryptoSecurityScreenState extends State<CryptoSecurityScreen> {
+  bool withdraw = true, address = true, network = true;
   @override
-  Widget build(BuildContext context) {
-    final dark = selected == ThemeMode.dark ||
-        (selected == ThemeMode.system && MediaQuery.platformBrightnessOf(context) == Brightness.dark);
-    return PopScope(
-      canPop: !saving,
-      child: _Shell(
-      title: 'Appearance',
-      backEnabled: !saving,
-      scroll: true,
-      bodyTopPadding: 24,
-      child: Column(children: [
-        Row(children: [
-          for (final mode in [ThemeMode.light, ThemeMode.dark, ThemeMode.system]) ...[
-            if (mode != ThemeMode.light) const SizedBox(width: 11),
-            Expanded(child: _AppearanceChoice(mode, selected, saving ? null : () => setState(() => selected = mode))),
-          ],
-        ]),
-        const SizedBox(height: 24),
-        Theme(
-          data: dark ? AppTheme.dark : AppTheme.light,
-          child: const _AppearancePreview(),
-        ),
-        const SizedBox(height: 24),
-        _PrimaryButton(saving ? 'Saving…' : 'Next', enabled: !saving, onTap: _save),
-        const SizedBox(height: 24),
+  Widget build(BuildContext context) => _Shell(
+    title: 'Crypto Security', titleStyle: _navSora16(context), scroll: true,
+    bodyTopPadding: 24,
+    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Text('Extra protection for your digital assets', style: _t12(context)),
+      const SizedBox(height: 24),
+      _PreferenceRow(asset: 'withdrawal_confirmation', title: 'Withdrawal Confirmation', subtitle: 'Require PIN before every withdraw', value: withdraw, onChanged: (v) => setState(() => withdraw = v)),
+      const SizedBox(height: 20),
+      _PreferenceRow(asset: 'address_verification', title: 'New Address Verification', subtitle: 'Require additional confirmation when sending to a new address', value: address, onChanged: (v) => setState(() => address = v)),
+      const SizedBox(height: 20),
+      _PreferenceRow(asset: 'network_warning', title: 'Network Warning', subtitle: 'Show network warning before every external withdrawal', value: network, onChanged: (v) => setState(() => network = v)),
+    ]),
+  );
+}
+class NotificationsPreferencesScreen extends StatefulWidget {
+  const NotificationsPreferencesScreen({super.key});
+  @override State<NotificationsPreferencesScreen> createState() => _NotificationsPreferencesScreenState();
+}
+class _NotificationsPreferencesScreenState extends State<NotificationsPreferencesScreen> {
+  final vals = List<bool>.filled(11, true);
+  static const items = <({String asset, String title, String sub})>[
+    (asset: 'crypto_purchases', title: 'Crypto purchases', sub: 'Get notification When you buy crypto'),
+    (asset: 'crypto_sales', title: 'Crypto Sales', sub: 'Get notified when you sell crypto'),
+    (asset: 'crypto_swaps', title: 'Crypto Swaps', sub: 'Get notified when you swap crypto'),
+    (asset: 'deposits', title: 'Deposits', sub: 'Get notified when you receive crypto'),
+    (asset: 'withdrawals', title: 'Withdrawals', sub: 'Get notified when you send crypto'),
+    (asset: 'gift_cards', title: 'Gift card transaction', sub: 'Get notified about gift card activity'),
+    (asset: 'security_alerts', title: 'Security alerts', sub: 'Important security notifications'),
+    (asset: 'login_activity', title: 'Login activity', sub: 'Get notified about new logins'),
+    (asset: 'promotions', title: 'Promotion & Offers', sub: 'Receive special offers and discounts'),
+    (asset: 'product_updates', title: 'Product updates', sub: 'Get the latest news and features'),
+    (asset: 'tips_education', title: 'Tips & Education', sub: 'Learn about crypto and gift cards'),
+  ];
+  Widget group(String title, int start, int end) => Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+    Text(title, style: _t14(context)),
+    const SizedBox(height: 12),
+    _PreferenceGroup(children: [for (var i = start; i < end; i++)
+      _PreferenceRow(asset: items[i].asset, title: items[i].title, subtitle: items[i].sub, value: vals[i], onChanged: (v) => setState(() => vals[i] = v)),
+    ]),
+  ]);
+  @override
+  Widget build(BuildContext context) => _Shell(
+    title: 'Notifications', titleStyle: _navSora16(context), scroll: true, bodyTopPadding: 24,
+    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      group('Transaction Alerts', 0, 6),
+      const SizedBox(height: 24),
+      group('Account Alerts', 6, 8),
+      const SizedBox(height: 24),
+      group('Marketing & Updates', 8, 11),
+    ]),
+  );
+}
+class PrivacyScreen extends StatefulWidget {
+  const PrivacyScreen({super.key});
+  @override State<PrivacyScreen> createState() => _PrivacyScreenState();
+}
+class _PrivacyScreenState extends State<PrivacyScreen> {
+  bool contacts = true, personalized = true, marketing = false, analytics = true;
+  void _details(String title, String text) => showModalBottomSheet<void>(
+    context: context, showDragHandle: true,
+    builder: (sheetContext) => SafeArea(child: Padding(
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+      child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text(title, style: _navSora16(sheetContext)), const SizedBox(height: 12),
+        Text(text, style: _t12(sheetContext)), const SizedBox(height: 16),
+        Align(alignment: Alignment.centerRight, child: TextButton(onPressed: () => Navigator.pop(sheetContext), child: const Text('Done'))),
       ]),
-    ));
-  }
+    )),
+  );
+  @override
+  Widget build(BuildContext context) => _Shell(
+    title: 'Privacy', titleStyle: _navSora16(context), scroll: true, bodyTopPadding: 24,
+    child: _PreferenceGroup(children: [
+      _PreferenceRow(asset: 'contact_access', title: 'Contact Access', subtitle: 'Allow Davochain to access your contacts to help you find people you may want to transact with', value: contacts, onChanged: (v) => setState(() => contacts = v)),
+      _PreferenceRow(asset: 'personalized_experience', title: 'Personalized Experience', subtitle: 'Allow personalized recommendation based on your activity', value: personalized, onChanged: (v) => setState(() => personalized = v)),
+      _PreferenceRow(asset: 'marketing_communications', title: 'Markets Communications', subtitle: 'Receive promotional emails and app notification', iconColor: DavoColors.of(context).danger, value: marketing, onChanged: (v) => setState(() => marketing = v)),
+      _PreferenceRow(asset: 'data_permissions', title: 'Data & Permissions', subtitle: 'Manage how your data is used', onTap: () => _details('Data & Permissions', 'These preview preferences apply only to this screen. Device permissions can be managed in your device settings.')),
+      _PreferenceRow(asset: 'block_users', title: 'Block Users', subtitle: 'Manage block contacts', onTap: () => _details('Block Users', 'No blocked contacts in this preview. Blocking and contact management will be available when your account is connected.')),
+      _PreferenceRow(asset: 'app_analytics', title: 'App Analytics', subtitle: 'Help improve Davochain by sharing anonymous usage data', value: analytics, onChanged: (v) => setState(() => analytics = v)),
+    ]),
+  );
 }
 
-class _AppearancePreview extends StatelessWidget {
-  const _AppearancePreview();
-
+class _PreferenceGroup extends StatelessWidget {
+  const _PreferenceGroup({required this.children});
+  final List<Widget> children;
+  @override
+  Widget build(BuildContext context) => Container(
+    key: const ValueKey('settings-preference-group'),
+    width: double.infinity, padding: const EdgeInsets.all(12),
+    decoration: BoxDecoration(color: DavoColors.of(context).offWhite, borderRadius: BorderRadius.circular(4)),
+    child: Column(children: [for (var i = 0; i < children.length; i++) ...[
+      if (i > 0) const SizedBox(height: 20), children[i],
+    ]]),
+  );
+}
+class _PreferenceRow extends StatelessWidget {
+  const _PreferenceRow({required this.asset, required this.title, required this.subtitle, this.value, this.onChanged, this.onTap, this.iconColor});
+  final String asset, title, subtitle;
+  final bool? value;
+  final ValueChanged<bool>? onChanged;
+  final VoidCallback? onTap;
+  final Color? iconColor;
   @override
   Widget build(BuildContext context) {
-    final colors = DavoColors.of(context);
-    return Semantics(
-      label: '${Theme.of(context).brightness == Brightness.dark ? 'Dark' : 'Light'} appearance preview',
-      child: ExcludeSemantics(child: Container(
-        key: const ValueKey('appearance-live-preview'),
-        width: double.infinity,
-        padding: const EdgeInsets.all(24),
-        decoration: BoxDecoration(
-          color: colors.canvas,
-          border: Border.all(color: colors.border),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Row(children: [
-            Icon(Icons.account_balance_wallet_outlined, color: colors.link, size: 24),
-            const SizedBox(width: 10),
-            Expanded(child: Text('Your wallet', style: _t16b(context))),
-            const SizedBox(width: 8),
-            Icon(Icons.notifications_none_rounded, color: colors.body, size: 20),
-          ]),
-          const SizedBox(height: 20),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(color: colors.surface, borderRadius: BorderRadius.circular(10)),
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text('Available balance', style: _t12(context)),
-              const SizedBox(height: 6),
-              Text('\u20a6125,000.00', style: _t20sb(context)),
-              const SizedBox(height: 16),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                decoration: BoxDecoration(color: AppColors.primary, borderRadius: BorderRadius.circular(6)),
-                child: const Text('Add money', style: TextStyle(fontFamily: 'Sora', fontSize: 12, color: Colors.white)),
-              ),
-            ]),
-          ),
-          const SizedBox(height: 20),
-          Text('Recent activity', style: _t14b(context)),
-          const SizedBox(height: 12),
-          Container(
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(color: colors.elevated, borderRadius: BorderRadius.circular(8)),
-            child: Row(children: [
-              Icon(Icons.arrow_downward_rounded, color: colors.success, size: 20),
-              const SizedBox(width: 10),
-              Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text('Money received', style: _t12b(context)),
-                const SizedBox(height: 3),
-                Text('Today', style: _t12(context)),
-              ])),
-              Text('+\u20a65,000', style: _t12b(context).copyWith(color: colors.success)),
-            ]),
-          ),
-        ]),
-      )),
-    );
+    final row = Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
+      Container(width: 40, height: 40, alignment: Alignment.center,
+        decoration: BoxDecoration(color: DavoColors.of(context).primarySoft, borderRadius: BorderRadius.circular(4)),
+        child: SvgPicture.asset('assets/figma_exact/settings_pref_$asset.svg', key: ValueKey('settings-preference-icon-$asset'), width: 24, height: 24, excludeFromSemantics: true, colorFilter: ColorFilter.mode(iconColor ?? AppColors.primary, BlendMode.srcIn)),
+      ),
+      const SizedBox(width: 12),
+      Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text(title, style: _t12(context).copyWith(color: DavoColors.of(context).ink)),
+        const SizedBox(height: 4),
+        Text(subtitle, style: _t12(context).copyWith(fontSize: 10)),
+      ])),
+      const SizedBox(width: 8),
+      if (onChanged != null) Semantics(label: title, toggled: value, child: _DavoSwitch(value: value!, onChanged: onChanged!, compact: true))
+      else Image.asset('$_exactAssets/profile_chevron_exact.png', width: 16, height: 16, color: DavoColors.of(context).bodyMuted, excludeFromSemantics: true),
+    ]);
+    return ConstrainedBox(constraints: const BoxConstraints(minHeight: 48), child: onTap == null ? row : InkWell(onTap: onTap, child: row));
   }
 }
-
 class HelpCentreScreen extends StatefulWidget{const HelpCentreScreen({super.key});@override State<HelpCentreScreen> createState()=>_HelpCentreScreenState();}
 class _HelpCentreScreenState extends State<HelpCentreScreen>{final q=TextEditingController();int cat=0;final topics=[('$_exactAssets/icon_buy_crypto.png','Buying Crypto','Learn how to buy crypto on Davochain'),('$_exactAssets/icon_sell_crypto.png','Selling Crypto','Learn how to sell crypto'),('$_exactAssets/icon_swap_crypto.png','Swapping Crypto','How to swap between cryptocurrencies'),('$_exactAssets/icon_buy_crypto.png','Depositing Crypto','How to deposit crypto to your wallet'),('$_exactAssets/icon_sell_crypto.png','Withdrawing Crypto','How to withdraw crypto to an external wallet'),('$_exactAssets/icon_gift.png','Gift cards','How to buy and sell gift cards'),('$_exactAssets/icon_shield_check.png','Account & Security','Manage your account and stay safe')];@override Widget build(BuildContext context){final list=topics.where((t)=>t.$2.toLowerCase().contains(q.text.toLowerCase())).toList();return _Shell(title:'Help Centre',scroll:true,child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[const SizedBox(height:12),TextField(keyboardAppearance: Theme.of(context).brightness, controller:q,onChanged:(_)=>setState((){}),decoration:InputDecoration(hintText:'Search for help articles',prefixIcon:Padding(padding:const EdgeInsets.all(14),child:Image.asset('$_exactAssets/icon_search.png', color: DavoColors.of(context).body,width:16,height:16)))),const SizedBox(height:16),Row(children:['All','Crypto','Gift Card','Account'].asMap().entries.map((e)=>Expanded(child:Padding(padding:EdgeInsets.only(right:e.key==3?0:8),child:ChoiceChip(label:Center(child:Text(e.value)),selected:cat==e.key,onSelected:(_)=>setState(()=>cat=e.key),showCheckmark:false,selectedColor:AppColors.primary,labelStyle:TextStyle(fontFamily:'Sora',fontSize:11,color:cat==e.key?Colors.white:DavoColors.of(context).body),side:BorderSide.none)))).toList()),const SizedBox(height:24),Text('Popular Topics',style:_t20(context)),const SizedBox(height:12),...list.map((t)=>_HelpTopicRow(asset:t.$1,title:t.$2,subtitle:t.$3)),const SizedBox(height:24)]));}}
 
@@ -2794,45 +2736,6 @@ Widget _settingsAssetRow(BuildContext context, String asset, String title, Strin
         ),
       ),
     );
-class _AppearanceChoice extends StatelessWidget {
-  const _AppearanceChoice(this.mode, this.selected, this.onTap);
-  final ThemeMode mode, selected;
-  final VoidCallback? onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final active = mode == selected;
-    final colors = DavoColors.of(context);
-    final title = switch (mode) { ThemeMode.light => 'Light', ThemeMode.dark => 'Dark', ThemeMode.system => 'System' };
-    final icon = switch (mode) { ThemeMode.light => Icons.light_mode_outlined, ThemeMode.dark => Icons.dark_mode_outlined, ThemeMode.system => Icons.brightness_auto_outlined };
-    return Semantics(
-      label: '$title appearance',
-      excludeSemantics: true,
-      onTap: onTap,
-      selected: active,
-      button: true,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(8),
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 24),
-          decoration: BoxDecoration(
-            color: active ? colors.primarySoft : colors.offWhite,
-            border: Border.all(color: active ? colors.link : colors.border),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Column(children: [
-            Icon(icon, color: colors.ink, size: 32),
-            const SizedBox(height: 8),
-            Text(title, style: _t14(context)),
-            const SizedBox(height: 24),
-            Icon(active ? Icons.radio_button_checked : Icons.radio_button_off, color: active ? colors.link : colors.muted, size: 24),
-          ]),
-        ),
-      ),
-    );
-  }
-}
 class _NotificationFilterPill extends StatelessWidget {
   const _NotificationFilterPill({
     required this.label,
@@ -2989,7 +2892,6 @@ class _Shell extends StatelessWidget {
     required this.title,
     required this.child,
     this.scroll = false,
-    this.backEnabled = true,
     this.showHeaderDivider = false,
     this.titleStyle,
     this.bodyTopPadding = 12,
@@ -2998,7 +2900,6 @@ class _Shell extends StatelessWidget {
   final String title;
   final Widget child;
   final bool scroll;
-  final bool backEnabled;
   final bool showHeaderDivider;
   final TextStyle? titleStyle;
   final double bodyTopPadding;
@@ -3028,7 +2929,7 @@ class _Shell extends StatelessWidget {
             height: 24,
             filterQuality: FilterQuality.high,
           ),
-          onPressed: backEnabled ? () => Navigator.pop(context) : null,
+          onPressed: () => Navigator.pop(context),
         ),
         title: title.isEmpty ? null : Text(title, style: titleStyle ?? _navSora20(context)),
       ),
@@ -3156,7 +3057,27 @@ class _ProfileActionRow extends StatelessWidget {
         ),
       );
 }
-class _DavoSwitch extends StatelessWidget{const _DavoSwitch({required this.value,required this.onChanged});final bool value;final ValueChanged<bool> onChanged;@override Widget build(BuildContext context)=>GestureDetector(onTap:()=>onChanged(!value),child:AnimatedContainer(duration:const Duration(milliseconds:220),width:48,height:26,padding:const EdgeInsets.all(3),decoration:BoxDecoration(color:value?DavoColors.of(context).success:DavoColors.of(context).fieldFill,border:Border.all(color:value?DavoColors.of(context).success:DavoColors.of(context).border),borderRadius:BorderRadius.circular(52)),child:AnimatedAlign(duration:const Duration(milliseconds:220),alignment:value?Alignment.centerRight:Alignment.centerLeft,child:Container(width:20,height:20,decoration:BoxDecoration(shape:BoxShape.circle,color: Colors.white,boxShadow:[BoxShadow(color:Colors.black.withValues(alpha: .12),blurRadius:3)])))));}
+class _DavoSwitch extends StatelessWidget {
+  const _DavoSwitch({required this.value, required this.onChanged, this.compact = false});
+  final bool value, compact;
+  final ValueChanged<bool> onChanged;
+  @override
+  Widget build(BuildContext context) => InkWell(
+    borderRadius: BorderRadius.circular(52), onTap: () => onChanged(!value),
+    child: SizedBox(width: 48, height: 48,
+      child: Center(child: AnimatedContainer(
+        duration: const Duration(milliseconds: 220), width: compact ? 40 : 48, height: compact ? 22 : 26,
+        padding: const EdgeInsets.all(3),
+        decoration: BoxDecoration(color: value ? AppColors.primary : DavoColors.of(context).fieldFill,
+          border: Border.all(color: value ? AppColors.primary : DavoColors.of(context).border), borderRadius: BorderRadius.circular(52)),
+        child: AnimatedAlign(duration: const Duration(milliseconds: 220), alignment: value ? Alignment.centerRight : Alignment.centerLeft,
+          child: Container(width: compact ? 16 : 20, height: compact ? 16 : 20,
+            decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.white,
+              boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: .12), blurRadius: 3, offset: const Offset(0, 1))]))),
+      )),
+    ),
+  );
+}
 class _InfoField extends StatelessWidget {
   const _InfoField({required this.label, required this.value});
   final String label, value;
@@ -3395,34 +3316,6 @@ Widget _radioChoice(BuildContext context, String t, bool sel, VoidCallback tap) 
         ),
       ),
     );
-class _AgentHeader extends StatelessWidget {
-  const _AgentHeader({this.small = false});
-  final bool small;
-
-  @override
-  Widget build(BuildContext context) => Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Image.asset(
-            'assets/images/brand/davochain_logo.png',
-            width: small ? 23 : 47,
-            height: small ? 15 : 30,
-            fit: BoxFit.contain,
-            filterQuality: FilterQuality.high,
-          ),
-          const SizedBox(width: 10),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Callie', style: small ? _t12b(context) : _t14b(context)),
-              if (!small) Text('The team can also help', style: TextStyle(fontFamily:'Sora',fontSize:10,fontWeight:FontWeight.w400,color:DavoColors.of(context).bodyMuted)),
-              if (small) Text('Ai Agent', style: _t12(context)),
-            ],
-          ),
-        ],
-      );
-}
-class _ChatBubble extends StatelessWidget{const _ChatBubble({required this.text});final String text;@override Widget build(BuildContext context)=>Container(padding:const EdgeInsets.all(13),decoration:BoxDecoration(color:DavoColors.of(context).offWhite,borderRadius:BorderRadius.circular(12)),child:Text(text,style:_t12(context)));}
 Widget _referralBox(BuildContext context)=>Container(padding:const EdgeInsets.all(14),decoration:BoxDecoration(color:DavoColors.of(context).offWhite,borderRadius:BorderRadius.circular(8)),child:Column(children:[Row(children:[Expanded(child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Text('manish1',style:_t14b(context)),Text('Your referral code',style:_t12(context))])),Builder(builder:(context)=>IconButton(tooltip:'Copy referral code',onPressed:() async {await Clipboard.setData(const ClipboardData(text:'manish1'));if(context.mounted) showDavoToast(context,'Referral code copied');},icon:Icon(Icons.copy_outlined,size:18,color:DavoColors.of(context).link)))]),const Divider(height:24),Row(children:[Expanded(child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Text('https://davochain.com/...',style:TextStyle(fontFamily:'Sora',fontSize:12,color:DavoColors.of(context).link)),Text('Your referral link',style:_t12(context))])),OutlinedButton(onPressed:(){},child:const Text('Share'))]) ]));
 Widget _sectionLink(BuildContext context, String a,String b,VoidCallback tap)=>Container(padding:const EdgeInsets.all(14),decoration:BoxDecoration(color:DavoColors.of(context).offWhite,borderRadius:BorderRadius.circular(8)),child:Row(children:[Expanded(child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Text(a,style:_t12(context)),Text(b,style:_t14b(context))])),IconButton(onPressed:tap,icon:Image.asset('$_exactAssets/profile_chevron_exact.png', color: DavoColors.of(context).muted,width:16,height:16,filterQuality:FilterQuality.high))]));
 class _HowItWorks extends StatelessWidget{const _HowItWorks();@override Widget build(BuildContext context)=>Container(padding:const EdgeInsets.all(16),decoration:BoxDecoration(color:DavoColors.of(context).offWhite,borderRadius:BorderRadius.circular(8)),child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Text('How it works',style:_t16b(context)),const SizedBox(height:14),const _Step('1','Send Invite','Share your unique link or code with your friends via social media or direct message.'),const _Step('2','Friend Joins','Your friend signs up and completes a successful transaction of NGN50,000'),const _Step('3','Get Paid','You and your friend get credited with 2,000 Davo Points.') ]));}
@@ -3620,7 +3513,6 @@ TextStyle _navInter20(BuildContext context) => TextStyle(fontFamily:'Sora',fontS
 TextStyle _navSora16(BuildContext context) => TextStyle(fontFamily:'Sora',fontSize:16,fontWeight:FontWeight.w400,color:DavoColors.of(context).ink,height:1.35);
 TextStyle _navSora16Medium(BuildContext context) => TextStyle(fontFamily:'Sora',fontSize:16,fontWeight:FontWeight.w500,color:DavoColors.of(context).ink,height:1.35);
 TextStyle _navSora16SemiBold(BuildContext context) => TextStyle(fontFamily:'Sora',fontSize:16,fontWeight:FontWeight.w600,color:DavoColors.of(context).ink,height:1.35);
-TextStyle _navSora14SemiBold(BuildContext context) => TextStyle(fontFamily:'Sora',fontSize:14,fontWeight:FontWeight.w600,color:DavoColors.of(context).ink,height:1.35);
 TextStyle _t16ProfileSub(BuildContext context) => TextStyle(fontFamily:'Sora',fontSize:16,fontWeight:FontWeight.w400,color:DavoColors.of(context).bodyMuted,height:1.35);
 TextStyle _personalInfoLabel(BuildContext context) => TextStyle(fontFamily:'Sora',fontSize:14,fontWeight:FontWeight.w400,color:DavoColors.of(context).body,height:1.35);
 TextStyle _sectionLabel14(BuildContext context) => TextStyle(fontFamily:'Sora',fontSize:14,fontWeight:FontWeight.w600,color:DavoColors.of(context).bodyMuted,height:1.35);
@@ -3633,6 +3525,5 @@ TextStyle _t14(BuildContext context) =>TextStyle(fontFamily:'Sora',fontSize:14,f
 TextStyle _t14m(BuildContext context) =>TextStyle(fontFamily:'Sora',fontSize:14,fontWeight:FontWeight.w500,color:DavoColors.of(context).body,height:1.35);
 TextStyle _t14b(BuildContext context) =>TextStyle(fontFamily:'Sora',fontSize:14,fontWeight:FontWeight.w600,color:DavoColors.of(context).ink,height:1.35);
 TextStyle _t12(BuildContext context) =>TextStyle(fontFamily:'Sora',fontSize:12,fontWeight:FontWeight.w400,color:DavoColors.of(context).bodyMuted,height:1.35);
-TextStyle _t12b(BuildContext context) =>TextStyle(fontFamily:'Sora',fontSize:12,fontWeight:FontWeight.w600,color:DavoColors.of(context).ink,height:1.35);
 
 const _nigerianStates = ['Abia','Adamawa','Akwa Ibom','Anambra','Bauchi','Bayelsa','Benue','Borno','Cross River','Delta','Ebonyi','Edo','Ekiti','Enugu','FCT','Gombe','Imo','Jigawa','Kaduna','Kano','Katsina','Kebbi','Kogi','Kwara','Lagos','Nasarawa','Niger','Ogun','Ondo','Osun','Oyo','Plateau','Rivers','Sokoto','Taraba','Yobe','Zamfara'];

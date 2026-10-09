@@ -428,52 +428,184 @@ class _EmailSupportScreenState extends State<EmailSupportScreen> {
                       }))
               : _done(context, 'Back to support'));
     }
-    return _FormPage(
-        title: 'Email Support',
-        busy: busy,
-        action: DavoPrimaryButton(
-            label: 'Submit request',
-            enabled: valid,
-            loading: busy,
-            onPressed: submit),
-        children: [
-          Text(
-              'Describe your question. Requests are saved locally for this preview.',
-              style: _copy(context)),
-          const SizedBox(height: 22),
-          _Entry(
-              label: 'Subject',
-              controller: subject,
-              enabled: !busy,
-              onChanged: () => setState(() {})),
-          _Entry(
-              label: 'Order ID (optional)',
-              controller: order,
-              enabled: !busy,
-              onChanged: () => setState(() {})),
-          _Entry(
-              label: 'Message',
-              controller: message,
-              lines: 5,
-              enabled: !busy,
-              onChanged: () => setState(() {})),
-          _error(context, error),
-          if (SettingsPreviewSession.instance.tickets.isNotEmpty) ...[
-            Text('Your requests', style: _copy(context, bold: true)),
-            ...SettingsPreviewSession.instance.tickets.map((saved) => ListTile(
-                contentPadding: EdgeInsets.zero,
-                title: Text(saved.subject, style: _copy(context, bold: true)),
-                subtitle:
-                    Text('Pending · ${saved.reference}', style: _copy(context)),
-                trailing: const Icon(Icons.chevron_right),
-                onTap: busy
-                    ? null
-                    : () => setState(() {
-                          ticket = saved;
-                          viewingSaved = true;
-                        }))),
-          ],
-        ]);
+    final colors = DavoColors.of(context);
+    return PopScope(
+      canPop: !busy,
+      child: Scaffold(
+        appBar: AppBar(
+          centerTitle: true,
+          title: Text('Email Support',
+              style: _copy(context, bold: true).copyWith(fontSize: 16)),
+          leading: IconButton(
+              tooltip: 'Back',
+              onPressed: busy ? null : () => Navigator.maybePop(context),
+              icon: const Icon(Icons.arrow_back_ios_new, size: 18)),
+        ),
+        body: SafeArea(
+            child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+          child:
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text('Email Us',
+                style: _copy(context, bold: true).copyWith(fontSize: 14)),
+            const SizedBox(height: 8),
+            Text(
+                'Have a question about your order or our services? Our team is here to help.',
+                style: _copy(context)),
+            const SizedBox(height: 20),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                  color: colors.primarySoft,
+                  border: Border.all(color: colors.link.withValues(alpha: .4)),
+                  borderRadius: BorderRadius.circular(8)),
+              child:
+                  Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Container(
+                  width: 28,
+                  height: 28,
+                  decoration: BoxDecoration(
+                      color: AppColors.primary,
+                      borderRadius: BorderRadius.circular(6)),
+                  child: const Icon(Icons.bolt, color: Colors.white, size: 20),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                    child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                      Text('Rapid Response',
+                          style: _copy(context, color: colors.link, bold: true)
+                              .copyWith(fontSize: 14)),
+                      const SizedBox(height: 4),
+                      Text('We typically respond to emails within 24 hours.',
+                          style: _copy(context).copyWith(fontSize: 10)),
+                    ])),
+              ]),
+            ),
+            const SizedBox(height: 22),
+            _EmailEntry(
+                label: 'Subject',
+                hint: 'What can we help you with?',
+                controller: subject,
+                enabled: !busy,
+                onChanged: () => setState(() {})),
+            _EmailEntry(
+                label: 'Order ID',
+                hint: 'e.g. #VP-8291',
+                optional: true,
+                controller: order,
+                enabled: !busy,
+                onChanged: () => setState(() {})),
+            _EmailEntry(
+                label: 'Message',
+                hint: 'Tell us more about your question...',
+                controller: message,
+                lines: 5,
+                enabled: !busy,
+                onChanged: () => setState(() {})),
+            _error(context, error),
+            Text(
+                'Requests are saved locally in this preview. No email is sent.',
+                style: _copy(context).copyWith(fontSize: 10)),
+            const SizedBox(height: 12),
+            if (SettingsPreviewSession.instance.tickets
+                .any((t) => t.channel == SupportChannel.email)) ...[
+              Text('Your requests', style: _copy(context, bold: true)),
+              ...SettingsPreviewSession.instance.tickets
+                  .where((t) => t.channel == SupportChannel.email)
+                  .map((saved) => ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        title: Text(saved.subject,
+                            style: _copy(context, bold: true)),
+                        subtitle: Text('Pending ? ${saved.reference}',
+                            style: _copy(context)),
+                        trailing: const Icon(Icons.chevron_right),
+                        onTap: busy
+                            ? null
+                            : () => setState(() {
+                                  ticket = saved;
+                                  viewingSaved = true;
+                                }),
+                      )),
+            ],
+          ]),
+        )),
+        bottomNavigationBar: SafeArea(
+            child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+          child: DavoPrimaryButton(
+              label: 'Submit request',
+              enabled: valid,
+              loading: busy,
+              onPressed: submit),
+        )),
+      ),
+    );
+  }
+}
+
+class _EmailEntry extends StatelessWidget {
+  const _EmailEntry(
+      {required this.label,
+      required this.hint,
+      required this.controller,
+      required this.onChanged,
+      this.enabled = true,
+      this.optional = false,
+      this.lines = 1});
+  final String label, hint;
+  final TextEditingController controller;
+  final VoidCallback onChanged;
+  final bool enabled, optional;
+  final int lines;
+  @override
+  Widget build(BuildContext context) {
+    final colors = DavoColors.of(context);
+    return Padding(
+        padding: const EdgeInsets.only(bottom: 18),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Wrap(
+              crossAxisAlignment: WrapCrossAlignment.center,
+              spacing: 8,
+              children: [
+                Text(label, style: _copy(context, bold: true)),
+                if (optional)
+                  Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 6, vertical: 3),
+                      decoration: BoxDecoration(
+                          color: colors.offWhite,
+                          borderRadius: BorderRadius.circular(4)),
+                      child: Text('OPTIONAL',
+                          style: _copy(context).copyWith(fontSize: 8))),
+              ]),
+          const SizedBox(height: 8),
+          TextField(
+              controller: controller,
+              enabled: enabled,
+              maxLines: lines,
+              keyboardAppearance: Theme.of(context).brightness,
+              keyboardType:
+                  lines > 1 ? TextInputType.multiline : TextInputType.text,
+              onChanged: (_) => onChanged(),
+              onTapOutside: (_) =>
+                  FocusManager.instance.primaryFocus?.unfocus(),
+              style: _copy(context),
+              decoration: InputDecoration(
+                  hintText: hint,
+                  hintStyle: _copy(context, color: colors.bodyMuted),
+                  filled: true,
+                  fillColor: colors.offWhite,
+                  contentPadding: const EdgeInsets.all(14),
+                  enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide(color: colors.border)),
+                  focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide(color: colors.link)))),
+        ]));
   }
 }
 

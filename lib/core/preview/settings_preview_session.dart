@@ -8,6 +8,8 @@ class LinkedBank {
   String get maskedNumber => '•••• ${number.substring(number.length - 4)}';
 }
 
+enum SupportChannel { email, chat }
+
 @immutable
 class SupportTicket {
   const SupportTicket(
@@ -15,7 +17,11 @@ class SupportTicket {
       required this.subject,
       required this.message,
       required this.orderId,
-      required this.createdAt});
+      required this.createdAt,
+      this.channel = SupportChannel.email,
+      this.conversationId});
+  final SupportChannel channel;
+  final String? conversationId;
   final String reference, subject, message, orderId;
   final DateTime createdAt;
 }
@@ -48,6 +54,19 @@ abstract class SettingsGateway {
   Future<void> changePassword(String current, String next);
   Future<SupportTicket> submitSupport(
       String subject, String message, String orderId);
+  Future<SupportTicket> submitChat(
+      String subject, String message, String conversationId) async {
+    final ticket = await submitSupport(subject, message, '');
+    return SupportTicket(
+        reference: ticket.reference,
+        subject: ticket.subject,
+        message: ticket.message,
+        orderId: ticket.orderId,
+        createdAt: ticket.createdAt,
+        channel: SupportChannel.chat,
+        conversationId: conversationId);
+  }
+
   Future<RewardRedemption> redeemPoints(int points);
   Future<DeletionRequest> requestDeletion(String reason);
 }
@@ -119,6 +138,9 @@ class SettingsPreviewSession extends ChangeNotifier {
   List<SupportTicket> get tickets => List.unmodifiable(_tickets);
   List<RewardRedemption> get redemptions => List.unmodifiable(_redemptions);
   int generation = 0;
+  int _conversationSequence = 0;
+  String newConversationId() =>
+      'PREVIEW-CHAT-$generation-${++_conversationSequence}';
   int get earnedPoints => 15;
   int get redeemedPoints => _redemptions.fold(0, (sum, r) => sum + r.points);
   int get availablePoints => earnedPoints - redeemedPoints;
