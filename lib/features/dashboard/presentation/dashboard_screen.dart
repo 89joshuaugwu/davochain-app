@@ -9,6 +9,7 @@ import '../../transactions/presentation/transaction_history_screen.dart';
 
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/widgets/auth_widgets.dart' show Entrance;
+import '../../../shared/widgets/bank_details_share_button.dart';
 import '../../../shared/widgets/davo_toast.dart';
 import '../../../shared/widgets/solana_icon.dart';
 import '../../../core/navigation/app_page_route.dart';
@@ -2637,18 +2638,19 @@ class NairaDepositScreen extends StatelessWidget {
                         decoration: BoxDecoration(
                             color: DavoColors.of(context).fieldFill,
                             borderRadius: BorderRadius.circular(4)),
-                        child: const Column(
+                        child: Column(
                           children: [
                             _BankDetailRow(
                                 label: 'Account name',
-                                value: 'Ogbonnia Chukwu Vincent (DVC)'),
-                            SizedBox(height: 8),
+                                value: BankDepositDetails.preview.accountName),
+                            const SizedBox(height: 8),
                             _BankDetailRow(
-                                label: 'Bank name', value: 'Paystack-Titan'),
-                            SizedBox(height: 8),
+                                label: 'Bank name',
+                                value: BankDepositDetails.preview.bankName),
+                            const SizedBox(height: 8),
                             _BankDetailRow(
                                 label: 'Account number',
-                                value: '542100896436',
+                                value: BankDepositDetails.preview.accountNumber,
                                 last: true),
                           ],
                         ),
@@ -2690,14 +2692,8 @@ class NairaDepositScreen extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 66),
-                      _FooterButton(
-                        label: 'Share Details',
-                        background: AppColors.primary,
-                        foreground: DavoColors.of(context).canvas,
-                        fontWeight: FontWeight.w400,
-                        onTap: () => showDavoToast(
-                            context, 'Bank details are ready to share.'),
-                      ),
+                      const BankDetailsShareButton(
+                          details: BankDepositDetails.preview),
                     ],
                   ),
                 ),

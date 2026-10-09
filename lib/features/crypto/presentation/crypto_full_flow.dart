@@ -1,3 +1,4 @@
+import '../../../core/preview/settings_preview_session.dart';
 import '../../funding/funding_outcomes.dart';
 import '../../../core/preview/preview_transaction_operation.dart';
 import '../../../shared/motion/davo_working_indicator.dart';
@@ -620,118 +621,46 @@ class BankAccount {
 class _PaymentSheet extends StatelessWidget {
   const _PaymentSheet({this.current});
   final BankAccount? current;
-
   @override
   Widget build(BuildContext context) {
     final saved = <BankAccount>[
       if (current != null) current!,
-      if (current != null)
-        const BankAccount(
-            'Opay', '058962566726', 'Callietus Ezeike Chinecherem'),
+      for (final bank in SettingsPreviewSession.instance.banks)
+        if (current?.bank != bank.bank || current?.number != bank.number)
+          BankAccount(bank.bank, bank.number, bank.name),
     ];
-    return Container(
-      height: 384,
-      decoration: BoxDecoration(
-        color: DavoColors.of(context).canvas,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-      ),
-      child: Stack(
-        children: [
-          Positioned(
-            left: 0,
-            right: 0,
-            top: 6,
-            child: Center(
-              child: Container(
-                width: 85,
-                height: 4,
-                decoration: BoxDecoration(
-                    color: DavoColors.of(context).bodyMuted,
-                    borderRadius: BorderRadius.circular(100)),
-              ),
-            ),
-          ),
-          Positioned(
-            left: 0,
-            right: 0,
-            top: 32,
-            child: Text(
-              'Select a payment method',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                  fontFamily: 'Sora',
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  height: 1.35,
-                  color: DavoColors.of(context).ink),
-            ),
-          ),
-          Positioned(
-            left: 342,
-            top: 20,
-            width: 24,
-            height: 24,
-            child: InkResponse(
-                onTap: () => Navigator.pop(context),
-                radius: 20,
-                child: Image.asset('$_exact/crypto_close_exact.png',
-                    color: DavoColors.of(context).ink, width: 24, height: 24)),
-          ),
-          Positioned(
-            left: 16,
-            right: 16,
-            top: 67,
-            child: Column(
-              children: [
-                InkWell(
-                  onTap: () async {
-                    final a = await Navigator.push<BankAccount>(
-                        context,
-                        AppPageRoute<BankAccount>(
-                            builder: (_) => const AddBankScreen()));
-                    if (context.mounted && a != null) Navigator.pop(context, a);
-                  },
-                  child: SizedBox(
-                    height: 34,
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 34,
-                          height: 34,
-                          alignment: Alignment.center,
-                          decoration: BoxDecoration(
-                              color: DavoColors.of(context).primarySoft,
-                              shape: BoxShape.circle),
-                          child: Image.asset(
-                              '$_exact/crypto_plus_circle_exact.png',
-                              width: 24,
-                              height: 24),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                            child: Text('Add new payment method',
-                                style: TextStyle(
-                                    fontFamily: 'Sora',
-                                    fontSize: 14,
-                                    height: 1.35,
-                                    color: DavoColors.of(context).body))),
-                      ],
-                    ),
-                  ),
-                ),
-                if (saved.isNotEmpty) const SizedBox(height: 16),
-                for (int i = 0; i < saved.length; i++) ...[
-                  _PaymentMethodSavedRow(
-                      account: saved[i],
-                      onTap: () => Navigator.pop(context, saved[i])),
-                  if (i != saved.length - 1) const SizedBox(height: 12),
-                ],
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
+    return Material(
+      color: DavoColors.of(context).canvas,
+      borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+      clipBehavior: Clip.antiAlias,
+      child: SafeArea(child: SizedBox(
+      height: MediaQuery.sizeOf(context).height * .6,
+      child: Column(children: [
+        const SizedBox(height: 8),
+        Container(width: 60, height: 4, decoration: BoxDecoration(
+          color: DavoColors.of(context).bodyMuted, borderRadius: BorderRadius.circular(100))),
+        Padding(padding: const EdgeInsets.fromLTRB(24, 8, 12, 0), child: Row(children: [
+          const Expanded(child: Text('Select a payment method', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600))),
+          IconButton(tooltip: 'Close', onPressed: () => Navigator.pop(context), icon: const Icon(Icons.close)),
+        ])),
+        Expanded(child: ListView(padding: const EdgeInsets.fromLTRB(16, 0, 16, 24), children: [
+          ListTile(contentPadding: EdgeInsets.zero, leading: const Icon(Icons.add_circle_outline),
+            title: const Text('Add new payment method', style: TextStyle(fontSize: 14)), onTap: () async {
+              final account = await Navigator.push<BankAccount>(context,
+                AppPageRoute<BankAccount>(builder: (_) => const AddBankScreen()));
+              if (context.mounted && account != null) {
+                SettingsPreviewSession.instance.acceptBank(LinkedBank(bank: account.bank,
+                  number: account.number, name: account.name));
+                Navigator.pop(context, account);
+              }
+            }),
+          const Text('Preview accounts', style: TextStyle(fontSize: 12)),
+          const SizedBox(height: 12),
+          for (final account in saved) Padding(padding: const EdgeInsets.only(bottom: 12),
+            child: _PaymentMethodSavedRow(account: account, onTap: () => Navigator.pop(context, account))),
+        ])),
+      ]),
+    )));
   }
 }
 
