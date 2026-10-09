@@ -32,3 +32,7 @@ The new tests cover all six interaction paths, mocked native composer/copy behav
 Opt-in `settings_actions_capture_test.dart` captures ten light/dark pages with real Sora and MaterialIcons at 390×844. Narrow bank pages were also exercised at 320 pixels with 2× text and keyboard insets. Captures live in `../tmp/settings-actions-review/`.
 
 Physical native sharing, server authorization, provider errors and durable account state remain backend/device integration work. No version bump or APK installation is part of this change.
+
+## Follow-up: emulator release 19
+
+At the user's later request, the animated splash mark and wordmark were lifted together by 24 logical pixels, then the complete app was rebuilt as 0.13.0+19 and installed on emulator-5554. All nine splash/motion regression tests passed. The 71,024,292-byte release includes all 728 declared asset/font files with matching source bytes and ARM64, ARMv7 and x86_64 libraries. The installed APK matches SHA-256 `546c8467c60408cd0fc44ee0c98696ce8cbe5516560b29dc68e06bca3c60df52`. Cold launch reported no fatal/Flutter/asset/overflow errors, and startup frame 3 visually confirms the raised lockup (`../tmp/emulator-release-19-startup-3.png`).
