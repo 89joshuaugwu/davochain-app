@@ -162,7 +162,8 @@ class _BrandSplashScreenState extends State<BrandSplashScreen>
                     final name = phase(.35, .63);
                     final currencies = phase(.48, .79);
                     final markWidth = 90 - 32 * move;
-                    final centerY = size.height * (.50 + .055 * move);
+                    const lockupLift = 24.0;
+                    final centerY = size.height * (.50 + .055 * move) - lockupLift;
                     final markLeft = (size.width - markWidth) / 2 * (1 - move) +
                         finalLeft * move;
                     return Stack(clipBehavior: Clip.hardEdge, children: [
@@ -189,7 +190,7 @@ class _BrandSplashScreenState extends State<BrandSplashScreen>
                                                       fit: BoxFit.fill)))))))),
                       Positioned(
                           left: finalLeft + 70,
-                          top: size.height * .555 - 30,
+                          top: size.height * .555 - 30 - lockupLift,
                           width: labelWidth,
                           height: 60,
                           child: Opacity(
