@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:davochain/features/auth/presentation/signup_flow.dart';
 import 'dart:ui' as ui;
 import 'package:davochain/core/theme/app_theme.dart';
 import 'package:davochain/features/security_questions/presentation/security_questions_screens.dart';
@@ -102,6 +103,12 @@ void main() {
         SecurityQuestionsChallengeScreen(service: service, onVerified: () {}),
         dark: true);
     await capture('challenge-dark');
+    await mount(const CountrySelectionScreen());
+    await tap('Select your country');
+    await capture('nigeria-country-picker');
+    await tap('Nigeria');
+    await capture('nigeria-country-selected');
+
     tester.view.physicalSize = const Size(320, 640);
     await mount(
         SecurityQuestionsSettingsScreen(service: SecurityQuestionsService()),

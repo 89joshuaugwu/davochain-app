@@ -1,5 +1,7 @@
 # Security questions — 9 October 2026
 
+Current behavior (release 24): enrollment/reset still uses exactly three questions; login asks one randomly selected question with a stable choice during retries. See [the follow-up review](2026-10-09-single-question-login-and-nigeria-signup.md). The initial implementation and release-23 evidence below are historical.
+
 ## Implemented flow
 
 Settings → Security → Security questions opens a guided setup. Users select three distinct preset or custom questions, enter hidden answers, and review only the questions before saving. Previously selected presets are disabled. Back navigation retains the draft; incomplete or duplicate sets cannot activate.

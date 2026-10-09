@@ -245,7 +245,7 @@ class _QuestionsFlowState extends State<_QuestionsFlow> {
       return DavoResultScreen(
           title: 'Security questions saved',
           message: widget.recovery
-              ? 'Your questions have been replaced. Answer the new questions to finish signing in.'
+              ? 'Your questions have been replaced. Answer one selected question to finish signing in.'
               : 'Your three questions are ready for your next sign-in in this session preview.',
           actions: _action(widget.recovery ? 'Return to verification' : 'Done',
               () => Navigator.pop(context, true)));
@@ -458,16 +458,16 @@ class SecurityQuestionsChallengeScreen extends StatefulWidget {
 }
 
 class _ChallengeState extends State<SecurityQuestionsChallengeScreen> {
-  final _answers = List.generate(3, (_) => TextEditingController());
+  final _answer = TextEditingController();
   SecurityQuestionsService get service =>
       widget.service ?? SecurityQuestionsService.instance;
+  late SecurityQuestionChallenge _challenge = service.beginChallenge();
   bool _busy = false, _verified = false, _canceled = false;
   String? _problem;
   @override
   void dispose() {
-    for (final answer in _answers) {
-      answer.dispose();
-    }
+    service.cancelChallenge(_challenge.id);
+    _answer.dispose();
     super.dispose();
   }
 
@@ -483,10 +483,7 @@ class _ChallengeState extends State<SecurityQuestionsChallengeScreen> {
   }
 
   Future<void> _verify() async {
-    if (_busy ||
-        _verified ||
-        _canceled ||
-        _answers.any((answer) => answer.text.trim().isEmpty)) {
+    if (_busy || _verified || _canceled || _answer.text.trim().isEmpty) {
       return;
     }
     FocusScope.of(context).unfocus();
@@ -495,8 +492,8 @@ class _ChallengeState extends State<SecurityQuestionsChallengeScreen> {
       _problem = null;
     });
     try {
-      final correct = await service
-          .verifyAnswers(_answers.map((answer) => answer.text).toList());
+      final correct =
+          await service.verifyChallenge(_challenge.id, _answer.text);
       if (!mounted || _canceled) return;
       if (correct) {
         _verified = true;
@@ -504,7 +501,7 @@ class _ChallengeState extends State<SecurityQuestionsChallengeScreen> {
       } else {
         setState(() => _problem = service.cooldownUntil != null
             ? 'Too many attempts. Wait 30 seconds before trying again.'
-            : 'Answers did not match. Check all three answers and try again.');
+            : 'Answer did not match. Please try again.');
       }
     } catch (error) {
       if (mounted && !_canceled) setState(() => _problem = _error(error));
@@ -526,13 +523,12 @@ class _ChallengeState extends State<SecurityQuestionsChallengeScreen> {
     setState(() {
       _busy = false;
       _problem = changed == true
-          ? 'Questions replaced. Answer your new questions to continue.'
+          ? 'Questions replaced. Answer the selected question to continue.'
           : null;
     });
     if (changed == true) {
-      for (final answer in _answers) {
-        answer.clear();
-      }
+      _challenge = service.beginChallenge();
+      _answer.clear();
     }
   }
 
@@ -547,40 +543,38 @@ class _ChallengeState extends State<SecurityQuestionsChallengeScreen> {
           onBack: _busy ? null : _cancel,
           child:
               Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-            _heading('Answer your security questions'),
+            _heading('Answer your security question'),
             _body(
-                'Enter all three answers to finish signing in. Answers ignore capitalization and extra spaces.'),
+                'Answer one randomly selected question to finish signing in. Answers ignore capitalization and extra spaces.'),
             _notice(context),
             const SizedBox(height: 24),
-            for (var i = 0; i < service.questions.length && i < 3; i++) ...[
-              Text(service.questions[i],
-                  style: TextStyle(
-                      fontSize: 14,
-                      height: 1.5,
-                      fontWeight: FontWeight.w600,
-                      color: DavoColors.of(context).ink)),
-              const SizedBox(height: 12),
-              TextField(
-                  key: Key('challenge-answer-$i'),
-                  controller: _answers[i],
-                  enabled: !_busy && !_verified,
-                  obscureText: true,
-                  autocorrect: false,
-                  enableSuggestions: false,
-                  style: const TextStyle(fontSize: 14),
-                  decoration: InputDecoration(labelText: 'Answer ${i + 1}'),
-                  onChanged: (_) => setState(() {})),
-              const SizedBox(height: 24),
-            ],
+            Text(_challenge.question,
+                style: TextStyle(
+                    fontSize: 14,
+                    height: 1.5,
+                    fontWeight: FontWeight.w600,
+                    color: DavoColors.of(context).ink)),
+            const SizedBox(height: 12),
+            TextField(
+                key: const Key('challenge-answer-0'),
+                controller: _answer,
+                enabled: !_busy && !_verified,
+                obscureText: true,
+                autocorrect: false,
+                enableSuggestions: false,
+                style: const TextStyle(fontSize: 14),
+                decoration: const InputDecoration(labelText: 'Your answer'),
+                onChanged: (_) => setState(() {})),
+            const SizedBox(height: 24),
             if (_problem != null) _Problem(_problem!),
-            _action(_busy ? 'Verifying…' : 'Verify answers', _verify,
+            _action(_busy ? 'Verifying…' : 'Verify answer', _verify,
                 enabled: !_busy &&
                     !_verified &&
-                    service.questions.length == 3 &&
-                    _answers.every((answer) => answer.text.trim().isNotEmpty)),
+                    service.enabled &&
+                    _answer.text.trim().isNotEmpty),
             TextButton(
                 onPressed: _busy || _verified ? null : _recover,
-                child: const Text('Forgot your answers?')),
+                child: const Text('Forgot your answer?')),
           ])));
 }
 

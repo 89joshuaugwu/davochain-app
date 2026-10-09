@@ -10,22 +10,45 @@ import 'create_password_screen.dart';
 const _iconRoot = 'assets/icons/auth';
 
 class _CountryOption {
-  const _CountryOption(this.name, this.dialCode, this.flag, this.maxDigits);
+  const _CountryOption(this.name, this.dialCode, this.maxDigits);
 
   final String name;
   final String dialCode;
-  final String flag;
   final int maxDigits;
 }
 
 const _countries = <_CountryOption>[
-  _CountryOption('Nigeria', '+234', '🇳🇬', 10),
-  _CountryOption('Ghana', '+233', '🇬🇭', 9),
-  _CountryOption('Kenya', '+254', '🇰🇪', 9),
-  _CountryOption('South Africa', '+27', '🇿🇦', 9),
-  _CountryOption('United Kingdom', '+44', '🇬🇧', 10),
-  _CountryOption('United States', '+1', '🇺🇸', 10),
+  _CountryOption('Nigeria', '+234', 10),
 ];
+
+/// A vector flag avoids platform emoji/font rendering differences.
+class _NigeriaFlag extends StatelessWidget {
+  const _NigeriaFlag();
+  @override
+  Widget build(BuildContext context) => Semantics(
+        label: 'Nigeria flag',
+        child: Container(
+          key: const Key('nigeria-flag'),
+          width: 30,
+          height: 20,
+          clipBehavior: Clip.antiAlias,
+          decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(3),
+              border: Border.all(color: const Color(0x22000000))),
+          child: const Row(children: [
+            Expanded(
+                child: ColoredBox(
+                    color: Color(0xFF008753), child: SizedBox.expand())),
+            Expanded(
+                child:
+                    ColoredBox(color: Colors.white, child: SizedBox.expand())),
+            Expanded(
+                child: ColoredBox(
+                    color: Color(0xFF008753), child: SizedBox.expand())),
+          ]),
+        ),
+      );
+}
 
 class CountrySelectionScreen extends StatefulWidget {
   const CountrySelectionScreen({super.key});
@@ -102,7 +125,12 @@ class _CountrySelectionScreenState extends State<CountrySelectionScreen> {
   Future<void> _pickCountry() async {
     final selected = await showModalBottomSheet<_CountryOption>(
       context: context,
-    sheetAnimationStyle: (MediaQuery.disableAnimationsOf(context) || MediaQuery.accessibleNavigationOf(context)) ? AnimationStyle.noAnimation : const AnimationStyle(duration: Duration(milliseconds: 280), reverseDuration: Duration(milliseconds: 200)),
+      sheetAnimationStyle: (MediaQuery.disableAnimationsOf(context) ||
+              MediaQuery.accessibleNavigationOf(context))
+          ? AnimationStyle.noAnimation
+          : const AnimationStyle(
+              duration: Duration(milliseconds: 280),
+              reverseDuration: Duration(milliseconds: 200)),
       useSafeArea: true,
       showDragHandle: true,
       backgroundColor: DavoColors.of(context).surface,
@@ -138,7 +166,7 @@ class _CountryField extends StatelessWidget {
           child: Row(
             children: [
               if (country != null) ...[
-                Text(country!.flag, style: const TextStyle(fontSize: 20)),
+                const _NigeriaFlag(),
                 const SizedBox(width: 10),
               ],
               Expanded(
@@ -147,7 +175,9 @@ class _CountryField extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 16,
                     height: 1.35,
-                    color: country == null ? DavoColors.of(context).muted : DavoColors.of(context).body,
+                    color: country == null
+                        ? DavoColors.of(context).muted
+                        : DavoColors.of(context).body,
                   ),
                 ),
               ),
@@ -224,7 +254,7 @@ class _CountryPickerSheet extends StatelessWidget {
               contentPadding: EdgeInsets.zero,
               minLeadingWidth: 34,
               onTap: () => Navigator.pop(context, country),
-              leading: Text(country.flag, style: const TextStyle(fontSize: 26)),
+              leading: const _NigeriaFlag(),
               title: Text(country.name),
               trailing: Text(country.dialCode,
                   style: Theme.of(context).textTheme.bodyMedium),
@@ -387,7 +417,8 @@ class _PhoneField extends StatelessWidget {
       children: [
         Text(
           'Phone Number',
-          style: TextStyle(fontSize: 16, height: 1.35, color: DavoColors.of(context).body),
+          style: TextStyle(
+              fontSize: 16, height: 1.35, color: DavoColors.of(context).body),
         ),
         const SizedBox(height: 4),
         Row(
@@ -404,11 +435,11 @@ class _PhoneField extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text(country.flag, style: const TextStyle(fontSize: 18)),
+                  const _NigeriaFlag(),
                   const SizedBox(width: 5),
                   Text(country.dialCode,
-                      style:
-                          TextStyle(fontSize: 12, color: DavoColors.of(context).body)),
+                      style: TextStyle(
+                          fontSize: 12, color: DavoColors.of(context).body)),
                 ],
               ),
             ),
@@ -426,19 +457,22 @@ class _PhoneField extends StatelessWidget {
                     LengthLimitingTextInputFormatter(country.maxDigits),
                   ],
                   onChanged: (_) => onChanged(),
-                  style:
-                      TextStyle(fontSize: 14, color: DavoColors.of(context).bodyMuted),
+                  style: TextStyle(
+                      fontSize: 14, color: DavoColors.of(context).bodyMuted),
                   decoration: InputDecoration(
                     hintText: country.name == 'Nigeria'
                         ? '9062568004'
                         : 'Phone number',
-                    hintStyle:
-                        TextStyle(fontSize: 14, color: DavoColors.of(context).muted),
+                    hintStyle: TextStyle(
+                        fontSize: 14, color: DavoColors.of(context).muted),
                     contentPadding: const EdgeInsets.symmetric(
                         horizontal: 16, vertical: 12),
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
-                      borderSide: BorderSide(color: DavoColors.of(context).isDark ? DavoColors.of(context).border : const Color(0x14121212)),
+                      borderSide: BorderSide(
+                          color: DavoColors.of(context).isDark
+                              ? DavoColors.of(context).border
+                              : const Color(0x14121212)),
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),

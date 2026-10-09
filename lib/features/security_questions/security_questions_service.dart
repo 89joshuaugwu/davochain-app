@@ -11,6 +11,13 @@ class QuestionAnswer {
   final String answer;
 }
 
+class SecurityQuestionChallenge {
+  const SecurityQuestionChallenge._(
+      this.id, this.question, this._index, this._generation);
+  final String id, question;
+  final int _index, _generation;
+}
+
 class ResetChallenge {
   const ResetChallenge({
     required this.id,
@@ -26,8 +33,9 @@ class ResetChallenge {
 /// Session-only preview. Production requires authenticated account-scoped server
 /// checks, slow salted hashes, rate limits, and real email delivery.
 class SecurityQuestionsService extends ChangeNotifier {
-  SecurityQuestionsService({DateTime Function()? now})
-      : _now = now ?? DateTime.now;
+  SecurityQuestionsService({DateTime Function()? now, Random? random})
+      : _now = now ?? DateTime.now,
+        _random = random ?? Random.secure();
 
   static final instance = SecurityQuestionsService();
   static const defaultQuestions = [
@@ -40,7 +48,8 @@ class SecurityQuestionsService extends ChangeNotifier {
   ];
 
   final DateTime Function() _now;
-  final Random _random = Random.secure();
+  final Random _random;
+  SecurityQuestionChallenge? _loginChallenge;
   List<_StoredAnswer> _answers = const [];
   int _generation = 0;
   int _failedAnswers = 0;
@@ -67,6 +76,47 @@ class SecurityQuestionsService extends ChangeNotifier {
   }
 
   Future<bool> verifyAnswers(List<String> answers) async {
+    _checkAnswerAttempt();
+    var matched = answers.length == 3;
+    if (answers.length == 3) {
+      // Check every answer so failures never disclose which answer differed.
+      for (var index = 0; index < 3; index++) {
+        final stored = _answers[index];
+        final digest = _hash(stored.salt, _canonical(answers[index]));
+        matched = _equalDigest(digest, stored.digest) && matched;
+      }
+    }
+    return _finishAnswerAttempt(matched);
+  }
+
+  SecurityQuestionChallenge beginChallenge() {
+    if (!enabled) _fail('Set your security questions before signing in.');
+    final index = _random.nextInt(3);
+    return _loginChallenge = SecurityQuestionChallenge._(
+        _token(), _answers[index].question, index, _generation);
+  }
+
+  void cancelChallenge(String id) {
+    if (_loginChallenge?.id == id) _loginChallenge = null;
+  }
+
+  Future<bool> verifyChallenge(String id, String answer) async {
+    final challenge = _loginChallenge;
+    if (challenge == null ||
+        challenge.id != id ||
+        challenge._generation != _generation ||
+        !enabled) {
+      _fail('This question has expired. Start signing in again.');
+    }
+    _checkAnswerAttempt();
+    final stored = _answers[challenge._index];
+    final matched =
+        _equalDigest(_hash(stored.salt, _canonical(answer)), stored.digest);
+    if (matched) _loginChallenge = null;
+    return _finishAnswerAttempt(matched);
+  }
+
+  void _checkAnswerAttempt() {
     if (!enabled) {
       _fail('Set your security questions before verifying answers.');
     }
@@ -77,21 +127,15 @@ class SecurityQuestionsService extends ChangeNotifier {
       _answerLockUntil = null;
       _failedAnswers = 0;
     }
-    var matched = answers.length == 3;
-    if (answers.length == 3) {
-      // Check every answer so failures never disclose which answer differed.
-      for (var index = 0; index < 3; index++) {
-        final stored = _answers[index];
-        final digest = _hash(stored.salt, _canonical(answers[index]));
-        matched = _equalDigest(digest, stored.digest) && matched;
-      }
-    }
+  }
+
+  bool _finishAnswerAttempt(bool matched) {
     if (matched) {
       _failedAnswers = 0;
       _error = null;
     } else {
       _failedAnswers++;
-      _error = 'The answers did not match. Check all three and try again.';
+      _error = 'The answer did not match. Please try again.';
       if (_failedAnswers >= 5) {
         _answerLockUntil = _now().add(const Duration(seconds: 30));
         _error = 'Too many attempts. Wait 30 seconds before trying again.';
@@ -173,6 +217,7 @@ class SecurityQuestionsService extends ChangeNotifier {
   void clear() {
     _answers = const [];
     _generation++;
+    _loginChallenge = null;
     _reset = null;
     _grant = null;
     _failedAnswers = 0;
@@ -205,6 +250,7 @@ class SecurityQuestionsService extends ChangeNotifier {
   void _activate(List<_StoredAnswer> answers) {
     _answers = answers;
     _generation++;
+    _loginChallenge = null;
     _reset = null;
     _grant = null;
     _failedAnswers = 0;

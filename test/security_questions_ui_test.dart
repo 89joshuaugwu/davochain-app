@@ -45,7 +45,8 @@ void main() {
     expect(service.enabled, isTrue);
     expect(find.text('Security questions saved'), findsOneWidget);
   });
-  testWidgets('challenge never completes from partial or wrong answers',
+  testWidgets(
+      'single random challenge rejects wrong answers and stays on the same question',
       (tester) async {
     final service = SecurityQuestionsService();
     await service.saveInitial([
@@ -57,19 +58,19 @@ void main() {
         tester,
         SecurityQuestionsChallengeScreen(
             service: service, onVerified: () => verified++));
-    for (var i = 0; i < 3; i++) {
-      final field = find.byKey(Key('challenge-answer-$i'));
-      expect(tester.widget<TextField>(field).obscureText, isTrue);
-      await tester.enterText(field, 'wrong');
-    }
-    await tap(tester, 'Verify answers');
+    final index = service.questions
+        .indexWhere((question) => find.text(question).evaluate().isNotEmpty);
+    expect(index, inInclusiveRange(0, 2));
+    expect(find.byType(TextField), findsOneWidget);
+    final field = find.byKey(const Key('challenge-answer-0'));
+    expect(tester.widget<TextField>(field).obscureText, isTrue);
+    await tester.enterText(field, 'wrong');
+    await tap(tester, 'Verify answer');
     expect(verified, 0);
-    expect(find.textContaining('Answers did not match'), findsOneWidget);
-    for (var i = 0; i < 3; i++) {
-      await tester.enterText(
-          find.byKey(Key('challenge-answer-$i')), 'answer $i');
-    }
-    await tap(tester, 'Verify answers');
+    expect(find.textContaining('Answer did not match'), findsOneWidget);
+    expect(find.text(service.questions[index]), findsOneWidget);
+    await tester.enterText(field, 'answer $index');
+    await tap(tester, 'Verify answer');
     expect(verified, 1);
   });
   testWidgets(
@@ -85,7 +86,7 @@ void main() {
         tester,
         SecurityQuestionsChallengeScreen(
             service: service, onVerified: () => verified++));
-    await tap(tester, 'Forgot your answers?');
+    await tap(tester, 'Forgot your answer?');
     await tap(tester, 'Request preview code');
     final code =
         tester.widget<SelectableText>(find.byType(SelectableText)).data!;
@@ -99,7 +100,7 @@ void main() {
     expect(find.text('Question 1 of 3'), findsOneWidget);
     await tester.tap(find.byTooltip('Back'));
     await tester.pumpAndSettle();
-    expect(find.text('Answer your security questions'), findsOneWidget);
+    expect(find.text('Answer your security question'), findsOneWidget);
     expect(service.questions, securityQuestionPresets.take(3).toList());
     expect(verified, 0);
   });
@@ -125,7 +126,7 @@ void main() {
     await tester.tap(find.byTooltip('Back'));
     await tester.pumpAndSettle();
     expect(find.text('Primary unlock'), findsOneWidget);
-    expect(find.text('Answer your security questions'), findsNothing);
+    expect(find.text('Answer your security question'), findsNothing);
   });
   testWidgets('recovery replaces all questions and restarts verification',
       (tester) async {
@@ -139,7 +140,7 @@ void main() {
         tester,
         SecurityQuestionsChallengeScreen(
             service: service, onVerified: () => verified++));
-    await tap(tester, 'Forgot your answers?');
+    await tap(tester, 'Forgot your answer?');
     await tap(tester, 'Request preview code');
     final code =
         tester.widget<SelectableText>(find.byType(SelectableText)).data!;
@@ -155,12 +156,12 @@ void main() {
     expect(service.questions, securityQuestionPresets.skip(3).toList());
     await tap(tester, 'Return to verification');
     expect(verified, 0);
-    for (var i = 0; i < 3; i++) {
-      final field = find.byKey(Key('challenge-answer-$i'));
-      expect(tester.widget<TextField>(field).controller!.text, isEmpty);
-      await tester.enterText(field, 'private answer $i');
-    }
-    await tap(tester, 'Verify answers');
+    final index = service.questions
+        .indexWhere((question) => find.text(question).evaluate().isNotEmpty);
+    final field = find.byKey(const Key('challenge-answer-0'));
+    expect(tester.widget<TextField>(field).controller!.text, isEmpty);
+    await tester.enterText(field, 'private answer $index');
+    await tap(tester, 'Verify answer');
     expect(verified, 1);
   });
   testWidgets('custom duplicate disabled and back retains draft',
@@ -198,13 +199,19 @@ void main() {
     expect(service.enabled, isFalse);
   });
   testWidgets('short Unicode answer cannot advance setup', (tester) async {
-    await open(tester, SecurityQuestionsSettingsScreen(service: SecurityQuestionsService()));
+    await open(tester,
+        SecurityQuestionsSettingsScreen(service: SecurityQuestionsService()));
     await tap(tester, 'Set up questions');
     await tap(tester, 'Choose a question');
     await tap(tester, securityQuestionPresets[0]);
     await tester.enterText(find.byKey(const Key('security-answer')), '😀a');
     await tester.pumpAndSettle();
-    expect(tester.widget<FilledButton>(find.widgetWithText(FilledButton, 'Next question')).onPressed, isNull);
+    expect(
+        tester
+            .widget<FilledButton>(
+                find.widgetWithText(FilledButton, 'Next question'))
+            .onPressed,
+        isNull);
   });
   testWidgets('small dark screen supports large text and keyboard',
       (tester) async {
