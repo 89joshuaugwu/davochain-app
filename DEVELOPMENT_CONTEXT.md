@@ -264,3 +264,7 @@ Supersedes release23 login behavior: enrollment/reset retain exactly3questions, 
 ## 2026-10-09 splash brand refinement (0.13.0+25)
 
 Final logo/name reduced 6% at the existing raised position. Original Figma dollar, naira and bitcoin SVGs replace the stretched low-resolution footer; proportions and bottom crop follow the source design. User-requested timings preserved (2900 ms intro, 320 ms exit, 700 ms reduced hold). Analyzer clean, 19 related tests passed, three phone-size captures checked. Release25 installed and launched on Redmi14C and emulator; 756 declared assets match and both installed APK hashes verified. See docs/reviews/2026-10-09-splash-brand-refinement.md.
+
+## 2026-10-09 safe-area review (0.13.0+26)
+
+Selection/confirmation/warning sheets now preserve system insets and scroll on short views; modal routes retain top cutout protection. Country page scrolls and Nigeria picker reserves bottom navigation space. Bank form scrolls above the keyboard and account names wrap without fixed-height overflow. Right-edge close controls corrected. Initial33relatedchecks, final6bank/withdrawal checks and12country/auth/safe-area checks passed; analyzer clean. Release26 installed on emulator and country picker checked; all756declared files match. Physical-device confirmation pending. See docs/reviews/2026-10-09-safe-area-review.md.

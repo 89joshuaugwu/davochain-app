@@ -1,3 +1,4 @@
+import '../../../shared/widgets/davo_safe_selection_sheet.dart';
 import '../../../shared/widgets/davo_animated_checkbox.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -66,59 +67,67 @@ class _CountrySelectionScreenState extends State<CountrySelectionScreen> {
   @override
   Widget build(BuildContext context) {
     return DavoAuthScaffold(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Entrance(
-            child: DavoScreenIntro(
-              title: 'Create Account',
-              subtitle:
-                  'Choose where you’re located to personalize your Davochain experience.',
-            ),
-          ),
-          const SizedBox(height: 24),
-          Entrance(
-            delay: const Duration(milliseconds: 70),
-            child: _CountryField(
-              country: _country,
-              onTap: _pickCountry,
-            ),
-          ),
-          const Spacer(),
-          Entrance(
-            delay: const Duration(milliseconds: 130),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _AgreementCheckbox(
-                  checked: _agreed,
-                  onChanged: (value) => setState(() => _agreed = value),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                    child: Padding(
-                        padding: const EdgeInsets.only(top: 6),
-                        child: _AgreementCopy())),
-              ],
-            ),
-          ),
-          const SizedBox(height: 16),
-          Entrance(
-            delay: const Duration(milliseconds: 180),
-            child: DavoPrimaryButton(
-              label: 'Continue',
-              enabled: _canContinue,
-              onPressed: _canContinue
-                  ? () => pushAppPage<void>(
-                        context,
-                        (_) => _AccountDetailsScreen(country: _country!),
-                      )
-                  : null,
-            ),
-          ),
-          const SizedBox(height: 12),
-        ],
-      ),
+      child: LayoutBuilder(
+          builder: (context, constraints) => SingleChildScrollView(
+                  child: ConstrainedBox(
+                constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                child: IntrinsicHeight(
+                    child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Entrance(
+                      child: DavoScreenIntro(
+                        title: 'Create Account',
+                        subtitle:
+                            'Choose where you’re located to personalize your Davochain experience.',
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    Entrance(
+                      delay: const Duration(milliseconds: 70),
+                      child: _CountryField(
+                        country: _country,
+                        onTap: _pickCountry,
+                      ),
+                    ),
+                    const Spacer(),
+                    Entrance(
+                      delay: const Duration(milliseconds: 130),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _AgreementCheckbox(
+                            checked: _agreed,
+                            onChanged: (value) =>
+                                setState(() => _agreed = value),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                              child: Padding(
+                                  padding: const EdgeInsets.only(top: 6),
+                                  child: _AgreementCopy())),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Entrance(
+                      delay: const Duration(milliseconds: 180),
+                      child: DavoPrimaryButton(
+                        label: 'Continue',
+                        enabled: _canContinue,
+                        onPressed: _canContinue
+                            ? () => pushAppPage<void>(
+                                  context,
+                                  (_) =>
+                                      _AccountDetailsScreen(country: _country!),
+                                )
+                            : null,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                  ],
+                )),
+              ))),
     );
   }
 
@@ -132,6 +141,7 @@ class _CountrySelectionScreenState extends State<CountrySelectionScreen> {
               duration: Duration(milliseconds: 280),
               reverseDuration: Duration(milliseconds: 200)),
       useSafeArea: true,
+      isScrollControlled: true,
       showDragHandle: true,
       backgroundColor: DavoColors.of(context).surface,
       shape: const RoundedRectangleBorder(
@@ -240,7 +250,8 @@ class _CountryPickerSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
+    return DavoSafeSelectionSheet(
+        child: Padding(
       padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -262,7 +273,7 @@ class _CountryPickerSheet extends StatelessWidget {
           ),
         ],
       ),
-    );
+    ));
   }
 }
 

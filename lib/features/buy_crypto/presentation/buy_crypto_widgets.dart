@@ -1,3 +1,4 @@
+import '../../../shared/widgets/davo_safe_selection_sheet.dart';
 import '../../../core/theme/davo_colors.dart';
 import '../../../shared/widgets/davo_sheet_header.dart';
 import '../../../shared/widgets/solana_icon.dart';
@@ -11,7 +12,7 @@ class BuyCryptoAssetSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return DavoSafeSelectionSheet(child: Container(
       height: 351,
       decoration: BoxDecoration(
         color: DavoColors.of(context).canvas,
@@ -58,7 +59,7 @@ class BuyCryptoAssetSheet extends StatelessWidget {
           }),
         ],
       ),
-    );
+    ));
   }
 }
 
@@ -67,7 +68,7 @@ class BuyFundingWalletSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return DavoSafeSelectionSheet(child: Container(
       height: 242,
       decoration: BoxDecoration(
         color: DavoColors.of(context).canvas,
@@ -114,7 +115,7 @@ class BuyFundingWalletSheet extends StatelessWidget {
           }),
         ],
       ),
-    );
+    ));
   }
 }
 

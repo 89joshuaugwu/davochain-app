@@ -1,3 +1,4 @@
+import '../../../shared/widgets/davo_safe_selection_sheet.dart';
 import '../../../shared/receipts/receipt_record.dart';
 import '../../../shared/receipts/receipt_activity.dart';
 import '../../../shared/receipts/receipt_screen.dart';
@@ -116,7 +117,7 @@ class _WithdrawWalletSheet extends StatelessWidget {
   const _WithdrawWalletSheet();
 
   @override
-  Widget build(BuildContext context) => Container(
+  Widget build(BuildContext context) => DavoSafeSelectionSheet(child: Container(
         height: 472,
         decoration: BoxDecoration(
             color: DavoColors.of(context).canvas,
@@ -228,7 +229,7 @@ class _WithdrawWalletSheet extends StatelessWidget {
                         Navigator.pop(context, _WithdrawWallet.crypto))),
           ],
         ),
-      );
+      ));
 }
 
 class _WalletSelectRow extends StatelessWidget {
@@ -289,7 +290,7 @@ class _WalletSelectRow extends StatelessWidget {
 class _SellWalletSheet extends StatelessWidget {
   const _SellWalletSheet();
   @override
-  Widget build(BuildContext context) => Container(
+  Widget build(BuildContext context) => DavoSafeSelectionSheet(child: Container(
         height: 242,
         decoration: BoxDecoration(
             color: DavoColors.of(context).canvas,
@@ -320,7 +321,7 @@ class _SellWalletSheet extends StatelessWidget {
                         height: 1.35,
                         color: DavoColors.of(context).ink))),
             Positioned(
-                left: 342,
+                right: 16,
                 top: 20,
                 width: 24,
                 height: 24,
@@ -388,7 +389,7 @@ class _SellWalletSheet extends StatelessWidget {
             ),
           ],
         ),
-      );
+      ));
 }
 
 class NairaWithdrawScreen extends StatefulWidget {
@@ -520,6 +521,7 @@ class _NairaWithdrawScreenState extends State<NairaWithdrawScreen> {
                 duration: Duration(milliseconds: 280),
                 reverseDuration: Duration(milliseconds: 200)),
         isScrollControlled: true,
+        useSafeArea: true,
         backgroundColor: Colors.transparent,
         barrierColor: Colors.black.withValues(alpha: .32),
         builder: (_) => _PaymentSheet(current: account));
@@ -539,6 +541,7 @@ class _NairaWithdrawScreenState extends State<NairaWithdrawScreen> {
                   duration: Duration(milliseconds: 280),
                   reverseDuration: Duration(milliseconds: 200)),
           isScrollControlled: true,
+          useSafeArea: true,
           backgroundColor: Colors.transparent,
           barrierColor: Colors.black.withValues(alpha: .32),
           builder: (_) =>
@@ -782,12 +785,15 @@ class _AddBankScreenState extends State<AddBankScreen> {
   @override
   Widget build(BuildContext context) {
     final valid = _resolvedName != null && !_checking;
-    return _Scaffold(
-      child: Column(
+    return TradeFormLayout(
+      header: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: _BankTopBar(onBack: () => Navigator.pop(context)),
+      ),
+      tabs: const SizedBox.shrink(),
+      content: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _BankTopBar(onBack: () => Navigator.pop(context)),
-          const SizedBox(height: 22),
           SizedBox(
             height: 44,
             child: Text(
@@ -836,8 +842,10 @@ class _AddBankScreenState extends State<AddBankScreen> {
             valueWeight: valid ? FontWeight.w400 : FontWeight.w600,
             height: 70,
           ),
-          const Spacer(),
-          _Button(
+
+        ],
+      ),
+      action: _Button(
             label: 'Save Account',
             enabled: valid,
             fontWeight: FontWeight.w700,
@@ -846,8 +854,6 @@ class _AddBankScreenState extends State<AddBankScreen> {
                 BankAccount(
                     bank!, number.text, 'Callietus Ezeike Chinecherem')),
           ),
-        ],
-      ),
     );
   }
 
@@ -861,6 +867,7 @@ class _AddBankScreenState extends State<AddBankScreen> {
               duration: Duration(milliseconds: 280),
               reverseDuration: Duration(milliseconds: 200)),
       isScrollControlled: true,
+      useSafeArea: true,
       backgroundColor: Colors.transparent,
       barrierColor: Colors.black.withValues(alpha: .32),
       builder: (_) => const _BankSheet(),
@@ -934,7 +941,7 @@ class _BankFormBox extends StatelessWidget {
                   onTap: onTap,
                   borderRadius: BorderRadius.circular(4),
                   child: Container(
-                    height: height,
+                    constraints: BoxConstraints(minHeight: height),
                     width: double.infinity,
                     padding: const EdgeInsets.fromLTRB(12, 10, 10, 8),
                     decoration: BoxDecoration(
@@ -944,6 +951,7 @@ class _BankFormBox extends StatelessWidget {
                                 : DavoColors.of(context).border),
                         borderRadius: BorderRadius.circular(4)),
                     child: Column(
+                      mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(label,
@@ -952,7 +960,7 @@ class _BankFormBox extends StatelessWidget {
                                 fontSize: 14,
                                 height: 1.35,
                                 color: DavoColors.of(context).body)),
-                        const Spacer(),
+                        const SizedBox(height: 8),
                         Row(
                           children: [
                             Expanded(
@@ -1018,7 +1026,7 @@ class _BankSheetState extends State<_BankSheet> {
         : available > 813
             ? 813.0
             : available;
-    return Container(
+    return DavoSafeSelectionSheet(child: Container(
       height: sheetHeight,
       decoration: BoxDecoration(
           color: DavoColors.of(context).surface,
@@ -1139,7 +1147,7 @@ class _BankSheetState extends State<_BankSheet> {
                         borderRadius: BorderRadius.circular(100)))),
         ],
       ),
-    );
+    ));
   }
 }
 
@@ -1155,7 +1163,7 @@ class _NairaConfirmState extends State<_NairaConfirm> {
   bool agreed = false;
 
   @override
-  Widget build(BuildContext context) => Container(
+  Widget build(BuildContext context) => DavoSafeSelectionSheet(child: Container(
         height: 539,
         decoration: BoxDecoration(
             color: DavoColors.of(context).surface,
@@ -1281,7 +1289,7 @@ class _NairaConfirmState extends State<_NairaConfirm> {
                     onTap: () => Navigator.pop(context, true))),
           ],
         ),
-      );
+      ));
 }
 
 class _ExactNairaConfirmLine extends StatelessWidget {
@@ -1630,6 +1638,7 @@ class _CryptoWithdrawEntryScreenState extends State<CryptoWithdrawEntryScreen> {
               duration: Duration(milliseconds: 280),
               reverseDuration: Duration(milliseconds: 200)),
       isScrollControlled: true,
+      useSafeArea: true,
       backgroundColor: Colors.transparent,
       barrierColor: Colors.black.withValues(alpha: .32),
       builder: (_) => const CancelReminderSheet(),
@@ -1653,6 +1662,7 @@ class _CryptoWithdrawEntryScreenState extends State<CryptoWithdrawEntryScreen> {
               duration: Duration(milliseconds: 280),
               reverseDuration: Duration(milliseconds: 200)),
       isScrollControlled: true,
+      useSafeArea: true,
       backgroundColor: Colors.transparent,
       barrierColor: Colors.black.withValues(alpha: .32),
       builder: (_) => asset == BuyCryptoAsset.bitcoin
@@ -1683,6 +1693,7 @@ class _CryptoWithdrawEntryScreenState extends State<CryptoWithdrawEntryScreen> {
               duration: Duration(milliseconds: 280),
               reverseDuration: Duration(milliseconds: 200)),
       isScrollControlled: true,
+      useSafeArea: true,
       backgroundColor: Colors.transparent,
       barrierColor: Colors.black.withValues(alpha: .32),
       builder: (_) => const SanctionWarningSheet(),
@@ -1701,6 +1712,7 @@ class _CryptoWithdrawEntryScreenState extends State<CryptoWithdrawEntryScreen> {
               duration: Duration(milliseconds: 280),
               reverseDuration: Duration(milliseconds: 200)),
       isScrollControlled: true,
+      useSafeArea: true,
       backgroundColor: Colors.transparent,
       barrierColor: Colors.black.withValues(alpha: .32),
       builder: (_) => widget.external
@@ -2546,7 +2558,7 @@ class _ExactScanTab extends StatelessWidget {
 class SelectNetworkSheet extends StatelessWidget {
   const SelectNetworkSheet({super.key});
   @override
-  Widget build(BuildContext context) => Container(
+  Widget build(BuildContext context) => DavoSafeSelectionSheet(child: Container(
         height: 407,
         decoration: BoxDecoration(
             color: DavoColors.of(context).surface,
@@ -2618,7 +2630,7 @@ class SelectNetworkSheet extends StatelessWidget {
                         Navigator.pop(context, 'BNB Smart Chain (BEP20)'))),
           ],
         ),
-      );
+      ));
 }
 
 class _ExactNetworkRow extends StatelessWidget {
@@ -2662,7 +2674,7 @@ class _ExactNetworkRow extends StatelessWidget {
 class SanctionWarningSheet extends StatelessWidget {
   const SanctionWarningSheet({super.key});
   @override
-  Widget build(BuildContext context) => Container(
+  Widget build(BuildContext context) => DavoSafeSelectionSheet(child: Container(
         height: 627,
         decoration: BoxDecoration(
             color: DavoColors.of(context).surface,
@@ -2680,7 +2692,7 @@ class SanctionWarningSheet extends StatelessWidget {
                         color: DavoColors.of(context).bodyMuted,
                         borderRadius: BorderRadius.circular(100)))),
             Positioned(
-                left: 342,
+                right: 16,
                 top: 27,
                 width: 32,
                 height: 32,
@@ -2774,13 +2786,13 @@ class SanctionWarningSheet extends StatelessWidget {
                     onTap: () => Navigator.pop(context, true))),
           ],
         ),
-      );
+      ));
 }
 
 class CancelReminderSheet extends StatelessWidget {
   const CancelReminderSheet({super.key});
   @override
-  Widget build(BuildContext context) => Container(
+  Widget build(BuildContext context) => DavoSafeSelectionSheet(child: Container(
         height: 229,
         decoration: BoxDecoration(
             color: DavoColors.of(context).surface,
@@ -2827,7 +2839,7 @@ class CancelReminderSheet extends StatelessWidget {
             ],
           ),
         ),
-      );
+      ));
 }
 
 class TradeAmountScreen extends StatefulWidget {
