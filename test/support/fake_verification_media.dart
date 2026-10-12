@@ -5,16 +5,20 @@ export 'package:davochain/features/profile_settings/verification_media/verificat
 class FakeVerificationMedia implements VerificationMediaGateway {
   bool cancelDocument = false;
   bool cancelFace = false;
+  final cameraRequests = <bool>[];
   @override
-  Future<VerificationAttachment?> pickDocument({bool camera = false}) async =>
-      cancelDocument
-          ? null
-          : const VerificationAttachment(
-              path: 'assets/figma_exact/verification_1cc51.png',
-              name: 'electricity_bill.png',
-              bytes: 1200000,
-              kind: 'png',
-              isAsset: true);
+  Future<VerificationAttachment?> pickDocument({bool camera = false}) async {
+    cameraRequests.add(camera);
+    return cancelDocument
+        ? null
+        : const VerificationAttachment(
+            path: 'assets/figma_exact/verification_1cc51.png',
+            name: 'electricity_bill.png',
+            bytes: 1200000,
+            kind: 'png',
+            isAsset: true);
+  }
+
   @override
   Future<VerificationAttachment?> captureFace(BuildContext context) async =>
       cancelFace

@@ -19,21 +19,9 @@ class VerificationAsset extends StatelessWidget {
   final Color? color;
   @override
   Widget build(BuildContext context) {
-    const composites = {
-      'e202c.svg',
-      '03819.svg',
-      'cc8a5.svg',
-      '98c96.svg'
-    };
-    final image = composites.contains(file)
-        ? Image.asset(
-            'assets/figma_exact/verification_${file.replaceAll('.svg', '.png')}',
-            color: color,
-            fit: BoxFit.contain)
-        : SvgPicture.asset('assets/figma_exact/verification_$file',
-            colorFilter: color == null
-                ? null
-                : ColorFilter.mode(color!, BlendMode.srcIn));
+    final image = SvgPicture.asset('assets/figma_exact/verification_$file',
+        colorFilter:
+            color == null ? null : ColorFilter.mode(color!, BlendMode.srcIn));
     return SizedBox.square(
         dimension: size,
         child: file == '31570.svg'
@@ -233,19 +221,26 @@ class VerificationStatus extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
       decoration: BoxDecoration(
           color: uploaded
-              ? DavoColors.of(context).primarySoft
+              ? DavoColors.of(context).primaryDisabled.withValues(alpha: .45)
               : limited
                   ? DavoColors.of(context).warningSurface
                   : DavoColors.of(context).successSurface,
-          borderRadius: BorderRadius.circular(4)),
-      child: Text(text,
-          style: verificationCaption.copyWith(
-              fontSize: 10,
-              color: uploaded
-                  ? DavoColors.of(context).link
-                  : limited
-                      ? DavoColors.of(context).warning
-                      : DavoColors.of(context).success)));
+          borderRadius: BorderRadius.circular(uploaded ? 24 : 4)),
+      child: Row(mainAxisSize: MainAxisSize.min, children: [
+        if (uploaded) ...[
+          Icon(Icons.check_rounded,
+              size: 12, color: DavoColors.of(context).link),
+          const SizedBox(width: 4),
+        ],
+        Text(text,
+            style: verificationCaption.copyWith(
+                fontSize: 10,
+                color: uploaded
+                    ? DavoColors.of(context).link
+                    : limited
+                        ? DavoColors.of(context).warning
+                        : DavoColors.of(context).success)),
+      ]));
 }
 
 class VerificationRequirements extends StatelessWidget {

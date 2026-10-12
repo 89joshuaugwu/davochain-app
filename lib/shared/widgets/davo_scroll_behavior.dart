@@ -75,14 +75,18 @@ class DavoFloatingRefresh extends StatefulWidget {
 }
 
 class _FloatingRefreshState extends State<DavoFloatingRefresh>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   late final spinner = AnimationController(
       vsync: this, duration: const Duration(milliseconds: 900));
+  late final edge = AnimationController(
+      vsync: this, duration: const Duration(milliseconds: 260));
+  bool edgeTop = true;
   double pull = 0;
   bool busy = false;
   @override
   void dispose() {
     spinner.dispose();
+    edge.dispose();
     super.dispose();
   }
 
@@ -107,10 +111,21 @@ class _FloatingRefreshState extends State<DavoFloatingRefresh>
   }
 
   void _drag(double delta) {
-    if (!busy) setState(() => pull = (pull + delta).clamp(0, 100));
+    if (!busy) {
+      _edge(delta);
+      setState(() => pull = (pull + delta).clamp(0, 100));
+    }
+  }
+
+  void _edge(double delta) {
+    if (DavoMotionPolicy.reduce(context) || busy) return;
+    edgeTop = delta > 0;
+    edge.stop();
+    edge.value = (edge.value + delta.abs() / 300).clamp(0, 1);
   }
 
   void _release() {
+    unawaited(edge.animateTo(0, curve: Curves.easeOutCubic));
     if (pull >= 60 && !busy) {
       unawaited(_refresh());
     } else if (mounted && !busy) {
@@ -124,9 +139,12 @@ class _FloatingRefreshState extends State<DavoFloatingRefresh>
           onNotification: (notification) {
             if (notification.depth == 0 &&
                 notification is OverscrollNotification &&
-                notification.overscroll < 0 &&
                 notification.dragDetails != null) {
-              _drag(-notification.overscroll);
+              if (notification.overscroll < 0) {
+                _drag(-notification.overscroll);
+              } else {
+                _edge(-notification.overscroll);
+              }
             }
             if (notification is ScrollEndNotification &&
                 notification.depth == 0) {
@@ -138,8 +156,21 @@ class _FloatingRefreshState extends State<DavoFloatingRefresh>
               behavior: HitTestBehavior.translucent,
               onVerticalDragUpdate: (details) => _drag(details.delta.dy),
               onVerticalDragEnd: (_) => _release(),
+              onVerticalDragCancel: () {
+                unawaited(edge.animateTo(0, curve: Curves.easeOutCubic));
+                if (!busy) setState(() => pull = 0);
+              },
               child: Stack(clipBehavior: Clip.hardEdge, children: [
-                widget.child,
+                AnimatedBuilder(
+                    animation: edge,
+                    child: widget.child,
+                    builder: (context, child) => ClipRect(
+                        child: Transform.scale(
+                            scaleY: 1 + edge.value * .008,
+                            alignment: edgeTop
+                                ? Alignment.topCenter
+                                : Alignment.bottomCenter,
+                            child: child))),
                 if (busy || pull > 8)
                   AnimatedPositioned(
                       duration: DavoMotionPolicy.reduce(context)

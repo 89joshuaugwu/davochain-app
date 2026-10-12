@@ -8,6 +8,8 @@ import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
 import '../../../core/theme/app_theme.dart';
 import '../presentation/verification/verification_components.dart';
 import 'face_guidance.dart';
+import 'face_frame_freshness.dart';
+import 'nv21_frame.dart';
 import 'verification_attachment.dart';
 import 'verification_media_gateway.dart'
     show cacheVerificationAttachment, releaseCapturedSource;
@@ -29,6 +31,8 @@ class _GuidedFaceState extends State<GuidedFaceCaptureScreen>
   Timer? clock;
   VerificationAttachment? front;
   String? error;
+  String detectionFeedback = 'Looking for your face. Use good lighting.';
+  int detectorFailures = 0;
   bool starting = false,
       analyzing = false,
       takingPhoto = false,
@@ -86,6 +90,9 @@ class _GuidedFaceState extends State<GuidedFaceCaptureScreen>
     front?.release();
     front = null;
     spoken = null;
+    analyzedAt = Duration.zero;
+    detectorFailures = 0;
+    detectionFeedback = 'Looking for your face. Use good lighting.';
     guide.reset();
     if (mounted) setState(() => error = null);
     CameraController? controller;
@@ -113,16 +120,7 @@ class _GuidedFaceState extends State<GuidedFaceCaptureScreen>
       camera = controller;
       await controller.startImageStream(_analyze);
       tickAt = monotonic.elapsed;
-      clock = Timer.periodic(const Duration(milliseconds: 200), (_) {
-        if (!mounted) return;
-        final now = monotonic.elapsed;
-        final delta = (now - tickAt);
-        tickAt = now;
-        if (!takingPhoto && (now - analyzedAt).inMilliseconds > 800) {
-          guide.updatePose(inFrame: false, yaw: 0, pitch: 0);
-        }
-        guide.tick(Duration(milliseconds: delta.inMilliseconds.clamp(0, 300)));
-      });
+      clock = Timer.periodic(const Duration(milliseconds: 200), (_) => _tick());
       spoken = guide.stage;
       await _speak();
     } catch (failure) {
@@ -145,10 +143,30 @@ class _GuidedFaceState extends State<GuidedFaceCaptureScreen>
     }
   }
 
+  void _tick() {
+    if (!mounted || takingPhoto || error != null) return;
+    final now = monotonic.elapsed;
+    final delta = now - tickAt;
+    tickAt = now;
+    switch (faceFrameFreshness(now - analyzedAt)) {
+      case FaceFrameFreshness.expired:
+        detectionFeedback = 'Waiting for a clear camera frame. Hold still.';
+        guide.updatePose(inFrame: false, yaw: 0, pitch: 0);
+        return;
+      case FaceFrameFreshness.waiting:
+        setState(() => detectionFeedback =
+            'Processing your face. Keep holding this position.');
+        return;
+      case FaceFrameFreshness.fresh:
+        guide.tick(Duration(milliseconds: delta.inMilliseconds.clamp(0, 300)));
+    }
+  }
+
   Future<void> _analyze(CameraImage frame) async {
     final controller = camera;
     if (analyzing ||
         takingPhoto ||
+        error != null ||
         !mounted ||
         controller == null ||
         (monotonic.elapsed - analyzedAt).inMilliseconds < 120) {
@@ -159,7 +177,9 @@ class _GuidedFaceState extends State<GuidedFaceCaptureScreen>
     try {
       final rotation = InputImageRotationValue.fromRawValue(
           controller.description.sensorOrientation);
-      if (rotation == null) return;
+      if (rotation == null) {
+        throw const FormatException('Unsupported camera rotation.');
+      }
       final bytes =
           Platform.isAndroid ? _nv21(frame) : frame.planes.first.bytes;
       final input = InputImage.fromBytes(
@@ -175,8 +195,12 @@ class _GuidedFaceState extends State<GuidedFaceCaptureScreen>
                   : frame.planes.first.bytesPerRow));
       final faces = await detector.processImage(input);
       if (!mounted || ticket != generation) return;
+      detectorFailures = 0;
       analyzedAt = monotonic.elapsed;
       if (faces.length != 1) {
+        detectionFeedback = faces.isEmpty
+            ? 'No face detected. Face the camera in good lighting.'
+            : 'More than one face detected. Keep only your face in view.';
         guide.updatePose(inFrame: false, yaw: 0, pitch: 0);
         return;
       }
@@ -192,12 +216,36 @@ class _GuidedFaceState extends State<GuidedFaceCaptureScreen>
           box.center.dx < width * .75 &&
           box.center.dy > height * .2 &&
           box.center.dy < height * .8;
+      detectionFeedback = !inFrame
+          ? box.width <= width * .18
+              ? 'Move closer so your face fills the frame.'
+              : box.width >= width * .8
+                  ? 'Move back slightly so your whole face is visible.'
+                  : 'Move your face to the center of the frame.'
+          : face.headEulerAngleY == null || face.headEulerAngleX == null
+              ? 'Face detected. Hold still so your head position can be read.'
+              : guide.stage == FaceGuidanceStage.front &&
+                      ((face.headEulerAngleY!).abs() > 15 ||
+                          (face.headEulerAngleX!).abs() > 15)
+                  ? 'Face detected. Look straight at the camera and level your head.'
+                  : 'Face detected. Follow the head movement instruction.';
       guide.updatePose(
           inFrame: inFrame,
           yaw: face.headEulerAngleY ?? 90,
           pitch: face.headEulerAngleX ?? 90);
-    } catch (_) {
+    } catch (failure) {
       if (mounted && ticket == generation) {
+        detectorFailures++;
+        debugPrint('Live face detection failed: ${failure.runtimeType}; '
+            'code=${failure is PlatformException ? failure.code : "frame"}; '
+            'format=${frame.format.group}, planes=${frame.planes.length}, '
+            'size=${frame.width}x${frame.height}');
+        detectionFeedback = 'The camera frame could not be read. Retrying.';
+        if (detectorFailures >= 3) {
+          error = 'Live face detection could not read the camera frames. '
+              'Retry the camera to restart detection.';
+          clock?.cancel();
+        }
         guide.updatePose(inFrame: false, yaw: 0, pitch: 0);
       }
     } finally {
@@ -206,7 +254,12 @@ class _GuidedFaceState extends State<GuidedFaceCaptureScreen>
   }
 
   Uint8List _nv21(CameraImage image) {
-    if (image.planes.length == 1) return image.planes.first.bytes;
+    if (image.planes.length == 1) {
+      return packedNv21Bytes(image.planes.first.bytes, image.width, image.height);
+    }
+    if (image.planes.length != 3) {
+      throw const FormatException('Unsupported camera plane layout.');
+    }
     final result = Uint8List(image.width * image.height * 3 ~/ 2);
     var index = 0;
     final y = image.planes[0], u = image.planes[1], v = image.planes[2];
@@ -260,15 +313,8 @@ class _GuidedFaceState extends State<GuidedFaceCaptureScreen>
       await controller.startImageStream(_analyze);
       guide.frontCaptured();
       tickAt = monotonic.elapsed;
-      clock = Timer.periodic(const Duration(milliseconds: 200), (_) {
-        final now = monotonic.elapsed;
-        final delta = (now - tickAt);
-        tickAt = now;
-        if ((now - analyzedAt).inMilliseconds > 800) {
-          guide.updatePose(inFrame: false, yaw: 0, pitch: 0);
-        }
-        guide.tick(Duration(milliseconds: delta.inMilliseconds.clamp(0, 300)));
-      });
+      analyzedAt = Duration.zero;
+      clock = Timer.periodic(const Duration(milliseconds: 200), (_) => _tick());
     } catch (_) {
       attachment?.release();
       front = null;
@@ -443,7 +489,7 @@ class _GuidedFaceState extends State<GuidedFaceCaptureScreen>
                           Text(
                               guide.ready
                                   ? 'Hold this position'
-                                  : 'Keep one face centered and follow the instruction',
+                                  : detectionFeedback,
                               textAlign: TextAlign.center,
                               style: verificationCaption.copyWith(
                                   color: DavoColors.of(context).bodyMuted)),

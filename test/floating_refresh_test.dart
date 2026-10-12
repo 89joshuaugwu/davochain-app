@@ -24,6 +24,7 @@ void main() {
     final before = tester.getRect(find.byKey(const Key('content')));
     await tester.drag(find.byKey(const Key('content')), const Offset(0, 160));
     await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
     expect(calls, 1);
     expect(find.bySemanticsLabel('Refreshing dashboard'), findsOneWidget);
     expect(tester.getRect(find.byKey(const Key('content'))), before);

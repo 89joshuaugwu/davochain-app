@@ -13,18 +13,28 @@ void main() {
   final session = VerificationSession.instance;
   setUp(session.reset);
   tearDown(session.reset);
-  testWidgets('Basic method starts with shared identity requirements',
+  testWidgets(
+      'Basic introduction precedes profile; method choice opens entry directly',
       (tester) async {
     session.completeProfile();
     await tester.pumpWidget(MaterialApp(
-        theme: AppTheme.light, home: const BasicIdentityChoiceScreen()));
-    await tester.tap(find.text('Continue'));
-    await tester.pumpAndSettle();
-    expect(find.text('BVN Verification'), findsOneWidget);
+        theme: AppTheme.light, home: const BasicVerificationIntroScreen()));
+    expect(find.text('Basic Verification'), findsOneWidget);
     expect(find.text('What you need'), findsOneWidget);
     expect(find.text('Your registered phone number'), findsOneWidget);
     await tester.tap(find.text('Start'));
     await tester.pumpAndSettle();
+    expect(find.text('Complete your profile'), findsOneWidget);
+    await tester.pumpWidget(MaterialApp(
+        key: UniqueKey(),
+        theme: AppTheme.light, home: const BasicIdentityChoiceScreen()));
+    await tester.pumpAndSettle();
+    expect(find.byType(BasicIdentityChoiceScreen), findsOneWidget);
+    await tester.tap(find.text('Continue'));
+    await tester.pumpAndSettle();
+    expect(find.byType(BasicIdentityNumberScreen), findsOneWidget);
+    expect(find.text('Start'), findsNothing);
+    expect(find.text('What you need'), findsNothing);
     await tester.enterText(find.byType(TextField), '12345678901');
     await tester.pump();
     expect(find.byKey(const Key('identity-number-complete')), findsOneWidget);

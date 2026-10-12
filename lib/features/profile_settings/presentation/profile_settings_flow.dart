@@ -1,4 +1,5 @@
 import 'settings_content_overlay.dart';
+import '../../../shared/formatters/nigerian_phone_formatter.dart';
 import '../../security_questions/presentation/security_questions_screens.dart';
 import '../../security_questions/security_questions_service.dart';
 import '../../../shared/receipts/receipt_activity.dart';
@@ -548,13 +549,114 @@ class _VerifyPinCodeScreenState extends State<VerifyPinCodeScreen> {
       ]));
   }
 }
-class NewTransactionPinScreen extends StatefulWidget{const NewTransactionPinScreen({super.key});@override State<NewTransactionPinScreen> createState()=>_NewTransactionPinScreenState();}
-class _NewTransactionPinScreenState extends State<NewTransactionPinScreen>{
-  final a=TextEditingController(),b=TextEditingController();
-  @override void initState(){super.initState();a.addListener(_refresh);b.addListener(_refresh);}
-  void _refresh()=>setState((){});
-  @override void dispose(){a.removeListener(_refresh);b.removeListener(_refresh);a.dispose();b.dispose();super.dispose();}
-  @override Widget build(BuildContext context){final av=a.text.replaceAll(RegExp(r'\D'),'');final bv=b.text.replaceAll(RegExp(r'\D'),'');final enabled=av.length==4&&bv.length==4&&av==bv;return _Shell(title:'Transaction PIN',child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[const SizedBox(height:26),Text('Your 4-digit transaction PIN secures your transactions. It is important that you do not share this PIN with anyone',style:_t14(context)),const SizedBox(height:24),_Input(label:'New PIN',hint:'****',controller:a,obscure:true,keyboard:TextInputType.number,labelSize:16,hintSize:14,hintFontFamily:'Poppins',maxLength:4,inputFormatters:[FilteringTextInputFormatter.digitsOnly]),const SizedBox(height:16),_Input(label:'Confirm New PIN',hint:'****',controller:b,obscure:true,keyboard:TextInputType.number,labelSize:16,hintSize:14,hintFontFamily:'Poppins',maxLength:4,inputFormatters:[FilteringTextInputFormatter.digitsOnly]),const Spacer(),_PrimaryButton('Save',enabled:enabled,disabledBackgroundColor:DavoColors.of(context).primaryDisabled,onTap:()=>_push(context,const PinSuccessScreen())),const SizedBox(height:28)]));}
+class NewTransactionPinScreen extends StatefulWidget {
+  const NewTransactionPinScreen({super.key});
+  @override
+  State<NewTransactionPinScreen> createState() => _NewTransactionPinScreenState();
+}
+
+class _NewTransactionPinScreenState extends State<NewTransactionPinScreen> {
+  final a = TextEditingController(), b = TextEditingController();
+  bool showNew = false, showConfirm = false;
+  bool get valid => RegExp(r'^\d{4}$').hasMatch(a.text) &&
+      RegExp(r'^\d{4}$').hasMatch(b.text) && a.text == b.text;
+  @override
+  void initState() {
+    super.initState();
+    a.addListener(_refresh);
+    b.addListener(_refresh);
+  }
+  void _refresh() => setState(() {});
+  void _save() {
+    if (!valid) return;
+    FocusScope.of(context).unfocus();
+    a.clear();
+    b.clear();
+    showNew = false;
+    showConfirm = false;
+    _push(context, const PinSuccessScreen());
+  }
+  @override
+  void dispose() {
+    a.removeListener(_refresh);
+    b.removeListener(_refresh);
+    a.clear();
+    b.clear();
+    a.dispose();
+    b.dispose();
+    super.dispose();
+  }
+  @override
+  Widget build(BuildContext context) {
+    final colors = DavoColors.of(context);
+    final mismatch = b.text.length == 4 && a.text != b.text;
+    return _Shell(title: 'Transaction PIN', scroll: true,
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          const SizedBox(height: 20),
+          Container(width: 56, height: 56,
+              decoration: BoxDecoration(color: colors.primarySoft,
+                  borderRadius: BorderRadius.circular(16)),
+              child: const Icon(Icons.lock_outline_rounded,
+                  color: AppColors.primary, size: 28)),
+          const SizedBox(height: 20),
+          Text('Set your new PIN', style: _t20(context)),
+          const SizedBox(height: 8),
+          Text('Choose a 4-digit PIN to secure your transactions. Keep it private.',
+              style: _t14(context).copyWith(color: colors.bodyMuted)),
+          const SizedBox(height: 28),
+          _TransactionPinField(label: 'New PIN', controller: a, visible: showNew,
+              onToggle: () => setState(() => showNew = !showNew)),
+          const SizedBox(height: 20),
+          _TransactionPinField(label: 'Confirm New PIN', controller: b,
+              visible: showConfirm,
+              onToggle: () => setState(() => showConfirm = !showConfirm)),
+          const SizedBox(height: 12),
+          Semantics(liveRegion: true, child: Row(children: [
+            Icon(valid ? Icons.check_circle_outline_rounded :
+                mismatch ? Icons.error_outline_rounded : Icons.info_outline_rounded,
+                size: 18, color: valid ? AppColors.primary :
+                    mismatch ? colors.danger : colors.bodyMuted),
+            const SizedBox(width: 8),
+            Expanded(child: Text(valid ? 'PINs match' :
+                mismatch ? 'PINs do not match. Check both entries.' :
+                'Enter the same 4-digit PIN in both fields.',
+                style: _t12(context).copyWith(color: mismatch ?
+                    colors.danger : colors.bodyMuted))),
+          ])),
+          const SizedBox(height: 32),
+          _PrimaryButton('Save', enabled: valid, onTap: _save),
+          const SizedBox(height: 28),
+        ]));
+  }
+}
+
+class _TransactionPinField extends StatelessWidget {
+  const _TransactionPinField({required this.label, required this.controller,
+      required this.visible, required this.onToggle});
+  final String label;
+  final TextEditingController controller;
+  final bool visible;
+  final VoidCallback onToggle;
+  @override
+  Widget build(BuildContext context) => Column(
+      crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text(label, style: _t16(context)),
+        const SizedBox(height: 8),
+        TextField(key: ValueKey(label), controller: controller,
+            keyboardAppearance: Theme.of(context).brightness,
+            obscureText: !visible, keyboardType: TextInputType.number,
+            enableSuggestions: false, autocorrect: false, enableIMEPersonalizedLearning: false,
+            maxLength: 4, inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            style: TextStyle(fontFamily: 'Poppins', fontSize: 20,
+                letterSpacing: 8, color: DavoColors.of(context).body),
+            decoration: InputDecoration(hintText: '••••', counterText: '',
+                filled: true, fillColor: DavoColors.of(context).fieldFill,
+                suffixIcon: IconButton(tooltip: '${visible ? 'Hide' : 'Show'} $label',
+                    onPressed: onToggle,
+                    icon: Icon(visible ? Icons.visibility_off_outlined :
+                        Icons.visibility_outlined)),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)))),
+      ]);
 }
 class PinSuccessScreen extends StatelessWidget {
   const PinSuccessScreen({super.key});
@@ -1040,7 +1142,7 @@ class _CompleteProfileContactV12ScreenState extends State<CompleteProfileContact
 
   @override
   Widget build(BuildContext context) {
-    final enabled = RegExp(r'^0?\d{10}$').hasMatch(phone.text.trim()) &&
+    final enabled = RegExp(r'^[1-9]\d{9}$').hasMatch(phone.text.trim()) &&
         address.text.trim().isNotEmpty &&
         state.text.trim().isNotEmpty;
     return _Shell(
@@ -2136,6 +2238,7 @@ class _ContactPhoneField extends StatelessWidget {
                   child: TextField(keyboardAppearance: Theme.of(context).brightness,
                     controller: controller,
                     keyboardType: TextInputType.phone,
+                    inputFormatters: const [NigerianPhoneFormatter()],
                     style: TextStyle(fontFamily:'Sora',fontSize:14,color:DavoColors.of(context).body),
                     decoration: InputDecoration(
                       hintText: 'Enter your phone number',
@@ -3079,7 +3182,6 @@ class _Input extends StatelessWidget {
     required this.label,
     required this.hint,
     required this.controller,
-    this.obscure = false,
     this.keyboard,
     this.figmaFilled = false,
     this.labelSize = 14,
@@ -3091,7 +3193,7 @@ class _Input extends StatelessWidget {
 
   final String label, hint;
   final TextEditingController controller;
-  final bool obscure, figmaFilled;
+  final bool figmaFilled;
   final TextInputType? keyboard;
   final double labelSize, hintSize;
   final String hintFontFamily;
@@ -3120,7 +3222,6 @@ class _Input extends StatelessWidget {
           height: 48,
           child: TextField(keyboardAppearance: Theme.of(context).brightness,
             controller: controller,
-            obscureText: obscure,
             keyboardType: keyboard,
             maxLength: maxLength,
             inputFormatters: inputFormatters,
@@ -3141,18 +3242,6 @@ class _Input extends StatelessWidget {
                 color: DavoColors.of(context).bodyMuted,
               ),
               contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-              suffixIcon: obscure
-                  ? Padding(
-                      padding: const EdgeInsets.all(14),
-                      child: Image.asset(
-                        '$_exactAssets/input_eye_exact.png', color: DavoColors.of(context).muted,
-                        width: 20,
-                        height: 20,
-                        filterQuality: FilterQuality.high,
-                      ),
-                    )
-                  : null,
-              suffixIconConstraints: const BoxConstraints(minWidth: 48, minHeight: 48),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
                 borderSide: BorderSide(color: DavoColors.of(context).border),

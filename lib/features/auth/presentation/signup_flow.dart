@@ -1,7 +1,7 @@
 import '../../../shared/widgets/davo_safe_selection_sheet.dart';
+import '../../../shared/formatters/nigerian_phone_formatter.dart';
 import '../../../shared/widgets/davo_animated_checkbox.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 import '../../../core/navigation/app_page_route.dart';
 import '../../../core/theme/app_theme.dart';
@@ -250,7 +250,7 @@ class _CountryPickerSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return DavoSafeSelectionSheet(
+    return DavoSafeSelectionSheet(backgroundColor: DavoColors.of(context).surface,
         child: Padding(
       padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
       child: Column(
@@ -297,8 +297,7 @@ class _AccountDetailsScreenState extends State<_AccountDetailsScreen> {
   bool get _canContinue =>
       _name.text.trim().length >= 2 &&
       _isValidEmail(_email.text.trim()) &&
-      _phone.text.replaceAll(RegExp(r'\D'), '').length >=
-          widget.country.maxDigits;
+      RegExp(r'^[1-9]\d{9}$').hasMatch(_phone.text);
 
   @override
   void dispose() {
@@ -463,9 +462,8 @@ class _PhoneField extends StatelessWidget {
                   keyboardType: TextInputType.phone,
                   textInputAction: TextInputAction.next,
                   autofillHints: const [AutofillHints.telephoneNumberNational],
-                  inputFormatters: [
-                    FilteringTextInputFormatter.digitsOnly,
-                    LengthLimitingTextInputFormatter(country.maxDigits),
+                  inputFormatters: const [
+                    NigerianPhoneFormatter(),
                   ],
                   onChanged: (_) => onChanged(),
                   style: TextStyle(

@@ -36,9 +36,7 @@ class VerificationOverviewScreen extends StatelessWidget {
                       (_) => session.basicVerified
                           ? const BasicVerificationSubmittedScreen(
                               animate: false)
-                          : session.profileComplete
-                              ? const BasicIdentityChoiceScreen()
-                              : const CompleteProfileV12Screen())),
+                          : const BasicVerificationIntroScreen())),
               VerificationChoiceRow(
                   title: 'Advanced Verification',
                   subtitle: 'ID and Address Verification',
@@ -68,7 +66,7 @@ class _BasicIdentityChoiceState extends State<BasicIdentityChoiceScreen> {
       bottom: VerificationButton('Continue', onPressed: () {
         VerificationSession.instance.chooseIdentity(selected);
         pushAppPage<void>(
-            context, (_) => BasicIdentityRequirementsScreen(method: selected));
+            context, (_) => BasicIdentityNumberScreen(method: selected));
       }),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         const Text('Choose a verification method', style: verificationHeading),
@@ -88,15 +86,14 @@ class _BasicIdentityChoiceState extends State<BasicIdentityChoiceScreen> {
       ]));
 }
 
-class BasicIdentityRequirementsScreen extends StatelessWidget {
-  const BasicIdentityRequirementsScreen({super.key, required this.method});
-  final BasicIdentityMethod method;
+class BasicVerificationIntroScreen extends StatelessWidget {
+  const BasicVerificationIntroScreen({super.key});
   @override
   Widget build(BuildContext context) => VerificationPage(
       title: 'Verify Your Account',
       bottom: VerificationButton('Start',
           onPressed: () => pushAppPage<void>(
-              context, (_) => BasicIdentityNumberScreen(method: method))),
+              context, (_) => const CompleteProfileV12Screen())),
       child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
         Center(
             child: Container(
@@ -108,19 +105,19 @@ class BasicIdentityRequirementsScreen extends StatelessWidget {
                 alignment: Alignment.center,
                 child: const VerificationAsset('739f8.svg', size: 28))),
         const SizedBox(height: 24),
-        Text('${method.shortLabel} Verification',
+        const Text('Basic Verification',
             textAlign: TextAlign.center, style: verificationHeading),
         const SizedBox(height: 8),
         Text(
-            'Verify your ${method.shortLabel} to secure your account and increase your transaction limits',
+            'Complete your personal details and verify either your BVN or NIN to secure your account and increase your transaction limits.',
             textAlign: TextAlign.center,
             style:
                 verificationBody.copyWith(color: DavoColors.of(context).body)),
         const SizedBox(height: 24),
-        VerificationRequirements(items: [
-          ('e90f4.svg', 'Valid Nigerian ${method.shortLabel} (11 digits)'),
+        const VerificationRequirements(items: [
+          ('e90f4.svg', 'Your BVN or NIN (11 digits)'),
           ('90d57.svg', 'Your registered phone number'),
-          ('6cc71.svg', 'Must match your personal details'),
+          ('6cc71.svg', 'Personal details that match your BVN or NIN'),
         ]),
       ]));
 }

@@ -1,4 +1,7 @@
 import '../../../shared/widgets/davo_safe_selection_sheet.dart';
+import 'wallet_address_scanner.dart';
+import 'wallet_address_payload.dart';
+export 'wallet_address_scanner.dart' show ScanPasteAddressScreen;
 import '../../../shared/receipts/receipt_record.dart';
 import '../../../shared/receipts/receipt_activity.dart';
 import '../../../shared/receipts/receipt_screen.dart';
@@ -1402,7 +1405,16 @@ class _CryptoWithdrawEntryScreenState extends State<CryptoWithdrawEntryScreen> {
   bool get _ready =>
       target.text.isNotEmpty &&
       parseAmount(amount.text) > 0 &&
-      (!widget.external || network != null);
+      (!widget.external || (network != null && _addressMatchesNetwork));
+
+  bool get _addressMatchesNetwork {
+    try {
+      walletAddressFromPayload(target.text, asset: asset, network: network);
+      return true;
+    } on FormatException {
+      return false;
+    }
+  }
 
   @override
   Widget build(BuildContext context) => PopScope(
@@ -1648,7 +1660,7 @@ class _CryptoWithdrawEntryScreenState extends State<CryptoWithdrawEntryScreen> {
 
   Future<void> _scan() async {
     final a = await Navigator.push<String>(context,
-        AppPageRoute<String>(builder: (_) => const ScanPasteAddressScreen()));
+        AppPageRoute<String>(builder: (_) => ScanPasteAddressScreen(asset: asset, network: network)));
     if (mounted && a != null) setState(() => target.text = a);
   }
 
@@ -1702,6 +1714,10 @@ class _CryptoWithdrawEntryScreenState extends State<CryptoWithdrawEntryScreen> {
   }
 
   Future<void> _confirm() async {
+    if (!_ready) return;
+    if (widget.external) {
+      target.text = walletAddressFromPayload(target.text, asset: asset, network: network);
+    }
     final n = parseAmount(amount.text);
     final ok = await showModalBottomSheet<bool>(
       context: context,
@@ -2304,255 +2320,6 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> {
             receipt: true,
           ),
         );
-}
-
-class ScanPasteAddressScreen extends StatefulWidget {
-  const ScanPasteAddressScreen({super.key});
-  @override
-  State<ScanPasteAddressScreen> createState() => _ScanPasteAddressScreenState();
-}
-
-class _ScanPasteAddressScreenState extends State<ScanPasteAddressScreen> {
-  int mode = 0;
-  final TextEditingController _addressController = TextEditingController();
-
-  @override
-  void dispose() {
-    _addressController.dispose();
-    super.dispose();
-  }
-
-  Future<void> _pasteAddress() async {
-    final data = await Clipboard.getData(Clipboard.kTextPlain);
-    final value = data?.text?.trim() ?? '';
-    if (!mounted || value.isEmpty) return;
-    _addressController.text = value;
-    _addressController.selection =
-        TextSelection.collapsed(offset: value.length);
-    setState(() {});
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: DavoColors.of(context).canvas,
-      body: SafeArea(
-        bottom: false,
-        child: Stack(
-          children: [
-            Positioned(
-              left: 8,
-              top: 16,
-              width: 24,
-              height: 24,
-              child: InkResponse(
-                onTap: () => Navigator.pop(context),
-                radius: 20,
-                child: Image.asset('$_f/buy_back.png',
-                    color: DavoColors.of(context).ink, width: 24, height: 24),
-              ),
-            ),
-            Positioned(
-              left: 0,
-              right: 0,
-              top: 8,
-              height: 40,
-              child: IgnorePointer(
-                child: Center(
-                  child: Text('Scan or Paste Address',
-                      style: TextStyle(
-                          fontFamily: 'Sora',
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          height: 1.35,
-                          color: DavoColors.of(context).ink)),
-                ),
-              ),
-            ),
-            Positioned(
-                left: 16,
-                top: 67,
-                width: 170,
-                height: 48,
-                child: _ExactScanTab(
-                    label: 'Scan QR Code',
-                    active: mode == 0,
-                    onTap: () => setState(() => mode = 0))),
-            Positioned(
-                left: 202,
-                top: 67,
-                width: 172,
-                height: 48,
-                child: _ExactScanTab(
-                    label: 'Paste Address',
-                    active: mode == 1,
-                    onTap: () => setState(() => mode = 1))),
-            if (mode == 0)
-              Positioned(
-                left: 16,
-                top: 141,
-                width: 359,
-                height: 485,
-                child: Container(
-                  decoration: BoxDecoration(
-                      // Camera artwork uses white overlays in both appearances.
-                      color: Colors.black,
-                      borderRadius: BorderRadius.circular(8)),
-                  clipBehavior: Clip.antiAlias,
-                  child: Stack(
-                    children: [
-                      Positioned(
-                          left: 35,
-                          top: 12,
-                          width: 290,
-                          height: 290,
-                          child: Image.asset('$_cf/scanner_frame.png',
-                              width: 290, height: 290, fit: BoxFit.contain)),
-                      Positioned(
-                        left: 159,
-                        top: 310,
-                        width: 42,
-                        height: 42,
-                        child: Container(
-                          alignment: Alignment.center,
-                          decoration: const BoxDecoration(
-                              color: Colors.black, shape: BoxShape.circle),
-                          child: Image.asset('$_cf/flashlight.png',
-                              width: 24, height: 24, fit: BoxFit.contain),
-                        ),
-                      ),
-                      const Positioned(
-                        left: 54.5,
-                        top: 363,
-                        width: 251,
-                        height: 19,
-                        child: Text('Align the QR code within the frame',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                                fontFamily: 'Sora',
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                                height: 1.35,
-                                color: Colors.white)),
-                      ),
-                      Positioned(
-                        left: 54.5,
-                        top: 384,
-                        width: 251,
-                        height: 15,
-                        child: InkWell(
-                          onTap: () => setState(() => mode = 1),
-                          child: const Text('Enter Address manually',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                  fontFamily: 'Sora',
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w600,
-                                  height: 1.25,
-                                  color: Color(0xFF89ADF9))),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            if (mode == 1) ...[
-              Positioned(
-                left: 16,
-                top: 141,
-                width: 358,
-                height: 48,
-                child: TextField(
-                  controller: _addressController,
-                  onChanged: (_) => setState(() {}),
-                  textInputAction: TextInputAction.done,
-                  style: TextStyle(
-                      fontFamily: 'Open Sans',
-                      fontSize: 16,
-                      height: 1.375,
-                      color: DavoColors.of(context).ink),
-                  decoration: InputDecoration(
-                    hintText: 'Paste the wallet address',
-                    hintStyle: TextStyle(
-                        fontFamily: 'Open Sans',
-                        fontSize: 16,
-                        height: 1.375,
-                        color: DavoColors.of(context).bodyMuted),
-                    filled: true,
-                    fillColor: DavoColors.of(context).fieldFill,
-                    contentPadding: const EdgeInsets.fromLTRB(16, 13, 72, 13),
-                    border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(4),
-                        borderSide: BorderSide.none),
-                    enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(4),
-                        borderSide: BorderSide.none),
-                    focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(4),
-                        borderSide: const BorderSide(
-                            color: AppColors.primary, width: 1)),
-                    suffixIcon: SizedBox(
-                      width: 64,
-                      child: TextButton(
-                        onPressed: _pasteAddress,
-                        style: TextButton.styleFrom(
-                            padding: EdgeInsets.zero,
-                            foregroundColor: DavoColors.of(context).link),
-                        child: const Text('Paste',
-                            style: TextStyle(
-                                fontFamily: 'Sora',
-                                fontSize: 12,
-                                fontWeight: FontWeight.w600,
-                                height: 1.25)),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 16,
-                top: 209,
-                width: 358,
-                child: _Button(
-                  label: 'Use Address',
-                  enabled: _addressController.text.trim().isNotEmpty,
-                  onTap: () =>
-                      Navigator.pop(context, _addressController.text.trim()),
-                ),
-              ),
-            ],
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _ExactScanTab extends StatelessWidget {
-  const _ExactScanTab(
-      {required this.label, required this.active, required this.onTap});
-  final String label;
-  final bool active;
-  final VoidCallback onTap;
-  @override
-  Widget build(BuildContext context) => Material(
-        color: active ? AppColors.primary : DavoColors.of(context).primarySoft,
-        borderRadius: BorderRadius.circular(4),
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(4),
-          child: Center(
-              child: Text(label,
-                  style: TextStyle(
-                      fontFamily: 'Sora',
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      height: 1.35,
-                      color: active
-                          ? Colors.white
-                          : DavoColors.of(context).link))),
-        ),
-      );
 }
 
 class SelectNetworkSheet extends StatelessWidget {

@@ -6,6 +6,8 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../shared/motion/davo_outcome_content.dart';
 import '../../../../shared/motion/davo_step_transition.dart';
 import '../../../../shared/motion/davo_working_indicator.dart';
+import '../../../../shared/widgets/davo_safe_selection_sheet.dart';
+import '../../../../shared/widgets/davo_sheet_header.dart';
 import 'verification_components.dart';
 import 'verification_state.dart';
 
@@ -43,6 +45,7 @@ class _AdvancedVerificationFlowScreenState
   late _Stage stage;
   bool backwards = false;
   bool mediaOpening = false;
+  bool choosingCameraSide = false;
   int operation = 0;
   String? error;
   @override
@@ -273,27 +276,30 @@ class _AdvancedVerificationFlowScreenState
           const Text('Upload your ID', style: verificationHeading),
           const SizedBox(height: 8),
           const Text('Provide a clear photo of your government-issued ID',
-              style: verificationCaption),
+              style: verificationBody),
           const SizedBox(height: 24),
           _uploadTile('Upload ID Front', session.identityFrontAdded,
               () => _pickIdentity(front: true),
               file: 'id-front.jpg', remove: session.removeIdentityFront),
           const SizedBox(height: 12),
-          Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Expanded(
-                child: _uploadTile('Upload ID Back', session.identityBackAdded,
-                    () => _pickIdentity(front: false),
-                    small: true, file: 'id-back.jpg', optional: true)),
-            const SizedBox(width: 12),
-            Expanded(child: _cameraTile())
-          ]),
+          IntrinsicHeight(
+              child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                Expanded(
+                    child: _uploadTile(
+                        'Upload ID Back',
+                        session.identityBackAdded,
+                        () => _pickIdentity(front: false),
+                        small: true,
+                        file: 'id-back.jpg',
+                        optional: true,
+                        remove: session.removeIdentityBack)),
+                const SizedBox(width: 16),
+                Expanded(child: _cameraTile())
+              ])),
           const SizedBox(height: 16),
           const Text('JPG, PNG or PDF (Max 5MB)', style: verificationCaption),
-          if (session.identityFrontAdded) ...[
-            const SizedBox(height: 12),
-            const Text('Your ID is uploaded. Continue to verification.',
-                style: verificationCaption)
-          ]
         ];
       case _Stage.selfieIntro:
         return [
@@ -523,7 +529,14 @@ class _AdvancedVerificationFlowScreenState
         return null;
     }
     return Column(mainAxisSize: MainAxisSize.min, children: [
-      VerificationButton(mediaOpening ? 'Opening?' : label,
+      if (stage == _Stage.idUpload && session.identityFrontAdded) ...[
+        Text('Your ID is uploaded. Continue to verification.',
+            style: verificationCaption.copyWith(
+                color: DavoColors.of(context).bodyMuted),
+            textAlign: TextAlign.center),
+        const SizedBox(height: 12),
+      ],
+      VerificationButton(mediaOpening ? 'Opening...' : label,
           onPressed: mediaOpening ? null : action),
       if (secondary != null) ...[
         const SizedBox(height: 12),
@@ -544,24 +557,45 @@ class _AdvancedVerificationFlowScreenState
                     color: DavoColors.of(context).bodyMuted)))
       ]));
   Widget _cameraTile() => Material(
-      color: DavoColors.of(context).primarySoft,
-      borderRadius: BorderRadius.circular(8),
+      color: DavoColors.of(context).surface,
+      shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(color: DavoColors.of(context).divider)),
       child: InkWell(
-          onTap: () => _pickIdentity(front: true, camera: true),
-          borderRadius: BorderRadius.circular(8),
-          child: const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 24),
-              child: Column(children: [
-                VerificationAsset('98c96.svg'),
-                SizedBox(height: 12),
-                Text('Take Photo', style: verificationCaption),
-                Text('Use camera', style: verificationCaption)
-              ]))));
+          onTap: mediaOpening || choosingCameraSide ? null : _chooseCameraSide,
+          borderRadius: BorderRadius.circular(16),
+          child: ConstrainedBox(
+              constraints: const BoxConstraints(minHeight: 160),
+              child: Center(
+                  child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(mainAxisSize: MainAxisSize.min, children: [
+                  Container(
+                      width: 48,
+                      height: 48,
+                      decoration: BoxDecoration(
+                          color: DavoColors.of(context).primarySoft,
+                          shape: BoxShape.circle),
+                      alignment: Alignment.center,
+                      child: const VerificationAsset('98c96.svg')),
+                  const SizedBox(height: 16),
+                  Text('Take Photo',
+                      textAlign: TextAlign.center,
+                      style: verificationBody.copyWith(
+                          fontWeight: FontWeight.w600)),
+                  const SizedBox(height: 4),
+                  Text('Use camera',
+                      textAlign: TextAlign.center,
+                      style: verificationCaption.copyWith(
+                          color: DavoColors.of(context).bodyMuted))
+                ]),
+              )))));
   Widget _uploadTile(String label, bool added, VoidCallback add,
       {required String file,
       bool small = false,
       bool optional = false,
       VoidCallback? remove}) {
+    final identity = label == 'Upload ID Front' || label == 'Upload ID Back';
     final attachment = label == 'Upload ID Front'
         ? session.identityFront
         : label == 'Upload ID Back'
@@ -569,70 +603,172 @@ class _AdvancedVerificationFlowScreenState
             : session.addressAttachment;
     if (added) {
       return Container(
+          constraints: BoxConstraints(
+              minHeight: small
+                  ? 160
+                  : identity
+                      ? 220
+                      : 0),
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
               color: DavoColors.of(context).primarySoft,
               border: Border.all(color: DavoColors.of(context).primaryDisabled),
-              borderRadius: BorderRadius.circular(8)),
-          child:
-              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Row(children: [
-              Expanded(
-                  child: Text(label == 'Upload ID Front' ? 'ID Front' : label,
-                      style: verificationCaption)),
-              const VerificationStatus('Uploaded', uploaded: true)
-            ]),
-            const SizedBox(height: 16),
-            Row(children: [
-              if (attachment != null && attachment.kind != 'pdf')
-                _attachmentPreview(attachment, width: 64, height: 64)
-              else
-                const VerificationAsset('e90f4.svg', size: 32),
-              const SizedBox(width: 12),
-              Expanded(
-                  child: Text(
-                      '${attachment?.name ?? file}\n${attachment?.sizeLabel ?? '1.2 MB'}',
-                      style: verificationCaption))
-            ]),
-            const SizedBox(height: 8),
-            Wrap(spacing: 12, children: [
-              TextButton(
-                  onPressed: mediaOpening ? null : add,
-                  child: const Text('Replace file')),
-              if (remove != null)
-                TextButton(onPressed: remove, child: const Text('Remove'))
-            ])
-          ]));
+              borderRadius: BorderRadius.circular(identity ? 16 : 8)),
+          child: Column(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(children: [
+                  Expanded(
+                      child: Text(
+                          label == 'Upload ID Front'
+                              ? 'ID Front'
+                              : label == 'Upload ID Back'
+                                  ? 'ID Back'
+                                  : label,
+                          style: verificationCaption.copyWith(
+                              fontWeight: FontWeight.w600))),
+                  const VerificationStatus('Uploaded', uploaded: true)
+                ]),
+                const SizedBox(height: 16),
+                Row(children: [
+                  if (attachment != null &&
+                      (attachment.kind != 'pdf' ||
+                          attachment.previewPath != null))
+                    _attachmentPreview(attachment,
+                        width: identity && !small ? 128 : 64,
+                        height: identity && !small ? 80 : 64)
+                  else
+                    const VerificationAsset('e90f4.svg', size: 32),
+                  const SizedBox(width: 16),
+                  Expanded(
+                      child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                        Text(attachment?.name ?? file,
+                            style: verificationCaption.copyWith(
+                                fontWeight: FontWeight.w600)),
+                        const SizedBox(height: 4),
+                        Text(attachment?.sizeLabel ?? '1.2 MB',
+                            style: verificationCaption.copyWith(
+                                color: DavoColors.of(context).bodyMuted))
+                      ]))
+                ]),
+                const SizedBox(height: 8),
+                if (small)
+                  Wrap(spacing: 12, children: [
+                    _replaceAction(add),
+                    if (remove != null) _removeAction(remove)
+                  ])
+                else
+                  Row(children: [
+                    _replaceAction(add),
+                    const Spacer(),
+                    if (remove != null) _removeAction(remove)
+                  ])
+              ]));
     }
     return Material(
         color: DavoColors.of(context).primarySoft,
         shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(identity ? 16 : 8),
             side: BorderSide(color: DavoColors.of(context).primaryDisabled)),
         child: InkWell(
             onTap: mediaOpening ? null : add,
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(identity ? 16 : 8),
             child: ConstrainedBox(
-                constraints: BoxConstraints(minHeight: small ? 156 : 226),
+                constraints: BoxConstraints(minHeight: identity ? 160 : 226),
                 child: Center(
                     child: Padding(
                         padding: const EdgeInsets.all(16),
                         child:
                             Column(mainAxisSize: MainAxisSize.min, children: [
-                          VerificationAsset(small ? '9fba1.svg' : '172e5.svg',
-                              size: 32),
+                          if (small)
+                            const SizedBox.square(
+                                dimension: 48,
+                                child: Center(
+                                    child: VerificationAsset('9fba1.svg',
+                                        size: 16)))
+                          else
+                            const VerificationAsset('172e5.svg', size: 24),
                           const SizedBox(height: 16),
                           Text(label,
                               style: verificationBody.copyWith(
                                   fontWeight: FontWeight.w600),
                               textAlign: TextAlign.center),
+                          const SizedBox(height: 4),
                           Text(
                               optional
                                   ? 'Optional'
                                   : 'JPG, PNG or PDF (Max 5MB)',
-                              style: verificationCaption,
+                              style: verificationCaption.copyWith(
+                                  color: DavoColors.of(context).bodyMuted),
                               textAlign: TextAlign.center)
                         ]))))));
+  }
+
+  Widget _replaceAction(VoidCallback add) => TextButton(
+      style: TextButton.styleFrom(
+          padding: EdgeInsets.zero,
+          minimumSize: const Size(0, 44),
+          textStyle: verificationCaption),
+      onPressed: mediaOpening ? null : add,
+      child: const Text('Replace file'));
+
+  Widget _removeAction(VoidCallback remove) => TextButton.icon(
+      style: TextButton.styleFrom(
+          padding: EdgeInsets.zero,
+          minimumSize: const Size(0, 44),
+          textStyle: verificationCaption,
+          foregroundColor: DavoColors.of(context).bodyMuted),
+      onPressed: mediaOpening ? null : remove,
+      icon: const Icon(Icons.disabled_by_default_outlined, size: 14),
+      label: const Text('Remove'));
+
+  Future<void> _chooseCameraSide() async {
+    if (mediaOpening || choosingCameraSide) return;
+    final ticket = operation, generation = session.generation;
+    setState(() => choosingCameraSide = true);
+    bool? front;
+    try {
+      front = await showModalBottomSheet<bool>(
+          context: context,
+          useSafeArea: true,
+          isScrollControlled: true,
+          showDragHandle: true,
+          builder: (sheetContext) => DavoSafeSelectionSheet(
+                  child: Column(mainAxisSize: MainAxisSize.min, children: [
+                const DavoSheetHeader(title: 'Photograph your ID'),
+                Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+                    child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          const Text('Choose which side you want to capture.',
+                              style: verificationBody),
+                          const SizedBox(height: 20),
+                          VerificationChoiceRow(
+                              title: 'Front of ID',
+                              subtitle: 'Required',
+                              asset: '739f8.svg',
+                              onTap: () => Navigator.pop(sheetContext, true)),
+                          VerificationChoiceRow(
+                              title: 'Back of ID',
+                              subtitle: 'Optional',
+                              asset: '739f8.svg',
+                              onTap: () => Navigator.pop(sheetContext, false)),
+                        ]))
+              ])));
+    } finally {
+      if (mounted) setState(() => choosingCameraSide = false);
+    }
+    if (front != null &&
+        mounted &&
+        ticket == operation &&
+        generation == session.generation) {
+      await _pickIdentity(front: front, camera: true);
+    }
   }
 
   Widget _attachmentPreview(VerificationAttachment? attachment,
@@ -656,13 +792,22 @@ class _AdvancedVerificationFlowScreenState
             child:
                 Column(mainAxisAlignment: MainAxisAlignment.center, children: [
               const Icon(Icons.picture_as_pdf_outlined, size: 48),
-              Text(attachment.name, maxLines: 3, overflow: TextOverflow.ellipsis, style: verificationBody),
+              Text(attachment.name,
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
+                  style: verificationBody),
               const Text(
                   'PDF selected. Preview is not available on this device.',
                   style: verificationCaption)
             ]))
         : Image.file(File(path),
-            width: width, height: height, fit: BoxFit.contain, cacheWidth: ((width.isFinite ? width : MediaQuery.sizeOf(context).width) * MediaQuery.devicePixelRatioOf(context)).ceil());
+            width: width,
+            height: height,
+            fit: BoxFit.contain,
+            cacheWidth:
+                ((width.isFinite ? width : MediaQuery.sizeOf(context).width) *
+                        MediaQuery.devicePixelRatioOf(context))
+                    .ceil());
   }
 
   Future<void> _pickIdentity({required bool front, bool camera = false}) =>

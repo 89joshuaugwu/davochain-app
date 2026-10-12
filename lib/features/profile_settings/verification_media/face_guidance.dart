@@ -8,6 +8,7 @@ class FaceGuidance extends ChangeNotifier {
   Duration elapsed = Duration.zero;
   bool ready = false;
   bool _nodMoved = false, _nodReturned = false;
+  double _lastPitch = 0, _frontPitch = 0;
   Duration get target =>
       Duration(seconds: stage == FaceGuidanceStage.front ? 5 : 3);
   double get progress =>
@@ -30,17 +31,19 @@ class FaceGuidance extends ChangeNotifier {
         stage == FaceGuidanceStage.done) {
       return;
     }
+    _lastPitch = pitch;
     if (stage == FaceGuidanceStage.nod && inFrame) {
-      if (pitch.abs() > 10) _nodMoved = true;
-      if (_nodMoved && pitch.abs() < 5) _nodReturned = true;
+      final distance = (pitch - _frontPitch).abs();
+      if (distance > 10) _nodMoved = true;
+      if (_nodMoved && distance < 5) _nodReturned = true;
     }
     ready = inFrame &&
         switch (stage) {
-          FaceGuidanceStage.front => yaw.abs() < 10 && pitch.abs() < 10,
+          FaceGuidanceStage.front => yaw.abs() <= 15 && pitch.abs() <= 15,
           FaceGuidanceStage.right => yaw > 12 && yaw < 40,
           FaceGuidanceStage.left => yaw < -12 && yaw > -40,
           FaceGuidanceStage.nod =>
-            _nodReturned && yaw.abs() < 12 && pitch.abs() < 10,
+            _nodReturned && yaw.abs() < 15 && (pitch - _frontPitch).abs() < 10,
           _ => false,
         };
     if (!ready) elapsed = Duration.zero;
@@ -69,6 +72,7 @@ class FaceGuidance extends ChangeNotifier {
   }
 
   void frontCaptured() {
+    _frontPitch = _lastPitch;
     stage = FaceGuidanceStage.right;
     ready = false;
     elapsed = Duration.zero;
@@ -81,6 +85,8 @@ class FaceGuidance extends ChangeNotifier {
     ready = false;
     _nodMoved = false;
     _nodReturned = false;
+    _lastPitch = 0;
+    _frontPitch = 0;
     notifyListeners();
   }
 }

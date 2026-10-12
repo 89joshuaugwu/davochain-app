@@ -48,6 +48,48 @@ void main() {
     expect(find.text('Complete basic verification first'), findsOneWidget);
     expect(find.text('Start'), findsNothing);
   });
+  testWidgets('ID camera asks for a side and keeps the back optional',
+      (tester) async {
+    basic();
+    await mount(tester);
+    await tap(tester, 'Start');
+    await tap(tester, 'ID Verification');
+    await tap(tester, 'Start');
+    await tap(tester, 'Take Photo');
+    expect(find.text('Front of ID'), findsOneWidget);
+    expect(find.text('Back of ID'), findsOneWidget);
+    await tap(tester, 'Back of ID');
+    expect(session.identityBackAdded, isTrue);
+    expect(session.identityFrontAdded, isFalse);
+    expect(session.identityDocumentsAdded, isFalse);
+    expect(
+        (VerificationMediaGateway.instance as FakeVerificationMedia)
+            .cameraRequests,
+        [true]);
+    await tap(tester, 'Take Photo');
+    await tap(tester, 'Front of ID');
+    expect(session.identityFrontAdded, isTrue);
+    expect(session.identityBackAdded, isTrue);
+    expect(session.identityDocumentsAdded, isTrue);
+    expect(tester.takeException(), isNull);
+  });
+  testWidgets('dismissing the ID side choice does not launch the camera',
+      (tester) async {
+    basic();
+    await mount(tester);
+    await tap(tester, 'Start');
+    await tap(tester, 'ID Verification');
+    await tap(tester, 'Start');
+    await tap(tester, 'Take Photo');
+    await tester.tap(find.byTooltip('Close'));
+    await tester.pumpAndSettle();
+    expect(
+        (VerificationMediaGateway.instance as FakeVerificationMedia)
+            .cameraRequests,
+        isEmpty);
+    expect(session.identityFrontAdded, isFalse);
+    expect(session.identityBackAdded, isFalse);
+  });
   testWidgets('ID upload resumes at selfie without losing optional back',
       (tester) async {
     basic();

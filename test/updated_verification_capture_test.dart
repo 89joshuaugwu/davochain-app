@@ -39,12 +39,16 @@ void main() {
     for (final dark in [false, true]) {
       final key = GlobalKey();
       final prefix = dark ? 'dark' : 'light';
-      Future<void> mount(Widget screen) async {
+      Future<void> mount(Widget screen, {double textScale = 1}) async {
         await tester.pumpWidget(MaterialApp(
             key: UniqueKey(),
             theme: dark ? AppTheme.dark : AppTheme.light,
-            builder: (context, child) =>
-                RepaintBoundary(key: key, child: child!),
+            builder: (context, child) => RepaintBoundary(
+                key: key,
+                child: MediaQuery(
+                    data: MediaQuery.of(context)
+                        .copyWith(textScaler: TextScaler.linear(textScale)),
+                    child: child!)),
             home: screen));
         await tester.pumpAndSettle();
       }
@@ -84,10 +88,8 @@ void main() {
       });
       await mount(const VerificationOverviewScreen());
       await capture('overview');
-      for (final method in BasicIdentityMethod.values) {
-        await mount(BasicIdentityRequirementsScreen(method: method));
-        await capture('${method.shortLabel}-requirements');
-      }
+      await mount(const BasicVerificationIntroScreen());
+      await capture('basic-requirements');
       session.completeProfile();
       await mount(
           const BasicIdentityNumberScreen(method: BasicIdentityMethod.bvn));
@@ -106,6 +108,10 @@ void main() {
       await capture('id-choice');
       await tap('Start');
       await capture('id-upload');
+      await tap('Take Photo');
+      await capture('id-camera-choice');
+      await tester.tap(find.byTooltip('Close'));
+      await tester.pumpAndSettle();
       await tap('Upload ID Front');
       await capture('id-uploaded');
       await tap('Continue');
@@ -132,6 +138,21 @@ void main() {
       await tester.pump(const Duration(seconds: 2));
       await tester.pumpAndSettle();
       await capture('fully-verified');
+      tester.view.physicalSize = const Size(320, 640);
+      session.reset();
+      session.completeProfile();
+      session.submitBasic(BasicIdentityMethod.nin, '12345678901');
+      session.chooseDocument('National ID card');
+      session.addIdentitySide(front: true);
+      await mount(const AdvancedVerificationFlowScreen(), textScale: 1.6);
+      await tester.tap(find.byTooltip('Back'));
+      await tester.pumpAndSettle();
+      await capture('id-uploaded-small-large-text');
+      await tap('Take Photo');
+      await capture('id-camera-choice-small-large-text');
+      await tester.tap(find.byTooltip('Close'));
+      await tester.pumpAndSettle();
+      tester.view.physicalSize = const Size(390, 844);
       expect(tester.takeException(), isNull);
       await tester.pumpWidget(const SizedBox());
     }

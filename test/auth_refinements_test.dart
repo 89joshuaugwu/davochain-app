@@ -1,4 +1,5 @@
 import 'package:davochain/core/theme/app_theme.dart';
+import 'package:davochain/core/theme/password_strength_palette.dart';
 import 'package:davochain/features/auth/presentation/login_flow.dart';
 import 'package:davochain/features/auth/presentation/verification_flow.dart';
 import 'package:davochain/features/auth/presentation/create_password_screen.dart';
@@ -81,10 +82,10 @@ void main() {
       expect(
           box.color,
           entry.value == 'Low Strength'
-              ? AppColors.primary
+              ? PasswordStrengthPalette.low
               : entry.value == 'Medium Strength'
-                  ? const Color(0xFF986000)
-                  : const Color(0xFF13803D));
+                  ? PasswordStrengthPalette.medium
+                  : PasswordStrengthPalette.strong);
     }
     await tester.enterText(find.byType(TextField).last, 'Abcdefgh1');
     await tester.pumpAndSettle();
@@ -119,15 +120,15 @@ void main() {
     expect(tester.getSize(fill).height, 8);
     expect(tester.getSize(fill).width, greaterThan(0));
     expect(tester.widget<Text>(find.text('Low Strength')).style!.color,
-        AppColors.primary);
+        PasswordStrengthPalette.low);
     await tester.enterText(find.byType(TextField).first, 'abcdefgh1');
     await tester.pumpAndSettle();
     expect(tester.widget<Text>(find.text('Medium Strength')).style!.color,
-        const Color(0xFF986000));
+        PasswordStrengthPalette.medium);
     await tester.enterText(find.byType(TextField).first, 'Abcdefgh1');
     await tester.pumpAndSettle();
     expect(tester.widget<Text>(find.text('Strong Password')).style!.color,
-        const Color(0xFF13803D));
+        PasswordStrengthPalette.strong);
     expect(
         tester
             .widget<DavoPrimaryButton>(find.byType(DavoPrimaryButton))

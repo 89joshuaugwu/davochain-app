@@ -85,6 +85,11 @@ void main() {
     expect(advanced.onTap, isNull);
     await tester.tap(find.text('Basic Verification'));
     await tester.pumpAndSettle();
+    expect(find.byType(BasicVerificationIntroScreen), findsOneWidget);
+    expect(find.text('What you need'), findsOneWidget);
+    expect(find.byType(CompleteProfileV12Screen), findsNothing);
+    await tester.tap(find.text('Start'));
+    await tester.pumpAndSettle();
     expect(find.byType(CompleteProfileV12Screen), findsOneWidget);
   });
   testWidgets(
@@ -96,8 +101,9 @@ void main() {
     await tester.pump();
     await tester.tap(find.text('Continue'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Start'));
-    await tester.pumpAndSettle();
+    expect(find.byType(BasicIdentityNumberScreen), findsOneWidget);
+    expect(find.text('Start'), findsNothing);
+    expect(find.text('What you need'), findsNothing);
     expect(find.text('Your BVN'), findsOneWidget);
     await tester.enterText(find.byType(TextField), '123a4567890123');
     await tester.pump();

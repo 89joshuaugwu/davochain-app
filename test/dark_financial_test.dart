@@ -3,8 +3,27 @@ import 'package:davochain/features/dashboard/presentation/dashboard_screen.dart'
 import 'package:davochain/features/buy_crypto/presentation/buy_crypto_models.dart';
 import 'package:davochain/features/buy_crypto/presentation/buy_crypto_screens.dart';
 import 'package:davochain/features/crypto/presentation/crypto_full_flow.dart';
+import 'package:davochain/features/crypto/presentation/wallet_scanner_gateway.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+
+class _DarkScanner extends WalletScannerGateway {
+  @override
+  bool get torchAvailable => true;
+  @override
+  bool get torchOn => false;
+  @override
+  Widget preview({required ValueChanged<String> onCode,
+      required VoidCallback retry}) => const SizedBox.expand();
+  @override
+  Future<void> start() async {}
+  @override
+  Future<void> stop() async {}
+  @override
+  Future<void> toggleTorch() async {}
+  @override
+  Future<void> close() async { dispose(); }
+}
 
 void main() {
   testWidgets('dark dashboard resolves canvas and readable asset heading',
@@ -45,16 +64,20 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
     await tester.pumpWidget(MaterialApp(
-        theme: AppTheme.dark, home: const ScanPasteAddressScreen()));
+        theme: AppTheme.dark, home: ScanPasteAddressScreen(scanner: _DarkScanner())));
+    await tester.pumpAndSettle();
     for (final asset in ['scanner_frame.png', 'flashlight.png']) {
       final image = find.byWidgetPredicate((widget) =>
           widget is Image &&
           widget.image is AssetImage &&
           (widget.image as AssetImage).assetName.endsWith(asset));
       expect(image, findsOneWidget);
-      final backdrop = tester.widget<Container>(
-          find.ancestor(of: image, matching: find.byType(Container)).first);
-      expect((backdrop.decoration as BoxDecoration).color, Colors.black);
+      final cameraStack = find.ancestor(of: image,
+          matching: find.byWidgetPredicate((widget) =>
+              widget is Stack && widget.fit == StackFit.expand));
+      expect(find.descendant(of: cameraStack,
+          matching: find.byWidgetPredicate((widget) =>
+              widget is ColoredBox && widget.color == Colors.black)), findsOneWidget);
       expect(tester.widget<Image>(image).color, isNull);
     }
     expect(

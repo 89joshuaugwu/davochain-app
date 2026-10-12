@@ -161,6 +161,13 @@ class VerificationSession extends ChangeNotifier {
     notifyListeners();
   }
 
+  void removeIdentityBack() {
+    identityBack?.release();
+    identityBack = null;
+    identityBackAdded = false;
+    notifyListeners();
+  }
+
   void chooseAddressDocument(String type) {
     if (addressDocumentType != type) {
       addressAttachment?.release();

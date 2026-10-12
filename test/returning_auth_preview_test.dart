@@ -241,8 +241,6 @@ void main() {
     await tester.pump();
     await tester.tap(find.text('Continue'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Start'));
-    await tester.pumpAndSettle();
     await tester.enterText(find.byType(TextField), '12345678901');
     await tester.pump();
     await tester.tap(find.text('Continue'));
