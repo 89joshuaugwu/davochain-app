@@ -1,3 +1,4 @@
+import 'package:davochain/features/profile_settings/presentation/verification/verification_components.dart';
 import 'dart:async';
 import 'package:davochain/core/theme/app_theme.dart';
 import 'package:davochain/features/profile_settings/presentation/profile_settings_flow.dart';
@@ -21,7 +22,7 @@ void main() {
           method: method, verify: (_, __) => response.future)));
       await tester.enterText(find.byType(TextField), '12345678901');
       await tester.pump();
-      await tester.tap(find.text('Submit Basic verification'));
+      await tester.tap(find.text('Continue'));
       await tester.pump();
       expect(find.text('Verifying your ${method.shortLabel}'), findsOneWidget);
       expect(session.canStartAdvanced, isFalse);
@@ -41,7 +42,7 @@ void main() {
         method: BasicIdentityMethod.bvn, verify: (_, __) async => false)));
     await tester.enterText(find.byType(TextField), '12345678901');
     await tester.pump();
-    await tester.tap(find.text('Submit Basic verification'));
+    await tester.tap(find.text('Continue'));
     await tester.pumpAndSettle();
     expect(session.canStartAdvanced, isFalse);
     expect(find.textContaining('Could not verify'), findsOneWidget);
@@ -59,7 +60,7 @@ void main() {
           verify: (_, __) => response.future)));
       await tester.enterText(find.byType(TextField), '12345678901');
       await tester.pump();
-      await tester.tap(find.text('Submit Basic verification'));
+      await tester.tap(find.text('Continue'));
       await tester.pump();
       if (reset) {
         session.reset();
@@ -77,14 +78,12 @@ void main() {
 
   testWidgets('Overview exposes Basic and gates Advanced', (tester) async {
     await tester.pumpWidget(app(const VerificationOverviewScreen()));
-    expect(find.text('Basic verification'), findsOneWidget);
-    expect(find.text('Advanced verification'), findsOneWidget);
-    expect(find.text('Complete Basic first'), findsOneWidget);
-    expect(find.widgetWithText(FilledButton, 'Start Advanced'), findsNothing);
-    await tester.tap(find.text('Start Advanced'));
-    await tester.pumpAndSettle();
-    expect(find.byType(VerificationOverviewScreen), findsOneWidget);
-    await tester.tap(find.text('Complete profile'));
+    expect(find.text('Basic Verification'), findsOneWidget);
+    expect(find.text('Advanced Verification'), findsOneWidget);
+    final advanced = tester.widget<VerificationChoiceRow>(
+        find.widgetWithText(VerificationChoiceRow, 'Advanced Verification'));
+    expect(advanced.onTap, isNull);
+    await tester.tap(find.text('Basic Verification'));
     await tester.pumpAndSettle();
     expect(find.byType(CompleteProfileV12Screen), findsOneWidget);
   });
@@ -93,16 +92,18 @@ void main() {
       (tester) async {
     session.completeProfile();
     await tester.pumpWidget(app(const BasicIdentityChoiceScreen()));
-    await tester.tap(find.text('BVN'));
+    await tester.tap(find.text('BVN Verification'));
     await tester.pump();
     await tester.tap(find.text('Continue'));
     await tester.pumpAndSettle();
-    expect(find.text('Enter your BVN'), findsOneWidget);
+    await tester.tap(find.text('Start'));
+    await tester.pumpAndSettle();
+    expect(find.text('Your BVN'), findsOneWidget);
     await tester.enterText(find.byType(TextField), '123a4567890123');
     await tester.pump();
     expect(tester.widget<TextField>(find.byType(TextField)).controller!.text,
         '12345678901');
-    await tester.tap(find.text('Submit Basic verification'));
+    await tester.tap(find.text('Continue'));
     await tester.pump();
     expect(find.text('Verifying your BVN'), findsOneWidget);
     expect(session.basicSubmitted, isFalse);

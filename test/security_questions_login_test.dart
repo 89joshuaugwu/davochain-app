@@ -1,3 +1,4 @@
+import 'support/fake_biometric_gateway.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:davochain/core/preview/preview_auth_state.dart';
@@ -8,6 +9,8 @@ import 'package:davochain/features/security_questions/presentation/security_ques
 import 'package:davochain/shared/widgets/transaction_pin_entry.dart';
 
 void main() {
+  setUp(() => BiometricGateway.instance = FakeBiometricGateway());
+  tearDown(() => BiometricGateway.instance = DeviceBiometricGateway());
   setUp(() {
     SecurityQuestionsService.instance.clear();
     PreviewAuthState.unlocked.value = false;

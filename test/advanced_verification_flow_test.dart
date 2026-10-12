@@ -1,141 +1,136 @@
+import 'support/fake_verification_media.dart';
+import 'dart:async';
+import 'package:davochain/core/theme/app_theme.dart';
 import 'package:davochain/features/profile_settings/presentation/verification/advanced_verification_flow.dart';
 import 'package:davochain/features/profile_settings/presentation/verification/verification_state.dart';
-import 'package:davochain/shared/widgets/auth_widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  setUp(() => VerificationMediaGateway.instance = FakeVerificationMedia());
+  tearDown(() =>
+      VerificationMediaGateway.instance = DeviceVerificationMediaGateway());
   final session = VerificationSession.instance;
   setUp(session.reset);
+  tearDown(session.reset);
   void basic() {
     session.completeProfile();
     session.submitBasic(BasicIdentityMethod.nin, '12345678901');
   }
 
-  Future<void> mount(WidgetTester tester) => tester.pumpWidget(
-        const MaterialApp(home: AdvancedVerificationFlowScreen()),
-      );
-  testWidgets('basic submission gates direct navigation', (tester) async {
+  void identity() {
+    basic();
+    session.chooseDocument('International passport');
+    session.addIdentitySide(front: true);
+    session.addFace();
+    session.verifyIdentity();
+  }
+
+  Future<void> mount(WidgetTester tester,
+          {Future<bool> Function()? verifyIdentity,
+          Future<bool> Function()? verifyAddress}) =>
+      tester.pumpWidget(MaterialApp(
+          theme: AppTheme.light,
+          home: AdvancedVerificationFlowScreen(
+              verifyIdentity: verifyIdentity, verifyAddress: verifyAddress)));
+  Future<void> tap(WidgetTester tester, String label) async {
+    final target = label == 'Upload Document'
+        ? find.widgetWithText(InkWell, label).first
+        : find.text(label).first;
+    await tester.ensureVisible(target);
+    await tester.tap(target);
+    await tester.pumpAndSettle();
+  }
+
+  testWidgets('Basic completion gates direct Advanced navigation',
+      (tester) async {
     await mount(tester);
     expect(find.text('Complete basic verification first'), findsOneWidget);
-    expect(find.text('Take a face photo'), findsNothing);
+    expect(find.text('Start'), findsNothing);
   });
-  testWidgets('face is first and progress resumes at documents',
+  testWidgets('ID upload resumes at selfie without losing optional back',
       (tester) async {
     basic();
+    session.chooseDocument('National ID card');
+    session.addIdentitySide(front: true);
     await mount(tester);
-    expect(find.text('Take a face photo'), findsOneWidget);
-    expect(find.text('Choose your identity document'), findsNothing);
-    await tester.tap(find.text('Take photo'));
+    expect(find.text('Take a selfie'), findsOneWidget);
+    expect(session.faceAdded, isFalse);
+    await tester.tap(find.byTooltip('Back'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Use photo'));
-    await tester.pumpAndSettle();
-    expect(session.faceAdded, isTrue);
-    await tester.pumpWidget(const SizedBox());
-    await mount(tester);
-    expect(find.text('Choose your identity document'), findsOneWidget);
-  });
-  test('changing ID resets sides, passport requires only biodata page', () {
-    basic();
-    session.addFace();
-    session.chooseDocument('National ID');
-    session.addIdentitySide(front: true);
-    session.addIdentitySide(front: false);
-    session.chooseDocument('International passport');
-    expect(session.identityBackAdded, isFalse);
-    expect(session.identityFrontAdded, isFalse);
-    session.addIdentitySide(front: true);
-    expect(session.identityDocumentsAdded, isTrue);
-    expect(() => session.submitAdvanced(), throwsStateError);
-    expect(session.advancedSubmitted, isFalse);
-    session.chooseAddressDocument('Utility bill');
-    session.addAddressDocument();
-    session.submitAdvanced();
-    expect(session.advancedSubmitted, isTrue);
-  });
-  testWidgets('submitted outcome remains pending review', (tester) async {
-    basic();
-    session.addFace();
-    session.chooseDocument('International passport');
-    session.addIdentitySide(front: true);
-    session.chooseAddressDocument('Utility bill');
-    session.addAddressDocument();
-    session.submitAdvanced();
-    await mount(tester);
-    expect(find.text('Pending review'), findsOneWidget);
-    expect(find.text('Advanced verification submitted'), findsOneWidget);
-    expect(find.textContaining('approved'), findsNothing);
-  });
-  testWidgets('documents and address gate review, back preserves the chosen ID',
-      (tester) async {
-    basic();
-    session.addFace();
-    await mount(tester);
-    Future<void> tap(String label) async {
-      await tester.ensureVisible(find.text(label));
-      await tester.tap(find.text(label));
-      await tester.pumpAndSettle();
-    }
-
-    DavoPrimaryButton primary() =>
-        tester.widget(find.byType(DavoPrimaryButton));
-    expect(primary().enabled, isFalse);
-    await tap('National ID');
-    await tap('Front of document');
-    expect(primary().enabled, isFalse);
-    await tap('Back of document');
-    expect(primary().enabled, isTrue);
-    await tap('International passport');
-    expect(session.identityBackAdded, isFalse);
-    expect(primary().enabled, isFalse);
-    expect(find.text('Back of document'), findsNothing);
-    await tap('Biodata page');
-    await tap('Continue');
-    expect(find.text('Add proof of address'), findsOneWidget);
-    expect(primary().enabled, isFalse);
-    await tap('Utility bill');
-    expect(primary().enabled, isFalse);
-    await tap('Proof of address');
-    expect(primary().enabled, isTrue);
-    expect(session.advancedSubmitted, isFalse);
-    await tap('Previous step');
-    expect(session.identityDocumentType, 'International passport');
+    expect(find.text('ID Front'), findsOneWidget);
+    expect(find.text('Upload ID Back'), findsOneWidget);
     expect(session.identityFrontAdded, isTrue);
-    await tap('Continue');
-    await tap('Review details');
-    expect(find.text('Review and submit'), findsOneWidget);
-    expect(session.advancedSubmitted, isFalse);
-    await tap('Submit for review');
-    expect(session.advancedSubmitted, isTrue);
-    expect(find.text('Pending review'), findsOneWidget);
+    expect(tester.takeException(), isNull);
   });
-  testWidgets('explicit return exits to overview and preserves progress',
+  test('Changing ID clears identity approval and full verification', () {
+    identity();
+    session.chooseAddressDocument('Utility bill');
+    session.addAddressDocument();
+    session.submitAdvanced();
+    session.chooseDocument('National ID card');
+    expect(session.identityFrontAdded, isFalse);
+    expect(session.faceAdded, isFalse);
+    expect(session.identityVerified, isFalse);
+    expect(session.addressVerified, isFalse);
+    expect(session.advancedSubmitted, isFalse);
+  });
+  testWidgets('failed address verification retains document and allows retry',
+      (tester) async {
+    identity();
+    await mount(tester, verifyAddress: () async => false);
+    await tap(tester, 'Address Verification');
+    await tap(tester, 'Continue');
+    await tap(tester, 'Upload Document');
+    await tap(tester, 'Continue');
+    await tap(tester, 'Continue');
+    expect(
+        find.textContaining('Could not verify your address'), findsOneWidget);
+    expect(session.addressDocumentAdded, isTrue);
+    expect(session.addressVerified, isFalse);
+    expect(session.advancedSubmitted, isFalse);
+  });
+  testWidgets('back cancels matching and ignores a late successful response',
       (tester) async {
     basic();
-    await tester.pumpWidget(MaterialApp(home: Builder(builder: (context) {
-      return Scaffold(
-          body: TextButton(
-        onPressed: () => Navigator.of(context).push(MaterialPageRoute<void>(
-          builder: (_) => const AdvancedVerificationFlowScreen(),
-        )),
-        child: const Text('Overview'),
-      ));
-    })));
-    await tester.tap(find.text('Overview'));
+    session.chooseDocument('National ID card');
+    session.addIdentitySide(front: true);
+    final response = Completer<bool>();
+    await mount(tester, verifyIdentity: () => response.future);
+    await tap(tester, 'Start live face detection');
+    await tester.tap(find.text('Submit photo'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 350));
+    expect(session.identityVerified, isFalse);
+    await tester.tap(find.byTooltip('Back'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 350));
+    response.complete(true);
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Take photo'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Use photo'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.byTooltip('Back to overview'));
-    await tester.pumpAndSettle();
-    expect(find.text('Overview'), findsOneWidget);
-    expect(session.faceAdded, isTrue);
-    await tester.tap(find.text('Overview'));
-    await tester.pumpAndSettle();
-    expect(find.text('Choose your identity document'), findsOneWidget);
+    expect(find.text('Review your photo'), findsOneWidget);
+    expect(session.identityVerified, isFalse);
+    expect(session.faceAdded, isFalse);
+    expect(tester.takeException(), isNull);
   });
-  testWidgets('320px with large text and reduced motion stays scrollable',
+  testWidgets('address details can be edited without losing the uploaded file',
+      (tester) async {
+    identity();
+    await mount(tester);
+    await tap(tester, 'Address Verification');
+    await tap(tester, 'Continue');
+    await tap(tester, 'Upload Document');
+    await tap(tester, 'Continue');
+    await tap(tester, 'Edit');
+    await tester.enterText(find.byType(TextField), '24 Marina Road');
+    await tester.pump();
+    await tap(tester, 'Save address');
+    expect(find.textContaining('24 Marina Road'), findsOneWidget);
+    expect(session.profileDraft['address'], '24 Marina Road');
+    expect(session.addressDocumentAdded, isTrue);
+    expect(tester.takeException(), isNull);
+  });
+  testWidgets(
+      '320px with large text and reduced motion keeps actions reachable',
       (tester) async {
     basic();
     tester.view.physicalSize = const Size(320, 640);
@@ -143,17 +138,16 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
     await tester.pumpWidget(MaterialApp(
-      builder: (context, child) => MediaQuery(
-        data: MediaQuery.of(context).copyWith(
-          textScaler: const TextScaler.linear(2),
-          disableAnimations: true,
-        ),
-        child: child!,
-      ),
-      home: const AdvancedVerificationFlowScreen(),
-    ));
+        theme: AppTheme.dark,
+        builder: (context, child) => MediaQuery(
+            data: MediaQuery.of(context).copyWith(
+                textScaler: const TextScaler.linear(2),
+                disableAnimations: true),
+            child: child!),
+        home: const AdvancedVerificationFlowScreen()));
     await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('Start'));
+    expect(find.text('Start').hitTestable(), findsOneWidget);
     expect(tester.takeException(), isNull);
-    expect(find.byType(SingleChildScrollView), findsOneWidget);
   });
 }

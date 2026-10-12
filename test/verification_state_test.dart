@@ -18,18 +18,20 @@ void main() {
     expect(session.basicSubmitted, isTrue);
     expect(session.faceAdded, isFalse);
   });
-  test('Advanced enforces face, identity and address in order', () {
+  test('Advanced enforces ID upload, face matching and address in order', () {
     expect(session.canStartAdvanced, isFalse);
     expect(session.addFace, throwsStateError);
     session.completeProfile();
     session.submitBasic(BasicIdentityMethod.nin, '12345678901');
     expect(() => session.addIdentitySide(front: true), throwsStateError);
-    session.addFace();
     session.chooseDocument('National ID');
     session.addIdentitySide(front: true);
-    expect(session.identityDocumentsAdded, isFalse);
+    expect(session.identityDocumentsAdded, isTrue);
+    expect(session.identityVerified, isFalse);
     expect(session.addAddressDocument, throwsStateError);
     session.addIdentitySide(front: false);
+    session.addFace();
+    session.verifyIdentity();
     session.chooseAddressDocument('Utility bill');
     session.addAddressDocument();
     session.submitAdvanced();
@@ -38,10 +40,11 @@ void main() {
   test('Changing document types clears corresponding progress', () {
     session.completeProfile();
     session.submitBasic(BasicIdentityMethod.nin, '12345678901');
-    session.addFace();
     session.chooseDocument('International passport');
     session.addIdentitySide(front: true);
     expect(session.identityDocumentsAdded, isTrue);
+    session.addFace();
+    session.verifyIdentity();
     session.chooseAddressDocument('Utility bill');
     session.addAddressDocument();
     session.chooseAddressDocument('Bank statement');

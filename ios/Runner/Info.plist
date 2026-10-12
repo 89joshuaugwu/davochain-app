@@ -70,5 +70,9 @@
 		<true/>
 		<key>UIViewControllerBasedStatusBarAppearance</key>
 		<false/>
+		<key>NSCameraUsageDescription</key>
+		<string>Davochain uses the camera to capture your ID and verification selfie.</string>
+		<key>NSFaceIDUsageDescription</key>
+		<string>Confirm your identity to enable or use Davochain device unlock.</string>
 	</dict>
 </plist>

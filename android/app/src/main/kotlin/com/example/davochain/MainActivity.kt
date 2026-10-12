@@ -15,15 +15,44 @@ import io.flutter.plugin.common.MethodChannel
 import java.io.File
 import java.util.concurrent.Executors
 
-import io.flutter.embedding.android.FlutterActivity
+import io.flutter.embedding.android.FlutterFragmentActivity
 
-class MainActivity : FlutterActivity() {
+class MainActivity : FlutterFragmentActivity() {
     private val receiptWorker = Executors.newSingleThreadExecutor()
     private var pendingSave: PendingReceiptSave? = null
     private data class PendingReceiptSave(val file: File, val result: MethodChannel.Result)
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "davochain/verification_media")
+            .setMethodCallHandler { call, result ->
+                if (call.method != "renderPdf") { result.notImplemented(); return@setMethodCallHandler }
+                val path = call.argument<String>("path")
+                receiptWorker.execute {
+                    try {
+                        val source = File(path ?: "").canonicalFile
+                        val root = File(cacheDir, "verification").canonicalFile
+                        require(source.parentFile == root && source.extension == "pdf" && source.isFile && source.length() <= 5 * 1024 * 1024) { "Invalid verification document" }
+                        val target = File(root, source.nameWithoutExtension + "-preview.png")
+                        android.os.ParcelFileDescriptor.open(source, android.os.ParcelFileDescriptor.MODE_READ_ONLY).use { descriptor ->
+                            android.graphics.pdf.PdfRenderer(descriptor).use { renderer ->
+                                require(renderer.pageCount > 0) { "Empty PDF" }
+                                renderer.openPage(0).use { page ->
+                                    val width = 1000
+                                    val height = (width.toDouble() * page.height / page.width).toInt().coerceIn(1, 1800)
+                                    val bitmap = android.graphics.Bitmap.createBitmap(width, height, android.graphics.Bitmap.Config.ARGB_8888)
+                                    try {
+                                        bitmap.eraseColor(android.graphics.Color.WHITE)
+                                        page.render(bitmap, null, null, android.graphics.pdf.PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY)
+                                        target.outputStream().use { bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, it) }
+                                    } finally { bitmap.recycle() }
+                                }
+                            }
+                        }
+                        runOnUiThread { result.success(target.absolutePath) }
+                    } catch (error: Exception) { runOnUiThread { result.error("invalid_pdf", "This PDF could not be opened", null) } }
+                }
+            }
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "davochain/receipt_export")
             .setMethodCallHandler { call, result ->
                 try {

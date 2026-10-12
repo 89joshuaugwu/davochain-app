@@ -1,3 +1,4 @@
+import 'support/fake_biometric_gateway.dart';
 import 'package:davochain/features/profile_settings/presentation/verification/verification_overview_screen.dart';
 import 'package:davochain/features/profile_settings/presentation/verification/verification_state.dart';
 import 'package:davochain/shared/widgets/davo_state_picker.dart';
@@ -14,6 +15,8 @@ import 'package:davochain/features/auth/presentation/login_flow.dart';
 
 Widget app(Widget home) => MaterialApp(theme: AppTheme.light, home: home);
 void main() {
+  setUp(() => BiometricGateway.instance = FakeBiometricGateway());
+  tearDown(() => BiometricGateway.instance = DeviceBiometricGateway());
   setUp(() {
     VerificationSession.instance.reset();
     PreviewAuthState.biometricsEnabled.value = false;
@@ -63,8 +66,8 @@ void main() {
   testWidgets('returning login preview runs splash then offers password unlock',
       (tester) async {
     await tester.pumpWidget(app(const ProfileSettingsScreen()));
-    await tester.ensureVisible(find.text('Preview returning login'));
-    await tester.tap(find.text('Preview returning login'));
+    await tester.ensureVisible(find.text('Lock app'));
+    await tester.tap(find.text('Lock app'));
     await tester.pump();
     await tester.pump(const Duration(seconds: 4));
     await tester.pumpAndSettle();
@@ -88,8 +91,8 @@ void main() {
     await tester.tap(find.text('Done'));
     await tester.pumpAndSettle();
     expect(tester.widget<Semantics>(setting).properties.toggled, isTrue);
-    await tester.ensureVisible(find.text('Preview returning login'));
-    await tester.tap(find.text('Preview returning login'));
+    await tester.ensureVisible(find.text('Lock app'));
+    await tester.tap(find.text('Lock app'));
     await tester.pump();
     await tester.pump(const Duration(seconds: 4));
     await tester.pumpAndSettle();
@@ -181,8 +184,8 @@ void main() {
       'fingerprint sits above password even before setup and cancel returns to settings',
       (tester) async {
     await tester.pumpWidget(app(const ProfileSettingsScreen()));
-    await tester.ensureVisible(find.text('Preview returning login'));
-    await tester.tap(find.text('Preview returning login'));
+    await tester.ensureVisible(find.text('Lock app'));
+    await tester.tap(find.text('Lock app'));
     await tester.pump();
     await tester.pump(const Duration(seconds: 4));
     await tester.pumpAndSettle();
@@ -234,13 +237,15 @@ void main() {
     await tester.tap(find.text('Continue'));
     await tester.pumpAndSettle();
     expect(find.byType(BasicIdentityChoiceScreen), findsOneWidget);
-    await tester.tap(find.text('NIN'));
+    await tester.tap(find.text('NIN Verification'));
     await tester.pump();
     await tester.tap(find.text('Continue'));
     await tester.pumpAndSettle();
+    await tester.tap(find.text('Start'));
+    await tester.pumpAndSettle();
     await tester.enterText(find.byType(TextField), '12345678901');
     await tester.pump();
-    await tester.tap(find.text('Submit Basic verification'));
+    await tester.tap(find.text('Continue'));
     await tester.pumpAndSettle();
     expect(find.byType(BasicVerificationSubmittedScreen), findsOneWidget);
     expect(find.byType(KycSelfieV12Screen), findsNothing);

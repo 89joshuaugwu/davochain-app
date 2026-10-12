@@ -1,3 +1,4 @@
+import 'support/fake_biometric_gateway.dart';
 import 'package:davochain/core/navigation/app_routes.dart';
 import 'package:davochain/core/preview/preview_auth_state.dart';
 import 'package:davochain/core/theme/app_theme.dart';
@@ -8,6 +9,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  setUp(() => BiometricGateway.instance = FakeBiometricGateway());
+  tearDown(() => BiometricGateway.instance = DeviceBiometricGateway());
   Future<void> login(WidgetTester tester, {bool reduced = false}) async {
     await tester.pumpWidget(MaterialApp(
         theme: AppTheme.light,

@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 
 import '../../../../core/preview/preview_account_state.dart';
+import '../../verification_media/verification_attachment.dart';
 
 enum BasicIdentityMethod {
   nin('NIN', 'National Identification Number'),
@@ -25,20 +26,50 @@ class VerificationSession extends ChangeNotifier {
   bool basicSubmitted = false;
   bool get basicVerified => basicSubmitted;
   bool faceAdded = false;
+  bool identityVerified = false;
+  bool addressVerified = false;
   String? identityDocumentType;
   bool identityFrontAdded = false;
   bool identityBackAdded = false;
   String? addressDocumentType;
   bool addressDocumentAdded = false;
   bool advancedSubmitted = false;
+  VerificationAttachment? identityFront,
+      identityBack,
+      addressAttachment,
+      selfie;
+
+  void attachIdentity(VerificationAttachment attachment,
+      {required bool front}) {
+    if (front) {
+      identityFront?.release();
+      identityFront = attachment;
+    } else {
+      identityBack?.release();
+      identityBack = attachment;
+    }
+    addIdentitySide(front: front);
+  }
+
+  void attachSelfie(VerificationAttachment attachment) {
+    selfie?.release();
+    selfie = attachment;
+    faceAdded = false;
+    identityVerified = false;
+    notifyListeners();
+  }
+
+  void attachAddress(VerificationAttachment attachment) {
+    addressAttachment?.release();
+    addressAttachment = attachment;
+    addAddressDocument();
+  }
 
   bool get canStartAdvanced => basicSubmitted;
-  bool get identityDocumentsAdded =>
-      identityFrontAdded &&
-      (identityDocumentType == 'International passport' || identityBackAdded);
-  int get advancedStep => !faceAdded
+  bool get identityDocumentsAdded => identityFrontAdded;
+  int get advancedStep => !identityDocumentsAdded
       ? 0
-      : !identityDocumentsAdded
+      : !identityVerified
           ? 1
           : 2;
 
@@ -70,24 +101,36 @@ class VerificationSession extends ChangeNotifier {
   }
 
   void addFace() {
-    if (!basicSubmitted) throw StateError('Complete Basic verification first.');
+    if (!basicVerified || !identityDocumentsAdded) {
+      throw StateError('Complete Basic verification and upload your ID first.');
+    }
     faceAdded = true;
     notifyListeners();
   }
 
   void chooseDocument(String type) {
     if (identityDocumentType != type) {
+      identityFront?.release();
+      identityBack?.release();
+      selfie?.release();
+      identityFront = null;
+      identityBack = null;
+      selfie = null;
       identityDocumentType = type;
       identityFrontAdded = false;
       identityBackAdded = false;
+      faceAdded = false;
+      identityVerified = false;
+      addressVerified = false;
+      advancedSubmitted = false;
     }
     notifyListeners();
   }
 
   void addIdentitySide({required bool front}) {
-    if (!faceAdded || identityDocumentType == null) {
+    if (!basicVerified || identityDocumentType == null) {
       throw StateError(
-          'Complete facial verification and choose an identity document.');
+          'Complete Basic verification and choose an identity document.');
     }
     if (front) {
       identityFrontAdded = true;
@@ -97,14 +140,41 @@ class VerificationSession extends ChangeNotifier {
     notifyListeners();
   }
 
+  void verifyIdentity() {
+    if (!basicVerified || !identityDocumentsAdded || !faceAdded) {
+      throw StateError('Upload your ID and complete facial verification.');
+    }
+    identityVerified = true;
+    notifyListeners();
+  }
+
+  void removeIdentityFront() {
+    identityFront?.release();
+    selfie?.release();
+    identityFront = null;
+    selfie = null;
+    identityFrontAdded = false;
+    faceAdded = false;
+    identityVerified = false;
+    addressVerified = false;
+    advancedSubmitted = false;
+    notifyListeners();
+  }
+
   void chooseAddressDocument(String type) {
-    if (addressDocumentType != type) addressDocumentAdded = false;
+    if (addressDocumentType != type) {
+      addressAttachment?.release();
+      addressAttachment = null;
+      addressDocumentAdded = false;
+      addressVerified = false;
+      advancedSubmitted = false;
+    }
     addressDocumentType = type;
     notifyListeners();
   }
 
   void addAddressDocument() {
-    if (!identityDocumentsAdded || addressDocumentType == null) {
+    if (!identityVerified || addressDocumentType == null) {
       throw StateError(
           'Complete identity documents and choose proof of address.');
     }
@@ -112,18 +182,41 @@ class VerificationSession extends ChangeNotifier {
     notifyListeners();
   }
 
+  void removeAddressDocument() {
+    addressAttachment?.release();
+    addressAttachment = null;
+    addressDocumentAdded = false;
+    addressVerified = false;
+    advancedSubmitted = false;
+    notifyListeners();
+  }
+
   void submitAdvanced() {
     if (!basicSubmitted ||
         !faceAdded ||
         !identityDocumentsAdded ||
+        !identityVerified ||
         !addressDocumentAdded) {
       throw StateError('Complete the face, identity and address steps.');
     }
     advancedSubmitted = true;
+    addressVerified = true;
     notifyListeners();
   }
 
   void reset() {
+    for (final attachment in [
+      identityFront,
+      identityBack,
+      addressAttachment,
+      selfie
+    ]) {
+      attachment?.release();
+    }
+    identityFront = null;
+    identityBack = null;
+    addressAttachment = null;
+    selfie = null;
     _generation++;
     profileDraft.clear();
     profileComplete = false;
@@ -131,6 +224,8 @@ class VerificationSession extends ChangeNotifier {
     identifierLastFour = null;
     basicSubmitted = false;
     faceAdded = false;
+    identityVerified = false;
+    addressVerified = false;
     identityDocumentType = null;
     identityFrontAdded = false;
     identityBackAdded = false;

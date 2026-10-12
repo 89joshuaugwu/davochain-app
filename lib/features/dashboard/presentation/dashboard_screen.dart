@@ -1,3 +1,4 @@
+import '../../../shared/widgets/davo_scroll_behavior.dart';
 import '../../funding/funding_outcomes.dart';
 import '../../buy_crypto/presentation/buy_crypto_screens.dart';
 import '../../buy_crypto/presentation/buy_crypto_models.dart';
@@ -23,7 +24,8 @@ import '../../profile_settings/presentation/verification/verification_overview_s
 const _dashboardAssetRoot = 'assets/images/dashboard';
 
 class DavochainDashboardScreen extends StatefulWidget {
-  const DavochainDashboardScreen({super.key});
+  const DavochainDashboardScreen({super.key, this.onRefresh});
+  final Future<void> Function()? onRefresh;
 
   @override
   State<DavochainDashboardScreen> createState() =>
@@ -48,104 +50,113 @@ class _DavochainDashboardScreenState extends State<DavochainDashboardScreen> {
         ),
         child: Scaffold(
           backgroundColor: DavoColors.of(context).canvas,
-          body: SafeArea(
-            bottom: false,
-            child: ValueListenableBuilder<bool>(
-              valueListenable: PreviewAccountState.setupComplete,
-              builder: (context, setupComplete, _) => LayoutBuilder(
-                builder: (context, constraints) {
-                  final compact = constraints.maxHeight < 760;
-                  final gap = compact
-                      ? 8.0
-                      : constraints.maxHeight < 790
-                          ? 12.0
-                          : 16.0;
-                  final header = Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const _Entrance(index: 0, child: _DashboardHeader()),
-                      SizedBox(height: gap),
-                      _Entrance(
-                          index: 1,
-                          child: _BalanceCard(
-                            compact: compact,
-                            visible: _balanceVisible,
-                            onVisibilityToggle: () => setState(
-                                () => _balanceVisible = !_balanceVisible),
-                            onDeposit: _openWalletSelector,
-                            onWithdraw: () => startWithdrawFlow(context),
-                          )),
-                      SizedBox(height: gap),
-                      if (!setupComplete) ...[
+          body: DavoFloatingRefresh(
+            onRefresh: () async {
+              await (widget.onRefresh?.call() ??
+                  Future<void>.delayed(const Duration(milliseconds: 700)));
+              if (mounted) setState(() {});
+            },
+            child: SafeArea(
+              bottom: false,
+              child: ValueListenableBuilder<bool>(
+                valueListenable: PreviewAccountState.setupComplete,
+                builder: (context, setupComplete, _) => LayoutBuilder(
+                  builder: (context, constraints) {
+                    final compact = constraints.maxHeight < 760;
+                    final gap = compact
+                        ? 8.0
+                        : constraints.maxHeight < 790
+                            ? 12.0
+                            : 16.0;
+                    final header = Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const _Entrance(index: 0, child: _DashboardHeader()),
+                        SizedBox(height: gap),
                         _Entrance(
-                            index: 2,
-                            child: InkWell(
-                              onTap: () => Navigator.of(context).push(
-                                  AppPageRoute<void>(
-                                      settings: const RouteSettings(
-                                          name: 'verification'),
-                                      builder: (_) =>
-                                          const VerificationOverviewScreen())),
-                              borderRadius: BorderRadius.circular(8),
-                              child: _SetupBanner(compact: compact),
+                            index: 1,
+                            child: _BalanceCard(
+                              compact: compact,
+                              visible: _balanceVisible,
+                              onVisibilityToggle: () => setState(
+                                  () => _balanceVisible = !_balanceVisible),
+                              onDeposit: _openWalletSelector,
+                              onWithdraw: () => startWithdrawFlow(context),
                             )),
                         SizedBox(height: gap),
+                        if (!setupComplete) ...[
+                          _Entrance(
+                              index: 2,
+                              child: InkWell(
+                                onTap: () => Navigator.of(context).push(
+                                    AppPageRoute<void>(
+                                        settings: const RouteSettings(
+                                            name: 'verification'),
+                                        builder: (_) =>
+                                            const VerificationOverviewScreen())),
+                                borderRadius: BorderRadius.circular(8),
+                                child: _SetupBanner(compact: compact),
+                              )),
+                          SizedBox(height: gap),
+                        ],
+                        _Entrance(
+                            index: 3,
+                            child: _QuickActions(
+                              compact: compact,
+                              onBuy: () => startBuyCryptoFlow(context),
+                              onSell: () => startSellCryptoFlow(context),
+                              onGift: () => startGiftCardFlow(context),
+                              onHistory: () => Navigator.of(context).push(
+                                  _davoRoute(const TransactionHistoryScreen())),
+                            )),
+                        SizedBox(height: gap),
+                        _Entrance(
+                            index: 4, child: _PromoBanner(compact: compact)),
+                        SizedBox(height: gap),
+                        _assetsHeading(compact: compact),
+                        SizedBox(height: compact ? 4 : 8),
                       ],
-                      _Entrance(
-                          index: 3,
-                          child: _QuickActions(
-                            compact: compact,
-                            onBuy: () => startBuyCryptoFlow(context),
-                            onSell: () => startSellCryptoFlow(context),
-                            onGift: () => startGiftCardFlow(context),
-                            onHistory: () => Navigator.of(context).push(
-                                _davoRoute(const TransactionHistoryScreen())),
-                          )),
-                      SizedBox(height: gap),
-                      _Entrance(
-                          index: 4, child: _PromoBanner(compact: compact)),
-                      SizedBox(height: gap),
-                      _assetsHeading(compact: compact),
-                      SizedBox(height: compact ? 4 : 8),
-                    ],
-                  );
-                  // Ordinary phones keep the header stationary. Landscape and enlarged
-                  // text retain full-page scrolling so controls never become unreachable.
-                  final needsFullScroll = constraints.maxHeight < 640 ||
-                      MediaQuery.textScalerOf(context).scale(14) > 18;
-                  if (needsFullScroll) {
-                    return SingleChildScrollView(
-                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+                    );
+                    // Ordinary phones keep the header stationary. Landscape and enlarged
+                    // text retain full-page scrolling so controls never become unreachable.
+                    final needsFullScroll = constraints.maxHeight < 640 ||
+                        MediaQuery.textScalerOf(context).scale(14) > 18;
+                    if (needsFullScroll) {
+                      return SingleChildScrollView(
+                        padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+                        child: Column(children: [
+                          header,
+                          const SizedBox(
+                              height: 240, child: _DashboardAssetCard())
+                        ]),
+                      );
+                    }
+                    return Padding(
+                      padding:
+                          EdgeInsets.fromLTRB(16, compact ? 12 : 16, 16, 0),
                       child: Column(children: [
                         header,
-                        const SizedBox(
-                            height: 240, child: _DashboardAssetCard())
+                        Expanded(
+                            child: LayoutBuilder(builder: (context, space) {
+                          final visibleRows = setupComplete ? 4 : 3;
+                          final rowHeight =
+                              ((space.maxHeight - 4 - (visibleRows - 1)) /
+                                      visibleRows)
+                                  .clamp(52.0, 72.0);
+                          final windowHeight =
+                              (4 + rowHeight * visibleRows + visibleRows - 1)
+                                  .clamp(0.0, space.maxHeight);
+                          return Align(
+                              alignment: Alignment.topCenter,
+                              child: SizedBox(
+                                  height: windowHeight,
+                                  child: _DashboardAssetCard(
+                                      rowHeight: rowHeight)));
+                        }))
                       ]),
                     );
-                  }
-                  return Padding(
-                    padding: EdgeInsets.fromLTRB(16, compact ? 12 : 16, 16, 0),
-                    child: Column(children: [
-                      header,
-                      Expanded(child: LayoutBuilder(builder: (context, space) {
-                        final visibleRows = setupComplete ? 4 : 3;
-                        final rowHeight =
-                            ((space.maxHeight - 4 - (visibleRows - 1)) /
-                                    visibleRows)
-                                .clamp(52.0, 72.0);
-                        final windowHeight =
-                            (4 + rowHeight * visibleRows + visibleRows - 1)
-                                .clamp(0.0, space.maxHeight);
-                        return Align(
-                            alignment: Alignment.topCenter,
-                            child: SizedBox(
-                                height: windowHeight,
-                                child:
-                                    _DashboardAssetCard(rowHeight: rowHeight)));
-                      }))
-                    ]),
-                  );
-                },
+                  },
+                ),
               ),
             ),
           ),

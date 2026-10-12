@@ -1,238 +1,56 @@
-import '../../../../shared/motion/davo_working_indicator.dart';
-import '../../../../shared/motion/davo_outcome_content.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../../core/navigation/app_page_route.dart';
 import '../../../../core/theme/app_theme.dart';
-import '../../../../shared/widgets/davo_success_mark.dart';
+import '../../../../shared/motion/davo_outcome_content.dart';
+import '../../../../shared/motion/davo_working_indicator.dart';
 import '../profile_settings_flow.dart' show CompleteProfileV12Screen;
 import 'advanced_verification_flow.dart';
+import 'verification_components.dart';
 import 'verification_state.dart';
+export 'verification_components.dart' show VerificationPage, VerificationButton;
 
 class VerificationOverviewScreen extends StatelessWidget {
   const VerificationOverviewScreen({super.key});
   @override
   Widget build(BuildContext context) => ListenableBuilder(
-        listenable: VerificationSession.instance,
-        builder: (context, _) {
-          final session = VerificationSession.instance;
-          return VerificationPage(
-              title: 'Verification',
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text('Verify at your own pace',
-                      style:
-                          TextStyle(fontSize: 24, fontWeight: FontWeight.w600)),
-                  const SizedBox(height: 10),
-                  const Text(
-                      'Start with your profile and one identity number. Advanced verification adds your face and supporting documents.',
-                      style: TextStyle(fontSize: 14, height: 1.5)),
-                  const SizedBox(height: 20),
-                  _LevelCard(
-                      title: 'Basic verification',
-                      status: session.basicSubmitted
-                          ? 'Verified'
-                          : session.profileDraft.isEmpty
-                              ? 'Not started'
-                              : 'In progress',
-                      steps: const [
-                        'Personal and contact details',
-                        'Choose NIN or BVN',
-                        'Enter your identity number'
-                      ],
-                      action: session.basicSubmitted
-                          ? 'View verification'
+      listenable: VerificationSession.instance,
+      builder: (context, _) {
+        final session = VerificationSession.instance;
+        return VerificationPage(
+            title: 'Verify Your Account',
+            child:
+                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              const Text(
+                  'Complete verification to increase your limits and enjoy all Davochain features',
+                  style: verificationHeading),
+              const SizedBox(height: 28),
+              VerificationChoiceRow(
+                  title: 'Basic Verification',
+                  subtitle: 'Profile information and BVN/NIN verification',
+                  asset: session.basicVerified ? '4217e.svg' : '5a106.svg',
+                  selected: !session.basicVerified,
+                  completed: session.basicVerified,
+                  onTap: () => pushAppPage<void>(
+                      context,
+                      (_) => session.basicVerified
+                          ? const BasicVerificationSubmittedScreen(
+                              animate: false)
                           : session.profileComplete
-                              ? 'Continue Basic'
-                              : 'Complete profile',
-                      onTap: () => pushAppPage<void>(
-                          context,
-                          (_) => session.basicSubmitted
-                              ? const BasicVerificationSubmittedScreen(
-                                  animate: false)
-                              : session.profileComplete
-                                  ? const BasicIdentityChoiceScreen()
-                                  : const CompleteProfileV12Screen())),
-                  const SizedBox(height: 14),
-                  _LevelCard(
-                      title: 'Advanced verification',
-                      status: session.advancedSubmitted
-                          ? 'Submitted · Pending review'
-                          : !session.canStartAdvanced
-                              ? 'Complete Basic first'
-                              : session.faceAdded
-                                  ? 'In progress'
-                                  : 'Ready to start',
-                      steps: const [
-                        'Facial verification',
-                        'Identity documents',
-                        'Proof of address'
-                      ],
-                      action: session.advancedSubmitted
-                          ? 'View submission'
-                          : session.faceAdded
-                              ? 'Continue Advanced'
-                              : 'Start Advanced',
-                      onTap: session.canStartAdvanced
-                          ? () => pushAppPage<void>(context,
-                              (_) => const AdvancedVerificationFlowScreen())
-                          : null),
-                  const SizedBox(height: 18),
-                  Text(
-                      'Complete Basic verification with your profile and one identity number. Advanced verification adds identity documents, a face photo and proof of address.',
-                      style: TextStyle(
-                          fontSize: 12,
-                          height: 1.5,
-                          color: DavoColors.of(context).bodyMuted)),
-                ],
-              ));
-        },
-      );
-}
-
-class VerificationPage extends StatelessWidget {
-  const VerificationPage(
-      {super.key, required this.title, required this.child, this.bottom});
-  final String title;
-  final Widget child;
-  final Widget? bottom;
-  @override
-  Widget build(BuildContext context) => Scaffold(
-        backgroundColor: DavoColors.of(context).surface,
-        appBar: AppBar(
-            title: Text(title,
-                style:
-                    const TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
-            centerTitle: true,
-            backgroundColor: DavoColors.of(context).surface,
-            surfaceTintColor: Colors.transparent),
-        body: SafeArea(
-            child: Column(children: [
-          Expanded(
-              child: SingleChildScrollView(
-                  keyboardDismissBehavior:
-                      ScrollViewKeyboardDismissBehavior.onDrag,
-                  padding: const EdgeInsets.fromLTRB(24, 20, 24, 24),
-                  child: child)),
-          if (bottom != null)
-            Padding(
-                padding: const EdgeInsets.fromLTRB(24, 10, 24, 20),
-                child: bottom!)
-        ])),
-      );
-}
-
-class _LevelCard extends StatelessWidget {
-  const _LevelCard(
-      {required this.title,
-      required this.status,
-      required this.steps,
-      required this.action,
-      this.onTap});
-  final String title, status, action;
-  final List<String> steps;
-  final VoidCallback? onTap;
-  @override
-  Widget build(BuildContext context) => Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-            color: onTap == null
-                ? DavoColors.of(context).offWhite
-                : DavoColors.of(context).surface,
-            border: Border.all(color: DavoColors.of(context).border),
-            borderRadius: BorderRadius.circular(16)),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Row(children: [
-            Container(
-                width: 36,
-                height: 36,
-                decoration: BoxDecoration(
-                    color: onTap == null
-                        ? DavoColors.of(context).fieldFill
-                        : DavoColors.of(context).primarySoft,
-                    borderRadius: BorderRadius.circular(10)),
-                child: Icon(
-                    title.startsWith('Basic')
-                        ? Icons.person_outline_rounded
-                        : Icons.shield_outlined,
-                    size: 20,
-                    color: onTap == null
-                        ? DavoColors.of(context).bodyMuted
-                        : DavoColors.of(context).link)),
-            const SizedBox(width: 12),
-            Expanded(
-                child: Text(title,
-                    style: const TextStyle(
-                        fontSize: 18, fontWeight: FontWeight.w600))),
-          ]),
-          const SizedBox(height: 12),
-          Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                  color: status.contains('Pending')
-                      ? DavoColors.of(context).warningSurface
-                      : DavoColors.of(context).fieldFill,
-                  borderRadius: BorderRadius.circular(6)),
-              child: Text(status,
-                  style: TextStyle(
-                      fontSize: 12,
-                      color: status.contains('Pending')
-                          ? DavoColors.of(context).warning
-                          : DavoColors.of(context).body))),
-          const SizedBox(height: 14),
-          for (var i = 0; i < steps.length; i++)
-            Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      SizedBox(
-                          width: 16,
-                          child: Text('${i + 1}',
-                              style: TextStyle(
-                                  fontSize: 12,
-                                  color: DavoColors.of(context).link))),
-                      const SizedBox(width: 12),
-                      Expanded(
-                          child: Text(steps[i],
-                              style: const TextStyle(fontSize: 14)))
-                    ])),
-          if (onTap == null)
-            Padding(
-                padding: const EdgeInsets.only(top: 4),
-                child: Row(children: [
-                  Icon(Icons.lock_outline_rounded,
-                      size: 14, color: DavoColors.of(context).bodyMuted),
-                  const SizedBox(width: 8),
-                  Expanded(
-                      child: Text(action,
-                          style: TextStyle(
-                              fontSize: 14,
-                              color: DavoColors.of(context).bodyMuted)))
-                ]))
-          else
-            VerificationButton(action, onPressed: onTap),
-        ]),
-      );
-}
-
-class VerificationButton extends StatelessWidget {
-  const VerificationButton(this.label, {super.key, this.onPressed});
-  final String label;
-  final VoidCallback? onPressed;
-  @override
-  Widget build(BuildContext context) => SizedBox(
-      width: double.infinity,
-      child: FilledButton(
-          onPressed: onPressed,
-          style: FilledButton.styleFrom(
-              minimumSize: const Size(0, 50),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8))),
-          child: Text(label,
-              style:
-                  const TextStyle(fontSize: 14, fontWeight: FontWeight.w600))));
+                              ? const BasicIdentityChoiceScreen()
+                              : const CompleteProfileV12Screen())),
+              VerificationChoiceRow(
+                  title: 'Advanced Verification',
+                  subtitle: 'ID and Address Verification',
+                  asset: '53681.svg',
+                  selected: session.basicVerified && !session.advancedSubmitted,
+                  completed: session.advancedSubmitted,
+                  onTap: session.canStartAdvanced
+                      ? () => pushAppPage<void>(context,
+                          (_) => const AdvancedVerificationFlowScreen())
+                      : null),
+            ]));
+      });
 }
 
 class BasicIdentityChoiceScreen extends StatefulWidget {
@@ -242,66 +60,68 @@ class BasicIdentityChoiceScreen extends StatefulWidget {
 }
 
 class _BasicIdentityChoiceState extends State<BasicIdentityChoiceScreen> {
-  BasicIdentityMethod? selected = VerificationSession.instance.identityMethod;
+  BasicIdentityMethod selected =
+      VerificationSession.instance.identityMethod ?? BasicIdentityMethod.bvn;
   @override
   Widget build(BuildContext context) => VerificationPage(
-      title: 'Basic verification',
-      bottom: VerificationButton('Continue',
-          onPressed: selected == null
-              ? null
-              : () {
-                  VerificationSession.instance.chooseIdentity(selected!);
-                  pushAppPage<void>(context,
-                      (_) => BasicIdentityNumberScreen(method: selected!));
-                }),
+      title: 'Verify Your Account',
+      bottom: VerificationButton('Continue', onPressed: () {
+        VerificationSession.instance.chooseIdentity(selected);
+        pushAppPage<void>(
+            context, (_) => BasicIdentityRequirementsScreen(method: selected));
+      }),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        const Text('Choose an identity number',
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.w600)),
-        const SizedBox(height: 12),
-        const Text(
-            'Use either your NIN or BVN to complete Basic verification. Only one is needed. No facial verification is required here.',
-            style: TextStyle(fontSize: 14, height: 1.5)),
-        const SizedBox(height: 28),
-        for (final method in BasicIdentityMethod.values)
-          Padding(
-              padding: const EdgeInsets.only(bottom: 16),
-              child: Semantics(
-                  selected: selected == method,
-                  button: true,
-                  child: InkWell(
-                      borderRadius: BorderRadius.circular(12),
-                      onTap: () => setState(() => selected = method),
-                      child: Container(
-                          padding: const EdgeInsets.all(20),
-                          decoration: BoxDecoration(
-                              color: selected == method
-                                  ? DavoColors.of(context).primarySoft
-                                  : DavoColors.of(context).surface,
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(
-                                  color: selected == method
-                                      ? AppColors.primary
-                                      : DavoColors.of(context).border)),
-                          child: Row(children: [
-                            Expanded(
-                                child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                  Text(method.shortLabel,
-                                      style: const TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w600)),
-                                  const SizedBox(height: 6),
-                                  Text(method.fullLabel,
-                                      style: const TextStyle(fontSize: 12))
-                                ])),
-                            Icon(
-                                selected == method
-                                    ? Icons.radio_button_checked
-                                    : Icons.radio_button_off,
-                                color: DavoColors.of(context).link)
-                          ]))))),
+        const Text('Choose a verification method', style: verificationHeading),
+        const SizedBox(height: 8),
+        Text(
+            'Select one of the options below to continue your account verification.',
+            style: verificationBody.copyWith(
+                color: DavoColors.of(context).bodyMuted)),
+        const SizedBox(height: 24),
+        for (final method in [BasicIdentityMethod.bvn, BasicIdentityMethod.nin])
+          VerificationChoiceRow(
+              title: '${method.shortLabel} Verification',
+              subtitle: 'Verify using your ${method.fullLabel}.',
+              radio: true,
+              selected: selected == method,
+              onTap: () => setState(() => selected = method)),
+      ]));
+}
+
+class BasicIdentityRequirementsScreen extends StatelessWidget {
+  const BasicIdentityRequirementsScreen({super.key, required this.method});
+  final BasicIdentityMethod method;
+  @override
+  Widget build(BuildContext context) => VerificationPage(
+      title: 'Verify Your Account',
+      bottom: VerificationButton('Start',
+          onPressed: () => pushAppPage<void>(
+              context, (_) => BasicIdentityNumberScreen(method: method))),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+        Center(
+            child: Container(
+                width: 60,
+                height: 60,
+                decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: DavoColors.of(context).primarySoft),
+                alignment: Alignment.center,
+                child: const VerificationAsset('739f8.svg', size: 28))),
+        const SizedBox(height: 24),
+        Text('${method.shortLabel} Verification',
+            textAlign: TextAlign.center, style: verificationHeading),
+        const SizedBox(height: 8),
+        Text(
+            'Verify your ${method.shortLabel} to secure your account and increase your transaction limits',
+            textAlign: TextAlign.center,
+            style:
+                verificationBody.copyWith(color: DavoColors.of(context).body)),
+        const SizedBox(height: 24),
+        VerificationRequirements(items: [
+          ('e90f4.svg', 'Valid Nigerian ${method.shortLabel} (11 digits)'),
+          ('90d57.svg', 'Your registered phone number'),
+          ('6cc71.svg', 'Must match your personal details'),
+        ]),
       ]));
 }
 
@@ -319,7 +139,6 @@ class _BasicIdentityNumberState extends State<BasicIdentityNumberScreen> {
   final number = TextEditingController();
   bool verifying = false;
   String? error;
-
   Future<void> _submit() async {
     if (verifying ||
         number.text.length != 11 ||
@@ -335,7 +154,6 @@ class _BasicIdentityNumberState extends State<BasicIdentityNumberScreen> {
       error = null;
     });
     try {
-      // Local fixture; replace with the account-scoped identity provider.
       final success = widget.verify == null
           ? await Future<bool>.delayed(
               const Duration(milliseconds: 1500), () => true)
@@ -349,7 +167,7 @@ class _BasicIdentityNumberState extends State<BasicIdentityNumberScreen> {
         });
         return;
       }
-      if (!success) throw StateError('Identity verification failed');
+      if (!success) throw StateError('Verification failed');
       session.submitBasic(widget.method, submittedNumber);
       number.clear();
       Navigator.of(context).pushReplacement(AppPageRoute<void>(
@@ -372,64 +190,77 @@ class _BasicIdentityNumberState extends State<BasicIdentityNumberScreen> {
 
   @override
   Widget build(BuildContext context) => VerificationPage(
-      title: 'Basic verification',
+      title: verifying ? 'Verify Your Account' : 'Verify your identity',
       bottom: verifying
           ? null
-          : VerificationButton('Submit Basic verification',
-              onPressed: number.text.length != 11 ||
-                      !VerificationSession.instance.profileComplete
-                  ? null
-                  : _submit),
+          : VerificationButton('Continue',
+              onPressed: number.text.length == 11 &&
+                      VerificationSession.instance.profileComplete
+                  ? _submit
+                  : null),
       child: verifying
           ? Column(children: [
-              const SizedBox(height: 48),
+              const SizedBox(height: 36),
               const DavoWorkingIndicator(),
               const SizedBox(height: 24),
               Text('Verifying your ${widget.method.shortLabel}',
-                  style: const TextStyle(
-                      fontSize: 16, fontWeight: FontWeight.w600)),
+                  style: verificationHeading),
               const SizedBox(height: 8),
               const Text(
                   'This may take a few seconds.\nPlease do not leave this page.',
-                  textAlign: TextAlign.center),
+                  textAlign: TextAlign.center,
+                  style: verificationBody)
             ])
           : Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text('Enter your ${widget.method.shortLabel}',
-                  style: const TextStyle(
-                      fontSize: 24, fontWeight: FontWeight.w600)),
-              const SizedBox(height: 12),
-              const Text(
-                  'Your number should match the personal details in your profile.',
-                  style: TextStyle(fontSize: 14, height: 1.5)),
-              const SizedBox(height: 28),
+              Text(
+                  'We need your ${widget.method.fullLabel} (${widget.method.shortLabel}) to secure your account.',
+                  style: verificationBody),
+              const SizedBox(height: 24),
+              Text('Your ${widget.method.shortLabel}', style: verificationBody),
+              const SizedBox(height: 8),
               TextField(
-                  keyboardAppearance: Theme.of(context).brightness,
                   controller: number,
+                  keyboardAppearance: Theme.of(context).brightness,
                   keyboardType: TextInputType.number,
                   inputFormatters: [
                     FilteringTextInputFormatter.digitsOnly,
                     LengthLimitingTextInputFormatter(11)
                   ],
-                  onChanged: (_) => setState(() {}),
+                  onChanged: (_) => setState(() {
+                        error = null;
+                      }),
+                  style: verificationBody,
                   decoration: InputDecoration(
-                      labelText: widget.method.shortLabel,
-                      hintText: 'Enter 11-digit number',
-                      counterText: '${number.text.length}/11',
+                      hintText:
+                          'Enter your 11-digit ${widget.method.shortLabel}',
+                      hintStyle: verificationCaption.copyWith(
+                          color: DavoColors.of(context).muted),
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 12),
+                      suffixIcon: number.text.length == 11
+                          ? const Padding(
+                              key: Key('identity-number-complete'),
+                              padding: EdgeInsets.all(14),
+                              child: VerificationAsset('ddc48.svg', size: 16))
+                          : null,
                       border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12)))),
-              const SizedBox(height: 24),
+                          borderRadius: BorderRadius.circular(4)),
+                      enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(4),
+                          borderSide: BorderSide(
+                              color: DavoColors.of(context).border)))),
               if (error != null)
                 Padding(
-                  padding: const EdgeInsets.only(bottom: 16),
-                  child: Text(error!,
-                      style: TextStyle(color: DavoColors.of(context).danger)),
-                ),
-              Text(
-                  'We use this number to confirm your identity. You will not need to provide both NIN and BVN.',
-                  style: TextStyle(
-                      fontSize: 12,
-                      height: 1.5,
-                      color: DavoColors.of(context).bodyMuted)),
+                    padding: const EdgeInsets.only(top: 12),
+                    child: Text(error!,
+                        style: verificationCaption.copyWith(
+                            color: DavoColors.of(context).danger))),
+              const SizedBox(height: 24),
+              VerificationNotice(
+                  widget.method == BasicIdentityMethod.bvn
+                      ? 'We use your BVN to verify your identity and ensure that your account is secure. This does not give us access to your bank account.'
+                      : 'Your NIN is securely processed to verify that your identity matches your personal details.',
+                  title: 'Why do we ask for your ${widget.method.shortLabel}?'),
             ]));
 }
 
@@ -440,10 +271,10 @@ class BasicVerificationSubmittedScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final session = VerificationSession.instance;
     return VerificationPage(
-        title: 'Basic verification',
+        title: '',
         bottom: Column(mainAxisSize: MainAxisSize.min, children: [
           VerificationButton('Continue to Advanced',
-              onPressed: session.basicSubmitted
+              onPressed: session.basicVerified
                   ? () {
                       final navigator = Navigator.of(context);
                       navigator.popUntil((route) =>
@@ -454,36 +285,27 @@ class BasicVerificationSubmittedScreen extends StatelessWidget {
                               const AdvancedVerificationFlowScreen()));
                     }
                   : null),
-          TextButton(
+          const SizedBox(height: 12),
+          VerificationButton('Maybe Later',
+              secondary: true,
               onPressed: () => Navigator.of(context).popUntil((route) =>
-                  route.isFirst || route.settings.name == 'verification'),
-              child: const Text('Maybe Later'))
+                  route.isFirst || route.settings.name == 'verification'))
         ]),
-        child: Padding(
-            padding: const EdgeInsets.only(top: 24),
-            child: DavoOutcomeContent(
-                kind: DavoOutcomeKind.completed,
-                play: animate,
-                semanticLabel: 'Basic verification completed',
-                heading: Column(children: [
-                  const Text('Basic Verifications Completed',
-                      textAlign: TextAlign.center,
-                      style:
-                          TextStyle(fontSize: 24, fontWeight: FontWeight.w600)),
-                  const SizedBox(height: 12),
-                  Text('Verified',
-                      style: TextStyle(
-                          fontSize: 14, color: DavoColors.of(context).link))
-                ]),
-                details: Column(children: [
-                  Text(
-                      '${session.identityMethod?.shortLabel ?? 'Identity number'} ending in ${session.identifierLastFour ?? '\u2014'}',
-                      style: const TextStyle(fontSize: 14)),
-                  const SizedBox(height: 16),
-                  Text(
-                      'Your ${session.identityMethod?.shortLabel ?? 'identity number'} has been successfully verified. You can now continue to Advanced verification.',
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(fontSize: 14, height: 1.5)),
-                ]))));
+        child: DavoOutcomeContent(
+            play: animate,
+            semanticLabel: 'Basic verification completed',
+            heading: Column(children: [
+              const Text('Basic Verifications Completed',
+                  style: verificationHeading, textAlign: TextAlign.center),
+              const SizedBox(height: 8),
+              Text(
+                  'Your ${session.identityMethod?.shortLabel ?? 'identity number'} has been successfully verified.\nYou can now access more features on Davochain',
+                  style: verificationBody,
+                  textAlign: TextAlign.center)
+            ]),
+            details: VerificationTier(
+                advanced: false,
+                description:
+                    session.identityMethod?.shortLabel ?? 'Identity number')));
   }
 }

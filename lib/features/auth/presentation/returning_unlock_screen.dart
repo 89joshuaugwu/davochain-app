@@ -1,3 +1,6 @@
+import 'dart:async';
+import '../../../core/device/biometric_gateway.dart';
+import '../../../shared/widgets/davo_toast.dart';
 import '../../security_questions/presentation/security_questions_login_gate.dart';
 import '../../security_questions/security_questions_service.dart';
 import '../../../shared/widgets/transaction_pin_entry.dart';
@@ -22,16 +25,37 @@ class ReturningUnlockScreen extends StatefulWidget {
 class _ReturningUnlockScreenState extends State<ReturningUnlockScreen> {
   final _password = TextEditingController();
   AuthJourneyMethod? _method;
-  bool _pinOpening = false;
-  bool get _opening => _method != null || _pinOpening;
+  bool _pinOpening = false, _biometricOpening = false;
+  bool get _opening => _method != null || _pinOpening || _biometricOpening;
   @override
   void dispose() {
+    unawaited(BiometricGateway.instance.cancel());
     _password.dispose();
     super.dispose();
   }
 
-  void _unlock([AuthJourneyMethod method = AuthJourneyMethod.password]) {
+  Future<void> _unlock(
+      [AuthJourneyMethod method = AuthJourneyMethod.password]) async {
     if (_opening) return;
+    if (method == AuthJourneyMethod.fingerprint) {
+      final generation = VerificationSession.instance.generation;
+      setState(() => _biometricOpening = true);
+      bool accepted = false;
+      try {
+        accepted = await BiometricGateway.instance.authenticate(
+            reason: 'Unlock Davochain with your enrolled biometrics');
+      } catch (_) {
+        accepted = false;
+      }
+      if (!mounted) return;
+      setState(() => _biometricOpening = false);
+      if (generation != VerificationSession.instance.generation) return;
+      if (!accepted) {
+        showDavoToast(
+            context, 'Fingerprint not confirmed. Use your password or PIN.');
+        return;
+      }
+    }
     setState(() => _method = method);
     FocusManager.instance.primaryFocus?.unfocus();
     HapticFeedback.lightImpact();
