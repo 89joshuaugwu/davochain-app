@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:davochain/core/theme/app_theme.dart';
 import 'package:davochain/features/profile_settings/presentation/profile_settings_flow.dart';
 import 'package:davochain/features/profile_settings/presentation/verification/verification_overview_screen.dart';
@@ -10,6 +11,69 @@ void main() {
   setUp(session.reset);
   tearDown(session.reset);
   Widget app(Widget home) => MaterialApp(theme: AppTheme.light, home: home);
+
+  for (final method in BasicIdentityMethod.values) {
+    testWidgets('${method.shortLabel} commits only after a successful response',
+        (tester) async {
+      session.completeProfile();
+      final response = Completer<bool>();
+      await tester.pumpWidget(app(BasicIdentityNumberScreen(
+          method: method, verify: (_, __) => response.future)));
+      await tester.enterText(find.byType(TextField), '12345678901');
+      await tester.pump();
+      await tester.tap(find.text('Submit Basic verification'));
+      await tester.pump();
+      expect(find.text('Verifying your ${method.shortLabel}'), findsOneWidget);
+      expect(session.canStartAdvanced, isFalse);
+      response.complete(true);
+      await tester.pump();
+      await tester.pumpAndSettle();
+      expect(session.basicVerified, isTrue);
+      expect(find.text('Basic Verifications Completed'), findsOneWidget);
+      expect(find.text('Pending review'), findsNothing);
+    });
+  }
+  testWidgets(
+      'failed verification retains input for retry and does not unlock Advanced',
+      (tester) async {
+    session.completeProfile();
+    await tester.pumpWidget(app(BasicIdentityNumberScreen(
+        method: BasicIdentityMethod.bvn, verify: (_, __) async => false)));
+    await tester.enterText(find.byType(TextField), '12345678901');
+    await tester.pump();
+    await tester.tap(find.text('Submit Basic verification'));
+    await tester.pumpAndSettle();
+    expect(session.canStartAdvanced, isFalse);
+    expect(find.textContaining('Could not verify'), findsOneWidget);
+    expect(tester.widget<TextField>(find.byType(TextField)).controller!.text,
+        '12345678901');
+  });
+  for (final reset in [false, true]) {
+    testWidgets(
+        'late response cannot verify a ${reset ? 'reset' : 'disposed'} session',
+        (tester) async {
+      session.completeProfile();
+      final response = Completer<bool>();
+      await tester.pumpWidget(app(BasicIdentityNumberScreen(
+          method: BasicIdentityMethod.nin,
+          verify: (_, __) => response.future)));
+      await tester.enterText(find.byType(TextField), '12345678901');
+      await tester.pump();
+      await tester.tap(find.text('Submit Basic verification'));
+      await tester.pump();
+      if (reset) {
+        session.reset();
+      } else {
+        await tester.pumpWidget(const SizedBox());
+      }
+      response.complete(true);
+      await tester.pump();
+      expect(session.basicVerified, isFalse);
+      expect(session.canStartAdvanced, isFalse);
+      await tester.pumpWidget(const SizedBox());
+      expect(tester.takeException(), isNull);
+    });
+  }
 
   testWidgets('Overview exposes Basic and gates Advanced', (tester) async {
     await tester.pumpWidget(app(const VerificationOverviewScreen()));
@@ -39,8 +103,13 @@ void main() {
     expect(tester.widget<TextField>(find.byType(TextField)).controller!.text,
         '12345678901');
     await tester.tap(find.text('Submit Basic verification'));
+    await tester.pump();
+    expect(find.text('Verifying your BVN'), findsOneWidget);
+    expect(session.basicSubmitted, isFalse);
+    await tester.pump(const Duration(seconds: 2));
     await tester.pumpAndSettle();
-    expect(find.text('Pending review'), findsOneWidget);
+    expect(find.text('Basic Verifications Completed'), findsOneWidget);
+    expect(find.text('Pending review'), findsNothing);
     expect(session.identifierLastFour, '8901');
     expect(session.faceAdded, isFalse);
   });

@@ -15,12 +15,15 @@ enum BasicIdentityMethod {
 class VerificationSession extends ChangeNotifier {
   VerificationSession._();
   static final instance = VerificationSession._();
+  int _generation = 0;
+  int get generation => _generation;
 
   final Map<String, String> profileDraft = {};
   bool profileComplete = false;
   BasicIdentityMethod? identityMethod;
   String? identifierLastFour;
   bool basicSubmitted = false;
+  bool get basicVerified => basicSubmitted;
   bool faceAdded = false;
   String? identityDocumentType;
   bool identityFrontAdded = false;
@@ -121,6 +124,7 @@ class VerificationSession extends ChangeNotifier {
   }
 
   void reset() {
+    _generation++;
     profileDraft.clear();
     profileComplete = false;
     identityMethod = null;
