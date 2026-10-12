@@ -8,6 +8,7 @@ import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
 import '../../../core/theme/app_theme.dart';
 import '../presentation/verification/verification_components.dart';
 import 'face_guidance.dart';
+import 'face_oval_overlay.dart';
 import 'face_frame_freshness.dart';
 import 'nv21_frame.dart';
 import 'verification_attachment.dart';
@@ -218,10 +219,10 @@ class _GuidedFaceState extends State<GuidedFaceCaptureScreen>
           box.center.dy < height * .8;
       detectionFeedback = !inFrame
           ? box.width <= width * .18
-              ? 'Move closer so your face fills the frame.'
+              ? 'Move closer until your face fills the oval.'
               : box.width >= width * .8
-                  ? 'Move back slightly so your whole face is visible.'
-                  : 'Move your face to the center of the frame.'
+                  ? 'Move back slightly to fit your whole face inside the oval.'
+                  : 'Center your face inside the oval.'
           : face.headEulerAngleY == null || face.headEulerAngleX == null
               ? 'Face detected. Hold still so your head position can be read.'
               : guide.stage == FaceGuidanceStage.front &&
@@ -428,9 +429,7 @@ class _GuidedFaceState extends State<GuidedFaceCaptureScreen>
                                               height: camera!
                                                   .value.previewSize!.width,
                                               child: CameraPreview(camera!))),
-                                      CustomPaint(
-                                          painter:
-                                              _FaceFrame(ready: guide.ready)),
+                                      FaceOvalOverlay(ready: guide.ready),
                                       Positioned(
                                           right: 16,
                                           bottom: 16,
@@ -488,7 +487,7 @@ class _GuidedFaceState extends State<GuidedFaceCaptureScreen>
                           const SizedBox(height: 12),
                           Text(
                               guide.ready
-                                  ? 'Hold this position'
+                                  ? 'Face aligned. Hold this position.'
                                   : detectionFeedback,
                               textAlign: TextAlign.center,
                               style: verificationCaption.copyWith(
@@ -501,29 +500,3 @@ class _GuidedFaceState extends State<GuidedFaceCaptureScreen>
   }
 }
 
-class _FaceFrame extends CustomPainter {
-  const _FaceFrame({required this.ready});
-  final bool ready;
-  @override
-  void paint(Canvas canvas, Size size) {
-    final frame = RRect.fromRectAndRadius(
-        Rect.fromCenter(
-            center: size.center(Offset.zero),
-            width: size.width * .75,
-            height: size.height * .82),
-        const Radius.circular(16));
-    canvas.drawPath(
-        Path.combine(PathOperation.difference,
-            Path()..addRect(Offset.zero & size), Path()..addRRect(frame)),
-        Paint()..color = const Color(0x66000000));
-    canvas.drawRRect(
-        frame,
-        Paint()
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 2
-          ..color = ready ? AppColors.primary : Colors.white);
-  }
-
-  @override
-  bool shouldRepaint(_FaceFrame oldDelegate) => ready != oldDelegate.ready;
-}
