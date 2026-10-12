@@ -30,3 +30,5 @@ Final build29 audit:125862902bytes;790declaredfilesmatch;arm64-v8a/armeabi-v7a/x
 Build29 installed on Redmi CI49FIXKM7BUOVA6 after reconnect: adb install -r Success, versionCode29/versionName0.13.0 confirmed, MainActivity launch succeeded. Emulator build29 also installed/launched. Physical face direction/countdown and QR/torch retest now available on the phone.
 
 Build30 adds a centered face-proportioned oval guide (width/height0.74), clipped outside-only Gaussian blur and dimming, white/blue alignment stroke and clearer move-closer/back feedback. The interior remains unfiltered. Geometry/clipping and capture regression tests passed8checks; visualartifact tmp/face-oval-overlay-review.png inspected. Device photo remains the original camera capture, not the blurred display.
+
+Build30 release audited790filesmatch and installed/started on Redmi with versionCode30 confirmed. SHA2567ef31b3eecdc418839a615db14b098c86c0c797bb0be97fa676655a9a65372eb. Physical ovalpreview/blur performance awaits device feedback.
