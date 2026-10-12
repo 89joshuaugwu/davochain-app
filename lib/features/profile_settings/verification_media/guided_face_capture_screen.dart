@@ -231,7 +231,7 @@ class _GuidedFaceState extends State<GuidedFaceCaptureScreen>
                   : 'Face detected. Follow the head movement instruction.';
       guide.updatePose(
           inFrame: inFrame,
-          yaw: face.headEulerAngleY ?? 90,
+          yaw: frontCameraUserYaw(face.headEulerAngleY ?? 90),
           pitch: face.headEulerAngleX ?? 90);
     } catch (failure) {
       if (mounted && ticket == generation) {

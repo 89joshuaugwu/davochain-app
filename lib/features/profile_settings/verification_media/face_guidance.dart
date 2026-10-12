@@ -2,6 +2,9 @@ import 'package:flutter/foundation.dart';
 
 enum FaceGuidanceStage { front, capturing, right, left, nod, done }
 
+/// ML Kit reports camera-space yaw; front-camera instructions use the user's sides.
+double frontCameraUserYaw(double detectorYaw) => -detectorYaw;
+
 /// Guides local camera interaction; this is not an anti-spoofing verdict.
 class FaceGuidance extends ChangeNotifier {
   FaceGuidanceStage stage = FaceGuidanceStage.front;

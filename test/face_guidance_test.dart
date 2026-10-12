@@ -2,6 +2,19 @@ import 'package:davochain/features/profile_settings/verification_media/face_guid
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  test('front-camera detector yaw follows the user right and left instructions', () {
+    final guide = FaceGuidance();
+    addTearDown(guide.dispose);
+    guide.frontCaptured();
+    guide.updatePose(inFrame: true, yaw: frontCameraUserYaw(-20), pitch: 0);
+    expect(guide.ready, isTrue);
+    guide.tick(const Duration(seconds: 3));
+    expect(guide.stage, FaceGuidanceStage.left);
+    guide.updatePose(inFrame: true, yaw: frontCameraUserYaw(20), pitch: 0);
+    expect(guide.ready, isTrue);
+    guide.tick(const Duration(seconds: 3));
+    expect(guide.stage, FaceGuidanceStage.nod);
+  });
   test('Only the initial centered countdown captures; poses gate subsequent steps', () {
     final guide = FaceGuidance();
     guide.updatePose(inFrame: false, yaw: 0, pitch: 0);
