@@ -78,13 +78,25 @@ class DavoFloatingRefresh extends StatefulWidget {
 class _FloatingRefreshState extends State<DavoFloatingRefresh>
     with TickerProviderStateMixin, WidgetsBindingObserver {
   late final spinner = AnimationController(
-      vsync: this, duration: const Duration(milliseconds: 1600));
+      vsync: this, duration: const Duration(milliseconds: 900));
   late final edge = AnimationController(
       vsync: this, duration: const Duration(milliseconds: 260));
   bool edgeTop = true;
   double pull = 0;
   bool busy = false;
   bool foreground = true;
+  Timer? _minimumHold;
+  Completer<void>? _minimumDone;
+
+  Future<void> _twoTurns() {
+    final done = Completer<void>();
+    _minimumDone = done;
+    _minimumHold = Timer(const Duration(milliseconds: 1800), () {
+      if (!done.isCompleted) done.complete();
+    });
+    return done.future;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -116,6 +128,8 @@ class _FloatingRefreshState extends State<DavoFloatingRefresh>
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    _minimumHold?.cancel();
+    if (_minimumDone case final done? when !done.isCompleted) done.complete();
     spinner.dispose();
     edge.dispose();
     super.dispose();
@@ -130,7 +144,10 @@ class _FloatingRefreshState extends State<DavoFloatingRefresh>
     });
     _syncSpinner();
     try {
-      await widget.onRefresh();
+      await Future.wait<void>([
+        Future<void>.sync(widget.onRefresh),
+        if (!DavoMotionPolicy.reduce(context)) _twoTurns(),
+      ]);
     } catch (_) {
       if (mounted) showDavoToast(context, 'Could not refresh. Try again.');
     } finally {

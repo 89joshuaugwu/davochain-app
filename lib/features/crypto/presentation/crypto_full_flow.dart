@@ -44,7 +44,6 @@ enum TradeMode { sell, convert }
 enum _WithdrawWallet { naira, crypto }
 
 Future<void> startWithdrawFlow(BuildContext context) async {
-  HapticFeedback.selectionClick();
   final selected = await showModalBottomSheet<_WithdrawWallet>(
     context: context,
     sheetAnimationStyle: (MediaQuery.disableAnimationsOf(context) ||
@@ -68,7 +67,6 @@ Future<void> startWithdrawFlow(BuildContext context) async {
 }
 
 Future<void> startSellCryptoFlow(BuildContext context) async {
-  HapticFeedback.selectionClick();
   final asset = await showModalBottomSheet<BuyCryptoAsset>(
     context: context,
     sheetAnimationStyle: (MediaQuery.disableAnimationsOf(context) ||
@@ -104,7 +102,6 @@ Future<void> startSellCryptoFlow(BuildContext context) async {
 }
 
 Future<void> startConvertCryptoFlow(BuildContext context) async {
-  HapticFeedback.selectionClick();
   await Navigator.of(context).push<void>(AppPageRoute<void>(
       builder: (_) => const TradeAmountScreen(
           mode: TradeMode.convert, asset: BuyCryptoAsset.bitcoin)));
@@ -2127,6 +2124,7 @@ class _TransactionSuccessScreenState extends State<TransactionSuccessScreen> wit
     final transfer = kind == TxKind.internal || kind == TxKind.external;
     return DavoResultScreen(
       eventKey: '${record.id}-${record.status.name}',
+      refreshRecordId: record.id,
       kind: outcomeKind,
       mark: record.status == ReceiptStatus.failed
           ? const Icon(
@@ -2711,7 +2709,6 @@ class _TradeAmountScreenState extends State<TradeAmountScreen> {
   void _pickPercent(String label) {
     final fraction =
         label == 'Max' ? 1.0 : double.parse(label.replaceAll('%', '')) / 100;
-    HapticFeedback.selectionClick();
     amount.text = (balance * fraction)
         .toStringAsFixed(8)
         .replaceFirst(RegExp(r'0+$'), '')
@@ -3291,7 +3288,6 @@ class _AssetButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) => InkResponse(
         onTap: () {
-          HapticFeedback.selectionClick();
           onTap();
         },
         radius: 24,
@@ -3326,7 +3322,6 @@ class _Button extends StatelessWidget {
         child: InkWell(
           onTap: enabled
               ? () {
-                  HapticFeedback.lightImpact();
                   onTap();
                 }
               : null,

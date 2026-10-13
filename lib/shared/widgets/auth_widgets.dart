@@ -167,7 +167,6 @@ class _DavoPrimaryButtonState extends State<DavoPrimaryButton> {
 
   void _activate() {
     if (!_enabled) return;
-    HapticFeedback.selectionClick();
     widget.onPressed!();
   }
 

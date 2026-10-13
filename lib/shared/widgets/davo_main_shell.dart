@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../core/navigation/app_page_route.dart';
 import '../../core/theme/app_theme.dart';
@@ -62,7 +61,6 @@ class _DavoMainShellState extends State<DavoMainShell>
   void _select(int index) {
     if (_index == index || index < 0 || index > 3) return;
     FocusManager.instance.primaryFocus?.unfocus();
-    HapticFeedback.selectionClick();
     setState(() => _index = index);
     _animateSelection();
   }

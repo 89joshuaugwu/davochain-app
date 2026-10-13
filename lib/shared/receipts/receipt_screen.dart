@@ -14,7 +14,8 @@ class ReceiptScreen extends StatefulWidget {
   State<ReceiptScreen> createState() => _ReceiptScreenState();
 }
 
-class _ReceiptScreenState extends State<ReceiptScreen> with ReceiptActivityObserver<ReceiptScreen> {
+class _ReceiptScreenState extends State<ReceiptScreen>
+    with ReceiptActivityObserver<ReceiptScreen> {
   bool _showSensitive = false;
   String _note = '';
   // Other ReceiptStyle variants and their artwork remain available in the
@@ -43,7 +44,9 @@ class _ReceiptScreenState extends State<ReceiptScreen> with ReceiptActivityObser
                   border: OutlineInputBorder(),
                   counterStyle: TextStyle(fontSize: 10)),
               onChanged: (value) => setState(() => _note = value)),
-          if (ReceiptActivity.resolve(widget.record).fields.any((field) => field.sensitive))
+          if (ReceiptActivity.resolve(widget.record)
+              .fields
+              .any((field) => field.sensitive))
             SwitchListTile.adaptive(
                 contentPadding: EdgeInsets.zero,
                 activeTrackColor: AppColors.primary,
@@ -72,7 +75,7 @@ class ReceiptPaper extends StatelessWidget {
     return Container(
         color: Colors.white,
         width: double.infinity,
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(16),
         child: DefaultTextStyle(
             style: const TextStyle(
                 fontFamily: 'Sora',

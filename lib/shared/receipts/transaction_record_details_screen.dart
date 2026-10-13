@@ -1,3 +1,4 @@
+import '../motion/davo_motion_policy.dart';
 import 'receipt_activity.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -8,6 +9,7 @@ import '../../core/theme/app_theme.dart';
 import '../../features/profile_settings/presentation/settings_personal_action_flows.dart';
 import '../widgets/auth_widgets.dart';
 import '../widgets/davo_toast.dart';
+import '../widgets/davo_refresh_region.dart';
 import 'receipt_record.dart';
 import 'receipt_asset.dart';
 import 'receipt_identity.dart';
@@ -31,7 +33,8 @@ class TransactionRecordDetailsScreen extends StatefulWidget {
 }
 
 class _TransactionRecordDetailsScreenState
-    extends State<TransactionRecordDetailsScreen> with ReceiptActivityObserver<TransactionRecordDetailsScreen> {
+    extends State<TransactionRecordDetailsScreen>
+    with ReceiptActivityObserver<TransactionRecordDetailsScreen> {
   bool _expanded = false;
   bool _sharing = false;
 
@@ -90,7 +93,13 @@ class _TransactionRecordDetailsScreenState
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => DavoRefreshRegion(
+        target: DavoRefreshTarget.transaction,
+        recordId: widget.record.id,
+        builder: _buildDetails,
+      );
+
+  Widget _buildDetails(BuildContext context) {
     final record = ReceiptActivity.resolve(widget.record);
     final colors = DavoColors.of(context);
     final identity = ReceiptIdentity(record);
@@ -125,6 +134,7 @@ class _TransactionRecordDetailsScreenState
       ),
       body: SafeArea(
         child: ListView(
+          physics: const AlwaysScrollableScrollPhysics(),
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
           children: [
             Container(
@@ -179,8 +189,27 @@ class _TransactionRecordDetailsScreenState
               icon: Icon(_expanded ? Icons.expand_less : Icons.expand_more),
               label: Text(_expanded ? 'Less details' : 'More details'),
             ),
-            if (_expanded)
-              _group(context, 'Details', [
+            TweenAnimationBuilder<double>(
+              tween: Tween<double>(end: _expanded ? 1 : 0),
+              duration: DavoMotionPolicy.reduce(context)
+                  ? Duration.zero
+                  : const Duration(milliseconds: 280),
+              curve: Curves.easeOutCubic,
+              builder: (context, value, child) => value == 0
+                  ? const SizedBox.shrink()
+                  : ExcludeSemantics(
+                      excluding: !_expanded,
+                      child: ClipRect(
+                          child: Align(
+                              key: const Key('receipt-details-slide'),
+                              alignment: Alignment.topCenter,
+                              heightFactor: value,
+                              child: Opacity(
+                                  opacity: value,
+                                  child: Transform.translate(
+                                      offset: Offset(0, -8 * (1 - value)),
+                                      child: child))))),
+              child: _group(context, 'Details', [
                 _field(
                     context,
                     ReceiptField(
@@ -218,6 +247,7 @@ class _TransactionRecordDetailsScreenState
                   ]),
                 ],
               ]),
+            ),
             if (record.events.isNotEmpty) ...[
               const SizedBox(height: 20),
               _group(context, 'Timeline', [

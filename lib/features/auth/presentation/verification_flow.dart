@@ -95,7 +95,6 @@ class _VerificationScreenState extends State<VerificationScreen>
     // Prototype behavior: 0000 demonstrates the Figma error state; any other
     // complete code demonstrates successful verification until API wiring.
     if (_code == '0000') {
-      HapticFeedback.mediumImpact();
       setState(() => _error = true);
       if (!DavoMotionPolicy.reduce(context)) {
         await _shakeController.forward(from: 0);
@@ -103,7 +102,6 @@ class _VerificationScreenState extends State<VerificationScreen>
       return;
     }
 
-    HapticFeedback.lightImpact();
     _timer?.cancel();
     setState(() => _verified = true);
   }
@@ -126,7 +124,6 @@ class _VerificationScreenState extends State<VerificationScreen>
     });
     _focusNodes.first.requestFocus();
     _startTimer();
-    HapticFeedback.selectionClick();
   }
 
   @override
@@ -397,12 +394,10 @@ class _TransactionPinScreenState extends State<TransactionPinScreen>
       _createdPin = _pin;
       setState(() => _confirming = true);
       _clear();
-      HapticFeedback.selectionClick();
       return;
     }
 
     if (_pin != _createdPin) {
-      HapticFeedback.mediumImpact();
       setState(() => _error = true);
       if (!DavoMotionPolicy.reduce(context)) {
         await _shakeController.forward(from: 0);
@@ -410,7 +405,6 @@ class _TransactionPinScreenState extends State<TransactionPinScreen>
       return;
     }
 
-    HapticFeedback.lightImpact();
     if (!mounted) return;
     _finishing = true;
     FocusManager.instance.primaryFocus?.unfocus();

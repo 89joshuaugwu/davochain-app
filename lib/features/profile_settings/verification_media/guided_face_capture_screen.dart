@@ -310,7 +310,6 @@ class _GuidedFaceState extends State<GuidedFaceCaptureScreen>
       }
       front?.release();
       front = attachment;
-      HapticFeedback.lightImpact();
       await controller.startImageStream(_analyze);
       guide.frontCaptured();
       tickAt = monotonic.elapsed;

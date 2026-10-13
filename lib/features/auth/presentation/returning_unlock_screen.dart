@@ -33,7 +33,11 @@ class _ReturningUnlockScreenState extends State<ReturningUnlockScreen> {
     super.initState();
     LocalPreviewProfile.instance.addListener(_refreshProfile);
   }
-  void _refreshProfile() { if (mounted) setState(() {}); }
+
+  void _refreshProfile() {
+    if (mounted) setState(() {});
+  }
+
   @override
   void dispose() {
     LocalPreviewProfile.instance.removeListener(_refreshProfile);
@@ -66,7 +70,6 @@ class _ReturningUnlockScreenState extends State<ReturningUnlockScreen> {
     }
     setState(() => _method = method);
     FocusManager.instance.primaryFocus?.unfocus();
-    HapticFeedback.lightImpact();
   }
 
   bool _checkingQuestions = false;

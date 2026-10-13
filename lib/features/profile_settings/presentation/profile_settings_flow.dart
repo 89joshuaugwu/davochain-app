@@ -1,3 +1,7 @@
+import '../../../shared/widgets/davo_refresh_region.dart';
+import '../../transactions/presentation/transaction_history_screen.dart';
+import 'notification_detail_screen.dart';
+import '../../../shared/motion/davo_empty_bell.dart';
 import '../../../shared/widgets/davo_main_shell.dart';
 import '../../../core/preview/local_preview_profile.dart';
 import '../../../shared/widgets/local_profile_avatar.dart';
@@ -267,16 +271,19 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
     (title: 'Transfer Sent', body: "You sent \$150.00 to Chukwu Vincent for Family Support.", time: '2hr ago', day: 'TODAY', category: 1),
     (title: 'Support Ticket Updated', body: 'Your inquiry regarding the international wire transfer has been updated. Open Customer Support to continue the conversation.', time: '1d ago', day: 'YESTERDAY', category: 0),
   ];
-  void _open(String title, String body, String time) {
+  void _open(String title, String body, String time, int category) {
     setState(() => PreviewAccountState.readNotifications.add(title));
-    _push(context, _Shell(title: 'Notification', scroll: true, child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start, children: [
-        const SizedBox(height: 24), Text(title, style: _t20sb(context)),
-        const SizedBox(height: 8), Text(time, style: _t12(context)),
-        const SizedBox(height: 24), Text(body, style: _t16(context)),
-      ])));
+    _push(context, DavoNotificationDetailScreen(
+      title: title, message: body, receivedAt: time, category: category,
+      actionLabel: category == 2 ? 'Secure your account' : category == 1
+          ? 'View transaction history' : 'Open customer support',
+      onAction: () => _push(context, category == 2 ? const ChangePasswordScreen()
+          : category == 1 ? const TransactionHistoryScreen() : const CustomerSupportScreen()),
+    ));
   }
-  @override Widget build(BuildContext context) {
+  @override Widget build(BuildContext context) => DavoRefreshRegion(
+    target: DavoRefreshTarget.notifications, builder: _buildNotifications);
+  Widget _buildNotifications(BuildContext context) {
     final visible = widget.hasNotifications ? records.where((item) => tab == 0 || item.category == tab).toList() : [];
     return _Shell(title: 'Notification', scroll: true, child: Column(
       crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -288,14 +295,14 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
         ])),
         const SizedBox(height: 24),
         if (visible.isEmpty) Center(child: Column(children: [
-          const SizedBox(height: 32), Image.asset(_notificationEmpty, width: 230, height: 150, fit: BoxFit.contain),
+          const SizedBox(height: 32), DavoEmptyBell(key: ValueKey(tab), asset: _notificationEmpty),
           const SizedBox(height: 24), Text(tab == 3 ? 'No rewards notifications yet' : 'No notifications yet', textAlign: TextAlign.center, style: _t20sb(context)),
           const SizedBox(height: 16), Text(tab == 3 ? 'Your reward updates will appear here.' : 'We will notify you about your orders and updates here.', textAlign: TextAlign.center, style: _t14(context)),
         ])),
         for (var i = 0; i < visible.length; i++) ...[
           if (i == 0 || visible[i].day != visible[i-1].day) Padding(padding: const EdgeInsets.symmetric(vertical: 16), child: Text(visible[i].day, style: _sectionLabel14(context))),
           Semantics(label: PreviewAccountState.readNotifications.contains(visible[i].title) ? 'Read notification' : 'Unread notification', child: InkWell(
-            onTap: () => _open(visible[i].title, visible[i].body, visible[i].time),
+            onTap: () => _open(visible[i].title, visible[i].body, visible[i].time, visible[i].category),
             child: Padding(padding: const EdgeInsets.symmetric(vertical: 16), child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Icon(visible[i].category == 2 ? Icons.shield_outlined : Icons.swap_horiz, size: 24, color: DavoColors.of(context).link),
               const SizedBox(width: 16), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -2948,12 +2955,12 @@ class _SettingsOutlineIcon extends StatelessWidget {
     final paths = switch (label) {
       'Personal Information' => '<circle cx="12" cy="7" r="4"/><path d="M4 21v-2a8 8 0 0 1 16 0v2"/>',
       'KYC Verification' => '<path d="m12 3 8 3v6c0 5-8 9-8 9s-8-4-8-9V6z"/><path d="m8 12 3 3 5-6"/>',
-      'Linked Accounts' => '<path d="m10 13 4-4m-7 7-1 1a4 4 0 0 1-6-6l4-4a4 4 0 0 1 6 0m1 10a4 4 0 0 0 6 0l4-4a4 4 0 0 0-6-6l-1 1"/>',
+      'Linked Accounts' => '<rect x="7" y="3" width="14" height="11" rx="2"/><path d="M7 7h14m-10 4h3M4 8H3a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2v-2M1 14h3m0 4h4"/>',
       'Enable Biometrics' => '<path d="M5 12a7 7 0 0 1 14 0m-11 5v-5a4 4 0 0 1 8 0v6m-4-7v9m-7-4v-1m14 0v4M7 5a9 9 0 0 1 10 0"/>',
       'Change Password' || 'Transaction Pin' || 'Security questions' || 'Crypto Security' => '<rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3m-4 5v2"/>',
       'Notifications' || 'Notification Settings' => '<path d="M5 17h14l-2-3V9a5 5 0 0 0-10 0v5zM10 21h4"/>',
       'Privacy' || 'Privacy Policy' || 'Security Alerts' => '<path d="m12 3 8 3v6c0 5-8 9-8 9s-8-4-8-9V6z"/>',
-      'Appearance' => '<circle cx="12" cy="12" r="9"/><path d="M12 3v18M12 3a9 9 0 0 1 0 18"/>',
+      'Appearance' => '<path d="M12 3a9 9 0 0 1 0 18z" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="9"/><path d="M12 3v18"/>',
       'Customer Support' => '<path d="M4 13V11a8 8 0 0 1 16 0v7a3 3 0 0 1-3 3h-4"/><rect x="3" y="11" width="4" height="7" rx="2"/><rect x="17" y="11" width="4" height="7" rx="2"/>',
       'FAQs' => '<circle cx="12" cy="12" r="9"/><path d="M9 9a3 3 0 1 1 5 2c-2 1-2 2-2 3m0 3h.01"/>',
       'Terms and Condition' => '<path d="M14 3H5v18h14V8zM14 3v5h5M8 12h8m-8 4h8"/>',
@@ -3202,7 +3209,7 @@ class _Input extends StatelessWidget {
     );
   }
 }
-class _PrimaryButton extends StatelessWidget{const _PrimaryButton(this.label,{required this.onTap,this.enabled=true,this.disabledBackgroundColor});final String label;final VoidCallback onTap;final bool enabled;final Color? disabledBackgroundColor;@override Widget build(BuildContext context)=>SizedBox(width:double.infinity,height:48,child:ElevatedButton(onPressed:enabled?(){HapticFeedback.lightImpact();onTap();}:null,style:ElevatedButton.styleFrom(backgroundColor:AppColors.primary,disabledBackgroundColor:disabledBackgroundColor ?? DavoColors.of(context).primaryDisabled,foregroundColor:Colors.white,disabledForegroundColor:Colors.white,elevation:0,shape:RoundedRectangleBorder(borderRadius:BorderRadius.circular(4))),child:Text(label,style:const TextStyle(fontFamily:'Sora',fontSize:14,fontWeight:FontWeight.w600))));}
+class _PrimaryButton extends StatelessWidget{const _PrimaryButton(this.label,{required this.onTap,this.enabled=true,this.disabledBackgroundColor});final String label;final VoidCallback onTap;final bool enabled;final Color? disabledBackgroundColor;@override Widget build(BuildContext context)=>SizedBox(width:double.infinity,height:48,child:ElevatedButton(onPressed:enabled?(){onTap();}:null,style:ElevatedButton.styleFrom(backgroundColor:AppColors.primary,disabledBackgroundColor:disabledBackgroundColor ?? DavoColors.of(context).primaryDisabled,foregroundColor:Colors.white,disabledForegroundColor:Colors.white,elevation:0,shape:RoundedRectangleBorder(borderRadius:BorderRadius.circular(4))),child:Text(label,style:const TextStyle(fontFamily:'Sora',fontSize:14,fontWeight:FontWeight.w600))));}
 class _SecondaryButton extends StatelessWidget{const _SecondaryButton(this.label,{required this.onTap});final String label;final VoidCallback onTap;@override Widget build(BuildContext context)=>SizedBox(width:double.infinity,height:48,child:TextButton(onPressed:onTap,style:TextButton.styleFrom(backgroundColor:DavoColors.of(context).primarySoft,foregroundColor:DavoColors.of(context).link,shape:RoundedRectangleBorder(borderRadius:BorderRadius.circular(4))),child:Text(label,style:const TextStyle(fontFamily:'Sora',fontSize:14,fontWeight:FontWeight.w600))));}
 
 class _HowItWorks extends StatelessWidget{const _HowItWorks();@override Widget build(BuildContext context)=>Container(padding:const EdgeInsets.all(16),decoration:BoxDecoration(color:DavoColors.of(context).offWhite,borderRadius:BorderRadius.circular(8)),child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Text('How it works',style:_t16b(context)),const SizedBox(height:14),const _Step('1','Send Invite','Share your unique link or code with your friends via social media or direct message.'),const _Step('2','Friend Joins','Your friend signs up and completes a successful transaction of NGN50,000'),const _Step('3','Get Paid','You and your friend get credited with 2,000 Davo Points.') ]));}

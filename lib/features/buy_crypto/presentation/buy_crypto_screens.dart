@@ -14,7 +14,6 @@ import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 import '../../../core/navigation/app_page_route.dart';
 import '../../../core/navigation/app_routes.dart';
@@ -64,7 +63,6 @@ class _BuyAmountScreenState extends State<BuyAmountScreen> {
   bool get _canContinue => _amount > 0 && _amount <= _order.wallet.balance;
 
   void _setAmount(double value) {
-    HapticFeedback.selectionClick();
     final safe = value.clamp(0.0, _order.wallet.balance).toDouble();
     _amountController.text = _formatEditable(safe);
     _amountController.selection =
@@ -303,7 +301,6 @@ class BuyReviewScreen extends StatelessWidget {
                     label: 'Confirm',
                     enabled: true,
                     onPressed: () {
-                      HapticFeedback.mediumImpact();
                       Navigator.of(context).push<void>(AppPageRoute<void>(
                           builder: (_) => BuyPinScreen(order: order)));
                     }))),
@@ -444,6 +441,7 @@ class _BuySuccessScreenState extends State<BuySuccessScreen> with ReceiptActivit
   @override
   Widget build(BuildContext context) => DavoResultScreen(
         eventKey: '${record.id}-${record.status.name}',
+        refreshRecordId: record.id,
         title: switch (record.status) {
           ReceiptStatus.completed => 'Purchase successful',
           ReceiptStatus.pending => 'Purchase submitted',

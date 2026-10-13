@@ -29,7 +29,8 @@ class _WorkingState extends State<DavoWorkingIndicator>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    foreground = WidgetsBinding.instance.lifecycleState == null || WidgetsBinding.instance.lifecycleState == AppLifecycleState.resumed;
+    foreground = WidgetsBinding.instance.lifecycleState == null ||
+        WidgetsBinding.instance.lifecycleState == AppLifecycleState.resumed;
     controller = AnimationController(
         vsync: this,
         duration: Duration(
@@ -135,6 +136,11 @@ class DavoWorkingPainter extends CustomPainter {
       pen.color = color.withValues(alpha: .7);
       canvas.drawArc(const Rect.fromLTWH(22, 22, 68, 68),
           progress * math.pi * 2, math.pi * .4, false, pen);
+      final tip = progress * math.pi * 2 + math.pi * .4;
+      canvas.drawCircle(
+          Offset(56 + 34 * math.cos(tip), 56 + 34 * math.sin(tip)),
+          2.6,
+          Paint()..color = color);
     } else {
       canvas.drawCircle(const Offset(56, 56), 34, pen);
       canvas.drawPath(

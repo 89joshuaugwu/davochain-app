@@ -3,7 +3,6 @@ import '../../../core/theme/davo_colors.dart';
 import '../../../shared/widgets/davo_sheet_header.dart';
 import '../../../shared/widgets/solana_icon.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 import 'buy_crypto_models.dart';
 
@@ -51,7 +50,6 @@ class BuyCryptoAssetSheet extends StatelessWidget {
               child: _ExactAssetSheetRow(
                 asset: asset,
                 onTap: () {
-                  HapticFeedback.selectionClick();
                   Navigator.pop(context, asset);
                 },
               ),
@@ -107,7 +105,6 @@ class BuyFundingWalletSheet extends StatelessWidget {
               child: _ExactWalletSheetRow(
                 wallet: wallet,
                 onTap: () {
-                  HapticFeedback.selectionClick();
                   Navigator.pop(context, wallet);
                 },
               ),

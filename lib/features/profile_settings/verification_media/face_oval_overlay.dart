@@ -1,7 +1,6 @@
 import 'dart:math' as math;
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
-import '../../../core/theme/app_theme.dart';
 
 Rect faceGuideOval(Size size) {
   final height = math.min(size.height * .84, size.width / .74 * .78);
@@ -9,19 +8,16 @@ Rect faceGuideOval(Size size) {
       center: size.center(Offset.zero), width: height * .74, height: height);
 }
 
-/// Broad rounded forehead, tapered cheeks and a narrower rounded chin.
+/// Rounded forehead and cheeks flow into a broad, softly rounded jaw.
 Path faceGuidePath(Size size) {
   final r = faceGuideOval(size);
   final x = r.left, y = r.top, w = r.width, h = r.height;
   return Path()
     ..moveTo(x + w * .5, y)
-    ..cubicTo(x + w * .88, y, x + w, y + h * .12, x + w, y + h * .34)
-    ..cubicTo(
-        x + w, y + h * .61, x + w * .78, y + h * .89, x + w * .63, y + h * .97)
-    ..cubicTo(x + w * .56, y + h * 1.01, x + w * .44, y + h * 1.01, x + w * .37,
-        y + h * .97)
-    ..cubicTo(x + w * .22, y + h * .89, x, y + h * .61, x, y + h * .34)
-    ..cubicTo(x, y + h * .12, x + w * .12, y, x + w * .5, y)
+    ..cubicTo(x + w * .78, y, x + w, y + h * .16, x + w, y + h * .38)
+    ..cubicTo(x + w, y + h * .70, x + w * .80, y + h, x + w * .5, y + h)
+    ..cubicTo(x + w * .20, y + h, x, y + h * .70, x, y + h * .38)
+    ..cubicTo(x, y + h * .16, x + w * .22, y, x + w * .5, y)
     ..close();
 }
 
@@ -79,7 +75,7 @@ class _OvalBorder extends CustomPainter {
       final tangent = metric.getTangentForOffset(metric.length * i / count)!;
       final normal = Offset(tangent.vector.dy, -tangent.vector.dx);
       paint.color = i < filled
-          ? AppColors.primary
+          ? const Color(0xFF15976F)
           : ready
               ? Colors.white
               : Colors.white.withValues(alpha: .65);

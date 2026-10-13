@@ -312,6 +312,7 @@ class FundingOutcomeScreen extends StatelessWidget {
             final value = current.isEmpty ? record : current.first;
             final child = DavoResultScreen(
                 eventKey: '${value.id}-${value.status.name}',
+                refreshRecordId: value.id,
                 kind: value.status == FundingStatus.completed
                     ? DavoOutcomeKind.completed
                     : DavoOutcomeKind.submitted,

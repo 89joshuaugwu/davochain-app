@@ -109,7 +109,7 @@ class _DavoReceiptExportFrameState extends State<DavoReceiptExportFrame> {
         body: SafeArea(
             top: false,
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
               child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
@@ -127,7 +127,7 @@ class _DavoReceiptExportFrameState extends State<DavoReceiptExportFrame> {
         bottomNavigationBar: SafeArea(
           top: false,
           child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+              padding: const EdgeInsets.fromLTRB(12, 12, 12, 16),
               child: Row(children: [
                 Expanded(
                     child: _ExportButton(

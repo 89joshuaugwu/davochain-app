@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import '../../core/theme/app_theme.dart';
 import 'auth_widgets.dart';
 
@@ -22,7 +21,6 @@ class _TransactionPinEntryScreenState extends State<TransactionPinEntryScreen> {
   String pin = '';
 
   void key(String value) {
-    HapticFeedback.selectionClick();
     setState(() {
       if (value == 'back') {
         if (pin.isNotEmpty) pin = pin.substring(0, pin.length - 1);

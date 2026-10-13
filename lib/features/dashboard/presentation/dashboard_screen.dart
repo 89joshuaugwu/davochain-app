@@ -1,3 +1,4 @@
+import '../../../shared/widgets/davo_refresh_region.dart';
 import '../../../shared/widgets/davo_scroll_behavior.dart';
 import '../../funding/funding_outcomes.dart';
 import '../../../shared/widgets/davo_sheet_header.dart';
@@ -58,7 +59,8 @@ class _DavochainDashboardScreenState extends State<DavoDashboardContent> {
           body: DavoFloatingRefresh(
             onRefresh: () async {
               await (widget.onRefresh?.call() ??
-                  Future<void>.delayed(const Duration(milliseconds: 700)));
+                  DavoRefreshScope.refresh(
+                      context, DavoRefreshTarget.dashboard));
               if (mounted) setState(() {});
             },
             child: SafeArea(
@@ -1093,7 +1095,9 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
   bool _visible = true;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => DavoRefreshRegion(
+      target: DavoRefreshTarget.portfolio, builder: _buildPortfolio);
+  Widget _buildPortfolio(BuildContext context) {
     return Scaffold(
       backgroundColor: DavoColors.of(context).canvas,
       body: SafeArea(
@@ -1657,6 +1661,7 @@ class _WalletSelectorSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     return _DavoSheet(
       title: 'Select Wallet',
+      refreshTarget: DavoRefreshTarget.walletBalances,
       heightFactor: .57,
       child: Column(
         children: [
@@ -1809,11 +1814,15 @@ class _CurrencySelectorSheet extends StatelessWidget {
 
 class _DavoSheet extends StatelessWidget {
   const _DavoSheet(
-      {required this.title, required this.child, required this.heightFactor});
+      {required this.title,
+      required this.child,
+      required this.heightFactor,
+      this.refreshTarget});
 
   final String title;
   final Widget child;
   final double heightFactor;
+  final DavoRefreshTarget? refreshTarget;
 
   @override
   Widget build(BuildContext context) {
@@ -1839,7 +1848,15 @@ class _DavoSheet extends StatelessWidget {
                         borderRadius: BorderRadius.circular(100))),
                 const SizedBox(height: 11),
                 DavoSheetHeader(title: title),
-                Expanded(child: SingleChildScrollView(child: child)),
+                Expanded(
+                    child: refreshTarget == null
+                        ? SingleChildScrollView(child: child)
+                        : DavoRefreshRegion(
+                            target: refreshTarget!,
+                            builder: (context) => SingleChildScrollView(
+                                physics: const ClampingScrollPhysics(
+                                    parent: AlwaysScrollableScrollPhysics()),
+                                child: child))),
               ],
             ),
           ),
@@ -2069,7 +2086,6 @@ class _CryptoDepositScreenState extends State<CryptoDepositScreen> {
     try {
       await Clipboard.setData(ClipboardData(text: value));
       if (!context.mounted) return;
-      HapticFeedback.selectionClick();
       showDavoToast(context, 'Address copied. Check it before sending funds.');
     } on PlatformException {
       if (context.mounted) {

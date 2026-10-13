@@ -10,7 +10,7 @@ void main() {
         isA<MaterialPageRoute<void>>());
   });
 
-  testWidgets('button scales on press, activates once with one haptic',
+  testWidgets('button scales on press and activates once without haptics',
       (tester) async {
     var taps = 0;
     final haptics = <MethodCall>[];
@@ -34,7 +34,7 @@ void main() {
     await gesture.up();
     await tester.pumpAndSettle();
     expect(taps, 1);
-    expect(haptics, hasLength(1));
+    expect(haptics, isEmpty);
     expect(tester.widget<AnimatedScale>(find.byType(AnimatedScale)).scale, 1);
   });
 

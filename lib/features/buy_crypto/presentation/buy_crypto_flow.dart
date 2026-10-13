@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 import '../../../core/navigation/app_page_route.dart';
 import 'buy_crypto_models.dart';
@@ -7,7 +6,6 @@ import 'buy_crypto_screens.dart';
 import 'buy_crypto_widgets.dart';
 
 Future<void> startBuyCryptoFlow(BuildContext context) async {
-  HapticFeedback.selectionClick();
   final asset = await showModalBottomSheet<BuyCryptoAsset>(
     context: context,
     sheetAnimationStyle: (MediaQuery.disableAnimationsOf(context) || MediaQuery.accessibleNavigationOf(context)) ? AnimationStyle.noAnimation : const AnimationStyle(duration: Duration(milliseconds: 280), reverseDuration: Duration(milliseconds: 200)),

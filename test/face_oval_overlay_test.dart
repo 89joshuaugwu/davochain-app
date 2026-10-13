@@ -76,7 +76,7 @@ void main() {
                           Image.asset(
                               'assets/figma_exact/verification_901d8.png',
                               fit: BoxFit.cover),
-                          const FaceOvalOverlay(ready: true),
+                          const FaceOvalOverlay(ready: true, progress: .65),
                         ])))))));
     await tester.runAsync(() => precacheImage(
         const AssetImage('assets/figma_exact/verification_901d8.png'),

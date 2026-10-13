@@ -1,3 +1,6 @@
+import '../../../shared/widgets/davo_refresh_region.dart';
+import '../../profile_settings/presentation/profile_settings_flow.dart'
+    show ReferralDashboardScreen;
 import '../../../shared/widgets/davo_main_shell.dart';
 import '../../../shared/receipts/transaction_record_details_screen.dart';
 import '../../../shared/receipts/receipt_record.dart';
@@ -80,12 +83,12 @@ const _brands = <GiftCardBrand>[
 
 Future<void> startGiftCardFlow(BuildContext context,
     {GiftCardMode mode = GiftCardMode.buy}) async {
-  HapticFeedback.selectionClick();
   await selectDavoMainTab(context, 2, giftMode: mode);
 }
 
 class GiftCardHomeScreen extends StatefulWidget {
-  const GiftCardHomeScreen({super.key, this.initialMode = GiftCardMode.buy, this.onBack});
+  const GiftCardHomeScreen(
+      {super.key, this.initialMode = GiftCardMode.buy, this.onBack});
   final VoidCallback? onBack;
 
   final GiftCardMode initialMode;
@@ -104,19 +107,24 @@ class _GiftCardHomeScreenState extends State<GiftCardHomeScreen> {
   }
 
   void _setMode(GiftCardMode value) {
-    HapticFeedback.selectionClick();
     setState(() => mode = value);
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => DavoRefreshRegion(
+      target: DavoRefreshTarget.giftCardCatalogue, builder: _buildRefreshed);
+  Widget _buildRefreshed(BuildContext context) {
     return _GiftScaffold(
       scroll: true,
-      bottom: _ReferralCard(onTap: () => HapticFeedback.lightImpact()),
+      bottom: _ReferralCard(
+          onTap: () => Navigator.of(context).push(AppPageRoute<void>(
+              builder: (_) => const ReferralDashboardScreen()))),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _TopBar(title: 'Gift cards', onBack: widget.onBack ?? () => Navigator.pop(context)),
+          _TopBar(
+              title: 'Gift cards',
+              onBack: widget.onBack ?? () => Navigator.pop(context)),
           const SizedBox(height: 22),
           Text('Gift Cards', style: _title20(context)),
           const SizedBox(height: 2),
@@ -190,7 +198,6 @@ class _GiftCardHomeScreenState extends State<GiftCardHomeScreen> {
   }
 
   void _openBrand(GiftCardBrand brand) {
-    HapticFeedback.selectionClick();
     Navigator.of(context).push<void>(
       AppPageRoute<void>(
         builder: (_) => mode == GiftCardMode.buy
@@ -226,7 +233,9 @@ class _GiftCardBrandScreenState extends State<GiftCardBrandScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => DavoRefreshRegion(
+      target: DavoRefreshTarget.giftCardCatalogue, builder: _buildRefreshed);
+  Widget _buildRefreshed(BuildContext context) {
     final q = controller.text.trim().toLowerCase();
     final visible = _brands.where((brand) {
       final matchesQuery = q.isEmpty || brand.name.toLowerCase().contains(q);
@@ -307,7 +316,6 @@ class _GiftCardBrandScreenState extends State<GiftCardBrandScreen> {
                       label: _categoryName(item),
                       active: active,
                       onTap: () {
-                        HapticFeedback.selectionClick();
                         setState(() => category = item);
                       },
                     ),
@@ -338,7 +346,6 @@ class _GiftCardBrandScreenState extends State<GiftCardBrandScreen> {
   }
 
   void _open(GiftCardBrand brand) {
-    HapticFeedback.selectionClick();
     Navigator.of(context).push<void>(
       AppPageRoute<void>(
         builder: (_) => widget.mode == GiftCardMode.buy
@@ -443,7 +450,6 @@ class _GiftCardSellFormScreenState extends State<GiftCardSellFormScreen> {
           const SizedBox(height: 8),
           InkWell(
             onTap: () {
-              HapticFeedback.lightImpact();
               setState(() => uploaded = true);
             },
             borderRadius: BorderRadius.circular(6),
@@ -527,7 +533,6 @@ class _GiftCardSellReviewScreenState extends State<GiftCardSellReviewScreen> {
               onTap: accepted && (!confirmed || cardValid)
                   ? () {
                       if (!confirmed) {
-                        HapticFeedback.mediumImpact();
                         setState(() => confirmed = true);
                       } else {
                         Navigator.of(context).pushReplacement<void, void>(
@@ -678,7 +683,8 @@ class GiftCardSellSubmittedScreen extends StatefulWidget {
 }
 
 class _GiftCardSellSubmittedScreenState
-    extends State<GiftCardSellSubmittedScreen> with ReceiptActivityObserver<GiftCardSellSubmittedScreen> {
+    extends State<GiftCardSellSubmittedScreen>
+    with ReceiptActivityObserver<GiftCardSellSubmittedScreen> {
   late final ReceiptRecord _record;
   ReceiptRecord get record => ReceiptActivity.resolve(_record);
   @override
@@ -698,11 +704,19 @@ class _GiftCardSellSubmittedScreenState
           country: widget.country,
           cardType: widget.cardType,
         );
-    if (widget.record == null) { ReceiptActivity.submitPreview(record); } else { ReceiptActivity.accept(record); }
+    if (widget.record == null) {
+      ReceiptActivity.submitPreview(record);
+    } else {
+      ReceiptActivity.accept(record);
+    }
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => DavoRefreshRegion(
+      target: DavoRefreshTarget.transaction,
+      recordId: record.id,
+      builder: _buildRefreshed);
+  Widget _buildRefreshed(BuildContext context) {
     return _GiftScaffold(
       child: Column(
         children: [
@@ -737,7 +751,8 @@ class _GiftCardSellSubmittedScreenState
                               TextSpan(
                                   text: record.status.label,
                                   style: TextStyle(
-                                      color: record.status == ReceiptStatus.completed
+                                      color: record.status ==
+                                              ReceiptStatus.completed
                                           ? DavoColors.of(context).success
                                           : DavoColors.of(context).warning,
                                       fontWeight: FontWeight.w500))
@@ -780,8 +795,8 @@ class GiftCardVerificationScreen extends StatefulWidget {
       _GiftCardVerificationScreenState();
 }
 
-class _GiftCardVerificationScreenState
-    extends State<GiftCardVerificationScreen> with ReceiptActivityObserver<GiftCardVerificationScreen> {
+class _GiftCardVerificationScreenState extends State<GiftCardVerificationScreen>
+    with ReceiptActivityObserver<GiftCardVerificationScreen> {
   late final ReceiptRecord _record;
   ReceiptRecord get record => ReceiptActivity.resolve(_record);
   @override
@@ -814,9 +829,7 @@ class _GiftCardVerificationScreenState
                   : 'Card trade ${record.status.label}',
               style: _title20(context)),
           const SizedBox(height: 5),
-          Text(
-              record.status.label,
-              style: _caption(context)),
+          Text(record.status.label, style: _caption(context)),
           const SizedBox(height: 24),
           Container(
             width: double.infinity,
@@ -1315,7 +1328,6 @@ class _GiftCardPaymentScreenState extends State<GiftCardPaymentScreen> {
                 _PrimaryButton(
                   label: 'Continue',
                   onTap: () async {
-                    HapticFeedback.mediumImpact();
                     final ok = await Navigator.of(context).push<bool>(
                         AppPageRoute<bool>(
                             builder: (_) => const GiftCardPinScreen()));
@@ -1393,7 +1405,8 @@ class GiftCardBuySuccessScreen extends StatefulWidget {
       _GiftCardBuySuccessScreenState();
 }
 
-class _GiftCardBuySuccessScreenState extends State<GiftCardBuySuccessScreen> with ReceiptActivityObserver<GiftCardBuySuccessScreen> {
+class _GiftCardBuySuccessScreenState extends State<GiftCardBuySuccessScreen>
+    with ReceiptActivityObserver<GiftCardBuySuccessScreen> {
   late final ReceiptRecord _record;
   ReceiptRecord get record => ReceiptActivity.resolve(_record);
   @override
@@ -1414,11 +1427,19 @@ class _GiftCardBuySuccessScreenState extends State<GiftCardBuySuccessScreen> wit
           cardType: widget.cardType,
           subcategory: widget.subcategory,
         );
-    if (widget.record == null) { ReceiptActivity.submitPreview(record); } else { ReceiptActivity.accept(record); }
+    if (widget.record == null) {
+      ReceiptActivity.submitPreview(record);
+    } else {
+      ReceiptActivity.accept(record);
+    }
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => DavoRefreshRegion(
+      target: DavoRefreshTarget.transaction,
+      recordId: record.id,
+      builder: _buildRefreshed);
+  Widget _buildRefreshed(BuildContext context) {
     return _GiftScaffold(
       child: Column(
         children: [
@@ -1797,21 +1818,25 @@ class _ReferralCard extends StatelessWidget {
         decoration: BoxDecoration(
             color: AppColors.primary, borderRadius: BorderRadius.circular(8)),
         child: Row(children: [
-          const Text('🎉', style: TextStyle(fontSize: 24)),
+          const SizedBox(
+              width: 32,
+              height: 32,
+              child: Icon(Icons.celebration_outlined,
+                  size: 30, color: Colors.white)),
           const SizedBox(width: 10),
           const Expanded(
               child: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                Text('Refer & Earn ₦5,000',
+                Text('Refer & earn',
                     style: TextStyle(
                         fontFamily: 'Sora',
                         fontSize: 14,
                         color: Colors.white,
                         fontWeight: FontWeight.w600)),
                 SizedBox(height: 2),
-                Text('Get ₦500 for every friend who trades',
+                Text('Invite friends. Earn rewards.',
                     style: TextStyle(
                         fontFamily: 'Sora',
                         fontSize: 10,

@@ -2,6 +2,7 @@ import '../../core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 
 import 'davo_success_mark.dart';
+import 'davo_refresh_region.dart';
 import '../motion/davo_outcome_sequence.dart';
 import '../motion/davo_motion_spec.dart';
 
@@ -19,6 +20,7 @@ class DavoResultScreen extends StatelessWidget {
     this.tempo = DavoOutcomeTempo.regular,
     this.eventKey,
     this.appBar,
+    this.refreshRecordId,
   });
 
   final String title;
@@ -31,8 +33,19 @@ class DavoResultScreen extends StatelessWidget {
   final Object? eventKey;
   final PreferredSizeWidget? appBar;
 
+  /// Financial outcomes opt in with the accepted transaction identity.
+  final String? refreshRecordId;
+
   @override
-  Widget build(BuildContext context) => DavoOutcomeSequence(
+  Widget build(BuildContext context) => refreshRecordId == null
+      ? _buildOutcome(context)
+      : DavoRefreshRegion(
+          target: DavoRefreshTarget.transaction,
+          recordId: refreshRecordId,
+          builder: _buildOutcome,
+        );
+
+  Widget _buildOutcome(BuildContext context) => DavoOutcomeSequence(
       kind: kind,
       tempo: tempo,
       eventKey: eventKey,
@@ -59,6 +72,7 @@ class DavoResultScreen extends StatelessWidget {
                 Expanded(
                   child: LayoutBuilder(
                     builder: (context, constraints) => SingleChildScrollView(
+                      physics: const AlwaysScrollableScrollPhysics(),
                       padding: const EdgeInsets.fromLTRB(24, 36, 24, 24),
                       child: ConstrainedBox(
                         constraints: BoxConstraints(
@@ -103,7 +117,8 @@ class DavoResultScreen extends StatelessWidget {
                                           fontFamily: 'Sora',
                                           fontSize: 14,
                                           height: 1.6,
-                                          color: DavoColors.of(context).bodyMuted,
+                                          color:
+                                              DavoColors.of(context).bodyMuted,
                                         ),
                                       ),
                                       false,
