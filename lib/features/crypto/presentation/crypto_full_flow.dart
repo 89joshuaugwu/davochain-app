@@ -421,8 +421,16 @@ class _NairaWithdrawScreenState extends State<NairaWithdrawScreen> {
     return _Scaffold(
       child: Stack(
         children: [
-          const Positioned(
-              left: 0, right: 0, top: 4, height: 40, child: _DashboardHeader()),
+          Positioned(
+              left: 0, right: 0, top: 0, height: 48,
+              child: Row(children: [
+                IconButton(tooltip: 'Back', onPressed: () => Navigator.pop(context),
+                    icon: const Icon(Icons.arrow_back)),
+                const SizedBox(width: 8),
+                Text('Naira withdrawal', style: TextStyle(fontFamily: 'Sora',
+                    fontSize: 18, fontWeight: FontWeight.w600,
+                    color: DavoColors.of(context).ink)),
+              ])),
           const Positioned(
               left: 0, right: 0, top: 60, height: 136, child: _BalanceCard()),
           Positioned(
@@ -665,7 +673,7 @@ class _PaymentSheet extends StatelessWidget {
                 Navigator.pop(context, account);
               }
             }),
-          const Text('Preview accounts', style: TextStyle(fontSize: 12)),
+          const Text('Saved accounts', style: TextStyle(fontSize: 12)),
           const SizedBox(height: 12),
           for (final account in saved) Padding(padding: const EdgeInsets.only(bottom: 12),
             child: _PaymentMethodSavedRow(account: account, onTap: () => Navigator.pop(context, account))),
@@ -2088,7 +2096,7 @@ class TransactionSuccessScreen extends StatefulWidget {
       _TransactionSuccessScreenState();
 }
 
-class _TransactionSuccessScreenState extends State<TransactionSuccessScreen> {
+class _TransactionSuccessScreenState extends State<TransactionSuccessScreen> with ReceiptActivityObserver<TransactionSuccessScreen> {
   TxKind get kind => widget.kind;
   String get target => widget.target;
   double get amount => widget.amount;
@@ -2107,17 +2115,18 @@ class _TransactionSuccessScreenState extends State<TransactionSuccessScreen> {
         ? ReceiptStatus.pending
         : ReceiptStatus.completed,
   );
-  ReceiptRecord get record => widget.record ?? _fallback;
+  ReceiptRecord get record => ReceiptActivity.resolve(widget.record ?? _fallback);
   @override
   void initState() {
     super.initState();
-    ReceiptActivity.accept(record);
+    if (widget.record == null) { ReceiptActivity.submitPreview(record); } else { ReceiptActivity.accept(record); }
   }
 
   @override
   Widget build(BuildContext context) {
     final transfer = kind == TxKind.internal || kind == TxKind.external;
     return DavoResultScreen(
+      eventKey: '${record.id}-${record.status.name}',
       kind: outcomeKind,
       mark: record.status == ReceiptStatus.failed
           ? const Icon(
@@ -2129,14 +2138,14 @@ class _TransactionSuccessScreenState extends State<TransactionSuccessScreen> {
       title: record.status == ReceiptStatus.failed
           ? '${record.type} failed'
           : outcomeKind == DavoOutcomeKind.submitted
-          ? 'Withdrawal submitted'
+          ? '${record.type} submitted'
           : transfer
           ? 'Transfer successful'
           : kind == TxKind.sell
           ? 'Sale successful'
           : 'Conversion successful',
       message:
-          '${record.type} ${record.status.label.toLowerCase()}: ${record.amount}.${record.preview ? ' Preview only. No funds have been moved.' : ''}',
+          '${record.type} ${record.status.label.toLowerCase()}: ${record.amount}.',
       details: record.status == ReceiptStatus.failed || widget.record != null
           ? null
           : outcomeKind == DavoOutcomeKind.submitted
@@ -2303,7 +2312,7 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> {
     asset: widget.asset,
     status: widget.pending ? ReceiptStatus.pending : ReceiptStatus.completed,
   );
-  ReceiptRecord get record => widget.record ?? _fallback;
+  ReceiptRecord get record => ReceiptActivity.resolve(widget.record ?? _fallback);
   @override
   Widget build(BuildContext context) => widget.receipt
       ? ReceiptScreen(record: record)
@@ -2610,7 +2619,9 @@ class CancelReminderSheet extends StatelessWidget {
 }
 
 class TradeAmountScreen extends StatefulWidget {
-  const TradeAmountScreen({super.key, required this.mode, required this.asset});
+  const TradeAmountScreen({super.key, required this.mode, required this.asset, this.onBack, this.onModeSelected});
+  final VoidCallback? onBack;
+  final void Function(int, BuyCryptoAsset)? onModeSelected;
   final TradeMode mode;
   final BuyCryptoAsset asset;
   @override
@@ -2687,6 +2698,10 @@ class _TradeAmountScreenState extends State<TradeAmountScreen> {
 
   void _switchMode(TradeMode mode) {
     FocusScope.of(context).unfocus();
+    if (widget.onModeSelected != null) {
+      widget.onModeSelected!(mode == TradeMode.sell ? 1 : 2, sourceAsset);
+      return;
+    }
     Navigator.pushReplacement(
         context,
         AppPageRoute<void>(
@@ -2714,11 +2729,15 @@ class _TradeAmountScreenState extends State<TradeAmountScreen> {
     return TradeFormLayout(
       header: _ExactCryptoTradeHeader(
           title: convert ? 'Swap' : 'Sell',
-          onBack: () => Navigator.pop(context)),
+          onBack: widget.onBack ?? () => Navigator.pop(context)),
       tabs: _Tabs(
           active: convert ? 2 : 1,
           onBuy: () {
             FocusScope.of(context).unfocus();
+            if (widget.onModeSelected != null) {
+              widget.onModeSelected!(0, sourceAsset);
+              return;
+            }
             Navigator.pushReplacement(
                 context,
                 AppPageRoute<void>(
@@ -2808,7 +2827,7 @@ class _TradeAmountScreenState extends State<TradeAmountScreen> {
         Text(
             convert
                 ? '1 ${sourceAsset.symbol} \u2248 \u20a6${formatGroupedAmount(sourceAsset.ngnPerUnit.toStringAsFixed(2))}'
-                : '1 USDT \u2248 (\u20a6${formatGroupedAmount(BuyCryptoAsset.tether.ngnPerUnit.toStringAsFixed(2))})',
+                : '1 ${sourceAsset.symbol} \u2248 (\u20a6${formatGroupedAmount(sourceAsset.ngnPerUnit.toStringAsFixed(2))})',
             textAlign: TextAlign.center,
             style: TextStyle(
                 fontSize: 12, color: DavoColors.of(context).bodyMuted)),
@@ -2827,7 +2846,7 @@ class _TradeAmountScreenState extends State<TradeAmountScreen> {
                   style: TextStyle(color: DavoColors.of(context).danger))),
       ]),
       action: _Button(
-          label: convert ? 'Preview' : 'Continue',
+          label: convert ? 'Review' : 'Continue',
           enabled: active,
           onTap: () {
             FocusScope.of(context).unfocus();
@@ -2992,7 +3011,7 @@ class TradeReviewScreen extends StatelessWidget {
                     'Exchange Rate',
                     conv
                         ? rate
-                        : '1 USDT \u2248 \u20a6${formatGroupedAmount(BuyCryptoAsset.tether.ngnPerUnit.toStringAsFixed(2))}',
+                        : '1 ${sourceAsset.symbol} \u2248 \u20a6${formatGroupedAmount(sourceAsset.ngnPerUnit.toStringAsFixed(2))}',
                     false
                   ),
                   ('Network Fee', 'Free', true),
@@ -3468,100 +3487,6 @@ class _Choice extends StatelessWidget {
       );
 }
 
-class _DashboardHeader extends StatelessWidget {
-  const _DashboardHeader();
-  @override
-  Widget build(BuildContext context) => SizedBox(
-        height: 40,
-        child: Stack(
-          children: [
-            Positioned(
-                left: 0,
-                top: 0,
-                width: 40,
-                height: 40,
-                child: ClipOval(
-                    child: Image.asset('$_f/profile_avatar.png',
-                        width: 40, height: 40, fit: BoxFit.cover))),
-            Positioned(
-                left: 52,
-                top: 2,
-                width: 61,
-                height: 15,
-                child: Text('Welcome,',
-                    style: TextStyle(
-                        fontFamily: 'Sora',
-                        fontSize: 12,
-                        height: 1.25,
-                        color: DavoColors.of(context).muted))),
-            Positioned(
-                left: 52,
-                top: 19,
-                width: 61,
-                height: 19,
-                child: Text('Callie',
-                    style: TextStyle(
-                        fontFamily: 'Sora',
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        height: 1.35,
-                        color: DavoColors.of(context).body))),
-            Positioned(
-              left: 225,
-              top: 4,
-              width: 89,
-              height: 32,
-              child: Container(
-                decoration: BoxDecoration(
-                    color: DavoColors.of(context)
-                        .primaryDisabled
-                        .withValues(alpha: .5),
-                    borderRadius: BorderRadius.circular(1000)),
-                child: Stack(
-                  children: [
-                    Positioned(
-                        left: 8,
-                        top: 4,
-                        width: 24,
-                        height: 24,
-                        child: Image.asset('$_exact/naira_earn_gift_exact.png',
-                            width: 24, height: 24, fit: BoxFit.contain)),
-                    Positioned(
-                        left: 36,
-                        top: 8.5,
-                        width: 45,
-                        height: 15,
-                        child: Text('Earn \$5',
-                            style: TextStyle(
-                                fontFamily: 'Sora',
-                                fontSize: 12,
-                                height: 1.25,
-                                color: DavoColors.of(context).link))),
-                  ],
-                ),
-              ),
-            ),
-            Positioned(
-              left: 326,
-              top: 4,
-              width: 32,
-              height: 32,
-              child: Container(
-                decoration: BoxDecoration(
-                    color: DavoColors.of(context)
-                        .primaryDisabled
-                        .withValues(alpha: .5),
-                    borderRadius: BorderRadius.circular(1000)),
-                alignment: Alignment.center,
-                child: Image.asset('$_exact/icon_notifications.png',
-                    width: 24, height: 24, fit: BoxFit.contain),
-              ),
-            ),
-          ],
-        ),
-      );
-}
-
 class _BalanceCard extends StatelessWidget {
   const _BalanceCard();
   @override
@@ -3584,7 +3509,7 @@ class _BalanceCard extends StatelessWidget {
                 top: 31,
                 width: 140,
                 height: 16,
-                child: Text('Available Balance',
+                child: Text('Available NGN balance',
                     style: TextStyle(
                         fontFamily: 'Sora',
                         fontSize: 10,
@@ -3600,9 +3525,9 @@ class _BalanceCard extends StatelessWidget {
                     width: 10, height: 10, fit: BoxFit.contain)),
             const Positioned(
                 left: 16,
-                top: 52,
+                top: 53,
                 width: 300,
-                height: 36,
+                height: 40,
                 child: Text('₦1,284,500.35',
                     style: TextStyle(
                         fontFamily: 'Sora',
@@ -3612,9 +3537,9 @@ class _BalanceCard extends StatelessWidget {
                         color: Colors.white))),
             const Positioned(
                 left: 16,
-                top: 86,
-                width: 200,
-                height: 22,
+                top: 98,
+                width: 250,
+                height: 26,
                 child: Text('≈ \$842.31 USD',
                     style: TextStyle(
                         fontFamily: 'Sora',

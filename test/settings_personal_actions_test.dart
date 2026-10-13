@@ -87,7 +87,7 @@ void main() {
     expect(SettingsPreviewSession.instance.availablePoints, 15);
     await tester.tap(find.text('Review redemption'));
     await tester.pumpAndSettle();
-    expect(find.text('Preview credit: NGN 0.75'), findsOneWidget);
+    expect(find.text('Credit: NGN 0.75'), findsOneWidget);
     expect(SettingsPreviewSession.instance.availablePoints, 15);
     await tester.tap(find.text('Redeem points'));
     await tester.pumpAndSettle();

@@ -20,7 +20,7 @@ class LinkedAccountsScreen extends StatelessWidget {
           listenable: SettingsPreviewSession.instance,
           builder: (context, _) =>
               Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                const Text('Accounts saved for this preview session.',
+                const Text('Your linked bank accounts.',
                     style: TextStyle(fontSize: 12)),
                 const SizedBox(height: 16),
                 for (final bank in SettingsPreviewSession.instance.banks)
@@ -37,7 +37,7 @@ class LinkedAccountsScreen extends StatelessWidget {
                               style: const TextStyle(
                                   fontSize: 14, fontWeight: FontWeight.w600)),
                           subtitle: Text(
-                              '${bank.name}\n${bank.maskedNumber} · Preview',
+                              '${bank.name}\n${bank.maskedNumber}',
                               style: const TextStyle(fontSize: 12)),
                           isThreeLine: true)),
                 OutlinedButton.icon(
@@ -232,7 +232,7 @@ class _BankNumberScreenState extends State<_BankNumberScreen> {
         if (resolving) const LinearProgressIndicator(),
         if (account != null)
           Text(
-              '${account!.name}\nPreview account name — not verified with a bank.',
+              '${account!.name}\nAccount name',
               style: const TextStyle(fontSize: 12, height: 1.5)),
         if (error != null) ...[
           Text(error!,
@@ -302,7 +302,7 @@ class _BankReviewScreenState extends State<_BankReviewScreen> {
       return DavoResultScreen(
           title: 'Bank account linked',
           message:
-              'Saved for this preview session. Live bank verification is not connected.',
+              'Your bank account has been linked.',
           tempo: DavoOutcomeTempo.compact,
           eventKey: widget.account.number,
           actions: DavoPrimaryButton(
@@ -328,7 +328,7 @@ class _BankReviewScreenState extends State<_BankReviewScreen> {
           Text(widget.account.number, style: const TextStyle(fontSize: 14)),
           const SizedBox(height: 20),
           const Text(
-              'Check the account number carefully. This preview saves the account locally for this session.',
+              'Check the account number carefully before you continue.',
               style: TextStyle(fontSize: 12, height: 1.5)),
           if (error != null)
             Padding(

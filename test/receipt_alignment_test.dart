@@ -1,3 +1,4 @@
+import 'support/preview_receipt_fixture.dart';
 import 'package:davochain/core/theme/app_theme.dart';
 import 'package:davochain/features/buy_crypto/presentation/buy_crypto_models.dart';
 import 'package:davochain/features/buy_crypto/presentation/buy_crypto_screens.dart';
@@ -13,7 +14,7 @@ import 'package:flutter_test/flutter_test.dart';
 void main() {
   const address =
       'bc1qverylongwalletaddressforreceiptlayout01234567890123456789';
-  testWidgets('receipt columns keep one value edge and copy the complete value',
+  receiptTestWidgets('receipt columns keep one value edge and copy the complete value',
       (tester) async {
     tester.view.physicalSize = const Size(320, 568);
     tester.view.devicePixelRatio = 1;
@@ -60,7 +61,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets(
+  receiptTestWidgets(
       'all detail and receipt variants wrap and retain reachable actions',
       (tester) async {
     tester.view.physicalSize = const Size(320, 568);

@@ -24,7 +24,9 @@ import 'buy_crypto_widgets.dart';
 import 'buy_receipt_screen.dart';
 
 class BuyAmountScreen extends StatefulWidget {
-  const BuyAmountScreen({super.key, required this.initialOrder});
+  const BuyAmountScreen({super.key, required this.initialOrder, this.onBack, this.onModeSelected});
+  final void Function(int, BuyCryptoAsset)? onModeSelected;
+  final VoidCallback? onBack;
   final BuyCryptoOrder initialOrder;
 
   @override
@@ -114,11 +116,10 @@ class _BuyAmountScreenState extends State<BuyAmountScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final crypto = _amount / _order.asset.ngnPerUnit;
     return TradeFormLayout(
       header:
-          _ExactTradeHeader(title: 'Buy', onBack: () => Navigator.pop(context)),
-      tabs: _ModeToggle(asset: _order.asset),
+          _ExactTradeHeader(title: 'Buy', onBack: widget.onBack ?? () => Navigator.pop(context)),
+      tabs: _ModeToggle(asset: _order.asset, onModeSelected: widget.onModeSelected),
       content: Column(children: [
         InkWell(
           onTap: _changeWallet,
@@ -224,7 +225,7 @@ class _BuyAmountScreenState extends State<BuyAmountScreen> {
                       color: DavoColors.of(context).bodyMuted)),
               const SizedBox(width: 4),
               Text(
-                '${formatGroupedAmount(crypto.toStringAsFixed(5))} ${_order.asset.symbol}',
+                '${_order.copyWith(ngnAmount: _amount).formattedCryptoAmount} ${_order.asset.symbol}',
                 style: TextStyle(
                     fontFamily: 'Sora',
                     fontSize: 14,
@@ -321,7 +322,7 @@ class BuyReviewScreen extends StatelessWidget {
                   _ExactReviewSummary(rows: [
                     (
                       'Exchange Rate',
-                      '1 USDT \u2248 \u20a6${_formatNgn(BuyCryptoOrder.usdtNgnRate)}',
+                      order.formattedExchangeRate,
                       false
                     ),
                     ('Network Fee', 'Free', true),
@@ -374,17 +375,7 @@ class _BuyProgressScreenState extends State<BuyProgressScreen> {
       }
       Navigator.of(context).pushReplacement<void, void>(
         AppPageRoute<void>(
-            builder: (_) => accepted == PreviewTransactionOutcome.submitted
-                ? DavoResultScreen(
-                    kind: DavoOutcomeKind.submitted,
-                    title: 'Purchase submitted',
-                    message:
-                        'Pending confirmation. Your purchase status will update after processing.',
-                    actions: FilledButton(
-                        onPressed: () => Navigator.of(context)
-                            .popUntil((route) => route.isFirst),
-                        child: const Text('Done')))
-                : BuySuccessScreen(order: widget.order)),
+            builder: (_) => BuySuccessScreen(order: widget.order)),
       );
     } catch (_) {
       if (mounted && ModalRoute.of(context)?.isCurrent != false) {
@@ -410,7 +401,7 @@ class _BuyProgressScreenState extends State<BuyProgressScreen> {
                   const DavoWorkingIndicator(),
                 const SizedBox(height: 16),
                 Text(
-                    'Buying ${formatGroupedAmount(widget.order.cryptoAmount.toStringAsFixed(5))} ${widget.order.asset.symbol}',
+                    'Buying ${widget.order.formattedCryptoAmount} ${widget.order.asset.symbol}',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                         fontFamily: 'Sora',
@@ -440,18 +431,19 @@ class BuySuccessScreen extends StatefulWidget {
   State<BuySuccessScreen> createState() => _BuySuccessScreenState();
 }
 
-class _BuySuccessScreenState extends State<BuySuccessScreen> {
+class _BuySuccessScreenState extends State<BuySuccessScreen> with ReceiptActivityObserver<BuySuccessScreen> {
   BuyCryptoOrder get order => widget.order;
   late final ReceiptRecord _fallback = buildBuyReceiptRecord(order);
-  ReceiptRecord get record => widget.record ?? _fallback;
+  ReceiptRecord get record => ReceiptActivity.resolve(widget.record ?? _fallback);
   @override
   void initState() {
     super.initState();
-    ReceiptActivity.accept(record);
+    if (widget.record == null) { ReceiptActivity.submitPreview(record); } else { ReceiptActivity.accept(record); }
   }
 
   @override
   Widget build(BuildContext context) => DavoResultScreen(
+        eventKey: '${record.id}-${record.status.name}',
         title: switch (record.status) {
           ReceiptStatus.completed => 'Purchase successful',
           ReceiptStatus.pending => 'Purchase submitted',
@@ -465,7 +457,7 @@ class _BuySuccessScreenState extends State<BuySuccessScreen> {
                 color: Color(0xFFB42318), size: 100)
             : null,
         message:
-            '${record.status == ReceiptStatus.completed ? 'You bought' : record.status == ReceiptStatus.pending ? 'Purchase awaiting confirmation:' : 'Purchase failed:'} ${record.amount}.${record.preview ? ' Preview only. No funds have been moved.' : ''}',
+            '${record.status == ReceiptStatus.completed ? 'You bought' : record.status == ReceiptStatus.pending ? 'Purchase awaiting confirmation:' : 'Purchase failed:'} ${record.amount}.',
         appBar: AppBar(
             backgroundColor: DavoColors.of(context).surface,
             leading: IconButton(
@@ -517,7 +509,7 @@ class BuyTransactionDetailsScreen extends StatefulWidget {
 class _BuyTransactionDetailsScreenState
     extends State<BuyTransactionDetailsScreen> {
   late final ReceiptRecord _fallback = buildBuyReceiptRecord(widget.order);
-  ReceiptRecord get record => widget.record ?? _fallback;
+  ReceiptRecord get record => ReceiptActivity.resolve(widget.record ?? _fallback);
   @override
   Widget build(BuildContext context) => TransactionRecordDetailsScreen(
       record: record,
@@ -608,7 +600,8 @@ class _ExactReviewSummary extends StatelessWidget {
 }
 
 class _ModeToggle extends StatelessWidget {
-  const _ModeToggle({required this.asset});
+  const _ModeToggle({required this.asset, this.onModeSelected});
+  final void Function(int, BuyCryptoAsset)? onModeSelected;
   final BuyCryptoAsset asset;
   @override
   Widget build(BuildContext context) => Container(
@@ -629,14 +622,20 @@ class _ModeToggle extends StatelessWidget {
                         borderRadius: BorderRadius.circular(999),
                         onTap: index == 0
                             ? null
-                            : () => Navigator.pushReplacement(
+                            : () {
+                              if (onModeSelected != null) {
+                                onModeSelected!(index, asset);
+                                return;
+                              }
+                              Navigator.pushReplacement(
                                 context,
                                 AppPageRoute<void>(
                                     builder: (_) => TradeAmountScreen(
                                         mode: index == 1
                                             ? TradeMode.sell
                                             : TradeMode.convert,
-                                        asset: asset))),
+                                        asset: asset)));
+                            },
                         child: Padding(
                             padding: const EdgeInsets.symmetric(vertical: 12),
                             child: Center(
@@ -785,7 +784,7 @@ class _ReviewExchangeCards extends StatelessWidget {
                   context,
                   'You will receive',
                   BuyAssetIcon(asset: order.asset, size: 32),
-                  '${formatGroupedAmount(order.cryptoAmount.toStringAsFixed(5))} ${order.asset.symbol}',
+                  '${order.formattedCryptoAmount} ${order.asset.symbol}',
                   '\u2248 \$${formatGroupedAmount(order.usdAmount.toStringAsFixed(2))} USD')),
           Positioned(
               top: -15,

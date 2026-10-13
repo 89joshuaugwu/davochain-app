@@ -25,7 +25,7 @@ void main() {
     expect(
         tester.widget<TradeAmountScreen>(find.byType(TradeAmountScreen)).mode,
         TradeMode.convert);
-    Navigator.of(tester.element(find.byType(TradeAmountScreen))).pop();
+    await tester.tap(find.byKey(const ValueKey('main-tab-0')));
     await tester.pumpAndSettle();
     expect(find.byType(DavochainDashboardScreen), findsOneWidget);
     expect(find.byType(TradeAmountScreen), findsNothing);

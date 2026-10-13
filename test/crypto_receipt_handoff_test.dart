@@ -1,3 +1,4 @@
+import 'support/preview_receipt_fixture.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:davochain/core/preview/preview_transaction_operation.dart';
@@ -8,7 +9,7 @@ import 'package:davochain/shared/receipts/transaction_record_details_screen.dart
 
 void main() {
   tearDown(ReceiptActivity.reset);
-  testWidgets(
+  receiptTestWidgets(
       'withdrawal acceptance carries network fee and tiny asset amount into details',
       (tester) async {
     await tester.pumpWidget(MaterialApp(

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../../../shared/formatters/crypto_quantity_formatter.dart';
+import '../../../shared/formatters/grouped_amount_formatter.dart';
 
 enum BuyCryptoAsset {
   bitcoin('Bitcoin', 'BTC', '₿', Color(0xFFF7931A), 24000000),
@@ -68,6 +70,19 @@ class BuyCryptoOrder {
   final double ngnAmount;
 
   double get cryptoAmount => ngnAmount / asset.ngnPerUnit;
+  String get formattedCryptoAmount {
+    final rounded = cryptoAmount
+        .toStringAsFixed(8)
+        .replaceFirst(RegExp(r'0+$'), '')
+        .replaceFirst(RegExp(r'\.$'), '');
+    final quantity = cryptoAmount != 0 && double.tryParse(rounded) == 0
+        ? formatCryptoQuantity(cryptoAmount)
+        : rounded;
+    return formatGroupedAmount(quantity);
+  }
+
+  String get formattedExchangeRate =>
+      '1 ${asset.symbol} \u2248 \u20a6${formatGroupedAmount(asset.ngnPerUnit.toStringAsFixed(2))}';
   double get usdAmount => ngnAmount / 1463.08;
 
   static const double usdtNgnRate = 1540;
@@ -84,4 +99,3 @@ class BuyCryptoOrder {
     );
   }
 }
-

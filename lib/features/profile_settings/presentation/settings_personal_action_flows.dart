@@ -253,7 +253,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
     if (accepted) {
       return DavoResultScreen(
           title: 'Password changed',
-          message: 'Your password change is recorded for this preview session.',
+          message: 'Your password has been changed.',
           tempo: DavoOutcomeTempo.compact,
           actions: _done(context, 'Back to security'));
     }
@@ -404,7 +404,7 @@ class _EmailSupportScreenState extends State<EmailSupportScreen> {
       return DavoResultScreen(
           title: viewingSaved ? 'Request details' : 'Request submitted',
           kind: DavoOutcomeKind.submitted,
-          message: 'Pending in this preview session. No email has been sent.',
+          message: 'Your request has been submitted.',
           details:
               Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Text('Pending', style: _copy(context, bold: true)),
@@ -520,7 +520,7 @@ class _EmailSupportScreenState extends State<EmailSupportScreen> {
                 onChanged: () => setState(() {})),
             _error(context, error),
             Text(
-                'Requests are saved locally in this preview. No email is sent.',
+                'View your support requests below.',
                 style: _copy(context).copyWith(fontSize: 10)),
             const SizedBox(height: 12),
             if (SettingsPreviewSession.instance.tickets
@@ -708,7 +708,7 @@ class _DavoPointsScreenState extends State<DavoPointsScreen> {
       return DavoResultScreen(
           title: 'Points redeemed',
           message:
-              '${result.points} points added NGN ${(result.creditKobo / 100).toStringAsFixed(2)} to your preview reward balance.',
+              '${result.points} points added NGN ${(result.creditKobo / 100).toStringAsFixed(2)} to your reward balance.',
           details: Text(result.reference, style: _copy(context)),
           actions: DavoPrimaryButton(
               label: 'Back to points',
@@ -730,10 +730,10 @@ class _DavoPointsScreenState extends State<DavoPointsScreen> {
           children: [
             DavoPointsAmount(
                 text: '$points points', style: _copy(context, bold: true)),
-            Text('Preview credit: NGN ${(points * 5 / 100).toStringAsFixed(2)}',
+            Text('Credit: NGN ${(points * 5 / 100).toStringAsFixed(2)}',
                 style: _copy(context)),
             Text(
-                '20 points = NGN 1.00. This updates only your preview balance.',
+                '20 points = NGN 1.00.',
                 style: _copy(context)),
             const SizedBox(height: 20),
             TextButton(
@@ -773,7 +773,7 @@ class _DavoPointsScreenState extends State<DavoPointsScreen> {
                   spacing: 12,
                   runSpacing: 6,
                   children: [
-                    Text('Preview reward balance', style: _copy(context)),
+                    Text('Reward balance', style: _copy(context)),
                     Text(
                         'NGN ${(session.rewardCreditKobo / 100).toStringAsFixed(2)}',
                         style: _copy(context,
@@ -794,7 +794,7 @@ class _DavoPointsScreenState extends State<DavoPointsScreen> {
           const SizedBox(height: 12),
           Text('Recent Activity', style: _copy(context, bold: true)),
           if (session.redemptions.isEmpty)
-            Text('No redemptions in this preview session.',
+            Text('No redemptions yet.',
                 style: _copy(context)),
           ...session.redemptions.map((r) => Padding(
               padding: const EdgeInsets.symmetric(vertical: 8),
@@ -889,7 +889,7 @@ class _DeleteAccountScreenState extends State<DeleteAccountScreen> {
               title: 'Deletion requested',
               kind: DavoOutcomeKind.submitted,
               message:
-                  'Pending in this preview session. Your real account has not been deleted.',
+                  'Your account deletion request has been submitted.',
               details: Text(result.reference, style: _copy(context)),
               actions: DavoPrimaryButton(
                   label: 'Back to login', onPressed: signOut)));
@@ -904,7 +904,7 @@ class _DeleteAccountScreenState extends State<DeleteAccountScreen> {
             onPressed: submit),
         children: [
           Text(
-              'This preview records a pending deletion request. You can cancel before submitting by going back.',
+              'Submit an account deletion request. You can go back to cancel before submitting.',
               style: _copy(context)),
           const SizedBox(height: 22),
           _Entry(

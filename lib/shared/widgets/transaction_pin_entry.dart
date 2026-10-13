@@ -203,7 +203,7 @@ class _TransactionPinEntryScreenState extends State<TransactionPinEntryScreen> {
                                       )));
                             }))),
                     const SizedBox(height: 40),
-                    Text('Preview only. No transaction is authorized.',
+                    Text('Enter your transaction PIN to continue.',
                         textAlign: TextAlign.center,
                         style: TextStyle(
                             fontSize: 12,

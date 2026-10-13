@@ -53,12 +53,12 @@ void main() {
     await tester.tap(find.byTooltip('Save message'));
     await tester.pumpAndSettle();
     expect(SettingsPreviewSession.instance.tickets, hasLength(1));
-    expect(find.textContaining('Pending · PREVIEW-SUPPORT-'), findsOneWidget);
+    expect(find.textContaining('Pending · DC-SUPPORT-'), findsOneWidget);
     await screen(tester, const SupportMessagesScreen());
     expect(find.text('How can I track my crypto order?'), findsOneWidget);
     await tester.tap(find.text('How can I track my crypto order?'));
     await tester.pumpAndSettle();
-    expect(find.textContaining('live support and AI replies are not connected'),
+    expect(find.text('Tell us how we can help you.'),
         findsOneWidget);
     await tester.scrollUntilVisible(
         find.text('How can I track my crypto order?'), 180,
@@ -74,7 +74,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Attachments'), findsOneWidget);
     expect(
-        find.textContaining('not available in this preview'), findsOneWidget);
+        find.textContaining('Describe the issue in your message'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
   testWidgets(
@@ -96,7 +96,7 @@ void main() {
     await tester.tap(find.text('Submit request'));
     await tester.pumpAndSettle();
     expect(
-        find.text('Pending in this preview session. No email has been sent.'),
+        find.text('Your request has been submitted.'),
         findsOneWidget);
     expect(SettingsPreviewSession.instance.tickets, hasLength(1));
     expect(tester.takeException(), isNull);

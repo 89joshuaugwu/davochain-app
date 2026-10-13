@@ -1,3 +1,4 @@
+import '../../../shared/receipts/receipt_identity.dart';
 import '../../../shared/receipts/receipt_activity.dart';
 import '../../../shared/receipts/receipt_record.dart';
 import '../../../shared/receipts/transaction_record_details_screen.dart';
@@ -55,45 +56,34 @@ class TransactionHistoryScreen extends StatelessWidget {
                               fontWeight: FontWeight.w600,
                               color: DavoColors.of(context).ink)),
                       const SizedBox(height: 12),
-                      for (final receipt in receipts) ...[
-                        ListTile(
-                            contentPadding: EdgeInsets.zero,
-                            leading: Icon(Icons.receipt_long,
-                                color: DavoColors.of(context).link),
-                            title: Text(receipt.type,
-                                style: const TextStyle(fontSize: 14)),
-                            subtitle: Text(
-                                receipt.status.label,
-                                style: const TextStyle(fontSize: 12)),
-                            trailing: Text(receipt.amount,
-                                style: const TextStyle(fontSize: 12)),
-                            onTap: () => Navigator.of(context).push(
-                                AppPageRoute<void>(
-                                    builder: (_) =>
-                                        TransactionRecordDetailsScreen(
-                                            record: receipt)))),
+                      for (final receipt in receipts.where((receipt) => !records.any((funding) => funding.id == receipt.id))) ...[
+                        _ActivityRow(
+                          title: ReceiptIdentity(receipt).headline,
+                          amount: receipt.amount,
+                          date: formatReceiptDate(receipt.occurredAt),
+                          icon: ReceiptIdentity(receipt).action.icon,
+                          status: receipt.status,
+                          onTap: () => Navigator.of(context).push(
+                            AppPageRoute<void>(builder: (_) =>
+                              TransactionRecordDetailsScreen(record: receipt))),
+                        ),
                         Divider(
                             height: 1, color: DavoColors.of(context).divider),
                       ],
                       for (final record in records) ...[
-                        ListTile(
-                          contentPadding: EdgeInsets.zero,
-                          leading: Icon(
-                              record.deposit
-                                  ? Icons.south_west
-                                  : Icons.arrow_outward,
-                              color: DavoColors.of(context).link),
-                          title: Text(record.title,
-                              style: const TextStyle(fontSize: 14)),
-                          subtitle: Text(
-                              record.statusLabel,
-                              style: const TextStyle(fontSize: 12)),
-                          trailing: Text(record.amountLabel,
-                              style: const TextStyle(fontSize: 12)),
+                        _ActivityRow(
+                          title: record.title,
+                          amount: record.amountLabel,
+                          date: formatReceiptDate(record.occurredAt),
+                          icon: record.deposit ? Icons.south_west : Icons.north_east,
+                          status: switch (record.status) {
+                            FundingStatus.pending => ReceiptStatus.pending,
+                            FundingStatus.completed => ReceiptStatus.completed,
+                            FundingStatus.failed => ReceiptStatus.failed,
+                          },
                           onTap: () => Navigator.of(context).push(
-                              AppPageRoute<void>(
-                                  builder: (_) =>
-                                      FundingDetailsScreen(record: record))),
+                            AppPageRoute<void>(builder: (_) =>
+                              FundingDetailsScreen(record: record))),
                         ),
                         Divider(
                             height: 1, color: DavoColors.of(context).divider),
@@ -193,62 +183,55 @@ class _SampleTransaction {
 
 class _TransactionRow extends StatelessWidget {
   const _TransactionRow({required this.sample});
-
   final _SampleTransaction sample;
-
   @override
-  Widget build(BuildContext context) => InkWell(
-        borderRadius: BorderRadius.circular(12),
-        onTap: () => Navigator.of(context)
-            .push<void>(AppPageRoute<void>(builder: (_) => sample.details())),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 16),
-          child: Row(
+  Widget build(BuildContext context) => _ActivityRow(
+    title: sample.title, amount: sample.amount, date: sample.date,
+    icon: sample.icon, status: ReceiptStatus.completed,
+    onTap: () => Navigator.of(context).push<void>(
+      AppPageRoute<void>(builder: (_) => sample.details())));
+}
+
+class _ActivityRow extends StatelessWidget {
+  const _ActivityRow({required this.title, required this.amount,
+      required this.date, required this.icon, required this.status,
+      required this.onTap});
+  final String title, amount, date;
+  final IconData icon;
+  final ReceiptStatus status;
+  final VoidCallback onTap;
+  @override
+  Widget build(BuildContext context) {
+    final colors = DavoColors.of(context);
+    final statusColor = switch (status) {
+      ReceiptStatus.pending => colors.warning,
+      ReceiptStatus.completed => colors.success,
+      ReceiptStatus.failed => colors.danger,
+    };
+    return InkWell(
+      borderRadius: BorderRadius.circular(12), onTap: onTap,
+      child: Padding(padding: const EdgeInsets.symmetric(vertical: 16),
+        child: Row(children: [
+          Container(width: 42, height: 42,
+            decoration: BoxDecoration(color: colors.primarySoft,
+                shape: BoxShape.circle),
+            child: Icon(icon, color: colors.link, size: 22)),
+          const SizedBox(width: 12),
+          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                width: 42,
-                height: 42,
-                decoration: BoxDecoration(
-                    color: DavoColors.of(context).primarySoft,
-                    shape: BoxShape.circle),
-                child: Icon(sample.icon,
-                    color: DavoColors.of(context).link, size: 22),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(sample.title,
-                        style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: DavoColors.of(context).ink)),
-                    const SizedBox(height: 5),
-                    Text(sample.amount,
-                        style: TextStyle(
-                            fontSize: 13, color: DavoColors.of(context).body)),
-                    const SizedBox(height: 5),
-                    Text(sample.date,
-                        style: TextStyle(
-                            fontSize: 11,
-                            color: DavoColors.of(context).bodyMuted)),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 8),
-              Column(
-                children: [
-                  Text('Completed',
-                      style: TextStyle(
-                          fontSize: 11, color: DavoColors.of(context).success)),
-                  const SizedBox(height: 8),
-                  Icon(Icons.chevron_right,
-                      color: DavoColors.of(context).bodyMuted, size: 20),
-                ],
-              ),
-            ],
-          ),
-        ),
-      );
+              Text(title, style: TextStyle(fontSize: 14,
+                fontWeight: FontWeight.w600, color: colors.ink)),
+              const SizedBox(height: 5),
+              Text(amount, style: TextStyle(fontSize: 13, color: colors.body)),
+              const SizedBox(height: 5),
+              Text(date, style: TextStyle(fontSize: 11, color: colors.bodyMuted)),
+            ])),
+          const SizedBox(width: 8),
+          Column(children: [
+            Text(status.label, style: TextStyle(fontSize: 11, color: statusColor)),
+            const SizedBox(height: 8),
+            Icon(Icons.chevron_right, color: colors.bodyMuted, size: 20),
+          ]),
+        ])));
+  }
 }

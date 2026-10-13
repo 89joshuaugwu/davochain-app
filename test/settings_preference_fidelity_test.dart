@@ -62,10 +62,10 @@ void main() {
     await tester.tap(toggle('Markets Communications')); await tester.pumpAndSettle();
     expect(value(tester, 'Markets Communications'), isTrue);
     await tester.tap(find.text('Data & Permissions')); await tester.pumpAndSettle();
-    expect(find.text('These preview preferences apply only to this screen. Device permissions can be managed in your device settings.'), findsOneWidget);
+    expect(find.text('Manage device permissions in your device settings.'), findsOneWidget);
     await tester.tap(find.text('Done')); await tester.pumpAndSettle();
     await tester.tap(find.text('Block Users')); await tester.pumpAndSettle();
-    expect(find.text('No blocked contacts in this preview. Blocking and contact management will be available when your account is connected.'), findsOneWidget);
+    expect(find.text('You have no blocked contacts.'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
   for (final dark in [false, true]) {

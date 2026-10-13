@@ -4,4 +4,8 @@ import 'package:flutter/foundation.dart';
 class PreviewAccountState {
   PreviewAccountState._();
   static final setupComplete = ValueNotifier<bool>(false);
+  static final notificationPreferences = List<bool>.filled(11, true);
+  static final notificationChannels =
+      List.generate(3, (_) => [true, false, false]);
+  static final readNotifications = <String>{};
 }

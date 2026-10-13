@@ -19,7 +19,7 @@ void main() {
     await tester.tap(find.text('Select a payment method'));
     await tester.pumpAndSettle();
     final panel = find.ancestor(
-        of: find.text('Preview accounts'), matching: find.byType(Material));
+        of: find.text('Saved accounts'), matching: find.byType(Material));
     expect(
         panel.evaluate().any((element) {
           return (element.widget as Material).color == DavoColors.dark.canvas;
@@ -32,7 +32,7 @@ void main() {
     await tester.tap(find.widgetWithText(InkWell, 'Kuda Bank - 1234567890'));
     await tester.pumpAndSettle();
     expect(find.text('Kuda Bank'), findsOneWidget);
-    expect(find.text('Preview accounts'), findsNothing);
+    expect(find.text('Saved accounts'), findsNothing);
     expect(tester.takeException(), isNull);
   });
   testWidgets(

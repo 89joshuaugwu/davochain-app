@@ -162,7 +162,7 @@ class _AppearanceScreenState extends State<AppearanceScreen>
                 ]),
                 const SizedBox(height: 24),
                 Semantics(
-                    label: '${_label(_selected)} appearance preview',
+                    label: '${_label(_selected)} theme display',
                     child: ExcludeSemantics(
                       child: Container(
                         key: const ValueKey('appearance-live-preview'),

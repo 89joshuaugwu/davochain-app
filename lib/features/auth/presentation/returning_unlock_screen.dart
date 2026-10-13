@@ -1,3 +1,4 @@
+import '../../../core/preview/local_preview_profile.dart';
 import 'dart:async';
 import '../../../core/device/biometric_gateway.dart';
 import '../../../shared/widgets/davo_toast.dart';
@@ -28,7 +29,14 @@ class _ReturningUnlockScreenState extends State<ReturningUnlockScreen> {
   bool _pinOpening = false, _biometricOpening = false;
   bool get _opening => _method != null || _pinOpening || _biometricOpening;
   @override
+  void initState() {
+    super.initState();
+    LocalPreviewProfile.instance.addListener(_refreshProfile);
+  }
+  void _refreshProfile() { if (mounted) setState(() {}); }
+  @override
   void dispose() {
+    LocalPreviewProfile.instance.removeListener(_refreshProfile);
     unawaited(BiometricGateway.instance.cancel());
     _password.dispose();
     super.dispose();
@@ -87,7 +95,7 @@ class _ReturningUnlockScreenState extends State<ReturningUnlockScreen> {
     final accepted = await Navigator.of(context).push<bool>(AppPageRoute<bool>(
       builder: (pinContext) => TransactionPinEntryScreen(
         title: 'Unlock with PIN',
-        message: 'Preview only. Enter four digits to try the login flow.',
+        message: 'Enter your four-digit PIN to unlock your account.',
         onConfirm: () => Navigator.of(pinContext).pop(true),
       ),
     ));
@@ -219,7 +227,7 @@ class _ReturningUnlockScreenState extends State<ReturningUnlockScreen> {
                                                                     ])),
                                                     const SizedBox(height: 24),
                                                     Text(
-                                                        'Welcome back, Vincent',
+                                                        'Welcome back, ${LocalPreviewProfile.instance.firstName}',
                                                         textAlign:
                                                             TextAlign.center,
                                                         style: TextStyle(

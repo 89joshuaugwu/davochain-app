@@ -1,3 +1,5 @@
+import '../../../core/preview/local_preview_profile.dart';
+import '../../../core/preview/preview_auth_state.dart';
 import '../../../shared/widgets/davo_safe_selection_sheet.dart';
 import '../../../shared/formatters/nigerian_phone_formatter.dart';
 import '../../../shared/widgets/davo_animated_checkbox.dart';
@@ -392,10 +394,12 @@ class _AccountDetailsScreenState extends State<_AccountDetailsScreen> {
                       label: 'Continue',
                       enabled: _canContinue,
                       onPressed: _canContinue
-                          ? () => pushAppPage<void>(
-                                context,
-                                (_) => const CreatePasswordScreen(),
-                              )
+                          ? () {
+                              LocalPreviewProfile.instance.register(name: _name.text,
+                                email: _email.text, phone: '+234 ${_phone.text}');
+                              PreviewAuthState.accountEmail = _email.text.trim().toLowerCase();
+                              pushAppPage<void>(context, (_) => const CreatePasswordScreen());
+                            }
                           : null,
                     ),
                     const SizedBox(height: 12),

@@ -90,7 +90,7 @@ void main() {
     await tester.tap(find.text('Submit request'));
     await tester.pumpAndSettle();
     expect(find.text('Request submitted'), findsOneWidget);
-    expect(find.textContaining('PREVIEW-SUPPORT'), findsOneWidget);
+    expect(find.textContaining('DC-SUPPORT'), findsOneWidget);
     expect(SettingsPreviewSession.instance.tickets.length, 1);
   });
   testWidgets(

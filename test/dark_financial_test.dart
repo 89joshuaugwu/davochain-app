@@ -32,7 +32,7 @@ void main() {
         theme: AppTheme.dark, home: const DavochainDashboardScreen()));
     await tester.pump(const Duration(milliseconds: 900));
     final context = tester.element(find.text('Assets'));
-    expect(tester.widget<Scaffold>(find.byType(Scaffold)).backgroundColor,
+    expect(tester.widget<Scaffold>(find.byType(Scaffold).last).backgroundColor,
         DavoColors.of(context).canvas);
     expect(tester.widget<Text>(find.text('Assets')).style!.color,
         DavoColors.of(context).ink);

@@ -1,3 +1,4 @@
+import 'support/preview_receipt_fixture.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:davochain/features/buy_crypto/presentation/buy_crypto_models.dart';
@@ -28,7 +29,7 @@ void main() {
     'Transfer': Icons.north_east,
     'External Transfer': Icons.north_east
   }.entries) {
-    testWidgets('${entry.key} details show the correct money direction',
+    receiptTestWidgets('${entry.key} details show the correct money direction',
         (tester) async {
       final record = ReceiptRecord(
           id: 'direction',
@@ -43,12 +44,14 @@ void main() {
       expect(find.byIcon(entry.value), findsOneWidget);
     });
   }
-  testWidgets(
+  receiptTestWidgets(
       'normal sell outcome uses the same computed proceeds as its record',
       (tester) async {
     await tester.pumpWidget(const MaterialApp(
         home: TransactionSuccessScreen(
             kind: TxKind.sell, target: 'NGN', amount: .03)));
+    await tester.pumpAndSettle();
+    await tester.pump(const Duration(seconds: 20));
     await tester.pumpAndSettle();
     final text = tester.widget<Text>(find.byWidgetPredicate((widget) =>
         widget is Text &&
@@ -71,7 +74,7 @@ void main() {
   });
   for (final buy in [true, false]) {
     for (final status in ReceiptStatus.values) {
-      testWidgets(
+      receiptTestWidgets(
           '${buy ? 'buy' : 'crypto'} outcome honors accepted $status and amount',
           (tester) async {
         final record = update(status);
@@ -107,7 +110,7 @@ void main() {
     }
   }
   for (final buy in [true, false]) {
-    testWidgets(
+    receiptTestWidgets(
         '${buy ? 'buy' : 'crypto'} details reflect accepted record updates',
         (tester) async {
       Widget page(ReceiptRecord record) => buy

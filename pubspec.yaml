@@ -1,5 +1,5 @@
 name: davochain
-version: 0.13.0+30
+version: 0.14.0+32
 publish_to: 'none'
 description: Davochain Flutter mobile application.
 
@@ -20,6 +20,8 @@ dependencies:
   camera: ^0.12.1
   file_picker: ^13.1.0
   image_picker: ^1.2.4
+  image_picker_android: ^0.8.13+25
+  image_picker_platform_interface: ^2.11.2
   flutter_tts: ^4.2.5
   local_auth: ^3.0.2
   google_mlkit_face_detection: ^0.15.1

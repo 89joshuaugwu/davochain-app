@@ -1,3 +1,4 @@
+import '../../../shared/widgets/davo_main_shell.dart';
 import '../../../shared/receipts/transaction_record_details_screen.dart';
 import '../../../shared/receipts/receipt_record.dart';
 import '../../../shared/receipts/receipt_screen.dart';
@@ -80,13 +81,12 @@ const _brands = <GiftCardBrand>[
 Future<void> startGiftCardFlow(BuildContext context,
     {GiftCardMode mode = GiftCardMode.buy}) async {
   HapticFeedback.selectionClick();
-  await Navigator.of(context).push<void>(
-    AppPageRoute<void>(builder: (_) => GiftCardHomeScreen(initialMode: mode)),
-  );
+  await selectDavoMainTab(context, 2, giftMode: mode);
 }
 
 class GiftCardHomeScreen extends StatefulWidget {
-  const GiftCardHomeScreen({super.key, this.initialMode = GiftCardMode.buy});
+  const GiftCardHomeScreen({super.key, this.initialMode = GiftCardMode.buy, this.onBack});
+  final VoidCallback? onBack;
 
   final GiftCardMode initialMode;
 
@@ -116,7 +116,7 @@ class _GiftCardHomeScreenState extends State<GiftCardHomeScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _TopBar(title: 'Gift cards', onBack: () => Navigator.pop(context)),
+          _TopBar(title: 'Gift cards', onBack: widget.onBack ?? () => Navigator.pop(context)),
           const SizedBox(height: 22),
           Text('Gift Cards', style: _title20(context)),
           const SizedBox(height: 2),
@@ -678,13 +678,14 @@ class GiftCardSellSubmittedScreen extends StatefulWidget {
 }
 
 class _GiftCardSellSubmittedScreenState
-    extends State<GiftCardSellSubmittedScreen> {
-  late final ReceiptRecord record;
+    extends State<GiftCardSellSubmittedScreen> with ReceiptActivityObserver<GiftCardSellSubmittedScreen> {
+  late final ReceiptRecord _record;
+  ReceiptRecord get record => ReceiptActivity.resolve(_record);
   @override
   void initState() {
     super.initState();
     final now = DateTime.now();
-    record = widget.record ??
+    _record = widget.record ??
         giftCardPreviewReceipt(
           sell: true,
           occurredAt: now,
@@ -697,7 +698,7 @@ class _GiftCardSellSubmittedScreenState
           country: widget.country,
           cardType: widget.cardType,
         );
-    ReceiptActivity.accept(record);
+    if (widget.record == null) { ReceiptActivity.submitPreview(record); } else { ReceiptActivity.accept(record); }
   }
 
   @override
@@ -736,7 +737,9 @@ class _GiftCardSellSubmittedScreenState
                               TextSpan(
                                   text: record.status.label,
                                   style: TextStyle(
-                                      color: DavoColors.of(context).warning,
+                                      color: record.status == ReceiptStatus.completed
+                                          ? DavoColors.of(context).success
+                                          : DavoColors.of(context).warning,
                                       fontWeight: FontWeight.w500))
                             ]))
                           ]),
@@ -778,13 +781,14 @@ class GiftCardVerificationScreen extends StatefulWidget {
 }
 
 class _GiftCardVerificationScreenState
-    extends State<GiftCardVerificationScreen> {
-  late final ReceiptRecord record;
+    extends State<GiftCardVerificationScreen> with ReceiptActivityObserver<GiftCardVerificationScreen> {
+  late final ReceiptRecord _record;
+  ReceiptRecord get record => ReceiptActivity.resolve(_record);
   @override
   void initState() {
     super.initState();
     final now = DateTime.now();
-    record = widget.record ??
+    _record = widget.record ??
         giftCardPreviewReceipt(
             sell: true, occurredAt: now, id: receiptDemoId(now));
   }
@@ -1389,13 +1393,14 @@ class GiftCardBuySuccessScreen extends StatefulWidget {
       _GiftCardBuySuccessScreenState();
 }
 
-class _GiftCardBuySuccessScreenState extends State<GiftCardBuySuccessScreen> {
-  late final ReceiptRecord record;
+class _GiftCardBuySuccessScreenState extends State<GiftCardBuySuccessScreen> with ReceiptActivityObserver<GiftCardBuySuccessScreen> {
+  late final ReceiptRecord _record;
+  ReceiptRecord get record => ReceiptActivity.resolve(_record);
   @override
   void initState() {
     super.initState();
     final now = DateTime.now();
-    record = widget.record ??
+    _record = widget.record ??
         giftCardPreviewReceipt(
           sell: false,
           occurredAt: now,
@@ -1409,7 +1414,7 @@ class _GiftCardBuySuccessScreenState extends State<GiftCardBuySuccessScreen> {
           cardType: widget.cardType,
           subcategory: widget.subcategory,
         );
-    ReceiptActivity.accept(record);
+    if (widget.record == null) { ReceiptActivity.submitPreview(record); } else { ReceiptActivity.accept(record); }
   }
 
   @override
@@ -1442,9 +1447,7 @@ class _GiftCardBuySuccessScreenState extends State<GiftCardBuySuccessScreen> {
                                 style: _title20(context)),
                             const SizedBox(height: 4),
                             Text(
-                                record.preview
-                                    ? 'Local gift card purchase preview'
-                                    : 'Gift card purchase ${record.status.label.toLowerCase()}',
+                                'Gift card purchase ${record.status.label.toLowerCase()}',
                                 textAlign: TextAlign.center,
                                 style: _body14(context))
                           ]),
@@ -1501,17 +1504,12 @@ class _GiftOutcomeDetails extends StatelessWidget {
   final ReceiptRecord record;
   @override
   Widget build(BuildContext context) => Column(children: [
-        if (record.preview)
-          Padding(
-              padding: const EdgeInsets.only(bottom: 8),
-              child:
-                  Text('Preview: local transaction', style: _caption(context))),
         _TransactionCard(rows: [
           ('Transaction ID', record.id, true, false),
           ('Reference Code', record.reference, true, false),
           ...record.fields.map((field) => (
                 field.label,
-                field.sensitive ? '????' : field.value,
+                field.sensitive ? '\u2022\u2022\u2022\u2022' : field.value,
                 field.copyable && !field.sensitive,
                 false
               )),

@@ -13,10 +13,26 @@ export 'verification_attachment.dart';
 abstract class VerificationMediaGateway {
   static VerificationMediaGateway instance = DeviceVerificationMediaGateway();
   Future<VerificationAttachment?> pickDocument({bool camera = false});
+  Future<VerificationAttachment?> pickIdentity({bool camera = false});
   Future<VerificationAttachment?> captureFace(BuildContext context);
 }
 
 class DeviceVerificationMediaGateway implements VerificationMediaGateway {
+  @override
+  Future<VerificationAttachment?> pickIdentity({bool camera = false}) async {
+    final image = await ImagePicker().pickImage(
+        source: camera ? ImageSource.camera : ImageSource.gallery,
+        imageQuality: camera ? 90 : null,
+        maxWidth: camera ? 1920 : null);
+    if (image == null) return null;
+    try {
+      return await cacheVerificationAttachment(image.path,
+          name: image.name, allowPdf: false);
+    } finally {
+      if (camera) await releaseCapturedSource(image.path);
+    }
+  }
+
   @override
   Future<VerificationAttachment?> pickDocument({bool camera = false}) async {
     String? path, name;
@@ -53,7 +69,7 @@ class DeviceVerificationMediaGateway implements VerificationMediaGateway {
 }
 
 Future<VerificationAttachment> cacheVerificationAttachment(String source,
-    {required String name}) async {
+    {required String name, bool allowPdf = true}) async {
   final original = File(source);
   final size = await original.length();
   if (size == 0 || size > 5 * 1024 * 1024) {
@@ -65,6 +81,9 @@ Future<VerificationAttachment> cacheVerificationAttachment(String source,
     kind = verificationFileKind(await reader.read(8));
   } finally {
     await reader.close();
+  }
+  if (!allowPdf && kind == 'pdf') {
+    throw const FormatException('Choose a JPG or PNG image of your ID.');
   }
   if (kind != 'pdf') {
     ui.ImmutableBuffer? buffer;

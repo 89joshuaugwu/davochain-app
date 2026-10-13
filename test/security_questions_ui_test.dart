@@ -87,10 +87,10 @@ void main() {
         SecurityQuestionsChallengeScreen(
             service: service, onVerified: () => verified++));
     await tap(tester, 'Forgot your answer?');
-    await tap(tester, 'Request preview code');
+    await tap(tester, 'Request verification code');
     final code =
         tester.widget<SelectableText>(find.byType(SelectableText)).data!;
-    expect(find.textContaining('no email sent'), findsOneWidget);
+    expect(find.text('Verification code'), findsOneWidget);
     await tester.enterText(
         find.byKey(const Key('security-reset-code')), 'wrong');
     await tap(tester, 'Verify code');
@@ -141,7 +141,7 @@ void main() {
         SecurityQuestionsChallengeScreen(
             service: service, onVerified: () => verified++));
     await tap(tester, 'Forgot your answer?');
-    await tap(tester, 'Request preview code');
+    await tap(tester, 'Request verification code');
     final code =
         tester.widget<SelectableText>(find.byType(SelectableText)).data!;
     await tester.enterText(find.byKey(const Key('security-reset-code')), code);

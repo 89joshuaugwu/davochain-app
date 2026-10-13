@@ -1,3 +1,4 @@
+import '../../../core/preview/local_preview_profile.dart';
 import '../../security_questions/presentation/security_questions_login_gate.dart';
 import '../../security_questions/security_questions_service.dart';
 import '../../../core/preview/preview_auth_state.dart';
@@ -62,6 +63,7 @@ class _LoginScreenState extends State<LoginScreen> {
       setState(() => _loading = false);
       return;
     }
+    LocalPreviewProfile.instance.loginSample();
     PreviewAuthState.unlocked.value = true;
     Navigator.of(context).pushNamedAndRemoveUntil(
         AppRoutes.dashboard, (route) => false,

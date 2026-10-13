@@ -246,7 +246,7 @@ class _QuestionsFlowState extends State<_QuestionsFlow> {
           title: 'Security questions saved',
           message: widget.recovery
               ? 'Your questions have been replaced. Answer one selected question to finish signing in.'
-              : 'Your three questions are ready for your next sign-in in this session preview.',
+              : 'Your three questions are ready for your next sign-in.',
           actions: _action(widget.recovery ? 'Return to verification' : 'Done',
               () => Navigator.pop(context, true)));
     }
@@ -293,7 +293,7 @@ class _QuestionsFlowState extends State<_QuestionsFlow> {
               _questionRow(context, i, service.questions[i]),
             const SizedBox(height: 24),
             _body(
-                'To replace all three questions, first verify an email code in the session preview.'),
+                'Verify your email code to replace your security questions.'),
           ],
           _action(service.enabled ? 'Change questions' : 'Set up questions',
               service.enabled ? _request : _setup,
@@ -396,9 +396,9 @@ class _QuestionsFlowState extends State<_QuestionsFlow> {
         return [
           _heading('Verify before replacing questions'),
           _body(
-              'Email verification is a session preview. No email is sent. Request a preview code and enter it below.'),
+              'Request a verification code and enter it below.'),
           if (_reset == null)
-            _action('Request preview code', _request, enabled: !_busy)
+            _action('Request verification code', _request, enabled: !_busy)
           else ...[
             Container(
                 padding: const EdgeInsets.all(16),
@@ -408,7 +408,7 @@ class _QuestionsFlowState extends State<_QuestionsFlow> {
                 child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Preview code · no email sent',
+                      Text('Verification code',
                           style: TextStyle(
                               fontSize: 12,
                               color: DavoColors.of(context).link)),
@@ -431,14 +431,14 @@ class _QuestionsFlowState extends State<_QuestionsFlow> {
                 autocorrect: false,
                 enableSuggestions: false,
                 decoration:
-                    const InputDecoration(labelText: 'Email preview code'),
+                    const InputDecoration(labelText: 'Email verification code'),
                 onChanged: (_) => setState(() {})),
             const SizedBox(height: 24),
             _action('Verify code', _confirm,
                 enabled: !_busy && _code.text.trim().isNotEmpty),
             TextButton(
                 onPressed: _busy ? null : _request,
-                child: const Text('Request a new preview code')),
+                child: const Text('Request a new code')),
           ]
         ];
       case _Page.result:
@@ -615,7 +615,7 @@ Widget _body(String text) => Padding(
     padding: const EdgeInsets.only(bottom: 16),
     child: Text(text, style: const TextStyle(fontSize: 14, height: 1.6)));
 Widget _notice(BuildContext context) => Text(
-    'Session preview · an additional knowledge check, not two-factor authentication. Questions and answers are cleared when this app session ends.',
+    'Answer your security question to protect your account.',
     style: TextStyle(
         fontSize: 12, height: 1.6, color: DavoColors.of(context).bodyMuted));
 Widget _action(String label, VoidCallback callback, {bool enabled = true}) =>

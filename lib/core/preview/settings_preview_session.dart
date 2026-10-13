@@ -76,7 +76,7 @@ class PreviewSettingsGateway extends SettingsGateway {
   static int _sequence = 0;
   Future<void> _wait() =>
       Future<void>.delayed(const Duration(milliseconds: 350));
-  String _reference(String type) => 'PREVIEW-$type-${++_sequence}';
+  String _reference(String type) => 'DC-$type-${++_sequence}';
   @override
   Future<LinkedBank> resolveBank(String bank, String number) async {
     await _wait();
@@ -140,7 +140,7 @@ class SettingsPreviewSession extends ChangeNotifier {
   int generation = 0;
   int _conversationSequence = 0;
   String newConversationId() =>
-      'PREVIEW-CHAT-$generation-${++_conversationSequence}';
+      'DC-CHAT-$generation-${++_conversationSequence}';
   int get earnedPoints => 15;
   int get redeemedPoints => _redemptions.fold(0, (sum, r) => sum + r.points);
   int get availablePoints => earnedPoints - redeemedPoints;

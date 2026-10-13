@@ -9,6 +9,7 @@ import '../../../core/theme/app_theme.dart';
 import '../presentation/verification/verification_components.dart';
 import 'face_guidance.dart';
 import 'face_oval_overlay.dart';
+import 'face_capture_reveal.dart';
 import 'face_frame_freshness.dart';
 import 'nv21_frame.dart';
 import 'verification_attachment.dart';
@@ -64,10 +65,8 @@ class _GuidedFaceState extends State<GuidedFaceCaptureScreen>
       unawaited(_captureFront());
     }
     if (guide.stage == FaceGuidanceStage.done && front != null && !delivered) {
-      delivered = true;
       clock?.cancel();
       unawaited(speech.stop());
-      Navigator.pop(context, front);
     }
   }
 
@@ -256,7 +255,8 @@ class _GuidedFaceState extends State<GuidedFaceCaptureScreen>
 
   Uint8List _nv21(CameraImage image) {
     if (image.planes.length == 1) {
-      return packedNv21Bytes(image.planes.first.bytes, image.width, image.height);
+      return packedNv21Bytes(
+          image.planes.first.bytes, image.width, image.height);
     }
     if (image.planes.length != 3) {
       throw const FormatException('Unsupported camera plane layout.');
@@ -408,7 +408,26 @@ class _GuidedFaceState extends State<GuidedFaceCaptureScreen>
                             const SizedBox(height: 16),
                             VerificationButton('Retry camera',
                                 onPressed: starting ? null : _initialize)
-                          ] else if (camera?.value.isInitialized != true)
+                          ] else if (guide.stage == FaceGuidanceStage.done &&
+                              front != null)
+                            ClipRRect(
+                                borderRadius: BorderRadius.circular(12),
+                                child: SizedBox(
+                                    height: (constraints.maxHeight * .52)
+                                        .clamp(260, 380),
+                                    child: FaceCaptureReveal(
+                                        image: FileImage(File(front!.path)),
+                                        onDone: () {
+                                          if (guide.stage !=
+                                                  FaceGuidanceStage.done ||
+                                              front == null ||
+                                              delivered) {
+                                            return;
+                                          }
+                                          delivered = true;
+                                          Navigator.pop(context, front);
+                                        })))
+                          else if (camera?.value.isInitialized != true)
                             const SizedBox(
                                 height: 300,
                                 child:
@@ -429,49 +448,12 @@ class _GuidedFaceState extends State<GuidedFaceCaptureScreen>
                                               height: camera!
                                                   .value.previewSize!.width,
                                               child: CameraPreview(camera!))),
-                                      FaceOvalOverlay(ready: guide.ready),
-                                      Positioned(
-                                          right: 16,
-                                          bottom: 16,
-                                          child: Container(
-                                              width: 60,
-                                              height: 60,
-                                              padding: const EdgeInsets.all(6),
-                                              decoration: const BoxDecoration(
-                                                  color: Colors.white,
-                                                  shape: BoxShape.circle),
-                                              child: Stack(
-                                                  alignment: Alignment.center,
-                                                  children: [
-                                                    SizedBox.expand(
-                                                        child:
-                                                            CircularProgressIndicator(
-                                                                value: guide
-                                                                    .progress,
-                                                                strokeWidth: 3,
-                                                                color: AppColors
-                                                                    .primary)),
-                                                    if (guide.stage ==
-                                                        FaceGuidanceStage
-                                                            .capturing)
-                                                      const Icon(
-                                                          Icons.check_rounded,
-                                                          color:
-                                                              AppColors.primary,
-                                                          size: 28)
-                                                    else
-                                                      FittedBox(
-                                                          fit: BoxFit.scaleDown,
-                                                          child: Text(
-                                                              '${guide.seconds}',
-                                                              style: const TextStyle(
-                                                                  fontSize: 24,
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .w700,
-                                                                  color: AppColors
-                                                                      .primary)))
-                                                  ]))),
+                                      FaceOvalOverlay(
+                                          ready: guide.ready,
+                                          progress: guide.stage ==
+                                                  FaceGuidanceStage.capturing
+                                              ? 1
+                                              : guide.progress),
                                     ]))),
                           const SizedBox(height: 24),
                           Semantics(
@@ -499,4 +481,3 @@ class _GuidedFaceState extends State<GuidedFaceCaptureScreen>
                         ])))));
   }
 }
-

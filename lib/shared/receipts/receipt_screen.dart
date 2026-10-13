@@ -1,3 +1,4 @@
+import 'receipt_activity.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../core/theme/app_theme.dart';
@@ -13,7 +14,7 @@ class ReceiptScreen extends StatefulWidget {
   State<ReceiptScreen> createState() => _ReceiptScreenState();
 }
 
-class _ReceiptScreenState extends State<ReceiptScreen> {
+class _ReceiptScreenState extends State<ReceiptScreen> with ReceiptActivityObserver<ReceiptScreen> {
   bool _showSensitive = false;
   String _note = '';
   // Other ReceiptStyle variants and their artwork remain available in the
@@ -21,13 +22,13 @@ class _ReceiptScreenState extends State<ReceiptScreen> {
   @override
   Widget build(BuildContext context) {
     final view = ReceiptPresentation(
-        record: widget.record,
+        record: ReceiptActivity.resolve(widget.record),
         style: ReceiptStyle.standard,
         note: _note,
         showSensitive: _showSensitive);
     return DavoReceiptExportFrame(
         title: '',
-        receiptType: widget.record.type,
+        receiptType: ReceiptActivity.resolve(widget.record).type,
         presentation: view,
         controls:
             Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -42,7 +43,7 @@ class _ReceiptScreenState extends State<ReceiptScreen> {
                   border: OutlineInputBorder(),
                   counterStyle: TextStyle(fontSize: 10)),
               onChanged: (value) => setState(() => _note = value)),
-          if (widget.record.fields.any((field) => field.sensitive))
+          if (ReceiptActivity.resolve(widget.record).fields.any((field) => field.sensitive))
             SwitchListTile.adaptive(
                 contentPadding: EdgeInsets.zero,
                 activeTrackColor: AppColors.primary,

@@ -1,3 +1,4 @@
+import 'support/preview_receipt_fixture.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:davochain/core/theme/app_theme.dart';
@@ -27,7 +28,7 @@ void main() {
       );
 
   for (final sell in [false, true]) {
-    testWidgets(
+    receiptTestWidgets(
         'failed gift ${sell ? 'sell' : 'buy'} never uses pending or success art',
         (tester) async {
       final record = terminalRecord(ReceiptStatus.failed);
@@ -44,7 +45,7 @@ void main() {
   }
 
   for (final status in [ReceiptStatus.completed, ReceiptStatus.failed]) {
-    testWidgets('${status.label} gift verification stops pending indicator',
+    receiptTestWidgets('${status.label} gift verification stops pending indicator',
         (tester) async {
       await show(
           tester, GiftCardVerificationScreen(record: terminalRecord(status)));
@@ -54,7 +55,7 @@ void main() {
     });
   }
 
-  testWidgets('buy outcome opens receipt with actual purchase amount',
+  receiptTestWidgets('buy outcome opens receipt with actual purchase amount',
       (tester) async {
     await show(
         tester, const GiftCardBuySuccessScreen(amount: 75, naira: 64875));
@@ -65,7 +66,7 @@ void main() {
     expect(find.textContaining('Preview'), findsNothing);
   });
 
-  testWidgets(
+  receiptTestWidgets(
       'sell outcome provides receipt separately from pending verification',
       (tester) async {
     await show(tester, const GiftCardSellSubmittedScreen());
@@ -77,7 +78,7 @@ void main() {
     expect(find.textContaining('Preview'), findsNothing);
   });
 
-  testWidgets('submitted sell receipt retains reviewed brand and amount',
+  receiptTestWidgets('submitted sell receipt retains reviewed brand and amount',
       (tester) async {
     await show(
         tester,
@@ -106,7 +107,7 @@ void main() {
     expect(find.text('Pending'), findsWidgets);
   });
 
-  testWidgets(
+  receiptTestWidgets(
       'buy receipt uses accepted pending record and never duplicates history on rebuild',
       (tester) async {
     final record = ReceiptRecord(
@@ -133,7 +134,7 @@ void main() {
     expect(ReceiptActivity.records.value, hasLength(1));
   });
 
-  testWidgets(
+  receiptTestWidgets(
       'preview buy keeps date and identifier while returning from receipt',
       (tester) async {
     await show(

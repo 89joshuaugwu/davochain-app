@@ -68,6 +68,24 @@ class ReceiptRecord {
   final List<ReceiptAsset> assets;
   final List<ReceiptField> fields;
   final List<ReceiptEvent> events;
+
+  ReceiptRecord withStatus(ReceiptStatus value) => ReceiptRecord(
+      id: id, reference: reference, type: type, status: value,
+      occurredAt: occurredAt, amount: amount, preview: preview,
+      assets: assets, fields: fields,
+      events: [
+        ReceiptEvent(label: 'Submitted', description: 'Request accepted.',
+            occurredAt: occurredAt, state: ReceiptEventState.complete),
+        ReceiptEvent(label: value.label,
+            description: switch (value) {
+              ReceiptStatus.completed => 'Transaction completed.',
+              ReceiptStatus.pending => 'Transaction is being processed.',
+              ReceiptStatus.failed => 'Transaction failed.',
+            },
+            occurredAt: value == ReceiptStatus.completed ? DateTime.now() : null,
+            state: value == ReceiptStatus.pending
+                ? ReceiptEventState.current : ReceiptEventState.complete),
+      ]);
 }
 
 List<ReceiptAsset> _inferAssets(

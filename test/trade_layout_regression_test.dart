@@ -59,7 +59,7 @@ void main() {
       await tester.pumpAndSettle();
       final action = find.text(
           screen is TradeAmountScreen && screen.mode == TradeMode.convert
-              ? 'Preview'
+              ? 'Review'
               : 'Continue');
       expect(tester.getBottomRight(action).dy, lessThan(318));
       await tester.ensureVisible(find.text('Max'));
@@ -209,7 +209,7 @@ void main() {
     expect(tester.getCenter(find.byType(TextField)).dx, closeTo(393 / 2, .01));
     expect(find.text('\u2248 \u20a60.00'), findsOneWidget);
     expect(find.textContaining('\u2248 (\$'), findsOneWidget);
-    expect(find.text('1 USDT \u2248 (\u20a61,540.00)'), findsOneWidget);
+    expect(find.text('1 BTC \u2248 (\u20a624,000,000.00)'), findsOneWidget);
     await tester.enterText(find.byType(TextField), '0.03045');
     await tester.pump();
     expect(find.text('\u2248 \u20a6730,800.00'), findsOneWidget);
@@ -226,7 +226,7 @@ void main() {
     expect(find.text('Nigerian Naira'), findsOneWidget);
     expect(find.text('\u20a6730,800.00'), findsNWidgets(2));
     expect(find.byIcon(Icons.arrow_downward_rounded), findsOneWidget);
-    final rate = find.text('1 USDT \u2248 \u20a61,540.00');
+    final rate = find.text('1 BTC \u2248 \u20a624,000,000.00');
     expect(rate, findsOneWidget);
     expect(tester.getTopRight(rate).dx,
         closeTo(tester.getTopRight(find.text('Free')).dx, .01));

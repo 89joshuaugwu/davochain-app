@@ -1,3 +1,4 @@
+import 'support/preview_receipt_fixture.dart';
 import 'package:davochain/core/theme/app_theme.dart';
 import 'package:davochain/features/gift_cards/presentation/gift_card_flow.dart';
 import 'package:davochain/features/transactions/presentation/transaction_history_screen.dart';
@@ -22,7 +23,7 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  testWidgets('dark gift catalogue uses dark surface and readable headings',
+  receiptTestWidgets('dark gift catalogue uses dark surface and readable headings',
       (tester) async {
     await showDark(tester, const GiftCardHomeScreen(), scale: 2);
     expect(tester.widget<Scaffold>(find.byType(Scaffold)).backgroundColor,
@@ -33,7 +34,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('dark history titles and completed status use readable colors',
+  receiptTestWidgets('dark history titles and completed status use readable colors',
       (tester) async {
     await showDark(tester, const TransactionHistoryScreen(), scale: 2);
     expect(tester.widget<AppBar>(find.byType(AppBar)).backgroundColor,
@@ -45,7 +46,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('dark gift pending status and verification remain readable',
+  receiptTestWidgets('dark gift pending status and verification remain readable',
       (tester) async {
     await showDark(tester, const GiftCardSellSubmittedScreen(), scale: 2);
     final status = tester.widget<Text>(find.byWidgetPredicate((widget) =>

@@ -30,7 +30,7 @@ class BankDepositDetails {
   final bool isPreview;
 
   String get shareText => [
-        'Davochain $wallet deposit details${isPreview ? ' (preview)' : ''}',
+        'Davochain $wallet deposit details',
         'Account name: $accountName',
         'Bank name: $bankName',
         'Account number: $accountNumber',

@@ -7,6 +7,9 @@ class FakeVerificationMedia implements VerificationMediaGateway {
   bool cancelFace = false;
   final cameraRequests = <bool>[];
   @override
+  Future<VerificationAttachment?> pickIdentity({bool camera = false}) =>
+      pickDocument(camera: camera);
+  @override
   Future<VerificationAttachment?> pickDocument({bool camera = false}) async {
     cameraRequests.add(camera);
     return cancelDocument

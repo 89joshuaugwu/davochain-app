@@ -1,6 +1,5 @@
 import '../../../shared/receipts/receipt_record.dart';
 import '../../../shared/formatters/grouped_amount_formatter.dart';
-import '../../crypto/presentation/crypto_receipt_records.dart';
 import 'buy_crypto_models.dart';
 
 ReceiptRecord buildBuyReceiptRecord(BuyCryptoOrder order,
@@ -17,8 +16,7 @@ ReceiptRecord buildBuyReceiptRecord(BuyCryptoOrder order,
       type: 'Purchase',
       status: status,
       occurredAt: date,
-      amount:
-          '${formatCryptoQuantity(order.cryptoAmount)} ${order.asset.symbol}',
+      amount: '${order.formattedCryptoAmount} ${order.asset.symbol}',
       preview: preview,
       fields: [
         ReceiptField(
@@ -33,9 +31,7 @@ ReceiptRecord buildBuyReceiptRecord(BuyCryptoOrder order,
             value: '${order.asset.name} (${order.asset.symbol})'),
         const ReceiptField(label: 'Network Fee', value: 'Free'),
         ReceiptField(
-            label: 'Exchange Rate',
-            value:
-                '1 ${order.asset.symbol} ≈ ₦${formatGroupedAmount(order.asset.ngnPerUnit.toStringAsFixed(2))}'),
+            label: 'Exchange Rate', value: order.formattedExchangeRate),
       ],
       events: [
         ReceiptEvent(

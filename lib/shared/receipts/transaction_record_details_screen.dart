@@ -1,3 +1,4 @@
+import 'receipt_activity.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
@@ -30,7 +31,7 @@ class TransactionRecordDetailsScreen extends StatefulWidget {
 }
 
 class _TransactionRecordDetailsScreenState
-    extends State<TransactionRecordDetailsScreen> {
+    extends State<TransactionRecordDetailsScreen> with ReceiptActivityObserver<TransactionRecordDetailsScreen> {
   bool _expanded = false;
   bool _sharing = false;
 
@@ -44,7 +45,7 @@ class _TransactionRecordDetailsScreenState
   }
 
   void _report() {
-    final record = widget.record;
+    final record = ReceiptActivity.resolve(widget.record);
     final facts = record.fields.where((field) => !field.sensitive);
     Navigator.of(context).push(AppPageRoute<void>(
       builder: (_) => EmailSupportScreen(
@@ -90,7 +91,7 @@ class _TransactionRecordDetailsScreenState
 
   @override
   Widget build(BuildContext context) {
-    final record = widget.record;
+    final record = ReceiptActivity.resolve(widget.record);
     final colors = DavoColors.of(context);
     final identity = ReceiptIdentity(record);
     final statusColor = switch (record.status) {

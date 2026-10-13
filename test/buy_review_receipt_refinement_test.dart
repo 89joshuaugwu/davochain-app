@@ -26,7 +26,7 @@ void main() {
             child: child!),
         home: const BuyReviewScreen(order: order)));
     await tester.pumpAndSettle();
-    final rate = find.text('1 USDT ≈ ₦1,540.00');
+    final rate = find.text('1 BTC ≈ ₦24,000,000.00');
     expect(rate, findsOneWidget);
     final edge = tester.getBottomRight(rate).dx;
     expect(tester.getBottomRight(find.text('Free')).dx, closeTo(edge, .01));

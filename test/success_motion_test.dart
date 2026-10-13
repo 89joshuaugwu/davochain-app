@@ -1,3 +1,4 @@
+import 'support/preview_receipt_fixture.dart';
 import 'package:davochain/shared/receipts/transaction_record_details_screen.dart';
 import 'package:davochain/shared/receipts/receipt_record.dart';
 import 'package:davochain/shared/widgets/davo_result_screen.dart';
@@ -11,7 +12,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  testWidgets('success integrations wrap and keep actions available',
+  receiptTestWidgets('success integrations wrap and keep actions available',
       (tester) async {
     tester.view.physicalSize = const Size(320, 568);
     tester.view.devicePixelRatio = 1;
@@ -39,6 +40,8 @@ void main() {
         child: screen,
       )));
       await tester.pumpAndSettle();
+      await tester.pump(const Duration(seconds: 20));
+      await tester.pumpAndSettle();
       expect(find.byType(DavoSuccessMark), findsOneWidget);
       expect(
           find
@@ -58,7 +61,7 @@ void main() {
     }
   });
 
-  testWidgets(
+  receiptTestWidgets(
       'pending deposit has no success mark; submitted trade stays pending',
       (tester) async {
     await tester.pumpWidget(

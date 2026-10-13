@@ -1,5 +1,6 @@
 import 'dart:io';
 import '../../verification_media/verification_media_gateway.dart';
+import '../../verification_media/attachment_scan_preview.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/navigation/app_page_route.dart';
 import '../../../../core/theme/app_theme.dart';
@@ -282,24 +283,30 @@ class _AdvancedVerificationFlowScreenState
               () => _pickIdentity(front: true),
               file: 'id-front.jpg', remove: session.removeIdentityFront),
           const SizedBox(height: 12),
-          IntrinsicHeight(
-              child: Row(
+          LayoutBuilder(builder: (context, constraints) {
+            final back = _uploadTile('Upload ID Back',
+                session.identityBackAdded, () => _pickIdentity(front: false),
+                small: true,
+                file: 'id-back.jpg',
+                optional: true,
+                remove: session.removeIdentityBack);
+            if (constraints.maxWidth < 340 &&
+                MediaQuery.textScalerOf(context).scale(14) > 20) {
+              return Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                Expanded(
-                    child: _uploadTile(
-                        'Upload ID Back',
-                        session.identityBackAdded,
-                        () => _pickIdentity(front: false),
-                        small: true,
-                        file: 'id-back.jpg',
-                        optional: true,
-                        remove: session.removeIdentityBack)),
-                const SizedBox(width: 16),
-                Expanded(child: _cameraTile())
-              ])),
+                  children: [back, const SizedBox(height: 12), _cameraTile()]);
+            }
+            return IntrinsicHeight(
+                child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                  Expanded(flex: 3, child: back),
+                  const SizedBox(width: 16),
+                  Expanded(flex: 2, child: _cameraTile())
+                ]));
+          }),
           const SizedBox(height: 16),
-          const Text('JPG, PNG or PDF (Max 5MB)', style: verificationCaption),
+          const Text('JPG or PNG (Max 5MB)', style: verificationCaption),
         ];
       case _Stage.selfieIntro:
         return [
@@ -602,6 +609,77 @@ class _AdvancedVerificationFlowScreenState
             ? session.identityBack
             : session.addressAttachment;
     if (added) {
+      if (identity) {
+        return Container(
+            constraints: BoxConstraints(minHeight: small ? 220 : 240),
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+                color: DavoColors.of(context).primarySoft,
+                border:
+                    Border.all(color: DavoColors.of(context).primaryDisabled),
+                borderRadius: BorderRadius.circular(16)),
+            child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Align(
+                      alignment: Alignment.topRight,
+                      child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                              color: DavoColors.of(context).successSurface,
+                              borderRadius: BorderRadius.circular(24)),
+                          child: Text('Uploaded',
+                              style: verificationCaption.copyWith(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w600,
+                                  color: DavoColors.of(context).success)))),
+                  const SizedBox(height: 12),
+                  Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
+                    Expanded(
+                        flex: 3,
+                        child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              ConstrainedBox(
+                                  constraints:
+                                      const BoxConstraints(maxWidth: 160),
+                                  child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(8),
+                                      child: _attachmentPreview(attachment,
+                                          width: double.infinity,
+                                          height: small ? 104 : 132))),
+                              const SizedBox(height: 10),
+                              Text(
+                                  label == 'Upload ID Front'
+                                      ? 'ID Front'
+                                      : 'ID Back',
+                                  style: verificationCaption.copyWith(
+                                      fontWeight: FontWeight.w600)),
+                              const SizedBox(height: 4),
+                              Text(attachment?.name ?? file,
+                                  maxLines: 3,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: verificationCaption.copyWith(
+                                      fontWeight: FontWeight.w600)),
+                              const SizedBox(height: 4),
+                              Text(attachment?.sizeLabel ?? '',
+                                  style: verificationCaption.copyWith(
+                                      color: DavoColors.of(context).bodyMuted))
+                            ])),
+                    const SizedBox(width: 8),
+                    Expanded(
+                        flex: 2,
+                        child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              _replaceAction(add, photo: true),
+                              if (remove != null) _removeAction(remove)
+                            ]))
+                  ])
+                ]));
+      }
       return Container(
           constraints: BoxConstraints(
               minHeight: small
@@ -701,30 +779,31 @@ class _AdvancedVerificationFlowScreenState
                           Text(
                               optional
                                   ? 'Optional'
-                                  : 'JPG, PNG or PDF (Max 5MB)',
+                                  : identity
+                                      ? 'JPG or PNG (Max 5MB)'
+                                      : 'JPG, PNG or PDF (Max 5MB)',
                               style: verificationCaption.copyWith(
                                   color: DavoColors.of(context).bodyMuted),
                               textAlign: TextAlign.center)
                         ]))))));
   }
 
-  Widget _replaceAction(VoidCallback add) => TextButton(
+  Widget _replaceAction(VoidCallback add, {bool photo = false}) => TextButton(
       style: TextButton.styleFrom(
           padding: EdgeInsets.zero,
           minimumSize: const Size(0, 44),
           textStyle: verificationCaption),
       onPressed: mediaOpening ? null : add,
-      child: const Text('Replace file'));
+      child: Text(photo ? 'Replace photo' : 'Replace file'));
 
-  Widget _removeAction(VoidCallback remove) => TextButton.icon(
+  Widget _removeAction(VoidCallback remove) => TextButton(
       style: TextButton.styleFrom(
           padding: EdgeInsets.zero,
           minimumSize: const Size(0, 44),
           textStyle: verificationCaption,
           foregroundColor: DavoColors.of(context).bodyMuted),
       onPressed: mediaOpening ? null : remove,
-      icon: const Icon(Icons.disabled_by_default_outlined, size: 14),
-      label: const Text('Remove'));
+      child: const Text('Remove'));
 
   Future<void> _chooseCameraSide() async {
     if (mediaOpening || choosingCameraSide) return;
@@ -780,8 +859,9 @@ class _AdvancedVerificationFlowScreenState
               width: width, height: height, fit: BoxFit.contain);
     }
     if (attachment.isAsset) {
-      return Image.asset(attachment.path,
+      final image = Image.asset(attachment.path,
           width: width, height: height, fit: BoxFit.contain);
+      return _scanAttachment(attachment, image);
     }
     final path =
         attachment.kind == 'pdf' ? attachment.previewPath : attachment.path;
@@ -797,22 +877,26 @@ class _AdvancedVerificationFlowScreenState
                   overflow: TextOverflow.ellipsis,
                   style: verificationBody),
               const Text(
-                  'PDF selected. Preview is not available on this device.',
+                  'PDF selected. A thumbnail is not available on this device.',
                   style: verificationCaption)
             ]))
-        : Image.file(File(path),
+        : _scanAttachment(attachment, Image.file(File(path),
             width: width,
             height: height,
             fit: BoxFit.contain,
             cacheWidth:
                 ((width.isFinite ? width : MediaQuery.sizeOf(context).width) *
                         MediaQuery.devicePixelRatioOf(context))
-                    .ceil());
+                    .ceil()));
   }
+
+  Widget _scanAttachment(VerificationAttachment attachment, Widget image) =>
+      attachment == session.selfie ? image : AttachmentScanPreview(
+          key: ValueKey(attachment.path), child: image);
 
   Future<void> _pickIdentity({required bool front, bool camera = false}) =>
       _pickMedia(
-          () => VerificationMediaGateway.instance.pickDocument(camera: camera),
+          () => VerificationMediaGateway.instance.pickIdentity(camera: camera),
           (attachment) => session.attachIdentity(attachment, front: front));
   Future<void> _pickAddress() => _pickMedia(
       () => VerificationMediaGateway.instance.pickDocument(),

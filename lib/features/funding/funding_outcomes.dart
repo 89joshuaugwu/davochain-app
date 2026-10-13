@@ -1,3 +1,4 @@
+import '../../shared/receipts/receipt_activity.dart';
 import 'package:flutter/material.dart';
 import '../../core/navigation/app_page_route.dart';
 import '../../core/theme/app_theme.dart';
@@ -73,6 +74,42 @@ abstract final class FundingActivity {
   static final Set<String> _presented = {};
   static bool claimPresentation(FundingRecord record) =>
       _presented.add('${record.id}-${record.status.name}');
+  static bool _observing = false;
+  static void submitPreview(FundingRecord record) {
+    if (!_observing) {
+      _observing = true;
+      ReceiptActivity.records.addListener(_syncReceipts);
+    }
+    final receipt = ReceiptActivity.submitPreview(FundingDetailsScreen._receipt(record));
+    accept(_withStatus(record, receipt.status));
+  }
+
+  static void _syncReceipts() {
+    final updated = records.value.map((record) {
+      final matches = ReceiptActivity.records.value.where((r) => r.id == record.id);
+      if (matches.isEmpty) return record;
+      return _withStatus(record, matches.first.status);
+    }).toList();
+    if (updated.asMap().entries.any((entry) =>
+        entry.value.status != records.value[entry.key].status)) {
+      records.value = List.unmodifiable(updated);
+    }
+  }
+
+  static FundingRecord _withStatus(FundingRecord record, ReceiptStatus status) => FundingRecord(
+      id: record.id, direction: record.direction,
+      status: switch (status) {
+        ReceiptStatus.pending => FundingStatus.pending,
+        ReceiptStatus.completed => FundingStatus.completed,
+        ReceiptStatus.failed => FundingStatus.failed,
+      },
+      amount: record.amount, currency: record.currency,
+      destination: record.destination, occurredAt: record.occurredAt,
+      network: record.network, reference: record.reference,
+      transactionHash: record.transactionHash, bank: record.bank,
+      accountNumber: record.accountNumber, accountName: record.accountName,
+      fee: record.fee, preview: record.preview);
+
   static void reset() {
     _presented.clear();
     records.value = const [];
@@ -180,7 +217,7 @@ class _NairaWithdrawalProgressScreenState
     if (_failed) setState(() => _failed = false);
     try {
       // Matches the app's existing session-only financial preview boundary.
-      // An accepted submission remains pending; elapsed time never means paid.
+      // New local submissions use the shared simulated preview lifecycle.
       final status = widget.operation == null
           ? await Future<FundingStatus>.delayed(
               const Duration(milliseconds: 1500), () => FundingStatus.pending)
@@ -204,7 +241,11 @@ class _NairaWithdrawalProgressScreenState
           occurredAt: now,
           fee: 100,
           preview: true);
-      FundingActivity.accept(record);
+      if (widget.operation == null) {
+        FundingActivity.submitPreview(record);
+      } else {
+        FundingActivity.accept(record);
+      }
       if (!mounted) return;
       Navigator.of(context).pushReplacement(AppPageRoute<void>(
           builder: (_) =>
@@ -299,12 +340,6 @@ class FundingOutcomeScreen extends StatelessWidget {
                               : value.status == FundingStatus.failed
                                   ? DavoColors.of(context).danger
                                   : DavoColors.of(context).warning)),
-                  if (value.preview) ...[
-                    const SizedBox(height: 12),
-                    const Text('Preview only. No funds have been moved.',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(fontSize: 12))
-                  ],
                 ]),
                 actions: Column(children: [
                   DavoPrimaryButton(
@@ -355,7 +390,7 @@ class FundingDetailsScreen extends StatelessWidget {
         return TransactionRecordDetailsScreen(record: _receipt(value));
       });
 
-  ReceiptRecord _receipt(FundingRecord value) {
+  static ReceiptRecord _receipt(FundingRecord value) {
     final status = switch (value.status) {
       FundingStatus.pending => ReceiptStatus.pending,
       FundingStatus.completed => ReceiptStatus.completed,

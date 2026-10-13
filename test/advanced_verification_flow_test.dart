@@ -105,6 +105,34 @@ void main() {
     expect(session.identityFrontAdded, isTrue);
     expect(tester.takeException(), isNull);
   });
+  testWidgets('uploaded ID images keep controls reachable at 320px and large text',
+      (tester) async {
+    basic();
+    session.chooseDocument('National ID card');
+    session.addIdentitySide(front: true);
+    session.addIdentitySide(front: false);
+    tester.view.physicalSize = const Size(320, 640);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    await tester.pumpWidget(MaterialApp(theme: AppTheme.light,
+        builder: (context, child) => MediaQuery(
+            data: MediaQuery.of(context).copyWith(
+                textScaler: const TextScaler.linear(2), disableAnimations: true),
+            child: child!), home: const AdvancedVerificationFlowScreen()));
+    await tester.tap(find.byTooltip('Back'));
+    await tester.pumpAndSettle();
+    expect(find.text('Uploaded'), findsNWidgets(2));
+    expect(find.text('ID Front'), findsOneWidget);
+    expect(find.text('ID Back'), findsOneWidget);
+    expect(find.textContaining('PDF'), findsNothing);
+    await tester.ensureVisible(find.text('Remove').last);
+    await tester.tap(find.text('Remove').last);
+    await tester.pumpAndSettle();
+    expect(session.identityBackAdded, isFalse);
+    expect(session.identityFrontAdded, isTrue);
+    expect(tester.takeException(), isNull);
+  });
   test('Changing ID clears identity approval and full verification', () {
     identity();
     session.chooseAddressDocument('Utility bill');

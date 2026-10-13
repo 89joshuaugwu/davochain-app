@@ -1,11 +1,11 @@
 import '../../../shared/widgets/davo_scroll_behavior.dart';
 import '../../funding/funding_outcomes.dart';
-import '../../buy_crypto/presentation/buy_crypto_screens.dart';
-import '../../buy_crypto/presentation/buy_crypto_models.dart';
 import '../../../shared/widgets/davo_sheet_header.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+import '../../../shared/widgets/davo_main_shell.dart';
+import '../../../shared/widgets/local_profile_avatar.dart';
+import '../../../core/preview/local_preview_profile.dart';
 import '../../transactions/presentation/transaction_history_screen.dart';
 
 import '../../../core/theme/app_theme.dart';
@@ -23,17 +23,22 @@ import '../../profile_settings/presentation/verification/verification_overview_s
 
 const _dashboardAssetRoot = 'assets/images/dashboard';
 
-class DavochainDashboardScreen extends StatefulWidget {
+class DavochainDashboardScreen extends StatelessWidget {
   const DavochainDashboardScreen({super.key, this.onRefresh});
+  final Future<void> Function()? onRefresh;
+  @override
+  Widget build(BuildContext context) => DavoMainShell(onRefresh: onRefresh);
+}
+
+class DavoDashboardContent extends StatefulWidget {
+  const DavoDashboardContent({super.key, this.onRefresh});
   final Future<void> Function()? onRefresh;
 
   @override
-  State<DavochainDashboardScreen> createState() =>
-      _DavochainDashboardScreenState();
+  State<DavoDashboardContent> createState() => _DavochainDashboardScreenState();
 }
 
-class _DavochainDashboardScreenState extends State<DavochainDashboardScreen> {
-  int _navIndex = 0;
+class _DavochainDashboardScreenState extends State<DavoDashboardContent> {
   bool _balanceVisible = true;
 
   @override
@@ -161,43 +166,10 @@ class _DavochainDashboardScreenState extends State<DavochainDashboardScreen> {
             ),
           ),
           bottomNavigationBar:
-              Column(mainAxisSize: MainAxisSize.min, children: [
-            const Padding(
+              const Column(mainAxisSize: MainAxisSize.min, children: [
+            Padding(
                 padding: EdgeInsets.symmetric(horizontal: 16),
                 child: DepositActivityBanner()),
-            _BottomNav(
-              index: _navIndex,
-              onChanged: (index) {
-                if (index == 0) return;
-                if (index == 2) {
-                  HapticFeedback.selectionClick();
-                  setState(() => _navIndex = index);
-                  startGiftCardFlow(context).whenComplete(() {
-                    if (mounted) setState(() => _navIndex = 0);
-                  });
-                  return;
-                }
-                if (index == 3) {
-                  HapticFeedback.selectionClick();
-                  setState(() => _navIndex = index);
-                  startProfileSettingsFlow(context).whenComplete(() {
-                    if (mounted) setState(() => _navIndex = 0);
-                  });
-                  return;
-                }
-                setState(() => _navIndex = index);
-                HapticFeedback.selectionClick();
-                Navigator.of(context)
-                    .push(_davoRoute(const BuyAmountScreen(
-                        initialOrder: BuyCryptoOrder(
-                            asset: BuyCryptoAsset.bitcoin,
-                            wallet: BuyFundingWallet.ngn,
-                            ngnAmount: 0))))
-                    .whenComplete(() {
-                  if (mounted) setState(() => _navIndex = 0);
-                });
-              },
-            ),
           ]),
         ));
   }
@@ -300,108 +272,104 @@ class _DashboardHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        InkWell(
-          onTap: () => startProfileSettingsFlow(context),
-          customBorder: const CircleBorder(),
-          child: ClipOval(
-            child: Image.asset(
-              'assets/figma_exact/profile.png',
-              width: 40,
-              height: 40,
-              fit: BoxFit.cover,
-              filterQuality: FilterQuality.high,
-            ),
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-            child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Welcome,',
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                  fontFamily: 'Sora',
-                  fontSize: 12,
-                  color: DavoColors.of(context).muted),
-            ),
-            const SizedBox(height: 2),
-            Text(
-              'Callie',
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontFamily: 'Sora',
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: DavoColors.of(context).body,
-              ),
-            ),
-          ],
-        )),
-        const SizedBox(width: 8),
-        InkWell(
-          onTap: () => Navigator.of(context)
-              .push(_davoRoute(const ReferralDashboardScreen())),
-          borderRadius: BorderRadius.circular(1000),
-          child: Container(
-            height: 32,
-            padding: const EdgeInsets.symmetric(horizontal: 11),
-            decoration: BoxDecoration(
-              color: DavoColors.of(context).isDark
-                  ? DavoColors.of(context).primarySoft
-                  : const Color(0x80D0DEFD),
-              borderRadius: BorderRadius.circular(1000),
-            ),
-            child: Row(
+    return ListenableBuilder(
+        listenable: LocalPreviewProfile.instance,
+        builder: (context, _) => Row(
               children: [
-                Image.asset('assets/figma_exact/earn_gift.png',
-                    color: DavoColors.of(context).isDark
-                        ? DavoColors.of(context).link
-                        : null,
-                    width: 20,
-                    height: 20,
-                    fit: BoxFit.contain),
-                if (MediaQuery.textScalerOf(context).scale(14) <= 18) ...[
-                  const SizedBox(width: 4),
-                  Text('Earn \$5',
+                InkWell(
+                  onTap: () => startProfileSettingsFlow(context),
+                  customBorder: const CircleBorder(),
+                  child: const LocalProfileAvatar(size: 40, showBadge: false),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                    child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Welcome,',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                           fontFamily: 'Sora',
                           fontSize: 12,
-                          color: DavoColors.of(context).link)),
-                ],
+                          color: DavoColors.of(context).muted),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      LocalPreviewProfile.instance.firstName,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontFamily: 'Sora',
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: DavoColors.of(context).body,
+                      ),
+                    ),
+                  ],
+                )),
+                const SizedBox(width: 8),
+                InkWell(
+                  onTap: () => Navigator.of(context)
+                      .push(_davoRoute(const ReferralDashboardScreen())),
+                  borderRadius: BorderRadius.circular(1000),
+                  child: Container(
+                    height: 32,
+                    padding: const EdgeInsets.symmetric(horizontal: 11),
+                    decoration: BoxDecoration(
+                      color: DavoColors.of(context).isDark
+                          ? DavoColors.of(context).primarySoft
+                          : const Color(0x80D0DEFD),
+                      borderRadius: BorderRadius.circular(1000),
+                    ),
+                    child: Row(
+                      children: [
+                        Image.asset('assets/figma_exact/earn_gift.png',
+                            color: DavoColors.of(context).isDark
+                                ? DavoColors.of(context).link
+                                : null,
+                            width: 20,
+                            height: 20,
+                            fit: BoxFit.contain),
+                        if (MediaQuery.textScalerOf(context).scale(14) <=
+                            18) ...[
+                          const SizedBox(width: 4),
+                          Text('Earn \$5',
+                              style: TextStyle(
+                                  fontFamily: 'Sora',
+                                  fontSize: 12,
+                                  color: DavoColors.of(context).link)),
+                        ],
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                InkWell(
+                  onTap: () => openNotificationCenter(context),
+                  customBorder: const CircleBorder(),
+                  child: Container(
+                    width: 32,
+                    height: 32,
+                    decoration: BoxDecoration(
+                        color: DavoColors.of(context).isDark
+                            ? DavoColors.of(context).primarySoft
+                            : const Color(0x80D0DEFD),
+                        shape: BoxShape.circle),
+                    child: Center(
+                        child: Image.asset(
+                            'assets/figma_exact/notification.png',
+                            color: DavoColors.of(context).isDark
+                                ? DavoColors.of(context).link
+                                : null,
+                            width: 21,
+                            height: 21,
+                            fit: BoxFit.contain)),
+                  ),
+                ),
               ],
-            ),
-          ),
-        ),
-        const SizedBox(width: 12),
-        InkWell(
-          onTap: () => openNotificationCenter(context),
-          customBorder: const CircleBorder(),
-          child: Container(
-            width: 32,
-            height: 32,
-            decoration: BoxDecoration(
-                color: DavoColors.of(context).isDark
-                    ? DavoColors.of(context).primarySoft
-                    : const Color(0x80D0DEFD),
-                shape: BoxShape.circle),
-            child: Center(
-                child: Image.asset('assets/figma_exact/notification.png',
-                    color: DavoColors.of(context).isDark
-                        ? DavoColors.of(context).link
-                        : null,
-                    width: 21,
-                    height: 21,
-                    fit: BoxFit.contain)),
-          ),
-        ),
-      ],
-    );
+            ));
   }
 }
 
@@ -899,50 +867,59 @@ class _DashboardAssetCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(8),
         child: ColoredBox(
           color: DavoColors.of(context).surface,
-          child: ListView(
-            key: const ValueKey('dashboard-assets'),
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-            children: [
-              _AssetRow(
-                  key: const ValueKey('dashboard-asset-BTC'),
-                  rowHeight: rowHeight,
-                  asset: CryptoAsset.bitcoin,
-                  amount: '0.0086 BTC',
-                  value: '₦580,200.00',
-                  change: '+4.21%'),
-              Divider(height: 1, color: DavoColors.of(context).divider),
-              _AssetRow(
-                  key: const ValueKey('dashboard-asset-ETH'),
-                  rowHeight: rowHeight,
-                  asset: CryptoAsset.ethereum,
-                  amount: '0.102 ETH',
-                  value: '₦342,100.00',
-                  change: '+2.18%'),
-              Divider(height: 1, color: DavoColors.of(context).divider),
-              _AssetRow(
-                  key: const ValueKey('dashboard-asset-USDT'),
-                  rowHeight: rowHeight,
-                  asset: CryptoAsset.tether,
-                  amount: '250.00 USDT',
-                  value: '₦250,000.00',
-                  change: '0.00%'),
-              Divider(height: 1, color: DavoColors.of(context).divider),
-              _AssetRow(
-                  key: const ValueKey('dashboard-asset-USDC'),
-                  rowHeight: rowHeight,
-                  asset: CryptoAsset.usdCoin,
-                  amount: '112.20 USDC',
-                  value: '₦112,200.35',
-                  change: '+0.01%'),
-              Divider(height: 1, color: DavoColors.of(context).divider),
-              _AssetRow(
-                  key: const ValueKey('dashboard-asset-SOL'),
-                  rowHeight: rowHeight,
-                  asset: CryptoAsset.solana,
-                  amount: '0.74 SOL',
-                  value: '\u20a6112,200.00',
-                  change: '+4.21%'),
-            ],
+          child: ShaderMask(
+            key: const ValueKey('dashboard-assets-soft-edge'),
+            blendMode: BlendMode.dstIn,
+            shaderCallback: (bounds) => const LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [Colors.transparent, Colors.white],
+            ).createShader(Rect.fromLTWH(0, 0, bounds.width, 10)),
+            child: ListView(
+              key: const ValueKey('dashboard-assets'),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+              children: [
+                _AssetRow(
+                    key: const ValueKey('dashboard-asset-BTC'),
+                    rowHeight: rowHeight,
+                    asset: CryptoAsset.bitcoin,
+                    amount: '0.0086 BTC',
+                    value: '₦580,200.00',
+                    change: '+4.21%'),
+                Divider(height: 1, color: DavoColors.of(context).divider),
+                _AssetRow(
+                    key: const ValueKey('dashboard-asset-ETH'),
+                    rowHeight: rowHeight,
+                    asset: CryptoAsset.ethereum,
+                    amount: '0.102 ETH',
+                    value: '₦342,100.00',
+                    change: '+2.18%'),
+                Divider(height: 1, color: DavoColors.of(context).divider),
+                _AssetRow(
+                    key: const ValueKey('dashboard-asset-USDT'),
+                    rowHeight: rowHeight,
+                    asset: CryptoAsset.tether,
+                    amount: '250.00 USDT',
+                    value: '₦250,000.00',
+                    change: '0.00%'),
+                Divider(height: 1, color: DavoColors.of(context).divider),
+                _AssetRow(
+                    key: const ValueKey('dashboard-asset-USDC'),
+                    rowHeight: rowHeight,
+                    asset: CryptoAsset.usdCoin,
+                    amount: '112.20 USDC',
+                    value: '₦112,200.35',
+                    change: '+0.01%'),
+                Divider(height: 1, color: DavoColors.of(context).divider),
+                _AssetRow(
+                    key: const ValueKey('dashboard-asset-SOL'),
+                    rowHeight: rowHeight,
+                    asset: CryptoAsset.solana,
+                    amount: '0.74 SOL',
+                    value: '\u20a6112,200.00',
+                    change: '+4.21%'),
+              ],
+            ),
           ),
         ),
       );
@@ -1098,113 +1075,6 @@ class _AssetRow extends StatelessWidget {
                 child: Icon(Icons.chevron_right_rounded,
                     color: DavoColors.of(context).muted)),
         ],
-      ),
-    );
-  }
-}
-
-class _BottomNav extends StatelessWidget {
-  const _BottomNav({required this.index, required this.onChanged});
-
-  final int index;
-  final ValueChanged<int> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: DavoColors.of(context).surface,
-        border: Border(top: BorderSide(color: DavoColors.of(context).divider)),
-      ),
-      child: SafeArea(
-        top: false,
-        child: SizedBox(
-          height: 72 +
-              (MediaQuery.textScalerOf(context).scale(11) - 11).clamp(0, 44) *
-                  6,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _NavItem(
-                  index: 0,
-                  current: index,
-                  assetPath: 'assets/figma_exact/nav_home_full.svg',
-                  label: 'Home',
-                  onTap: onChanged),
-              _NavItem(
-                  index: 1,
-                  current: index,
-                  assetPath: 'assets/figma_exact/nav_trade_full.svg',
-                  label: 'Trade',
-                  onTap: onChanged),
-              _NavItem(
-                  index: 2,
-                  current: index,
-                  assetPath: 'assets/figma_exact/nav_gift_full.svg',
-                  label: 'Gift Cards',
-                  onTap: onChanged),
-              _NavItem(
-                  index: 3,
-                  current: index,
-                  assetPath: 'assets/figma_exact/nav_settings_full.svg',
-                  label: 'Settings',
-                  onTap: onChanged),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _NavItem extends StatelessWidget {
-  const _NavItem(
-      {required this.index,
-      required this.current,
-      required this.assetPath,
-      required this.label,
-      required this.onTap});
-
-  final int index;
-  final int current;
-  final String assetPath;
-  final String label;
-  final ValueChanged<int> onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final active = index == current;
-    final color =
-        active ? DavoColors.of(context).link : DavoColors.of(context).bodyMuted;
-    return InkResponse(
-      onTap: () => onTap(index),
-      radius: 28,
-      child: SizedBox(
-        width: 72,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            AnimatedSwitcher(
-              duration: const Duration(milliseconds: 180),
-              child: SvgPicture.asset(assetPath,
-                  key: ValueKey(active),
-                  colorFilter: ColorFilter.mode(color, BlendMode.srcIn),
-                  width: 24,
-                  height: 24,
-                  fit: BoxFit.contain),
-            ),
-            const SizedBox(height: 4),
-            Text(label,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                    fontFamily: 'Sora',
-                    fontSize: 10,
-                    height: 1.2,
-                    fontWeight: FontWeight.w500,
-                    letterSpacing: .15,
-                    color: color)),
-          ],
-        ),
       ),
     );
   }

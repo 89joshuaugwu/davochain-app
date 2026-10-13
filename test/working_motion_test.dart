@@ -1,3 +1,4 @@
+import 'support/preview_receipt_fixture.dart';
 import 'package:davochain/core/preview/preview_transaction_operation.dart';
 import 'dart:async';
 import 'package:davochain/core/theme/app_theme.dart';
@@ -54,7 +55,7 @@ void main() {
     expect(callbacks, 0);
     expect(find.text('Original page'), findsOneWidget);
   });
-  testWidgets('submitted buy displays waiting state instead of completion',
+  receiptTestWidgets('submitted buy displays waiting state instead of completion',
       (tester) async {
     final operation = Completer<PreviewTransactionOutcome>();
     await tester.pumpWidget(MaterialApp(

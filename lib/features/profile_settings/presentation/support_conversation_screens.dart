@@ -90,7 +90,7 @@ class SupportMessagesScreen extends StatelessWidget {
                           ])))
                   : ListView(padding: const EdgeInsets.all(16), children: [
                       Text(
-                          'Pending in this preview session. No messages have been delivered.',
+                          'Your request is awaiting a response.',
                           style: _supportText(context, size: 10)),
                       const SizedBox(height: 12),
                       ...messages.map((ticket) => ListTile(
@@ -299,7 +299,7 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
                             const SizedBox(width: 8),
                             Expanded(
                                 child: Text(
-                                    'This is a support preview. Messages are saved locally; live support and AI replies are not connected.',
+                                    'Tell us how we can help you.',
                                     style: _supportText(context, size: 10)))
                           ])),
                   bubble(
@@ -383,21 +383,21 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
                         onPressed: busy
                             ? null
                             : () => capability('Attachments',
-                                'File attachments are not available in this preview. Describe the issue in your message instead.'),
+                                'Describe the issue in your message.'),
                         icon: const Icon(Icons.attach_file, size: 20)),
                     IconButton(
                         tooltip: 'Add GIF',
                         onPressed: busy
                             ? null
                             : () => capability('GIF messages',
-                                'GIF messages need a connected media service. You can send a text request in this preview.'),
+                                'Send a text message to describe your issue.'),
                         icon: const Icon(Icons.gif_box_outlined, size: 22)),
                     IconButton(
                         tooltip: 'Voice message',
                         onPressed: busy
                             ? null
                             : () => capability('Voice messages',
-                                'Voice recording is not available in this preview. Type your question below.'),
+                                'Type your question below.'),
                         icon: const Icon(Icons.mic_none, size: 20)),
                     const Spacer(),
                     IconButton.filled(

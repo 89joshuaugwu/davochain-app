@@ -148,7 +148,7 @@ class SecurityQuestionsService extends ChangeNotifier {
   Future<ResetChallenge> requestReset() async {
     if (!enabled) _fail('Set security questions before requesting a reset.');
     if (resetCooldownUntil != null) {
-      _fail('Wait 30 seconds before requesting another preview code.');
+      _fail('Wait 30 seconds before requesting another code.');
     }
     final salt = _token();
     final code = _random.nextInt(1000000).toString().padLeft(6, '0');
@@ -173,14 +173,14 @@ class SecurityQuestionsService extends ChangeNotifier {
         reset.generation != _generation ||
         !_now().isBefore(reset.expiresAt)) {
       _fail(
-          'This preview code has expired or is no longer valid. Request a new code.');
+          'This code has expired or is no longer valid. Request a new code.');
     }
     if (!_equalDigest(_hash(reset.salt, code.trim()), reset.digest)) {
       reset.failedAttempts++;
       if (reset.failedAttempts >= 5) _reset = null;
       _fail(reset.failedAttempts >= 5
-          ? 'Too many code attempts. Request a new preview code.'
-          : 'The preview code did not match. Try again.');
+          ? 'Too many code attempts. Request a new code.'
+          : 'The code did not match. Try again.');
     }
     final token = _token();
     _grant = _ReplacementGrant(
@@ -199,7 +199,7 @@ class SecurityQuestionsService extends ChangeNotifier {
         authorized.token != grant ||
         authorized.generation != _generation ||
         !_now().isBefore(authorized.expiresAt)) {
-      _fail('Verify a new preview code before changing security questions.');
+      _fail('Verify a new code before changing security questions.');
     }
     // Validation and hashing finish before the one-use grant or old set changes.
     final validated = _validate(entries);
