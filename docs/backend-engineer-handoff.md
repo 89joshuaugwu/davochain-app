@@ -557,6 +557,7 @@ The app now uses the same branded refresh on Home, transaction history, portfoli
 | `dashboard` | Dashboard aggregate, wallet balances, portfolio valuation and limits | Current account snapshot and visible wallet/asset values |
 | `transactionHistory` | Transaction list with current filters/cursor policy | Updated summaries keyed by stable transaction IDs |
 | `portfolio` | Holdings and valuation/price snapshot | Asset quantities, valuations, allocation and as-of timestamp |
+| `portfolioPerformance` plus `period` | Portfolio history and optional adjusted summary for the selected range | `PortfolioPerformanceController` snapshot and range-specific metadata |
 | `walletBalances` | Account wallets and available/held balances | Wallet selector balances and eligibility |
 | `notifications` | Notification list/read state; specific notification detail when applicable | Stable-ID notification DTOs and actual read timestamps |
 | `giftCardCatalogue` | Current available catalogue, rates, inventory and market statistics | Catalogue state while preserving Buy/Sell, search/filter selections |
@@ -570,6 +571,29 @@ For provider transactions, publish DTOs through the shared transaction repositor
 
 Acceptance checks: pull a pending accepted transaction after an offline interval and observe a server-confirmed completion on the same open page; preserve its ID/count/amount/reference; failure leaves it pending and retry works; pulling a completed transaction does not execute it again; category/filter/expanded-detail state remains selected; duplicate concurrent pulls trigger one read; logout/account switch discards old responses; amount/PIN/camera/export controls do not accidentally initiate refresh.
 
-### Portfolio chart control gap
+### Portfolio performance page and history contract
 
-The show-chart icon beside the visibility control in Portfolio currently has no tap callback. It visually suggests portfolio performance, but no chart destination was established. Product must decide whether to implement that destination or remove the inactive control. A historical performance/time-series contract should be agreed only if that screen is implemented; the existing holdings/valuation snapshot contract does not imply historical chart data.
+The Portfolio chart button now opens `PortfolioPerformanceScreen` in `lib/features/dashboard/presentation/portfolio_performance_screen.dart`. Models and optional repository/controller/loader adapters are in `lib/features/dashboard/portfolio_performance.dart`. This replaces the earlier inactive-control gap. The page supports 1D/1W/1M/1Y/All, chronological chart point inspection, accessible point selection, value hiding and read-only refresh. It carries the caller's initial value visibility. A current valuation alone is displayed as one point; historical values and returns are not fabricated.
+
+Proposed endpoint: **`GET /me/portfolio/performance?period=1M&currency=NGN`**. The current client range policy uses rolling 24 hours, 7 days, 30 days, 365 days or all available history, anchored to the snapshot's `as_of`; agree the same policy with backend/product. Return current value, actual dated history, currency, as-of/version and optional **period-specific, cash-flow-adjusted** investment change/percentage. A valuation delta includes deposits/withdrawals and must not be labeled investment return. Define fee inclusion, pricing times, missing-price behavior, FX conversion, methodology and historical retention with product before presenting adjusted performance.
+
+Example response (values illustrated solely to explain the proposed transport):
+
+```json
+{
+  "currency": "NGN",
+  "as_of": "2026-10-13T15:00:00Z",
+  "version": 7,
+  "current_value_kobo": "128450035",
+  "history": [{"at": "2026-10-13T15:00:00Z", "value_kobo": "128450035"}],
+  "performance": {}
+}
+```
+
+Map history entries to `PortfolioValuePoint(timestamp, valueKobo)` and current value to `PortfolioPerformanceSnapshot.current`. Optional adjusted summaries map by `PortfolioPerformancePeriod` to `PortfolioAdjustedPerformance(changeKobo, percent)`, where percent is percentage points (2.50 means 2.50%, not 250%). Integer kobo prevents display rounding from altering cents. Do not attach All-period returns to 1D metadata; an absent summary is not a zero return.
+
+`PortfolioPerformanceScreen` accepts an account-owned `PortfolioPerformanceController` and/or `PortfolioPerformanceLoader` returning a snapshot for a period. Supplied controllers remain caller-owned. The screen loads on entry and range changes; its generation guard discards older loader responses and changes of controller/loader ownership. Bind these adapters at navigation using authenticated repositories. The default currently matches the existing portfolio current value (128450035 kobo) and supplies no historic returns.
+
+Shared refresh now includes `DavoRefreshTarget.portfolioPerformance` and optional `DavoRefreshRequest.period` (for example `1W`). The scope/read adapter must publish its snapshot before completion. A page-supplied loader can override the region callback; otherwise it delegates to the shared scope. Publish actual history when available, preserve last known data on failure, keep adjusted summaries scoped to their range, reject old-account responses and update the parent holdings/balance snapshot consistently.
+
+Acceptance: initial range requests 1M; switching periods filters actual timestamped valuations and requests the matching range; dragging/tapping and accessibility selection inspect the correct point; hidden mode exposes no values through chart/slider semantics; sparse/flat/empty history is valid; exact kobo survives formatting; cash deposits do not imply gains; late responses cannot overwrite a newer period/account; network failures retain existing valuations and permit retry.

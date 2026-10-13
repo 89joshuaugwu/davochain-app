@@ -1,3 +1,4 @@
+import 'portfolio_performance_screen.dart';
 import '../../../shared/widgets/davo_refresh_region.dart';
 import '../../../shared/widgets/davo_scroll_behavior.dart';
 import '../../funding/funding_outcomes.dart';
@@ -1134,7 +1135,14 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                     onTap: () => setState(() => _visible = !_visible),
                   ),
                   const SizedBox(width: 4),
-                  const _RoundIconButton(icon: Icons.show_chart_rounded),
+                  Semantics(
+                      label: 'Portfolio performance',
+                      button: true,
+                      child: _RoundIconButton(
+                          icon: Icons.show_chart_rounded,
+                          onTap: () => Navigator.of(context).push(
+                              _davoRoute<void>(PortfolioPerformanceScreen(
+                                  initialValueVisible: _visible))))),
                 ],
               ),
               const SizedBox(height: 16),
