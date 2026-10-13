@@ -25,7 +25,8 @@ class DavoOutcomeArtwork extends StatelessWidget {
                             height: 58 * 201 / 285,
                             child: Opacity(
                                 opacity: 1 - frame.p(240, 440),
-                                child: _BrandAssembly(frame: frame))),
+                                child: DavoBrandAssembly(
+                                    progress: frame.p(0, 240)))),
                       Positioned.fill(
                           child: CustomPaint(
                               painter: DavoOutcomePainter(kind, progress))),
@@ -33,9 +34,9 @@ class DavoOutcomeArtwork extends StatelessWidget {
   }
 }
 
-class _BrandAssembly extends StatelessWidget {
-  const _BrandAssembly({required this.frame});
-  final DavoOutcomeFrame frame;
+class DavoBrandAssembly extends StatelessWidget {
+  const DavoBrandAssembly({super.key, required this.progress});
+  final double progress;
   @override
   Widget build(BuildContext context) =>
       LayoutBuilder(builder: (context, constraints) {
@@ -61,10 +62,10 @@ class _BrandAssembly extends StatelessWidget {
                                     child: Image.asset(
                                         'assets/images/brand/davochain_logo.png',
                                         fit: BoxFit.fill))))))));
-        final gather = frame.p(0, 240);
+        final gather = progress.clamp(0.0, 1.0);
         return Stack(clipBehavior: Clip.none, children: [
           part(const Rect.fromLTRB(0, .58, .29, 1), Offset.zero,
-              frame.p(0, 120)),
+              (gather * 2).clamp(0.0, 1.0)),
           part(const Rect.fromLTRB(0, 0, 1, .46),
               const Offset(14, -10) * (1 - gather), 1),
           part(const Rect.fromLTRB(.30, .54, 1, 1),

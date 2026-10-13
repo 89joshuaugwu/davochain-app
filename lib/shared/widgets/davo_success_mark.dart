@@ -26,7 +26,9 @@ class DavoSuccessMark extends StatelessWidget {
     Widget art(double value) =>
         DavoOutcomeArtwork(kind: kind, progress: value, size: size);
     return Semantics(
-        label: semanticLabel,
+        label: kind == DavoOutcomeKind.submitted && semanticLabel == 'Success'
+            ? 'Awaiting confirmation'
+            : semanticLabel,
         image: true,
         child: ExcludeSemantics(
             child: progress == null

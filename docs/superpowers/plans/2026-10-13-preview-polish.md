@@ -9,12 +9,16 @@
 **Transactions:** Newly submitted local preview transactions stay pending for 20 seconds, then complete by identity in shared receipt activity. History, result screens and open receipts update consistently. Timers cannot complete another session's records, failed or non-preview transactions. Historical sample records remain unchanged. Naira withdrawal receives a clear header/back control and visible balance currency label.
 
 ## Tasks
-- [ ] Root: shared main-page navigation, dashboard viewport fade and local-profile dashboard binding.
-- [ ] Profile: session identity, auth registration/login binding, Basic identity application, photo editing, badge states, consistent settings icons and interactive notifications.
-- [ ] Media: native image-only ID picker, upload thumbnail layout, face-shaped progress and capture/review scan motion.
-- [ ] Transactions: shared 20-second preview lifecycle, responsive receipts/history/results, withdrawal corrections.
-- [ ] Integration: analyzer, targeted/full tests, layout captures and emulator checks; fix regressions and record limitations.
+- [x] Root: shared main-page navigation, dashboard viewport fade and local-profile dashboard binding.
+- [x] Profile: session identity, auth registration/login binding, Basic identity application, photo editing, badge states, consistent settings icons and interactive notifications.
+- [x] Media: native image-only ID picker, upload thumbnail layout, face-shaped progress and capture/review scan motion.
+- [x] Transactions: shared 20-second preview lifecycle, responsive receipts/history/results, withdrawal corrections.
+- [x] Integration: analyzer, targeted/full tests, layout captures and emulator checks; fix regressions and record limitations.
 
 **Execution:** User explicitly auto-approved planning and implementation. Independent file ownership is delegated under the parallel-agents skill; Flutter commands remain serialized by the root agent. Preserve the shared working tree without committing unrelated changes.
 
 **Review focus:** Session reset during a pending transaction; registration versus login fixtures; failed/cancelled image selection; large text/small viewport; lost face detection and reduced motion.
+
+## Additional user direction
+
+Customer-facing copy uses normal product wording throughout; internal fixture boundaries remain in source and developer documentation. Buy/Sell review rates and quantities use the selected asset consistently. Submitted outcomes announce Awaiting confirmation. Pull-to-refresh assembles the original Davochain mark, rotates a tapered blue arc around it and gently breathes the center. The floating overlay never reserves a blank gap, remains tied to the refresh Future, prevents overlapping work, pauses in the background and honors reduced motion.

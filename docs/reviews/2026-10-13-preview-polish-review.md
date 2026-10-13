@@ -15,15 +15,22 @@ The user supplied screenshots and drawings for consistent outline icons, main-pa
 
 ## Verification
 
-- Full automated suite: 383 passed, 11 optional capture tests skipped (`tmp/polish-full-suite-final.txt`).
-- Final analyzer: no issues (`tmp/polish-delivery-analyze.txt`). Additional image gateway/double-scan tests: 6 passed (`tmp/polish-delivery-media-tests.txt`).
+- Full automated suite: 389 passed, 11 optional capture tests skipped (`tmp/build34-tests.txt`).
+- Final analyzer: no issues (`tmp/build34-analyze.txt`). Image gateway/double-scan checks are included in the full suite.
 - Navigation, identity, notifications, image validation, native picker source/cancellation, large text, reduced motion, detection holds, timer reset/reused IDs and live receipt updates are covered.
 - Light/dark captures are in `tmp/preview-polish-review` and `tmp/updated-verification-review`; face frame capture is `tmp/face-oval-overlay-review.png`.
-- Native emulator/build evidence will be appended after release installation.
+- Native build32 QA confirmed the selected BTC review rate and rounded quantity, normal transaction PIN wording, and a purchase result changing from Submitted to Successful while the same page remained open. Build31 QA confirmed all main roots retain navigation, inner pages hide it, modern Android Photo Picker updates the avatar, and notification filters/detail/read states work.
+- New refresh checks cover partial assembly before release, cancellation, future-driven completion, duplicate-pull suppression, failure/retry, reduced motion and both theme renderings. The submitted status semantics now say Awaiting confirmation.
+
+## Additional polish
+
+- Customer-facing copy uses normal product wording; internal fixture and provider boundaries remain unchanged.
+- BTC buy quantities consistently round to eight decimals without changing raw financial quantities; buy/sell exchange rates use the selected asset rather than a static USDT rate.
+- Pull-to-refresh uses the original Davochain logo in three assembled pieces, a tapered blue orbital arc and 3.5% breathing motion. It floats in a 48px themed disc, does not move content down, pauses in the background and keeps a static assembled mark for reduced motion.
 
 ## Release artifact
 
-Build `0.14.0+31`: `build/app/outputs/flutter-apk/app-release.apk`, 126,157,874 bytes. SHA-256 `fd1d5ad103abb953ae3b5b4db4d3eba10db6f33d8b980193f50ec939a74b9df6`. The APK audit verified all 790 declared assets/fonts with no missing or changed bytes and arm64-v8a, armeabi-v7a and x86_64 libraries. The final build restores the earlier 1920px/90-quality resizing for ID camera captures; gallery selections retain original image validation.
+Build `0.14.0+34`: `build/app/outputs/flutter-apk/app-release.apk`, 126,157,762 bytes. SHA-256 `33ea391199083e2e8199b73d15f19e76535663cb6776c7fcfb255b811b055c34`. AAPT confirms versionCode 34/versionName 0.14.0. All 790 declared assets/fonts match, with arm64-v8a, armeabi-v7a and x86_64 libraries. Installed and launched on emulator-5554. Native refresh screenshots are `tmp/qa34-refresh-pull.png` and `tmp/qa34-refresh-finished.png`; the indicator appears without a blank gap and clears after work. `tmp/qa34-logcat.txt` contains zero Flutter/layout/crash error lines. Final targeted checks: 7 passed (`tmp/build34-refresh-final.txt`), including the final orbital artwork rendering. Physical Redmi was disconnected at delivery.
 
 ## Boundaries
 

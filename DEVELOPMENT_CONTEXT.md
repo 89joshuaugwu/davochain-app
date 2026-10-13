@@ -280,3 +280,14 @@ User then clarifiedleadingzero behavior: allow0firstandholduntil11digits, thenst
 Release29 final phone installation confirmed: Redmi CI49FIXKM7BUOVA6, install Success, versionCode29/versionName0.13.0, launch succeeded. Emulator29 also installed. Physical retesting remains user/device evidence pending.
 
 Build30 oval face guide: centered oval, blurred/dim outside region, sharp interior, clearer distance feedback; captured photo unfiltered. Eightchecks passed/analyzerclean, visualartifactface-oval-overlay-review.png inspected. APK790filesmatch SHA2567ef31b3eecdc418839a615db14b098c86c0c797bb0be97fa676655a9a65372eb; installed/started RedmiCI49FIXKM7BUOVA6 versionCode30/versionName0.13.0 confirmed.
+
+
+## 2026-10-13 app polish and Davochain refresh (0.14.0+34)
+
+Shared main shell retains Home/Trade/Gift Cards/Settings roots and hides navigation on details. Settings icons use consistent thin blue strokes; dashboard assets have a soft scrolling edge. Notifications filter, open details and track read status. LocalPreviewProfile binds registration/login/Basic identity/avatar across the app; native avatar and ID selection use Android Photo Picker, image validation and existing camera choices. Verification badges reflect three levels. Larger ID/address attachment cards have scan reveals; face capture preserves actual pose gating and the first frontal photo, with tapered guide/blur/progress ticks and scan review reveal.
+
+New local transaction submissions share Pending for 20 seconds before Completed across results, receipts and history, with reset/session/provider guards retained. Buy quantities and buy/sell exchange rates consistently use the selected asset. Submitted semantics announce Awaiting confirmation. User explicitly requires normal product wording in all customer-facing copy, without development-mode labels; internal fixture boundaries and developer documentation remain accurate.
+
+Custom floating refresh assembles the original logo from three pieces as the user pulls. A tapered blue arc orbits the assembled logo, with subtle 3.5% breathing; a 48px themed disc overlays the page without blank space. The operation Future governs completion, overlapping pulls are ignored, failures allow retry, background motion pauses, and reduced motion shows a static assembled mark. DavoBrandAssembly is shared with outcome artwork.
+
+Full suite 389 passed/11 optional capture skips; analyzer clean. Final refresh/artwork/accessibility checks 7 passed. Release34 installed and launched on emulator-5554; native refresh and logcat checked, no crash/layout errors. Redmi disconnected at delivery. APK 126157762 bytes, all790 declared files match and three ABIs. SHA256 33ea391199083e2e8199b73d15f19e76535663cb6776c7fcfb255b811b055c34. Review: docs/reviews/2026-10-13-preview-polish-review.md.

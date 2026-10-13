@@ -1,4 +1,5 @@
 import '../motion/davo_motion_policy.dart';
+import '../motion/davo_refresh_artwork.dart';
 import 'davo_toast.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
@@ -75,16 +76,46 @@ class DavoFloatingRefresh extends StatefulWidget {
 }
 
 class _FloatingRefreshState extends State<DavoFloatingRefresh>
-    with TickerProviderStateMixin {
+    with TickerProviderStateMixin, WidgetsBindingObserver {
   late final spinner = AnimationController(
-      vsync: this, duration: const Duration(milliseconds: 900));
+      vsync: this, duration: const Duration(milliseconds: 1600));
   late final edge = AnimationController(
       vsync: this, duration: const Duration(milliseconds: 260));
   bool edgeTop = true;
   double pull = 0;
   bool busy = false;
+  bool foreground = true;
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    foreground = WidgetsBinding.instance.lifecycleState == null ||
+        WidgetsBinding.instance.lifecycleState == AppLifecycleState.resumed;
+  }
+
+  void _syncSpinner() {
+    if (busy && foreground && !DavoMotionPolicy.reduce(context)) {
+      if (!spinner.isAnimating) spinner.repeat();
+    } else {
+      spinner.stop();
+    }
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _syncSpinner();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    foreground = state == AppLifecycleState.resumed;
+    _syncSpinner();
+  }
+
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     spinner.dispose();
     edge.dispose();
     super.dispose();
@@ -92,12 +123,12 @@ class _FloatingRefreshState extends State<DavoFloatingRefresh>
 
   Future<void> _refresh() async {
     if (busy) return;
-    spinner.value = (pull / 100) % 1;
+    spinner.value = (pull / 180) % 1;
     setState(() {
       busy = true;
       pull = 0;
     });
-    if (!DavoMotionPolicy.reduce(context)) spinner.repeat();
+    _syncSpinner();
     try {
       await widget.onRefresh();
     } catch (_) {
@@ -134,87 +165,84 @@ class _FloatingRefreshState extends State<DavoFloatingRefresh>
   }
 
   @override
-  Widget build(BuildContext context) =>
-      NotificationListener<ScrollNotification>(
-          onNotification: (notification) {
-            if (notification.depth == 0 &&
-                notification is OverscrollNotification &&
-                notification.dragDetails != null) {
-              if (notification.overscroll < 0) {
-                _drag(-notification.overscroll);
-              } else {
-                _edge(-notification.overscroll);
-              }
-            }
-            if (notification is ScrollEndNotification &&
-                notification.depth == 0) {
-              _release();
-            }
-            return false;
+  Widget build(BuildContext context) => NotificationListener<
+          ScrollNotification>(
+      onNotification: (notification) {
+        if (notification.depth == 0 &&
+            notification is OverscrollNotification &&
+            notification.dragDetails != null) {
+          if (notification.overscroll < 0) {
+            _drag(-notification.overscroll);
+          } else {
+            _edge(-notification.overscroll);
+          }
+        }
+        if (notification is ScrollEndNotification && notification.depth == 0) {
+          _release();
+        }
+        return false;
+      },
+      child: GestureDetector(
+          behavior: HitTestBehavior.translucent,
+          onVerticalDragUpdate: (details) => _drag(details.delta.dy),
+          onVerticalDragEnd: (_) => _release(),
+          onVerticalDragCancel: () {
+            unawaited(edge.animateTo(0, curve: Curves.easeOutCubic));
+            if (!busy) setState(() => pull = 0);
           },
-          child: GestureDetector(
-              behavior: HitTestBehavior.translucent,
-              onVerticalDragUpdate: (details) => _drag(details.delta.dy),
-              onVerticalDragEnd: (_) => _release(),
-              onVerticalDragCancel: () {
-                unawaited(edge.animateTo(0, curve: Curves.easeOutCubic));
-                if (!busy) setState(() => pull = 0);
-              },
-              child: Stack(clipBehavior: Clip.hardEdge, children: [
-                AnimatedBuilder(
-                    animation: edge,
-                    child: widget.child,
-                    builder: (context, child) => ClipRect(
-                        child: Transform.scale(
-                            scaleY: 1 + edge.value * .008,
-                            alignment: edgeTop
-                                ? Alignment.topCenter
-                                : Alignment.bottomCenter,
-                            child: child))),
-                if (busy || pull > 8)
-                  AnimatedPositioned(
-                      duration: DavoMotionPolicy.reduce(context)
-                          ? Duration.zero
-                          : const Duration(milliseconds: 180),
-                      curve: Curves.easeOutCubic,
-                      top: MediaQuery.paddingOf(context).top +
-                          8 +
-                          (busy ? 0 : pull / 10),
-                      left: 0,
-                      right: 0,
-                      child: Center(
-                          child: Semantics(
-                              container: true,
-                              label: busy
-                                  ? 'Refreshing dashboard'
-                                  : pull >= 60
-                                      ? 'Release to refresh dashboard'
-                                      : 'Pull to refresh dashboard',
-                              liveRegion: busy,
-                              child: Container(
-                                  width: 44,
-                                  height: 44,
-                                  decoration: BoxDecoration(
-                                      color: DavoColors.of(context).surface,
-                                      shape: BoxShape.circle,
-                                      boxShadow: const [
-                                        BoxShadow(
-                                            color: Color(0x22000000),
-                                            offset: Offset(0, 2),
-                                            blurRadius: 8)
-                                      ]),
-                                  child: AnimatedBuilder(
-                                      animation: spinner,
-                                      builder: (context, child) =>
-                                          Transform.rotate(
-                                              angle:
-                                                  (busy
-                                                          ? spinner.value
-                                                          : pull / 100) *
-                                                      6.283185,
-                                              child: const Icon(
-                                                  Icons.refresh_rounded,
-                                                  color: AppColors.primary,
-                                                  size: 28)))))))
-              ])));
+          child: Stack(clipBehavior: Clip.hardEdge, children: [
+            AnimatedBuilder(
+                animation: edge,
+                child: widget.child,
+                builder: (context, child) => ClipRect(
+                    child: Transform.scale(
+                        scaleY: 1 + edge.value * .008,
+                        alignment: edgeTop
+                            ? Alignment.topCenter
+                            : Alignment.bottomCenter,
+                        child: child))),
+            if (busy || pull > 8)
+              AnimatedPositioned(
+                  duration: DavoMotionPolicy.reduce(context)
+                      ? Duration.zero
+                      : const Duration(milliseconds: 180),
+                  curve: Curves.easeOutCubic,
+                  top: MediaQuery.paddingOf(context).top +
+                      8 +
+                      (busy ? 0 : pull / 10),
+                  left: 0,
+                  right: 0,
+                  child: Center(
+                      child: Semantics(
+                          container: true,
+                          label: busy
+                              ? 'Refreshing dashboard'
+                              : pull >= 60
+                                  ? 'Release to refresh dashboard'
+                                  : 'Pull to refresh dashboard',
+                          liveRegion: busy,
+                          child: Container(
+                              width: 48,
+                              height: 48,
+                              decoration: BoxDecoration(
+                                  color: DavoColors.of(context).surface,
+                                  shape: BoxShape.circle,
+                                  boxShadow: const [
+                                    BoxShadow(
+                                        color: Color(0x22000000),
+                                        offset: Offset(0, 2),
+                                        blurRadius: 8)
+                                  ]),
+                              child: AnimatedBuilder(
+                                  animation: spinner,
+                                  builder: (context, child) =>
+                                      DavoRefreshArtwork(
+                                        assembly: busy ? 1 : pull / 60,
+                                        orbit:
+                                            busy ? spinner.value : pull / 180,
+                                        active: busy,
+                                        reducedMotion:
+                                            DavoMotionPolicy.reduce(context),
+                                      ))))))
+          ])));
 }
