@@ -38,29 +38,33 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                children: [
+              LayoutBuilder(builder: (context, constraints) {
+                final heading = Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Portfolio',
+                          style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w600,
+                              color: DavoColors.of(context).ink)),
+                      Text('Your wallet holdings',
+                          style: TextStyle(
+                              fontSize: 12,
+                              color: DavoColors.of(context).body)),
+                    ]);
+                final separateHeading = constraints.maxWidth /
+                        (MediaQuery.textScalerOf(context).scale(18) / 18) <
+                    260;
+                final controls = Row(children: [
                   IconButton(
                       onPressed: () => Navigator.pop(context),
                       icon: const Icon(Icons.arrow_back_ios_new_rounded,
                           size: 20)),
                   const SizedBox(width: 7),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('Portfolio',
-                            style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w600,
-                                color: DavoColors.of(context).ink)),
-                        Text('Your wallet holdings',
-                            style: TextStyle(
-                                fontSize: 12,
-                                color: DavoColors.of(context).body)),
-                      ],
-                    ),
-                  ),
+                  if (separateHeading)
+                    const Spacer()
+                  else
+                    Expanded(child: heading),
                   _RoundIconButton(
                     icon: _visible
                         ? Icons.visibility_outlined
@@ -77,8 +81,17 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                       onTap: () => Navigator.of(context).push(_davoRoute<void>(
                           PortfolioPerformanceScreen(
                               initialValueVisible: _visible)))),
-                ],
-              ),
+                ]);
+                return separateHeading
+                    ? Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                            controls,
+                            const SizedBox(height: 8),
+                            heading
+                          ])
+                    : controls;
+              }),
               const SizedBox(height: 16),
               _PortfolioValueCard(visible: _visible),
               const SizedBox(height: 16),
@@ -215,14 +228,19 @@ class _PortfolioValueCard extends StatelessWidget {
           const Text('Total Portfolio Value',
               style: TextStyle(fontSize: 12, color: Colors.white)),
           const SizedBox(height: 12),
-          Text(
-              visible
-                  ? WalletAccountState.instance.portfolioBalanceLabel
-                  : '\u20a6\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022',
-              style: const TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.white)),
+          FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Text(
+                  visible
+                      ? WalletAccountState.instance.portfolioBalanceLabel
+                      : '\u20a6\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022',
+                  maxLines: 1,
+                  softWrap: false,
+                  style: const TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white))),
           const SizedBox(height: 8),
           const Text('Portfolio valuation',
               style: TextStyle(fontSize: 13, color: Colors.white)),
@@ -257,16 +275,35 @@ class _AllocationCard extends StatelessWidget {
           const SizedBox(height: 12),
           ...assets.map((asset) => Padding(
               padding: const EdgeInsets.symmetric(vertical: 6),
-              child: Row(children: [
-                Expanded(child: Text(asset)),
-                Text(total == 0
+              child: LayoutBuilder(builder: (context, constraints) {
+                final value = state.balanceLabel(asset);
+                final percentage = total == 0
                     ? '0.0%'
-                    : '${(state.snapshot.valuationMinorUnits(asset) * 100 / total).toStringAsFixed(1)}%'),
-                const SizedBox(width: 12),
-                Expanded(
-                    child: Text(state.balanceLabel(asset),
-                        textAlign: TextAlign.right)),
-              ]))),
+                    : '${(state.snapshot.valuationMinorUnits(asset) * 100 / total).toStringAsFixed(1)}%';
+                if (constraints.maxWidth /
+                        (MediaQuery.textScalerOf(context).scale(14) / 14) <
+                    260) {
+                  return Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Row(children: [
+                          Expanded(child: Text(asset)),
+                          Text(percentage)
+                        ]),
+                        const SizedBox(height: 4),
+                        FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerRight,
+                            child: Text(value, maxLines: 1, softWrap: false)),
+                      ]);
+                }
+                return Row(children: [
+                  Expanded(child: Text(asset)),
+                  Text(percentage),
+                  const SizedBox(width: 12),
+                  Expanded(child: Text(value, textAlign: TextAlign.right)),
+                ]);
+              }))),
         ]));
   }
 }

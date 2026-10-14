@@ -190,16 +190,21 @@ class DavoMainNavigation extends StatelessWidget {
                             DavoActionIcon(glyphs[item],
                                 size: 24, color: color),
                             const SizedBox(height: 5),
-                            Text(labels[item],
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                    fontFamily: 'Sora',
-                                    fontSize: 10,
-                                    height: 1.1,
-                                    fontWeight: FontWeight.w500,
-                                    color: color)),
+                            Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 4),
+                                child: FittedBox(
+                                    fit: BoxFit.scaleDown,
+                                    child: Text(labels[item],
+                                        maxLines: 1,
+                                        softWrap: false,
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                            fontFamily: 'Sora',
+                                            fontSize: 10,
+                                            height: 1.1,
+                                            fontWeight: FontWeight.w500,
+                                            color: color)))),
                           ])),
                 ));
               })),

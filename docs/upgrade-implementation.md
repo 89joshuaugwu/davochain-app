@@ -13,7 +13,7 @@ Version 0.15.0+38. Implements the frontend correction batch from the combined re
 - Camera initialization/frame/still work is tracked so teardown waits for pending native users rather than a fixed 300ms delay. Late asynchronous continuations check lifecycle/generation.
 - Working animation invalidates tint/configuration changes, pauses on hidden tabs and obeys reduced motion. OTP disclosure also obeys reduced motion. Existing green face ticks, orbit dot and no-haptic behavior remain.
 - Math font fallback registered; unregistered Poppins references replaced by Sora; input hint contrast strengthened. Reachable help controllers dispose. Notification categories expose selected semantics and 48px tap areas.
-- Android release signing requires externally supplied identity/credentials and rejects a debug certificate. No signing key was generated or modified.
+- Android store release signing requires externally supplied identity/credentials and rejects a debug certificate. Explicit local-test opt-in permits an optimized APK with the existing development identity, while rejecting store bundles and the production environment; see `android-local-release.md`. No signing key was generated or modified.
 
 ## Backend integration still required
 

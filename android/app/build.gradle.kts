@@ -1,5 +1,6 @@
 import java.security.KeyStore
 import java.security.cert.X509Certificate
+import java.util.Base64
 
 plugins {
     id("com.android.application")
@@ -8,12 +9,14 @@ plugins {
 }
 
 // Supply secrets through private Gradle properties or the build environment.
-// Never generate keys here or use the debug certificate for release artifacts.
+// Store releases require a managed identity. Local optimized APKs require an
+// explicit opt-in and retain the development identity to update test installs.
 fun releaseValue(property: String, environment: String): String? =
     providers.gradleProperty(property).orNull?.takeIf { it.isNotBlank() }
         ?: providers.environmentVariable(environment).orNull?.takeIf { it.isNotBlank() }
 
 val releaseApplicationId = releaseValue("davochainApplicationId", "DAVOCHAIN_APPLICATION_ID")
+val localTestRelease = releaseValue("davochainLocalTestRelease", "DAVOCHAIN_LOCAL_TEST_RELEASE") == "true"
 val releaseStoreFile = releaseValue("davochainStoreFile", "DAVOCHAIN_STORE_FILE")
 val releaseStorePassword = releaseValue("davochainStorePassword", "DAVOCHAIN_STORE_PASSWORD")
 val releaseKeyAlias = releaseValue("davochainKeyAlias", "DAVOCHAIN_KEY_ALIAS")
@@ -47,9 +50,25 @@ val validateProductionIdentity = tasks.register("validateProductionIdentity") {
     }
 }
 
+val validateLocalTestRelease = tasks.register("validateLocalTestRelease") {
+    doLast {
+        check(localTestRelease) { "Local test release requires explicit opt-in." }
+        check(!gradle.startParameter.taskNames.any { it.contains("bundle", ignoreCase = true) }) {
+            "Local test signing is APK-only. Store bundles require production signing."
+        }
+        val defines = providers.gradleProperty("dart-defines").orNull.orEmpty()
+            .split(',').filter { it.isNotBlank() }.map {
+                String(Base64.getDecoder().decode(it), Charsets.UTF_8)
+            }
+        check(!defines.contains("DAVOCHAIN_ENV=production")) {
+            "Development signing cannot be combined with the production environment."
+        }
+    }
+}
+
 tasks.configureEach {
-    if (name.contains("Release") && name != "validateProductionIdentity") {
-        dependsOn(validateProductionIdentity)
+    if (name.contains("Release") && name != "validateProductionIdentity" && name != "validateLocalTestRelease") {
+        dependsOn(if (localTestRelease) validateLocalTestRelease else validateProductionIdentity)
     }
 }
 
@@ -65,7 +84,7 @@ android {
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = releaseApplicationId ?: "com.example.davochain"
+        applicationId = if (localTestRelease) "com.example.davochain" else releaseApplicationId ?: "com.example.davochain"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion
@@ -91,7 +110,15 @@ android {
 
     buildTypes {
         release {
-            signingConfig = if (releaseConfigured) signingConfigs.getByName("production") else null
+            // Local APKs retain native plugin diagnostics without expensive R8
+            // shrinking; Flutter still compiles Dart in optimized release mode.
+            isMinifyEnabled = !localTestRelease
+            isShrinkResources = !localTestRelease
+            signingConfig = when {
+                localTestRelease -> signingConfigs.getByName("debug")
+                releaseConfigured -> signingConfigs.getByName("production")
+                else -> null
+            }
         }
     }
 }

@@ -286,7 +286,9 @@ class _TopBrandCard extends StatelessWidget {
 }
 
 class _PopularBrand extends StatelessWidget {
-  const _PopularBrand({required this.brand, required this.onTap});
+  const _PopularBrand(
+      {required this.brand, required this.onTap, this.width = 68});
+  final double width;
   final GiftCardBrand brand;
   final VoidCallback onTap;
   @override
@@ -294,7 +296,7 @@ class _PopularBrand extends StatelessWidget {
         onTap: onTap,
         borderRadius: BorderRadius.circular(10),
         child: Container(
-            width: 68,
+            width: width,
             padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 8),
             decoration: _outlinedCard(context),
             child: Column(children: [

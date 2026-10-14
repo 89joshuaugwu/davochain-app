@@ -120,6 +120,9 @@ class _BalanceCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final largeText = MediaQuery.textScalerOf(context).scale(14) > 18;
+    final stackActions = MediaQuery.sizeOf(context).width /
+            (MediaQuery.textScalerOf(context).scale(14) / 14) <
+        280;
     final balance = visible
         ? WalletAccountState.instance.ngnBalanceLabel
         : '\u20a6\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022';
@@ -197,23 +200,33 @@ class _BalanceCard extends StatelessWidget {
                                     size: 20))),
                       ]))),
               if (largeText) const SizedBox(height: 16) else const Spacer(),
-              Row(children: [
-                Expanded(
-                    child: _BalanceActionButton(
-                        compact: compact,
-                        light: true,
-                        glyph: DavoActionGlyph.deposit,
-                        label: 'Deposit',
-                        onTap: onDeposit)),
-                const SizedBox(width: 16),
-                Expanded(
-                    child: _BalanceActionButton(
-                        compact: compact,
-                        light: false,
-                        glyph: DavoActionGlyph.withdraw,
-                        label: 'Withdraw',
-                        onTap: onWithdraw)),
-              ]),
+              Flex(
+                  direction: stackActions ? Axis.vertical : Axis.horizontal,
+                  crossAxisAlignment: stackActions
+                      ? CrossAxisAlignment.stretch
+                      : CrossAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Flexible(
+                        flex: 1,
+                        fit: stackActions ? FlexFit.loose : FlexFit.tight,
+                        child: _BalanceActionButton(
+                            compact: compact,
+                            light: true,
+                            glyph: DavoActionGlyph.deposit,
+                            label: 'Deposit',
+                            onTap: onDeposit)),
+                    const SizedBox(width: 16, height: 8),
+                    Flexible(
+                        flex: 1,
+                        fit: stackActions ? FlexFit.loose : FlexFit.tight,
+                        child: _BalanceActionButton(
+                            compact: compact,
+                            light: false,
+                            glyph: DavoActionGlyph.withdraw,
+                            label: 'Withdraw',
+                            onTap: onWithdraw)),
+                  ]),
             ])),
       ]),
     );
@@ -243,29 +256,36 @@ class _BalanceActionButton extends StatelessWidget {
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(100),
-        child: SizedBox(
-          height: 48,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              DavoActionIcon(glyph,
-                  size: 20,
-                  color: light ? DavoColors.of(context).link : Colors.white),
-              const SizedBox(width: 12),
-              Flexible(
-                  child: Text(
-                label,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontFamily: 'Sora',
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: light ? DavoColors.of(context).link : Colors.white,
-                ),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(minHeight: 48),
+          child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  DavoActionIcon(glyph,
+                      size: 20,
+                      color:
+                          light ? DavoColors.of(context).link : Colors.white),
+                  const SizedBox(width: 12),
+                  Flexible(
+                      child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                            label,
+                            maxLines: 1,
+                            softWrap: false,
+                            style: TextStyle(
+                              fontFamily: 'Sora',
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: light
+                                  ? DavoColors.of(context).link
+                                  : Colors.white,
+                            ),
+                          ))),
+                ],
               )),
-            ],
-          ),
         ),
       ),
     );
@@ -291,7 +311,6 @@ class _SetupBanner extends StatelessWidget {
           Expanded(
               child: Text(
             'Complete basic verification',
-            maxLines: 2,
             style: TextStyle(
                 fontFamily: 'Sora',
                 fontSize: compact ? 14 : 16,
@@ -300,8 +319,7 @@ class _SetupBanner extends StatelessWidget {
           )),
           const SizedBox(width: 8),
           Container(
-            width: 42,
-            height: 18,
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
             alignment: Alignment.center,
             decoration: BoxDecoration(
                 color: AppColors.primary,
@@ -447,10 +465,15 @@ class _PromoBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (MediaQuery.textScalerOf(context).scale(14) > 18) {
+    final largeText = MediaQuery.textScalerOf(context).scale(14) > 18;
+    if (largeText || MediaQuery.sizeOf(context).width < 380) {
       return Container(
         key: const ValueKey('dashboard-promo'),
-        padding: const EdgeInsets.all(16),
+        constraints:
+            largeText ? null : BoxConstraints(minHeight: compact ? 106 : 121),
+        padding: largeText
+            ? const EdgeInsets.all(16)
+            : const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
           color: DavoColors.of(context).primarySoft,
           borderRadius: BorderRadius.circular(12),
@@ -460,16 +483,16 @@ class _PromoBanner extends StatelessWidget {
           children: [
             Text('Turn your Crypto and\nGift Cards into cash\ninstantly',
                 style: TextStyle(
-                    fontSize: 13,
+                    fontSize: largeText ? 13 : (compact ? 12 : 13),
                     fontWeight: FontWeight.w700,
                     height: 1.3,
                     color: DavoColors.of(context).link)),
-            const SizedBox(height: 8),
+            SizedBox(height: largeText ? 8 : 4),
             Text(
                 'Trade top crypto and gift card at good rates with fast payment.',
                 style: TextStyle(
                     fontSize: 10,
-                    height: 1.4,
+                    height: largeText ? 1.4 : 1.25,
                     color: DavoColors.of(context).body)),
           ],
         ),

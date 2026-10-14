@@ -117,11 +117,13 @@ class _GiftCardHomeScreenState extends State<GiftCardHomeScreen> {
   Widget build(BuildContext context) => DavoRefreshRegion(
       target: DavoRefreshTarget.giftCardCatalogue, builder: _buildRefreshed);
   Widget _buildRefreshed(BuildContext context) {
+    final largeText = MediaQuery.textScalerOf(context).scale(14) > 20;
+    final referral = _ReferralCard(
+        onTap: () => Navigator.of(context).push(AppPageRoute<void>(
+            builder: (_) => const ReferralDashboardScreen())));
     return _GiftScaffold(
       scroll: true,
-      bottom: _ReferralCard(
-          onTap: () => Navigator.of(context).push(AppPageRoute<void>(
-              builder: (_) => const ReferralDashboardScreen()))),
+      bottom: largeText ? null : referral,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -174,19 +176,19 @@ class _GiftCardHomeScreenState extends State<GiftCardHomeScreen> {
           const SizedBox(height: 24),
           Text('Popular Brands', style: _section(context)),
           const SizedBox(height: 12),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              _PopularBrand(
-                  brand: _brands[2], onTap: () => _openBrand(_brands[2])),
-              _PopularBrand(
-                  brand: _brands[3], onTap: () => _openBrand(_brands[3])),
-              _PopularBrand(
-                  brand: _brands[5], onTap: () => _openBrand(_brands[5])),
-              _PopularBrand(
-                  brand: _brands[4], onTap: () => _openBrand(_brands[4])),
-            ],
-          ),
+          LayoutBuilder(builder: (context, constraints) {
+            final cards = [2, 3, 5, 4]
+                .map((index) => _PopularBrand(
+                    width: largeText ? (constraints.maxWidth - 12) / 2 : 68,
+                    brand: _brands[index],
+                    onTap: () => _openBrand(_brands[index])))
+                .toList();
+            return largeText
+                ? Wrap(spacing: 12, runSpacing: 12, children: cards)
+                : Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: cards);
+          }),
           const SizedBox(height: 10),
           Center(
               child: TextButton(
@@ -195,6 +197,7 @@ class _GiftCardHomeScreenState extends State<GiftCardHomeScreen> {
                       style: TextStyle(
                           fontSize: 12, color: DavoColors.of(context).body)))),
           const SizedBox(height: 12),
+          if (largeText) referral,
         ],
       ),
     );
