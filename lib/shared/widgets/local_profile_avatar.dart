@@ -1,4 +1,5 @@
 import 'dart:ui' as ui;
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../core/preview/local_preview_profile.dart';
@@ -11,9 +12,13 @@ class LocalProfileAvatar extends StatefulWidget {
       {super.key,
       this.size = 96,
       this.editable = false,
-      this.showBadge = true});
+      this.showBadge = true,
+      this.previewPhoto,
+      this.onPhotoSelected});
   final double size;
   final bool editable, showBadge;
+  final Uint8List? previewPhoto;
+  final ValueChanged<Uint8List>? onPhotoSelected;
   @override
   State<LocalProfileAvatar> createState() => _LocalProfileAvatarState();
 }
@@ -65,7 +70,9 @@ class _LocalProfileAvatarState extends State<LocalProfileAvatar> {
         descriptor?.dispose();
         buffer?.dispose();
       }
-      if (mounted && generation == profile.generation) profile.setPhoto(bytes);
+      if (mounted && generation == profile.generation && widget.editable) {
+        widget.onPhotoSelected?.call(bytes);
+      }
     } catch (error) {
       if (mounted) {
         showDavoToast(
@@ -91,8 +98,10 @@ class _LocalProfileAvatarState extends State<LocalProfileAvatar> {
             : verification.basicVerified
                 ? 1
                 : 0;
-        final image = profile.photo != null
-            ? Image.memory(profile.photo!, fit: BoxFit.cover)
+        final photo = widget.previewPhoto ?? profile.photo;
+        final canEdit = widget.editable && widget.onPhotoSelected != null;
+        final image = photo != null
+            ? Image.memory(photo, fit: BoxFit.cover)
             : profile.sampleAvatar
                 ? Stack(children: [
                     Positioned(
@@ -107,12 +116,12 @@ class _LocalProfileAvatarState extends State<LocalProfileAvatar> {
                 : Icon(Icons.person_outline,
                     size: widget.size * .55, color: gray);
         return Semantics(
-            label: widget.editable
+            label: canEdit
                 ? 'Change profile photo'
                 : '${profile.fullName} profile photo',
-            button: widget.editable,
+            button: canEdit,
             child: InkWell(
-                onTap: widget.editable ? _pick : null,
+                onTap: canEdit ? _pick : null,
                 customBorder: const CircleBorder(),
                 child: SizedBox(
                     width: widget.size,

@@ -113,24 +113,52 @@ void main() {
     await tester.pumpWidget(const MaterialApp(
         home: TradeAmountScreen(
             mode: TradeMode.convert, asset: BuyCryptoAsset.bitcoin)));
-    expect(find.text('0.00 BTC'), findsOneWidget);
-    expect(find.text('\u2248 0.00 USD'), findsOneWidget);
-    expect(find.byIcon(Icons.keyboard_arrow_down_rounded), findsNWidgets(3));
+    expect(find.byKey(const ValueKey('swap-from-card')), findsOneWidget);
+    expect(find.byKey(const ValueKey('swap-to-card')), findsOneWidget);
+    expect(find.byIcon(Icons.keyboard_arrow_down_rounded), findsNWidgets(2));
     expect(find.byTooltip('Swap assets'), findsOneWidget);
     await tester.enterText(find.byType(TextField), '0.2');
     await tester.pump();
-    expect(find.text('0.20 BTC'), findsOneWidget);
-    await tester.tap(find.text('0.20 BTC'));
+    expect(find.text('3,116.883116'), findsOneWidget);
+    await tester.tap(find.text('BTC'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Ethereum'));
     await tester.pumpAndSettle();
-    expect(find.text('0.20 ETH'), findsOneWidget);
+    expect(find.text('675.324675'), findsOneWidget);
     expect(tester.widget<TextField>(find.byType(TextField)).controller!.text,
         '0.2');
     await tester.ensureVisible(find.byTooltip('Swap assets'));
     await tester.tap(find.byTooltip('Swap assets'));
     await tester.pump();
-    expect(find.text('675.324675 USDT'), findsOneWidget);
+    expect(tester.widget<TextField>(find.byType(TextField)).controller!.text,
+        '675.324675');
+    expect(find.text('0.19999999'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('swap cards align quantities and seam control at normal size',
+      (tester) async {
+    tester.view.physicalSize = const Size(393, 852);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    await tester.pumpWidget(const MaterialApp(
+        home: TradeAmountScreen(
+            mode: TradeMode.convert, asset: BuyCryptoAsset.bitcoin)));
+    await tester.pumpAndSettle();
+    final from = find.byKey(const ValueKey('swap-from-card'));
+    final to = find.byKey(const ValueKey('swap-to-card'));
+    final receive = find.byKey(const ValueKey('swap-receive-quantity'));
+    expect(tester.getTopLeft(from).dx, tester.getTopLeft(to).dx);
+    expect(tester.getTopRight(from).dx, tester.getTopRight(to).dx);
+    expect(tester.getTopRight(find.byType(TextField)).dx,
+        closeTo(tester.getTopRight(receive).dx, .01));
+    final swap = tester.getCenter(find.byTooltip('Swap assets'));
+    expect(swap.dx, closeTo(393 / 2, .01));
+    expect(swap.dy, greaterThan(tester.getBottomLeft(from).dy - 8));
+    expect(swap.dy, lessThan(tester.getTopLeft(to).dy + 8));
+    expect(tester.getTopRight(find.text('Free')).dx,
+        closeTo(tester.getTopRight(find.textContaining('1 BTC')).dx, .01));
     expect(tester.takeException(), isNull);
   });
 

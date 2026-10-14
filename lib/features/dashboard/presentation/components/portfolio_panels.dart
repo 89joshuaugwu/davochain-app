@@ -101,7 +101,9 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                     child: Padding(
                       padding: EdgeInsets.only(right: index == 2 ? 0 : 16),
                       child: Material(
-                        color: DavoColors.of(context).border,
+                        color: index == 0
+                            ? AppColors.primary
+                            : DavoColors.of(context).primarySoft,
                         borderRadius: BorderRadius.circular(6),
                         child: InkWell(
                           onTap: () {
@@ -125,7 +127,9 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                                     fontFamily: 'Sora',
                                     fontSize: 14,
                                     fontWeight: FontWeight.w600,
-                                    color: DavoColors.of(context).body),
+                                    color: index == 0
+                                        ? Colors.white
+                                        : DavoColors.of(context).body),
                               ),
                             ),
                           ),
@@ -208,10 +212,22 @@ class _RoundIconButton extends StatelessWidget {
         style: IconButton.styleFrom(
             backgroundColor: DavoColors.of(context).primarySoft,
             minimumSize: const Size(48, 48)),
-        icon: Icon(icon,
-            size: 20,
-            applyTextScaling: false,
-            color: DavoColors.of(context).link),
+        icon: icon == Icons.visibility_outlined
+            ? SvgPicture.asset('assets/figma_exact/davo_eye.svg',
+                width: 20,
+                height: 20,
+                colorFilter: ColorFilter.mode(
+                    DavoColors.of(context).link, BlendMode.srcIn))
+            : icon == Icons.show_chart_rounded
+                ? SvgPicture.asset('assets/figma_exact/davo_performance.svg',
+                    width: 20,
+                    height: 20,
+                    colorFilter: ColorFilter.mode(
+                        DavoColors.of(context).link, BlendMode.srcIn))
+                : Icon(icon,
+                    size: 20,
+                    applyTextScaling: false,
+                    color: DavoColors.of(context).link),
       );
 }
 
@@ -219,93 +235,147 @@ class _PortfolioValueCard extends StatelessWidget {
   const _PortfolioValueCard({required this.visible});
   final bool visible;
   @override
-  Widget build(BuildContext context) => Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-            color: AppColors.primary, borderRadius: BorderRadius.circular(12)),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          const Text('Total Portfolio Value',
-              style: TextStyle(fontSize: 12, color: Colors.white)),
-          const SizedBox(height: 12),
-          FittedBox(
-              fit: BoxFit.scaleDown,
-              alignment: Alignment.centerLeft,
-              child: Text(
-                  visible
-                      ? WalletAccountState.instance.portfolioBalanceLabel
-                      : '\u20a6\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022',
-                  maxLines: 1,
-                  softWrap: false,
-                  style: const TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.white))),
-          const SizedBox(height: 8),
-          const Text('Portfolio valuation',
-              style: TextStyle(fontSize: 13, color: Colors.white)),
-        ]),
-      );
+  Widget build(BuildContext context) => DavoBlueBalanceCard(
+      label: 'Total Portfolio Value',
+      amount: visible
+          ? WalletAccountState.instance.portfolioBalanceLabel
+          : '\u20a6\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022',
+      caption: 'Portfolio valuation');
 }
 
 class _AllocationCard extends StatelessWidget {
   const _AllocationCard();
+  static const colors = [
+    Color(0xFFF7931A),
+    Color(0xFF647CEA),
+    Color(0xFF009D98),
+    Color(0xFF22C55E),
+    Color(0xFF2775CA)
+  ];
+  static const names = {
+    'BTC': 'Bitcoin',
+    'ETH': 'Ethereum',
+    'SOL': 'Solana',
+    'USDT': 'Tether',
+    'USDC': 'USD Coin'
+  };
   @override
   Widget build(BuildContext context) => ListenableBuilder(
       listenable: WalletAccountState.instance,
-      builder: (context, _) => _content(context));
-  Widget _content(BuildContext context) {
-    final state = WalletAccountState.instance;
-    final assets = state.snapshot.assets
-        .where((asset) => asset != 'NGN' && asset != 'NGD')
-        .toList();
-    final total = state.snapshot.portfolioMinorUnits;
-    return Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-            color: DavoColors.of(context).surface,
-            borderRadius: BorderRadius.circular(12)),
-        child:
-            Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-          Text('Asset Allocation',
-              style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: DavoColors.of(context).ink)),
-          const SizedBox(height: 12),
-          ...assets.map((asset) => Padding(
-              padding: const EdgeInsets.symmetric(vertical: 6),
-              child: LayoutBuilder(builder: (context, constraints) {
-                final value = state.balanceLabel(asset);
-                final percentage = total == 0
-                    ? '0.0%'
-                    : '${(state.snapshot.valuationMinorUnits(asset) * 100 / total).toStringAsFixed(1)}%';
-                if (constraints.maxWidth /
-                        (MediaQuery.textScalerOf(context).scale(14) / 14) <
-                    260) {
-                  return Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
+      builder: (context, _) {
+        final state = WalletAccountState.instance;
+        final assets = state.snapshot.assets
+            .where((asset) => asset != 'NGN' && asset != 'NGD')
+            .toList();
+        final total = state.snapshot.portfolioMinorUnits;
+        final large = MediaQuery.textScalerOf(context).scale(12) > 18;
+        return Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+                color: DavoColors.of(context).surface,
+                borderRadius: BorderRadius.circular(16)),
+            child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Wrap(
+                      alignment: WrapAlignment.spaceBetween,
+                      spacing: 8,
+                      runSpacing: 8,
                       children: [
-                        Row(children: [
-                          Expanded(child: Text(asset)),
-                          Text(percentage)
-                        ]),
-                        const SizedBox(height: 4),
-                        FittedBox(
-                            fit: BoxFit.scaleDown,
-                            alignment: Alignment.centerRight,
-                            child: Text(value, maxLines: 1, softWrap: false)),
-                      ]);
-                }
-                return Row(children: [
-                  Expanded(child: Text(asset)),
-                  Text(percentage),
-                  const SizedBox(width: 12),
-                  Expanded(child: Text(value, textAlign: TextAlign.right)),
-                ]);
-              }))),
-        ]));
-  }
+                        Text('Asset Allocation',
+                            style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                                color: DavoColors.of(context).ink)),
+                        Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 10, vertical: 4),
+                            decoration: BoxDecoration(
+                                color: DavoColors.of(context).primarySoft,
+                                borderRadius: BorderRadius.circular(12)),
+                            child: Text('${assets.length} Coins',
+                                style: const TextStyle(fontSize: 11))),
+                      ]),
+                  const SizedBox(height: 16),
+                  if (total > 0)
+                    ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
+                        child: SizedBox(
+                            height: 10,
+                            child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: List.generate(assets.length, (index) {
+                                  final value = state.snapshot
+                                      .valuationMinorUnits(assets[index]);
+                                  return value <= 0
+                                      ? const SizedBox()
+                                      : Expanded(
+                                          flex: value,
+                                          child: ColoredBox(
+                                              color: colors[
+                                                  index % colors.length]));
+                                })))),
+                  const SizedBox(height: 10),
+                  LayoutBuilder(
+                      builder: (context, constraints) => Wrap(
+                          spacing: 10,
+                          runSpacing: 10,
+                          children: List.generate(assets.length, (index) {
+                            final asset = assets[index];
+                            final value =
+                                state.snapshot.valuationMinorUnits(asset);
+                            final percentage = total == 0
+                                ? '0.0%'
+                                : '${(value * 100 / total).toStringAsFixed(1)}%';
+                            final compactValue =
+                                '\u20a6${(value / 100000).toStringAsFixed(1)}k';
+                            return SizedBox(
+                                width: large
+                                    ? constraints.maxWidth
+                                    : (constraints.maxWidth - 10) / 2,
+                                child: Semantics(
+                                    label:
+                                        '${names[asset] ?? asset}, $percentage, ${state.balanceLabel(asset)}',
+                                    excludeSemantics: true,
+                                    child: Container(
+                                        padding: const EdgeInsets.all(10),
+                                        decoration: BoxDecoration(
+                                            color: DavoColors.of(context)
+                                                .primarySoft,
+                                            borderRadius:
+                                                BorderRadius.circular(6)),
+                                        child: Row(children: [
+                                          Container(
+                                              width: 7,
+                                              height: 7,
+                                              decoration: BoxDecoration(
+                                                  color: colors[
+                                                      index % colors.length],
+                                                  shape: BoxShape.circle)),
+                                          const SizedBox(width: 5),
+                                          Expanded(
+                                              child: Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                Text(names[asset] ?? asset,
+                                                    style: const TextStyle(
+                                                        fontSize: 10,
+                                                        fontWeight:
+                                                            FontWeight.w600)),
+                                                Text(percentage,
+                                                    style: const TextStyle(
+                                                        fontSize: 9)),
+                                              ])),
+                                          const SizedBox(width: 5),
+                                          Text(compactValue,
+                                              style: const TextStyle(
+                                                  fontSize: 11,
+                                                  fontWeight: FontWeight.w600))
+                                        ]))));
+                          }))),
+                ]));
+      });
 }
 
 class _PortfolioAssetTile extends StatelessWidget {

@@ -6,6 +6,7 @@ import 'package:davochain/shared/receipts/transaction_record_details_screen.dart
 import 'package:davochain/shared/motion/davo_refresh_artwork.dart';
 import 'package:davochain/shared/widgets/davo_scroll_behavior.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 ReceiptRecord get record => ReceiptRecord(
@@ -25,7 +26,8 @@ void main() {
       'gift referral uses a complete vector icon and opens existing rewards',
       (tester) async {
     await tester.pumpWidget(const MaterialApp(home: GiftCardHomeScreen()));
-    expect(find.byIcon(Icons.celebration_outlined), findsOneWidget);
+    expect(find.byWidgetPredicate((widget) => widget is SvgPicture),
+        findsOneWidget);
     await tester.tap(find.text('Refer'));
     await tester.pumpAndSettle();
     expect(find.byType(ReferralDashboardScreen), findsOneWidget);

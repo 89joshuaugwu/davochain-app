@@ -27,6 +27,31 @@ class _GiftCardSellFormScreenState extends State<GiftCardSellFormScreen> {
   bool get ready =>
       selectedProduct != null && _flow.ready && uploaded && !picking;
 
+  String? get validationMessage {
+    if (!_flow.accountCurrent) {
+      return 'Your account changed. Start a new trade.';
+    }
+    if (selectedProduct == null) {
+      return 'Select a gift card subcategory to continue.';
+    }
+    if (amount.text.trim().isEmpty) return 'Enter your gift card amount.';
+    if (numeric.compareTo(selectedProduct!.exactMinimumDenomination) < 0) {
+      return 'Enter a card amount of at least ${selectedProduct!.minimumDenomination}.';
+    }
+    if (!_flow.ready) return 'Enter a valid card amount with up to 2 decimals.';
+    if (!uploaded) return 'Upload a clear image of your gift card to continue.';
+    return null;
+  }
+
+  void _selectCardType(bool value) {
+    if (physical == value) return;
+    setState(() {
+      physical = value;
+      selectedProduct = null;
+      categorySelected = false;
+    });
+  }
+
   void _flowChanged() {
     if (mounted) setState(() {});
   }
@@ -87,16 +112,8 @@ class _GiftCardSellFormScreenState extends State<GiftCardSellFormScreen> {
                     left: 'Physical',
                     right: 'E-code',
                     leftActive: physical,
-                    onLeft: () => setState(() {
-                          physical = true;
-                          selectedProduct = null;
-                          categorySelected = false;
-                        }),
-                    onRight: () => setState(() {
-                          physical = false;
-                          selectedProduct = null;
-                          categorySelected = false;
-                        })),
+                    onLeft: () => _selectCardType(true),
+                    onRight: () => _selectCardType(false)),
               ]),
           const SizedBox(height: 20),
           const _Label('Sub Category'),
@@ -188,6 +205,12 @@ class _GiftCardSellFormScreenState extends State<GiftCardSellFormScreen> {
             ]),
           if (evidenceError != null)
             Text(evidenceError!, style: _caption(context)),
+          if (validationMessage != null) ...[
+            const SizedBox(height: 12),
+            Semantics(
+                liveRegion: true,
+                child: Text(validationMessage!, style: _caption(context))),
+          ],
         ],
       ),
     );

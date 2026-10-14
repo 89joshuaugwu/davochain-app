@@ -1109,11 +1109,10 @@ class _SettingsOutlineIcon extends StatelessWidget {
 }
 
 class _MenuItem {
-  _MenuItem(this.asset, this.label, this.onTap, {this.trailing});
+  _MenuItem(this.asset, this.label, this.onTap);
   final String asset;
   final String label;
   final VoidCallback onTap;
-  final Widget? trailing;
 }
 
 class _MenuCard extends StatelessWidget {
@@ -1172,14 +1171,13 @@ class _MenuCard extends StatelessWidget {
                     _SettingsOutlineIcon(items[i].label),
                     const SizedBox(width: 16),
                     Expanded(child: Text(items[i].label, style: _t14(context))),
-                    items[i].trailing ??
-                        Image.asset(
-                          '$_exactAssets/profile_chevron_exact.png',
-                          color: DavoColors.of(context).muted,
-                          width: 16,
-                          height: 16,
-                          filterQuality: FilterQuality.high,
-                        ),
+                    Image.asset(
+                      '$_exactAssets/profile_chevron_exact.png',
+                      color: DavoColors.of(context).muted,
+                      width: 16,
+                      height: 16,
+                      filterQuality: FilterQuality.high,
+                    ),
                   ],
                 ),
               ),
@@ -2246,7 +2244,7 @@ Future<void> _logoutDialog(BuildContext context) => showDialog(
                     FundingActivity.reset();
                     ReceiptActivity.reset();
                     SettingsPreviewSession.instance.reset();
-                    PreviewAuthState.unlocked.value = false;
+                    PreviewAuthState.resetSession();
                     Navigator.of(d).pushAndRemoveUntil(
                         AppPageRoute<void>(builder: (_) => const LoginScreen()),
                         (_) => false);
@@ -2263,7 +2261,7 @@ Future<void> _deleteAccountDialog(BuildContext context) =>
               FundingActivity.reset();
               ReceiptActivity.reset();
               SettingsPreviewSession.instance.reset();
-              PreviewAuthState.unlocked.value = false;
+              PreviewAuthState.resetSession();
               Navigator.of(context).pushAndRemoveUntil(
                   AppPageRoute<void>(builder: (_) => const LoginScreen()),
                   (_) => false);

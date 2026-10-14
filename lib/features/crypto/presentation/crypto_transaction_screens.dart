@@ -25,6 +25,7 @@ class TransactionProgressScreen extends StatefulWidget {
 
 class _TransactionProgressScreenState extends State<TransactionProgressScreen> {
   bool failed = false;
+  final int _accountGeneration = WalletAccountState.instance.generation;
   @override
   void initState() {
     super.initState();
@@ -37,7 +38,11 @@ class _TransactionProgressScreenState extends State<TransactionProgressScreen> {
           PreviewTransactionOperation.transfer(
             external: widget.kind == TxKind.external,
           ));
-      if (!mounted || ModalRoute.of(context)?.isCurrent == false) return;
+      if (!mounted ||
+          _accountGeneration != WalletAccountState.instance.generation ||
+          ModalRoute.of(context)?.isCurrent == false) {
+        return;
+      }
       if (accepted == PreviewTransactionOutcome.failed) {
         setState(() => failed = true);
         return;
@@ -59,7 +64,9 @@ class _TransactionProgressScreenState extends State<TransactionProgressScreen> {
         ),
       );
     } catch (_) {
-      if (mounted && ModalRoute.of(context)?.isCurrent != false) {
+      if (mounted &&
+          _accountGeneration == WalletAccountState.instance.generation &&
+          ModalRoute.of(context)?.isCurrent != false) {
         setState(() => failed = true);
       }
     }

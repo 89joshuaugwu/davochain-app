@@ -2,15 +2,22 @@ import '../motion/davo_motion_policy.dart';
 import 'package:flutter/material.dart';
 import '../../core/theme/app_theme.dart';
 import 'auth_widgets.dart';
+import 'dart:async';
+import '../../core/device/biometric_gateway.dart';
+import '../../core/preview/preview_auth_state.dart';
+import '../../core/navigation/app_page_route.dart';
+import '../../features/profile_settings/presentation/profile_settings_flow.dart';
 
 class TransactionPinEntryScreen extends StatefulWidget {
   const TransactionPinEntryScreen(
       {super.key,
       required this.onConfirm,
+      this.paymentConfirmation = true,
       this.title = 'Confirm Your Pin',
       this.message =
           'Please enter your 4-digit security PIN to confirm this transaction.'});
   final VoidCallback onConfirm;
+  final bool paymentConfirmation;
   final String title, message;
 
   @override
@@ -20,8 +27,111 @@ class TransactionPinEntryScreen extends StatefulWidget {
 
 class _TransactionPinEntryScreenState extends State<TransactionPinEntryScreen> {
   String pin = '';
+  String? error;
+  bool _authenticating = false, _confirmed = false;
+  late final int _generation;
+  bool get _locked =>
+      widget.paymentConfirmation && PreviewAuthState.paymentsLocked();
+  bool get _current =>
+      mounted &&
+      _generation == PreviewAuthState.generation &&
+      (ModalRoute.of(context)?.isCurrent ?? true);
+
+  @override
+  void initState() {
+    super.initState();
+    _generation = PreviewAuthState.generation;
+  }
+
+  @override
+  void dispose() {
+    if (_authenticating) unawaited(BiometricGateway.instance.cancel());
+    super.dispose();
+  }
+
+  void _finish() {
+    if (!_current || _confirmed || _locked) return;
+    _confirmed = true;
+    pin = '';
+    widget
+        .onConfirm(); // Local preview only; backend must still authorize payment.
+  }
+
+  Future<void> _fingerprint() async {
+    if (_authenticating ||
+        _confirmed ||
+        _locked ||
+        !_current ||
+        !PreviewAuthState.paymentBiometricsEnabled.value) {
+      return;
+    }
+    setState(() => _authenticating = true);
+    var accepted = false;
+    try {
+      accepted = await BiometricGateway.instance.authenticate(
+          reason: 'Confirm this Davochain transaction with your fingerprint');
+    } catch (_) {
+      accepted = false;
+    }
+    if (!mounted) return;
+    setState(() => _authenticating = false);
+    if (!_current) return;
+    if (accepted && PreviewAuthState.paymentBiometricsEnabled.value) {
+      _finish();
+    } else {
+      setState(
+          () => error = 'Fingerprint not confirmed. Enter your PIN instead.');
+    }
+  }
+
+  Future<void> _confirmPin() async {
+    if (pin.length != 4 ||
+        _authenticating ||
+        _confirmed ||
+        !_current ||
+        _locked) {
+      return;
+    }
+    if (PreviewAuthState.verifyTransactionPin(pin,
+        payment: widget.paymentConfirmation)) {
+      _finish();
+      return;
+    }
+    setState(() {
+      pin = '';
+      error = _locked
+          ? 'Payments are paused for 1 hour. You can still use your account.'
+          : 'Incorrect PIN. Please try again.';
+    });
+    if (widget.paymentConfirmation &&
+        PreviewAuthState.paymentPinFailures == 4) {
+      final reset = await showDialog<bool>(
+          context: context,
+          builder: (context) => AlertDialog(
+                title: const Text('One attempt remaining'),
+                content: const Text(
+                    'One more incorrect PIN pauses payments for 1 hour. Reset your PIN or try once more.'),
+                actions: [
+                  TextButton(
+                      onPressed: () => Navigator.pop(context, true),
+                      child: const Text('Reset PIN')),
+                  TextButton(
+                      onPressed: () => Navigator.pop(context, false),
+                      child: const Text('Last try')),
+                ],
+              ));
+      if (!_current) return;
+      if (reset == true) _resetPin();
+    }
+  }
+
+  void _resetPin() {
+    Navigator.of(context)
+        .push(AppPageRoute<void>(builder: (_) => const ResetPinStartScreen()));
+  }
 
   void key(String value) {
+    if (_locked || _authenticating || _confirmed || !_current) return;
     setState(() {
       if (value == 'back') {
         if (pin.isNotEmpty) pin = pin.substring(0, pin.length - 1);
@@ -107,13 +217,26 @@ class _TransactionPinEntryScreenState extends State<TransactionPinEntryScreen> {
                               ));
                         })),
                     const SizedBox(height: 16),
+                    if (error != null || _locked)
+                      Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 24),
+                          child: Semantics(
+                              liveRegion: true,
+                              child: Text(
+                                  _locked
+                                      ? 'Payments are paused for 1 hour. You can still use your account.'
+                                      : error!,
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                      color: DavoColors.of(context).danger)))),
                     SizedBox(
                         height: 52,
                         child: Center(
-                            child: pin.length == 4
+                            child: pin.length == 4 && !_locked
                                 ? DavoPrimaryButton(
                                     label: 'Confirm',
-                                    onPressed: widget.onConfirm)
+                                    onPressed:
+                                        _authenticating ? null : _confirmPin)
                                 : Text('Enter Secure PIN',
                                     style: TextStyle(
                                         fontSize: 14,
@@ -207,6 +330,19 @@ class _TransactionPinEntryScreenState extends State<TransactionPinEntryScreen> {
                                       )));
                             }))),
                     const SizedBox(height: 40),
+                    if (widget.paymentConfirmation &&
+                        PreviewAuthState.paymentBiometricsEnabled.value &&
+                        !_locked)
+                      TextButton.icon(
+                          onPressed: _authenticating ? null : _fingerprint,
+                          icon: const Icon(Icons.fingerprint_rounded),
+                          label: Text(_authenticating
+                              ? 'Confirming fingerprint...'
+                              : 'Use fingerprint')),
+                    if (widget.paymentConfirmation)
+                      TextButton(
+                          onPressed: _authenticating ? null : _resetPin,
+                          child: const Text('Reset PIN')),
                     Text('Enter your transaction PIN to continue.',
                         textAlign: TextAlign.center,
                         style: TextStyle(

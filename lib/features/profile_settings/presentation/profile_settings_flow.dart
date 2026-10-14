@@ -30,7 +30,7 @@ import '../../../shared/widgets/davo_toast.dart';
 import '../../../shared/widgets/davo_result_screen.dart';
 import '../../../core/preview/preview_auth_state.dart';
 import '../../auth/presentation/login_flow.dart';
-import '../../auth/presentation/fingerprint_setup_screen.dart';
+import '../../../core/device/biometric_gateway.dart';
 import '../../auth/presentation/returning_unlock_screen.dart';
 import '../../onboarding/presentation/brand_splash_screen.dart';
 import '../../../shared/widgets/davo_success_mark.dart';
@@ -48,6 +48,7 @@ import '../../../shared/widgets/davochain_logo_lockup.dart';
 part 'profile_components.dart';
 part 'profile_notification_screens.dart';
 part 'profile_pin_screens.dart';
+part 'fingerprint_settings_screen.dart';
 part 'profile_kyc_screens.dart';
 part 'profile_support_rewards_screens.dart';
 
@@ -86,14 +87,6 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
     PreviewAuthState.biometricsEnabled.removeListener(_refreshBiometrics);
     LocalPreviewProfile.instance.removeListener(_refreshBiometrics);
     super.dispose();
-  }
-
-  void _setBiometrics(bool enabled) {
-    if (enabled) {
-      _push(context, const FingerprintSetupScreen());
-    } else {
-      PreviewAuthState.biometricsEnabled.value = false;
-    }
   }
 
   @override
@@ -140,14 +133,8 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
             items: [
               _MenuItem(
                 '$_exactAssets/icon_biometrics.png',
-                'Enable Biometrics',
-                () => _setBiometrics(!PreviewAuthState.biometricsEnabled.value),
-                trailing: Semantics(
-                    label: 'Biometric unlock',
-                    toggled: PreviewAuthState.biometricsEnabled.value,
-                    child: _DavoSwitch(
-                        value: PreviewAuthState.biometricsEnabled.value,
-                        onChanged: _setBiometrics)),
+                'Fingerprint',
+                () => _push(context, const FingerprintSettingsScreen()),
               ),
               _MenuItem('$_exactAssets/icon_lock.png', 'Change Password',
                   () => _push(context, const ChangePasswordScreen())),
@@ -235,11 +222,10 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
 }
 
 class _ProfileAvatar extends StatelessWidget {
-  const _ProfileAvatar({this.edit = false});
-  final bool edit;
+  const _ProfileAvatar();
   @override
   Widget build(BuildContext context) =>
-      const LocalProfileAvatar(key: ValueKey('profile-avatar'), editable: true);
+      const LocalProfileAvatar(key: ValueKey('profile-avatar'));
 }
 
 class AccountInformationScreen extends StatelessWidget {
@@ -435,6 +421,8 @@ class PersonalInformationV12Screen extends StatefulWidget {
 class _PersonalInformationV12ScreenState
     extends State<PersonalInformationV12Screen> {
   bool editing = false;
+  Uint8List? _photoDraft;
+  int _profileGeneration = LocalPreviewProfile.instance.generation;
   late final username =
       TextEditingController(text: LocalPreviewProfile.instance.username);
   Map<String, String> get values => LocalPreviewProfile.instance.personalFields;
@@ -445,11 +433,20 @@ class _PersonalInformationV12ScreenState
   }
 
   void _refreshProfile() {
+    final profile = LocalPreviewProfile.instance;
+    if (_profileGeneration != profile.generation) {
+      _profileGeneration = profile.generation;
+      _photoDraft = null;
+      editing = false;
+      username.text = profile.username;
+    }
     if (mounted) setState(() {});
   }
 
   bool get valid =>
-      RegExp(r'^[a-zA-Z0-9_]{3,24}$').hasMatch(username.text.trim());
+      RegExp(r'^[a-zA-Z0-9_]{3,24}$').hasMatch(username.text.trim()) ||
+      (_photoDraft != null &&
+          username.text.trim() == LocalPreviewProfile.instance.username);
   @override
   void dispose() {
     LocalPreviewProfile.instance.removeListener(_refreshProfile);
@@ -462,7 +459,13 @@ class _PersonalInformationV12ScreenState
     if (!valid) return;
     FocusManager.instance.primaryFocus?.unfocus();
     final value = username.text.trim();
-    LocalPreviewProfile.instance.setUsername(value);
+    if (value != LocalPreviewProfile.instance.username) {
+      LocalPreviewProfile.instance.setUsername(value);
+    }
+    if (_photoDraft != null) {
+      LocalPreviewProfile.instance.setPhoto(_photoDraft!);
+      _photoDraft = null;
+    }
     setState(() {
       editing = false;
     });
@@ -477,7 +480,14 @@ class _PersonalInformationV12ScreenState
       showHeaderDivider: true,
       bodyTopPadding: 24,
       child: Column(children: [
-        const _ProfileAvatar(edit: true),
+        LocalProfileAvatar(
+            key: const ValueKey('personal-profile-avatar'),
+            editable: true,
+            previewPhoto: _photoDraft,
+            onPhotoSelected: (bytes) => setState(() {
+                  _photoDraft = bytes;
+                  editing = true;
+                })),
         const SizedBox(height: 24),
         for (final entry in values.entries)
           if (entry.key == 'Username' && editing)

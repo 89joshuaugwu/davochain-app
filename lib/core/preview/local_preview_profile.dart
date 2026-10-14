@@ -5,6 +5,7 @@ import '../../features/funding/funding_outcomes.dart';
 import '../../shared/receipts/receipt_activity.dart';
 import 'settings_preview_session.dart';
 import 'preview_account_state.dart';
+import 'preview_auth_state.dart';
 
 /// Local display identity only; never an authenticated or backend KYC record.
 class LocalPreviewProfile extends ChangeNotifier {
@@ -49,6 +50,7 @@ class LocalPreviewProfile extends ChangeNotifier {
       {required String name, required String email, required String phone}) {
     generation++;
     _resetSession();
+    PreviewAuthState.resetSession();
     fullName = name.trim();
     this.email = email.trim();
     this.phone = phone;
@@ -71,6 +73,7 @@ class LocalPreviewProfile extends ChangeNotifier {
   void loginSample() {
     generation++;
     _resetSession();
+    PreviewAuthState.resetSession(samplePin: true);
     fullName = 'Vincent Chukwu';
     email = 'chukwuvncnt1@gmail.com';
     phone = '+234 9062185004';

@@ -98,6 +98,7 @@ class _ReturningUnlockScreenState extends State<ReturningUnlockScreen> {
     final accepted = await Navigator.of(context).push<bool>(AppPageRoute<bool>(
       builder: (pinContext) => TransactionPinEntryScreen(
         title: 'Unlock with PIN',
+        paymentConfirmation: false,
         message: 'Enter your four-digit PIN to unlock your account.',
         onConfirm: () => Navigator.of(pinContext).pop(true),
       ),
@@ -118,7 +119,7 @@ class _ReturningUnlockScreenState extends State<ReturningUnlockScreen> {
   void _otherAccount() {
     SecurityQuestionsService.instance.clear();
     PreviewAuthState.accountEmail = null;
-    PreviewAuthState.unlocked.value = false;
+    PreviewAuthState.resetSession();
     VerificationSession.instance.reset();
     Navigator.of(context).pushAndRemoveUntil(
         AppPageRoute<void>(builder: (_) => const LoginScreen()), (_) => false);

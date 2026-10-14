@@ -157,6 +157,7 @@ class _NewTransactionPinScreenState extends State<NewTransactionPinScreen> {
   void _refresh() => setState(() {});
   void _save() {
     if (!valid) return;
+    PreviewAuthState.setTransactionPin(a.text);
     FocusScope.of(context).unfocus();
     a.clear();
     b.clear();

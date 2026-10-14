@@ -610,18 +610,17 @@ class _ModeToggle extends StatelessWidget {
         padding: const EdgeInsets.all(6),
         decoration: BoxDecoration(
             color: DavoColors.of(context).fieldFill,
-            borderRadius: BorderRadius.circular(999)),
+            borderRadius: BorderRadius.circular(10)),
         child: Row(
             children: List.generate(
                 3,
                 (index) => Expanded(
                         child: Material(
-                      color: index == 0
-                          ? DavoColors.of(context).surface
-                          : Colors.transparent,
-                      borderRadius: BorderRadius.circular(999),
+                      color:
+                          index == 0 ? AppColors.primary : Colors.transparent,
+                      borderRadius: BorderRadius.circular(10),
                       child: InkWell(
-                        borderRadius: BorderRadius.circular(999),
+                        borderRadius: BorderRadius.circular(10),
                         onTap: index == 0
                             ? null
                             : () {
@@ -646,7 +645,7 @@ class _ModeToggle extends StatelessWidget {
                                         fontSize: 14,
                                         fontWeight: FontWeight.w600,
                                         color: index == 0
-                                            ? DavoColors.of(context).link
+                                            ? Colors.white
                                             : DavoColors.of(context).body)))),
                       ),
                     )))),

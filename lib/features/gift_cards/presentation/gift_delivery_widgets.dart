@@ -29,12 +29,22 @@ class _DeliverySegment extends StatelessWidget {
                       : DavoColors.of(context).border),
               borderRadius: BorderRadius.circular(6)),
           child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-            Image.asset(asset,
-                color: active
-                    ? DavoColors.of(context).link
-                    : DavoColors.of(context).body,
-                width: 22,
-                height: 22),
+            if (asset.endsWith('/gift.png'))
+              SvgPicture.asset('assets/figma_exact/davo_gift_outline.svg',
+                  width: 22,
+                  height: 22,
+                  colorFilter: ColorFilter.mode(
+                      active
+                          ? DavoColors.of(context).link
+                          : DavoColors.of(context).body,
+                      BlendMode.srcIn))
+            else
+              Image.asset(asset,
+                  color: active
+                      ? DavoColors.of(context).link
+                      : DavoColors.of(context).body,
+                  width: 22,
+                  height: 22),
             const SizedBox(width: 7),
             Text(label,
                 style: TextStyle(

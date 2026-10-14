@@ -323,27 +323,27 @@ class _ReferralCard extends StatelessWidget {
         width: double.infinity,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         decoration: BoxDecoration(
-            color: AppColors.primary, borderRadius: BorderRadius.circular(8)),
+            color: AppColors.primary, borderRadius: BorderRadius.circular(20)),
         child: Row(children: [
-          const SizedBox(
+          SizedBox(
               width: 32,
               height: 32,
-              child: Icon(Icons.celebration_outlined,
-                  size: 30, color: Colors.white)),
+              child: SvgPicture.asset('assets/figma_exact/referral_party.svg',
+                  excludeFromSemantics: true)),
           const SizedBox(width: 10),
           const Expanded(
               child: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                Text('Refer & earn',
+                Text('Refer & Earn \u20a65,000',
                     style: TextStyle(
                         fontFamily: 'Sora',
                         fontSize: 14,
                         color: Colors.white,
                         fontWeight: FontWeight.w600)),
                 SizedBox(height: 2),
-                Text('Invite friends. Earn rewards.',
+                Text('Get \u20a6500 for every friend who trades',
                     style: TextStyle(
                         fontFamily: 'Sora',
                         fontSize: 10,

@@ -107,7 +107,7 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
           for (var i = 0; i < visible.length; i++) ...[
             if (i == 0 || visible[i].day != visible[i - 1].day)
               Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  padding: const EdgeInsets.symmetric(vertical: 10),
                   child: Text(visible[i].day, style: _sectionLabel14(context))),
             Semantics(
                 label: visible[i].isRead
@@ -116,7 +116,7 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
                 child: InkWell(
                     onTap: () => _open(visible[i]),
                     child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        padding: const EdgeInsets.symmetric(vertical: 9),
                         child: Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -136,13 +136,15 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
                                         style: visible[i].isRead
                                             ? _t14(context)
                                             : _t14b(context)),
-                                    const SizedBox(height: 6),
+                                    const SizedBox(height: 3),
                                     Text(visible[i].body,
                                         maxLines: 2,
                                         overflow: TextOverflow.ellipsis,
                                         style: _t12(context)),
-                                    const SizedBox(height: 8),
-                                    Text(visible[i].time, style: _t12(context)),
+                                    const SizedBox(height: 4),
+                                    Text(visible[i].time,
+                                        style: _t12(context)
+                                            .copyWith(fontSize: 11)),
                                   ])),
                               if (!visible[i].isRead)
                                 Container(

@@ -29,6 +29,7 @@ import '../../../shared/widgets/transaction_pin_entry.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter/services.dart';
 
 import '../../../core/navigation/app_page_route.dart';

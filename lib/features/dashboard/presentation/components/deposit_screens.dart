@@ -277,6 +277,7 @@ class CryptoDepositScreen extends StatefulWidget {
 
 class _CryptoDepositScreenState extends State<CryptoDepositScreen> {
   bool _guidelinesOpen = false;
+  bool _addressExpanded = false;
 
   CryptoAsset get asset => widget.asset;
 
@@ -313,7 +314,7 @@ class _CryptoDepositScreenState extends State<CryptoDepositScreen> {
                   child: _FooterButton(
                 label: 'Copy Address',
                 background: AppColors.primary,
-                foreground: DavoColors.of(context).border,
+                foreground: Colors.white,
                 fontWeight: FontWeight.w600,
                 onTap: () => _copy(context, _address),
               )),
@@ -334,6 +335,21 @@ class _CryptoDepositScreenState extends State<CryptoDepositScreen> {
                 child: SingleChildScrollView(
                   child: Column(
                     children: [
+                      Text('${asset.name} (${asset.symbol})',
+                          style: TextStyle(
+                              fontFamily: 'Sora',
+                              fontSize: 20,
+                              fontWeight: FontWeight.w600,
+                              color: DavoColors.of(context).ink)),
+                      const SizedBox(height: 8),
+                      Text('Network: ${_depositNetwork(asset)}',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                              fontFamily: 'Sora',
+                              fontSize: 13,
+                              height: 1.5,
+                              color: DavoColors.of(context).body)),
+                      const SizedBox(height: 20),
                       SizedBox(
                         width: 257,
                         height: 283,
@@ -373,10 +389,12 @@ class _CryptoDepositScreenState extends State<CryptoDepositScreen> {
                       const SizedBox(height: 24),
                       Container(
                         width: double.infinity,
-                        padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
+                        padding: const EdgeInsets.all(18),
                         decoration: BoxDecoration(
                             color: DavoColors.of(context).fieldFill,
-                            borderRadius: BorderRadius.circular(8)),
+                            border: Border.all(
+                                color: DavoColors.of(context).border),
+                            borderRadius: BorderRadius.circular(16)),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -391,7 +409,11 @@ class _CryptoDepositScreenState extends State<CryptoDepositScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Expanded(
-                                    child: Text(_address,
+                                    child: Text(
+                                        _addressExpanded
+                                            ? _address
+                                            : '${_address.substring(0, 8)}...${_address.substring(_address.length - 8)}',
+                                        key: const ValueKey('deposit-address'),
                                         style: TextStyle(
                                             fontFamily: 'Sora',
                                             fontSize: 16,
@@ -399,17 +421,28 @@ class _CryptoDepositScreenState extends State<CryptoDepositScreen> {
                                             color:
                                                 DavoColors.of(context).ink))),
                                 const SizedBox(width: 18),
-                                InkWell(
-                                  onTap: () => _copy(context, _address),
-                                  child: Image.asset(
-                                      'assets/figma_exact/deposit_btc_copy_exact.png',
-                                      width: 24,
-                                      height: 24,
-                                      fit: BoxFit.fill,
-                                      filterQuality: FilterQuality.high),
-                                ),
+                                IconButton(
+                                    tooltip: 'Copy full address',
+                                    onPressed: () => _copy(context, _address),
+                                    icon: Icon(Icons.copy_rounded,
+                                        size: 20,
+                                        color: DavoColors.of(context).link)),
                               ],
                             ),
+                            const SizedBox(height: 4),
+                            TextButton(
+                                onPressed: () => setState(
+                                    () => _addressExpanded = !_addressExpanded),
+                                style: TextButton.styleFrom(
+                                    padding: EdgeInsets.zero,
+                                    foregroundColor:
+                                        DavoColors.of(context).link),
+                                child: Text(
+                                    _addressExpanded ? 'Hide' : 'Show all',
+                                    style: const TextStyle(
+                                        fontFamily: 'Sora',
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600))),
                           ],
                         ),
                       ),
@@ -435,7 +468,6 @@ class _CryptoDepositScreenState extends State<CryptoDepositScreen> {
                             setState(() => _guidelinesOpen = !_guidelinesOpen),
                         borderRadius: BorderRadius.circular(8),
                         child: SizedBox(
-                          height: 13,
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
@@ -632,109 +664,111 @@ class _SharePreview extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 84.6,
-      height: 124.4,
-      decoration: BoxDecoration(
-          color: Colors.white,
-          border: Border.all(color: const Color(0xFFB3B3B3), width: 1),
-          borderRadius: BorderRadius.circular(4)),
-      child: Stack(
-        children: [
-          Positioned(
-              left: 9.6,
-              top: 8.2,
-              child: Text('Deposit ${asset.symbol}',
-                  style: const TextStyle(
-                      fontFamily: 'Sora',
-                      fontSize: 3.21,
-                      fontWeight: FontWeight.w500,
-                      height: 1.25,
-                      color: Colors.black))),
-          Positioned(
-              left: 17.5,
-              top: 17.4,
-              width: 49.5,
-              height: 54.7,
-              child: Image.asset(_depositQrAsset(asset),
-                  fit: BoxFit.contain, filterQuality: FilterQuality.none)),
-          Positioned(
-            left: 37.6,
-            top: 40.1,
-            child: Container(
-              width: 9.6,
-              height: 9.6,
-              alignment: Alignment.center,
-              decoration: const BoxDecoration(
-                  color: Colors.white, shape: BoxShape.circle),
-              child: _CryptoIcon(asset: asset, size: 8),
-            ),
-          ),
-          const Positioned(
-              left: 9.6,
-              top: 76.7,
-              child: Text('Network',
-                  style: TextStyle(
-                      fontFamily: 'Sora',
-                      fontSize: 2.81,
-                      fontWeight: FontWeight.w500,
-                      height: 1.25,
-                      color: Color(0xFF686868)))),
-          Positioned(
-              left: 9.6,
-              top: 82.3,
-              width: 65.3,
-              child: Text('${asset.name} (${asset.symbol})',
-                  maxLines: 1,
-                  style: const TextStyle(
-                      fontFamily: 'Sora',
-                      fontSize: 3.21,
-                      fontWeight: FontWeight.w500,
-                      height: 1.25,
-                      color: Colors.black))),
-          const Positioned(
-              left: 9.6,
-              top: 89.5,
-              child: Text('Deposit Address',
-                  style: TextStyle(
-                      fontFamily: 'Sora',
-                      fontSize: 2.81,
-                      fontWeight: FontWeight.w500,
-                      height: 1.25,
-                      color: Color(0xFF686868)))),
-          Positioned(
-              left: 9.6,
-              top: 95.1,
-              width: 65.3,
-              height: 8,
-              child: Text(address,
-                  maxLines: 2,
-                  overflow: TextOverflow.clip,
-                  style: const TextStyle(
-                      fontFamily: 'Sora',
-                      fontSize: 3.21,
-                      fontWeight: FontWeight.w500,
-                      height: 1.25,
-                      color: AppColors.ink))),
-          Positioned(
-            left: 29.8,
-            top: 110,
-            width: 42,
-            height: 8,
-            child: Row(children: [
-              Image.asset('assets/images/brand/davochain_logo.png',
-                  width: 5, height: 5, fit: BoxFit.contain),
-              const SizedBox(width: 1),
-              const Text('Davochain',
-                  style: TextStyle(
-                      fontSize: 3.3,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.ink)),
-            ]),
-          ),
-        ],
-      ),
-    );
+    return SizedBox(
+        width: 84.6,
+        height: 124.4,
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+              color: Colors.white,
+              border: Border.all(color: const Color(0xFFB3B3B3), width: 1),
+              borderRadius: BorderRadius.circular(4)),
+          child: MediaQuery.withNoTextScaling(
+              child: Stack(
+            children: [
+              Positioned(
+                  left: 9.6,
+                  top: 8.2,
+                  child: Text('Deposit ${asset.symbol}',
+                      style: const TextStyle(
+                          fontFamily: 'Sora',
+                          fontSize: 3.21,
+                          fontWeight: FontWeight.w500,
+                          height: 1.25,
+                          color: Colors.black))),
+              Positioned(
+                  left: 17.5,
+                  top: 17.4,
+                  width: 49.5,
+                  height: 54.7,
+                  child: Image.asset(_depositQrAsset(asset),
+                      fit: BoxFit.contain, filterQuality: FilterQuality.none)),
+              Positioned(
+                left: 37.6,
+                top: 40.1,
+                child: Container(
+                  width: 9.6,
+                  height: 9.6,
+                  alignment: Alignment.center,
+                  decoration: const BoxDecoration(
+                      color: Colors.white, shape: BoxShape.circle),
+                  child: _CryptoIcon(asset: asset, size: 8),
+                ),
+              ),
+              const Positioned(
+                  left: 9.6,
+                  top: 76.7,
+                  child: Text('Network',
+                      style: TextStyle(
+                          fontFamily: 'Sora',
+                          fontSize: 2.81,
+                          fontWeight: FontWeight.w500,
+                          height: 1.25,
+                          color: Color(0xFF686868)))),
+              Positioned(
+                  left: 9.6,
+                  top: 82.3,
+                  width: 65.3,
+                  child: Text(_depositNetwork(asset),
+                      maxLines: 1,
+                      style: const TextStyle(
+                          fontFamily: 'Sora',
+                          fontSize: 3.21,
+                          fontWeight: FontWeight.w500,
+                          height: 1.25,
+                          color: Colors.black))),
+              const Positioned(
+                  left: 9.6,
+                  top: 89.5,
+                  child: Text('Deposit Address',
+                      style: TextStyle(
+                          fontFamily: 'Sora',
+                          fontSize: 2.81,
+                          fontWeight: FontWeight.w500,
+                          height: 1.25,
+                          color: Color(0xFF686868)))),
+              Positioned(
+                  left: 9.6,
+                  top: 95.1,
+                  width: 65.3,
+                  height: 8,
+                  child: Text(address,
+                      maxLines: 2,
+                      overflow: TextOverflow.clip,
+                      style: const TextStyle(
+                          fontFamily: 'Sora',
+                          fontSize: 3.21,
+                          fontWeight: FontWeight.w500,
+                          height: 1.25,
+                          color: AppColors.ink))),
+              Positioned(
+                left: 29.8,
+                top: 110,
+                width: 42,
+                height: 8,
+                child: Row(children: [
+                  Image.asset('assets/images/brand/davochain_logo.png',
+                      width: 5, height: 5, fit: BoxFit.contain),
+                  const SizedBox(width: 1),
+                  const Text('Davochain',
+                      style: TextStyle(
+                          fontSize: 3.3,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.ink)),
+                ]),
+              ),
+            ],
+          )),
+        ));
   }
 }
 
@@ -799,14 +833,17 @@ class _FooterButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Material(
       color: background,
-      borderRadius: BorderRadius.circular(4),
+      borderRadius: BorderRadius.circular(12),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(4),
-        child: SizedBox(
-          height: 48,
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          constraints: const BoxConstraints(minHeight: 48),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
           child: Center(
+              heightFactor: 1,
               child: Text(label,
+                  textAlign: TextAlign.center,
                   style: TextStyle(
                       fontFamily: 'Sora',
                       fontSize: 14,
@@ -1067,3 +1104,10 @@ class _BankDetailRow extends StatelessWidget {
     );
   }
 }
+
+String _depositNetwork(CryptoAsset asset) => switch (asset) {
+      CryptoAsset.bitcoin => 'Bitcoin (BTC)',
+      CryptoAsset.ethereum => 'Ethereum (ETH)',
+      CryptoAsset.solana => 'Solana (SOL)',
+      CryptoAsset.usdCoin || CryptoAsset.tether => 'Ethereum (ERC20)',
+    };

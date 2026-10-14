@@ -1,3 +1,4 @@
+import '../../../shared/widgets/davo_blue_balance_card.dart';
 import '../crypto_trade_amounts.dart';
 import '../../../core/money/exact_decimal.dart';
 import '../../wallets/wallet_repository.dart';
@@ -1527,21 +1528,10 @@ class _BalanceCard extends StatelessWidget {
   Widget build(BuildContext context) => ListenableBuilder(
       listenable: WalletAccountState.instance,
       builder: (context, _) => _content(context));
-  Widget _content(BuildContext context) => Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-          color: AppColors.primary, borderRadius: BorderRadius.circular(16)),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        const Text('Available NGN balance',
-            style: TextStyle(fontSize: 12, color: Colors.white)),
-        const SizedBox(height: 12),
-        Text(WalletAccountState.instance.ngnBalanceLabel,
-            style: const TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.w700,
-                color: Colors.white)),
-      ]));
+  Widget _content(BuildContext context) => DavoBlueBalanceCard(
+      label: 'Available NGN balance',
+      amount: WalletAccountState.instance.ngnBalanceLabel,
+      caption: 'NGN wallet');
 }
 
 class _CryptoBalance extends StatelessWidget {
@@ -1624,7 +1614,7 @@ class _Tabs extends StatelessWidget {
         padding: const EdgeInsets.all(6),
         decoration: BoxDecoration(
             color: DavoColors.of(context).fieldFill,
-            borderRadius: BorderRadius.circular(999)),
+            borderRadius: BorderRadius.circular(10)),
         child: Row(
             children: List.generate(
                 3,
@@ -1633,12 +1623,12 @@ class _Tabs extends StatelessWidget {
                         selected: active == i,
                         child: Material(
                             color: active == i
-                                ? DavoColors.of(context).surface
+                                ? AppColors.primary
                                 : Colors.transparent,
-                            borderRadius: BorderRadius.circular(999),
+                            borderRadius: BorderRadius.circular(10),
                             child: InkWell(
                                 onTap: callbacks[i],
-                                borderRadius: BorderRadius.circular(999),
+                                borderRadius: BorderRadius.circular(10),
                                 child: Padding(
                                     padding: const EdgeInsets.symmetric(
                                         vertical: 12),
@@ -1648,8 +1638,7 @@ class _Tabs extends StatelessWidget {
                                                 fontSize: 14,
                                                 fontWeight: FontWeight.w600,
                                                 color: active == i
-                                                    ? DavoColors.of(context)
-                                                        .link
+                                                    ? Colors.white
                                                     : DavoColors.of(context)
                                                         .body)))))))))));
   }
@@ -1762,7 +1751,7 @@ class _Percent extends StatelessWidget {
               style: TextStyle(
                   fontSize: 12,
                   color: label == 'Max'
-                      ? DavoColors.of(context).link
+                      ? Colors.white
                       : DavoColors.of(context).body))));
 }
 

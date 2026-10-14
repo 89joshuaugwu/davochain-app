@@ -2,7 +2,6 @@ import 'support/fake_biometric_gateway.dart';
 import 'package:davochain/features/profile_settings/presentation/verification/verification_overview_screen.dart';
 import 'package:davochain/features/profile_settings/presentation/verification/verification_state.dart';
 import 'package:davochain/shared/widgets/davo_state_picker.dart';
-import 'package:davochain/shared/widgets/auth_widgets.dart';
 import 'package:flutter/services.dart';
 import 'package:davochain/core/preview/preview_auth_state.dart';
 import 'package:davochain/features/auth/presentation/returning_unlock_screen.dart';
@@ -58,10 +57,11 @@ void main() {
   testWidgets('biometrics must be enabled through explicit preview setup',
       (tester) async {
     await tester.pumpWidget(app(const ProfileSettingsScreen()));
-    await tester.ensureVisible(find.text('Enable Biometrics'));
-    await tester.tap(find.text('Enable Biometrics'));
+    await tester.ensureVisible(find.text('Fingerprint'));
+    await tester.tap(find.text('Fingerprint'));
     await tester.pumpAndSettle();
-    expect(find.text('Enable fingerprint'), findsNWidgets(2));
+    expect(find.byType(FingerprintSettingsScreen), findsOneWidget);
+    expect(PreviewAuthState.biometricsEnabled.value, isFalse);
   });
   testWidgets('returning login preview runs splash then offers password unlock',
       (tester) async {
@@ -79,18 +79,15 @@ void main() {
       'enabled fingerprint preview unlocks without a password and clears stack',
       (tester) async {
     await tester.pumpWidget(app(const ProfileSettingsScreen()));
-    final setting = find.byWidgetPredicate(
-        (w) => w is Semantics && w.properties.label == 'Biometric unlock');
-    expect(tester.widget<Semantics>(setting).properties.toggled, isFalse);
-    await tester.ensureVisible(find.text('Enable Biometrics'));
-    await tester.tap(find.text('Enable Biometrics'));
+    expect(PreviewAuthState.biometricsEnabled.value, isFalse);
+    await tester.ensureVisible(find.text('Fingerprint'));
+    await tester.tap(find.text('Fingerprint'));
     await tester.pumpAndSettle();
-    await tester
-        .tap(find.widgetWithText(DavoPrimaryButton, 'Enable fingerprint'));
+    await tester.tap(find.widgetWithText(SwitchListTile, 'App unlock'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Done'));
+    await tester.pageBack();
     await tester.pumpAndSettle();
-    expect(tester.widget<Semantics>(setting).properties.toggled, isTrue);
+    expect(PreviewAuthState.biometricsEnabled.value, isTrue);
     await tester.ensureVisible(find.text('Lock app'));
     await tester.tap(find.text('Lock app'));
     await tester.pump();
@@ -111,15 +108,15 @@ void main() {
       (tester) async {
     PreviewAuthState.biometricsEnabled.value = true;
     await tester.pumpWidget(app(const ProfileSettingsScreen()));
-    await tester.ensureVisible(find.text('Enable Biometrics'));
-    await tester.tap(find.text('Enable Biometrics'));
+    await tester.ensureVisible(find.text('Fingerprint'));
+    await tester.tap(find.text('Fingerprint'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(SwitchListTile, 'App unlock'));
     await tester.pumpAndSettle();
     expect(PreviewAuthState.biometricsEnabled.value, isFalse);
     await tester.pumpWidget(const SizedBox.shrink());
     await tester.pumpWidget(app(const ProfileSettingsScreen()));
-    final setting = find.byWidgetPredicate(
-        (w) => w is Semantics && w.properties.label == 'Biometric unlock');
-    expect(tester.widget<Semantics>(setting).properties.toggled, isFalse);
+    expect(PreviewAuthState.biometricsEnabled.value, isFalse);
   });
   testWidgets(
       'password unlock remains reachable above keyboard on a narrow phone',

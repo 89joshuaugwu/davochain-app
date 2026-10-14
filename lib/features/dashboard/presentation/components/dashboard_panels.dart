@@ -164,11 +164,21 @@ class _BalanceCard extends StatelessWidget {
                             child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                              const Text('Available Balance',
-                                  style: TextStyle(
-                                      fontFamily: 'Sora',
-                                      fontSize: 10,
-                                      color: Colors.white)),
+                              Row(mainAxisSize: MainAxisSize.min, children: [
+                                const Flexible(
+                                    child: Text('Available Balance',
+                                        style: TextStyle(
+                                            fontFamily: 'Sora',
+                                            fontSize: 10,
+                                            color: Colors.white))),
+                                const SizedBox(width: 5),
+                                DavoActionIcon(
+                                    visible
+                                        ? DavoActionGlyph.visible
+                                        : DavoActionGlyph.hidden,
+                                    color: Colors.white,
+                                    size: 14)
+                              ]),
                               const SizedBox(height: 4),
                               FittedBox(
                                   fit: BoxFit.scaleDown,
@@ -188,16 +198,6 @@ class _BalanceCard extends StatelessWidget {
                                       fontSize: 14,
                                       color: Colors.white)),
                             ])),
-                        SizedBox(
-                            width: 48,
-                            height: 48,
-                            child: Center(
-                                child: DavoActionIcon(
-                                    visible
-                                        ? DavoActionGlyph.visible
-                                        : DavoActionGlyph.hidden,
-                                    color: Colors.white,
-                                    size: 20))),
                       ]))),
               if (largeText) const SizedBox(height: 16) else const Spacer(),
               Flex(
@@ -379,7 +379,7 @@ class _QuickActions extends StatelessWidget {
             child: _QuickAction(
                 compact: compact,
                 label: 'Gift Card',
-                glyph: DavoActionGlyph.gift,
+                glyph: DavoActionGlyph.giftAction,
                 bg: const Color(0xFFE9DEFD),
                 fg: const Color(0xFF8247E5),
                 onTap: onGift)),
@@ -462,111 +462,86 @@ class _QuickAction extends StatelessWidget {
 class _PromoBanner extends StatelessWidget {
   const _PromoBanner({this.compact = false});
   final bool compact;
-
   @override
   Widget build(BuildContext context) {
-    final largeText = MediaQuery.textScalerOf(context).scale(14) > 18;
-    if (largeText || MediaQuery.sizeOf(context).width < 380) {
-      return Container(
-        key: const ValueKey('dashboard-promo'),
-        constraints:
-            largeText ? null : BoxConstraints(minHeight: compact ? 106 : 121),
-        padding: largeText
-            ? const EdgeInsets.all(16)
-            : const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        decoration: BoxDecoration(
-          color: DavoColors.of(context).primarySoft,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Turn your Crypto and\nGift Cards into cash\ninstantly',
-                style: TextStyle(
-                    fontSize: largeText ? 13 : (compact ? 12 : 13),
-                    fontWeight: FontWeight.w700,
-                    height: 1.3,
-                    color: DavoColors.of(context).link)),
-            SizedBox(height: largeText ? 8 : 4),
-            Text(
-                'Trade top crypto and gift card at good rates with fast payment.',
-                style: TextStyle(
-                    fontSize: 10,
-                    height: largeText ? 1.4 : 1.25,
-                    color: DavoColors.of(context).body)),
-          ],
-        ),
-      );
-    }
+    final large = MediaQuery.textScalerOf(context).scale(14) > 18;
+    final copy =
+        Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Text('Turn your Crypto and\nGift Cards into cash\ninstantly',
+          style: TextStyle(
+              fontFamily: 'Sora',
+              fontSize: compact ? 12 : 13,
+              fontWeight: FontWeight.w600,
+              height: 1.3,
+              color: DavoColors.of(context).link)),
+      const SizedBox(height: 5),
+      Text('Trade top crypto and gift card at good rates with fast payment.',
+          style: TextStyle(
+              fontFamily: 'Sora',
+              fontSize: 10,
+              height: 1.25,
+              color: DavoColors.of(context).body)),
+    ]);
+    final artwork = Image.asset('assets/figma_exact/promo_crypto.png',
+        key: const ValueKey('dashboard-coins-and-cards'),
+        fit: BoxFit.contain,
+        filterQuality: FilterQuality.high,
+        excludeFromSemantics: true);
     return Container(
-      key: const ValueKey('dashboard-promo'),
-      height: compact ? 106 : 121,
-      clipBehavior: Clip.antiAlias,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
-        color: DavoColors.of(context).primarySoft,
-      ),
-      child: Stack(
-        children: [
-          Positioned(
-            right: 12,
-            bottom: 0,
-            width: compact ? 120 : 137,
-            height: compact ? 78 : 87,
-            child: Image.asset(
-              'assets/figma_exact/promo_crypto.png',
-              fit: BoxFit.contain,
-              filterQuality: FilterQuality.high,
-            ),
-          ),
-          Positioned(
-            left: compact ? 12 : 16,
-            top: compact ? 6 : 10,
-            width: 174,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Turn your Crypto and\nGift Cards into cash\ninstantly',
-                  style: TextStyle(
-                      fontFamily: 'Sora',
-                      fontSize: compact ? 12 : 13,
-                      fontWeight: FontWeight.w600,
-                      height: 1.3,
-                      color: DavoColors.of(context).link),
-                ),
-                const SizedBox(height: 5),
-                Text(
-                  'Trade top crypto and gift card at good rates with fast payment.',
-                  style: TextStyle(
-                      fontFamily: 'Sora',
-                      fontSize: 10,
-                      height: 1.25,
-                      color: DavoColors.of(context).body),
-                ),
-              ],
-            ),
-          ),
-          Positioned(
-            top: 8,
-            right: 16,
-            child: Container(
-              height: compact ? 22 : 24,
-              padding: EdgeInsets.symmetric(horizontal: compact ? 6 : 10),
-              decoration: BoxDecoration(
-                  color: AppColors.primary,
-                  borderRadius: BorderRadius.circular(100)),
-              alignment: Alignment.center,
-              child: const Text(
-                'Fast • Secure • Reliable',
-                style: TextStyle(
-                    fontFamily: 'Sora', fontSize: 10, color: Colors.white),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
+        key: const ValueKey('dashboard-promo'),
+        height: large ? null : (compact ? 106 : 121),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+            color: DavoColors.of(context).primarySoft,
+            gradient: Theme.of(context).brightness == Brightness.light
+                ? const LinearGradient(
+                    colors: [Color(0xFFE9F0FF), Color(0xFFD2E1FF)])
+                : null,
+            borderRadius: BorderRadius.circular(12)),
+        child: large
+            ? Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                copy,
+                const SizedBox(height: 8),
+                Center(child: SizedBox(height: 130, child: artwork))
+              ])
+            : Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
+                Expanded(
+                    flex: 3,
+                    child: LayoutBuilder(
+                        builder: (context, space) => FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerLeft,
+                            child:
+                                SizedBox(width: space.maxWidth, child: copy)))),
+                const SizedBox(width: 6),
+                Expanded(
+                    flex: 2,
+                    child: SizedBox(
+                        height: compact ? 90 : 105,
+                        child: Column(children: [
+                          FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 10, vertical: 5),
+                                  decoration: BoxDecoration(
+                                      color: AppColors.primary,
+                                      borderRadius: BorderRadius.circular(20)),
+                                  child: const Text(
+                                      'Fast \u2022 Secure \u2022 Reliable',
+                                      style: TextStyle(
+                                          fontSize: 10, color: Colors.white)))),
+                          const SizedBox(height: 2),
+                          Expanded(
+                              child: OverflowBox(
+                                  maxWidth: compact ? 136 : 156,
+                                  maxHeight: compact ? 136 : 156,
+                                  child: SizedBox(
+                                      width: compact ? 136 : 156,
+                                      height: compact ? 136 : 156,
+                                      child: artwork))),
+                        ])))
+              ]));
   }
 }
 

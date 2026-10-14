@@ -1,4 +1,5 @@
 import '../../../core/preview/local_preview_profile.dart';
+import '../../../core/preview/preview_auth_state.dart';
 import 'account_welcome_screen.dart';
 import '../../../core/navigation/app_page_route.dart';
 import '../../../shared/widgets/davo_result_screen.dart';
@@ -431,6 +432,7 @@ class _TransactionPinScreenState extends State<TransactionPinScreen>
 
     if (!mounted) return;
     _finishing = true;
+    PreviewAuthState.setTransactionPin(_pin);
     FocusManager.instance.primaryFocus?.unfocus();
     Navigator.of(context).pushReplacement(AppPageRoute<void>(
       authHandoff: true,
