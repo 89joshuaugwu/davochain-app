@@ -1,3 +1,4 @@
+import '../../../core/preview/local_preview_profile.dart';
 import 'account_welcome_screen.dart';
 import '../../../core/navigation/app_page_route.dart';
 import '../../../shared/widgets/davo_result_screen.dart';
@@ -23,6 +24,19 @@ class VerificationScreen extends StatefulWidget {
 
   @override
   State<VerificationScreen> createState() => _VerificationScreenState();
+}
+
+String _maskedEmail(String email) {
+  final parts = email.split('@');
+  if (parts.length != 2 || parts.first.isEmpty) return email;
+  return '${parts.first[0]}***@${parts.last}';
+}
+
+String _maskedPhone(String phone) {
+  final digits = phone.replaceAll(RegExp(r'\D'), '');
+  return digits.length > 4
+      ? '***${digits.substring(digits.length - 4)}'
+      : digits;
 }
 
 class _VerificationScreenState extends State<VerificationScreen>
@@ -137,108 +151,118 @@ class _VerificationScreenState extends State<VerificationScreen>
 
     final isEmail = widget.kind == VerificationKind.email;
     return DavoAuthScaffold(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Entrance(
-            child: DavoScreenIntro(
-              title: isEmail ? 'Check your inbox' : 'Check your SMS',
-              subtitle: isEmail
-                  ? 'We sent a 4-digit code to vin****nt@gmail.com, Paste it below'
-                  : 'We sent a 4-digit code to 90******004, please paste it below',
+      child: SingleChildScrollView(
+        keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+        padding: const EdgeInsets.only(bottom: 24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Entrance(
+              child: DavoScreenIntro(
+                title: isEmail ? 'Check your inbox' : 'Check your SMS',
+                subtitle: isEmail
+                    ? 'We sent a 4-digit code to ${_maskedEmail(LocalPreviewProfile.instance.email)}. Enter it below.'
+                    : 'We sent a 4-digit code to ${_maskedPhone(LocalPreviewProfile.instance.phone)}. Enter it below.',
+              ),
             ),
-          ),
-          const SizedBox(height: 16),
-          Center(
-            child: AnimatedBuilder(
-              animation: _shakeController,
-              builder: (context, child) {
-                final progress = _shakeController.value;
-                final offset = DavoMotionPolicy.reduce(context)
-                    ? 0.0
-                    : DavoMotionSpec.rejectionOffset(progress);
-                return Transform.translate(
-                    offset: Offset(offset, 0), child: child);
-              },
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  _OtpBoxes(
-                    controllers: _controllers,
-                    focusNodes: _focusNodes,
-                    error: _error,
-                    onChanged: _onChanged,
-                    onSubmit: _submit,
-                  ),
-                  AnimatedSize(
-                    duration: const Duration(milliseconds: 180),
-                    curve: Curves.easeOut,
-                    child: _error
-                        ? Padding(
-                            padding: const EdgeInsets.only(top: 8),
-                            child: Text(
-                              'Incorrect code. Try again',
-                              style: TextStyle(
-                                fontFamily: 'Sora',
-                                fontSize: 14,
-                                height: 1.35,
-                                color: DavoColors.of(context).danger,
+            const SizedBox(height: 16),
+            Center(
+              child: AnimatedBuilder(
+                animation: _shakeController,
+                builder: (context, child) {
+                  final progress = _shakeController.value;
+                  final offset = DavoMotionPolicy.reduce(context)
+                      ? 0.0
+                      : DavoMotionSpec.rejectionOffset(progress);
+                  return Transform.translate(
+                      offset: Offset(offset, 0), child: child);
+                },
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _OtpBoxes(
+                      controllers: _controllers,
+                      focusNodes: _focusNodes,
+                      error: _error,
+                      onChanged: _onChanged,
+                      onSubmit: _submit,
+                    ),
+                    AnimatedSize(
+                      duration: DavoMotionPolicy.reduce(context)
+                          ? Duration.zero
+                          : const Duration(milliseconds: 180),
+                      curve: Curves.easeOut,
+                      child: _error
+                          ? Padding(
+                              padding: const EdgeInsets.only(top: 8),
+                              child: Text(
+                                'Incorrect code. Try again',
+                                style: TextStyle(
+                                  fontFamily: 'Sora',
+                                  fontSize: 14,
+                                  height: 1.35,
+                                  color: DavoColors.of(context).danger,
+                                ),
                               ),
-                            ),
-                          )
-                        : const SizedBox.shrink(),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(height: 32),
-          DavoPrimaryButton(
-            label: 'Submit',
-            enabled: _complete,
-            onPressed: _complete ? _submit : null,
-          ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              Text(
-                'Didn’t get a code?',
-                style: TextStyle(
-                    fontFamily: 'Sora',
-                    fontSize: 14,
-                    color: DavoColors.of(context).body),
-              ),
-              const SizedBox(width: 4),
-              InkWell(
-                onTap: _seconds == 0 ? _resend : null,
-                child: Text(
-                  'Resend Code',
-                  style: TextStyle(
-                    fontFamily: 'Sora',
-                    fontSize: 14,
-                    color: _seconds == 0
-                        ? AppColors.primary
-                        : DavoColors.of(context).bodyMuted,
-                  ),
+                            )
+                          : const SizedBox.shrink(),
+                    ),
+                  ],
                 ),
               ),
-              const Spacer(),
-              AnimatedSwitcher(
-                duration: const Duration(milliseconds: 180),
-                child: _seconds > 0
-                    ? Text(
-                        '0:${_seconds.toString().padLeft(2, '0')}',
-                        key: ValueKey(_seconds),
-                        style: TextStyle(
-                            fontFamily: 'Sora',
-                            fontSize: 14,
-                            color: DavoColors.of(context).body),
-                      )
-                    : const SizedBox.shrink(),
-              ),
-            ],
-          ),
-        ],
+            ),
+            const SizedBox(height: 32),
+            DavoPrimaryButton(
+              label: 'Submit',
+              enabled: _complete,
+              onPressed: _complete ? _submit : null,
+            ),
+            const SizedBox(height: 16),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              children: [
+                Text(
+                  'Didn’t get a code?',
+                  style: TextStyle(
+                      fontFamily: 'Sora',
+                      fontSize: 14,
+                      color: DavoColors.of(context).body),
+                ),
+                const SizedBox(width: 4),
+                InkWell(
+                  onTap: _seconds == 0 ? _resend : null,
+                  child: Text(
+                    'Resend Code',
+                    style: TextStyle(
+                      fontFamily: 'Sora',
+                      fontSize: 14,
+                      color: _seconds == 0
+                          ? AppColors.primary
+                          : DavoColors.of(context).bodyMuted,
+                    ),
+                  ),
+                ),
+                AnimatedSwitcher(
+                  duration: DavoMotionPolicy.reduce(context)
+                      ? Duration.zero
+                      : const Duration(milliseconds: 180),
+                  child: _seconds > 0
+                      ? Text(
+                          '0:${_seconds.toString().padLeft(2, '0')}',
+                          key: ValueKey(_seconds),
+                          style: TextStyle(
+                              fontFamily: 'Sora',
+                              fontSize: 14,
+                              color: DavoColors.of(context).body),
+                        )
+                      : const SizedBox.shrink(),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -466,7 +490,9 @@ class _TransactionPinScreenState extends State<TransactionPinScreen>
                   ),
                 ),
                 AnimatedSize(
-                  duration: const Duration(milliseconds: 180),
+                  duration: DavoMotionPolicy.reduce(context)
+                      ? Duration.zero
+                      : const Duration(milliseconds: 180),
                   child: _error
                       ? Padding(
                           padding: const EdgeInsets.only(top: 8),

@@ -1,3 +1,4 @@
+import 'support/gift_evidence_fixture.dart';
 import 'package:davochain/features/gift_cards/presentation/gift_card_flow.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -71,7 +72,9 @@ void main() {
 
   testWidgets('sell routes advance through details, review and confirmation',
       (tester) async {
-    await mount(tester, const GiftCardSellFormScreen(brand: brand));
+    final evidence = (await tester.runAsync(giftEvidenceFixture))!;
+    addTearDown(evidence.release);
+    await mount(tester, GiftCardSellFormScreen(brand: brand, evidencePicker: (_) async => evidence));
     expect(progress(tester), closeTo(1 / 3, .001));
     await fillDetails(tester, sell: true);
     await tester.tap(find.text('Continue'));

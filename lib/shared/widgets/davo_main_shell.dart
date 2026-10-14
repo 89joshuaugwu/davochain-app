@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../core/navigation/app_page_route.dart';
 import '../../core/theme/app_theme.dart';
+import '../motion/davo_motion_policy.dart';
 import '../../features/dashboard/presentation/dashboard_screen.dart';
 import '../../features/buy_crypto/presentation/buy_crypto_screens.dart';
 import '../../features/buy_crypto/presentation/buy_crypto_models.dart';
@@ -38,8 +39,7 @@ class _DavoMainShellState extends State<DavoMainShell>
   late final _transition = AnimationController(
       vsync: this, duration: const Duration(milliseconds: 180), value: 1);
   void _animateSelection() {
-    if (MediaQuery.disableAnimationsOf(context) ||
-        MediaQuery.accessibleNavigationOf(context)) {
+    if (DavoMotionPolicy.reduce(context)) {
       _transition.value = 1;
     } else {
       _transition.forward(from: .65);
@@ -124,7 +124,10 @@ class _DavoMainShellState extends State<DavoMainShell>
               child: IndexedStack(
                   index: _index,
                   children: List.generate(
-                      4, (index) => _pages[index] ?? const SizedBox.shrink())),
+                      4,
+                      (index) => TickerMode(
+                          enabled: index == _index,
+                          child: _pages[index] ?? const SizedBox.shrink()))),
             ),
             bottomNavigationBar:
                 DavoMainNavigation(index: _index, onChanged: _select),

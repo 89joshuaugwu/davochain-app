@@ -75,7 +75,7 @@ void main() {
   testWidgets('initial snapshot has current point and neutral history state',
       (tester) async {
     await show(tester);
-    expect(find.text('₦1,284,500.35'), findsNWidgets(2));
+    expect(find.text('₦1,824,588.00'), findsNWidgets(2));
     expect(find.text('Performance history starts here'), findsOneWidget);
     expect(find.textContaining('%'), findsNothing);
     expect(find.byKey(const ValueKey('portfolio-chart')), findsOneWidget);

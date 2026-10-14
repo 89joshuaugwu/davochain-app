@@ -1,3 +1,9 @@
+import 'dart:io';
+import '../gift_order_draft.dart';
+import '../gift_evidence_picker.dart';
+import '../../wallets/wallet_repository.dart';
+export '../gift_order_draft.dart';
+export '../gift_evidence_picker.dart';
 import '../../../shared/widgets/davo_refresh_region.dart';
 import '../../profile_settings/presentation/profile_settings_flow.dart'
     show ReferralDashboardScreen;
@@ -52,17 +58,26 @@ class GiftCardBrand {
   final GiftCardCategory category;
 }
 
+GiftCatalogProduct _product(GiftCardBrand brand, {bool physical = true}) =>
+    GiftCatalogProduct(
+        skuId:
+            '${brand.name.toLowerCase().replaceAll(' ', '-')}-fr-${physical ? 'physical' : 'ecode'}',
+        brandName: brand.name,
+        country: 'France',
+        category: brand.category.name,
+        cardType: physical ? GiftCardType.physical : GiftCardType.eCode);
+
 const _brands = <GiftCardBrand>[
   GiftCardBrand(
       name: 'Amazon',
       asset: '$_g/amazon.png',
-      subtitle: 'Fast payout',
+      subtitle: 'Shopping ? Physical / E-code',
       rate: '₦865/\$1',
       hot: true),
   GiftCardBrand(
       name: 'iTunes/Apple',
       asset: '$_g/apple.png',
-      subtitle: '99% accepted',
+      subtitle: 'Streaming ? Physical / E-code',
       rate: '₦865/\$1',
       category: GiftCardCategory.streaming),
   GiftCardBrand(
@@ -336,10 +351,13 @@ class _GiftCardBrandScreenState extends State<GiftCardBrandScreen> {
           const SizedBox(height: 22),
           Text('ALL BRANDS', style: _eyebrow(context)),
           const SizedBox(height: 8),
-          ...visible.skip(2).map((brand) => Padding(
-                padding: const EdgeInsets.only(bottom: 8),
-                child: _BrandListTile(brand: brand, onTap: () => _open(brand)),
-              )),
+          ...visible
+              .where((brand) => brand != _brands[0] && brand != _brands[1])
+              .map((brand) => Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child:
+                        _BrandListTile(brand: brand, onTap: () => _open(brand)),
+                  )),
         ],
       ),
     );
@@ -357,7 +375,9 @@ class _GiftCardBrandScreenState extends State<GiftCardBrandScreen> {
 }
 
 class GiftCardSellFormScreen extends StatefulWidget {
-  const GiftCardSellFormScreen({super.key, required this.brand});
+  const GiftCardSellFormScreen(
+      {super.key, required this.brand, this.evidencePicker = pickGiftEvidence});
+  final GiftEvidencePicker evidencePicker;
   final GiftCardBrand brand;
 
   @override
@@ -368,14 +388,24 @@ class _GiftCardSellFormScreenState extends State<GiftCardSellFormScreen> {
   final amount = TextEditingController();
   bool physical = true;
   bool categorySelected = false;
-  bool uploaded = false;
+  GiftEvidence? evidence;
+  GiftCatalogProduct? selectedProduct;
+  bool picking = false;
+  String? evidenceError;
+  bool get uploaded => evidence != null;
 
   double get numeric => parseAmount(amount.text);
-  int get naira => (numeric * 865).round();
-  bool get ready => categorySelected && numeric > 0 && uploaded;
+  int get naira => (numeric * (selectedProduct?.rateNaira ?? 865)).round();
+  bool get ready =>
+      selectedProduct != null &&
+      numeric.isFinite &&
+      numeric >= selectedProduct!.minimumDenomination &&
+      uploaded &&
+      !picking;
 
   @override
   void dispose() {
+    if (evidence != null) unawaited(evidence!.release());
     amount.dispose();
     super.dispose();
   }
@@ -393,10 +423,13 @@ class _GiftCardSellFormScreenState extends State<GiftCardSellFormScreen> {
                       builder: (_) => GiftCardSellReviewScreen(
                           brand: widget.brand,
                           amount: numeric,
-                          country: 'France',
+                          country: selectedProduct!.country,
+                          draft: GiftOrderDraft(
+                              product: selectedProduct!,
+                              denomination: numeric,
+                              evidence: evidence),
                           physical: physical,
-                          cardType:
-                              'France ${widget.brand.name}, ${physical ? 'Physical' : 'E-code'} (50 above)')),
+                          cardType: selectedProduct!.label)),
                 )
             : null,
       ),
@@ -419,8 +452,16 @@ class _GiftCardSellFormScreenState extends State<GiftCardSellFormScreen> {
                     left: 'Physical',
                     right: 'E-code',
                     leftActive: physical,
-                    onLeft: () => setState(() => physical = true),
-                    onRight: () => setState(() => physical = false)),
+                    onLeft: () => setState(() {
+                          physical = true;
+                          selectedProduct = null;
+                          categorySelected = false;
+                        }),
+                    onRight: () => setState(() {
+                          physical = false;
+                          selectedProduct = null;
+                          categorySelected = false;
+                        })),
               ]),
           const SizedBox(height: 20),
           const _Label('Sub Category'),
@@ -428,14 +469,17 @@ class _GiftCardSellFormScreenState extends State<GiftCardSellFormScreen> {
           _SelectField(
             brand: widget.brand,
             value: categorySelected
-                ? 'France ${widget.brand.name}, ${physical ? 'Physical' : 'E-code'} (50 above)'
+                ? selectedProduct!.label
                 : 'Select Gift Card Sub Category',
             onTap: () async {
               FocusScope.of(context).unfocus();
               final picked = await _showGiftSubcategories(context, widget.brand,
                   physical: physical);
-              if (mounted && picked == true) {
-                setState(() => categorySelected = true);
+              if (mounted && picked != null) {
+                setState(() {
+                  selectedProduct = picked;
+                  categorySelected = true;
+                });
               }
             },
           ),
@@ -444,14 +488,12 @@ class _GiftCardSellFormScreenState extends State<GiftCardSellFormScreen> {
           const SizedBox(height: 6),
           _AmountField(controller: amount, onChanged: (_) => setState(() {})),
           const SizedBox(height: 8),
-          _RateOutput(value: naira),
+          _RateOutput(value: naira, rate: selectedProduct?.rateNaira ?? 865),
           const SizedBox(height: 16),
           const _Label('Upload Card Image(s)'),
           const SizedBox(height: 8),
           InkWell(
-            onTap: () {
-              setState(() => uploaded = true);
-            },
+            onTap: picking ? null : _pickEvidence,
             borderRadius: BorderRadius.circular(6),
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 220),
@@ -471,7 +513,7 @@ class _GiftCardSellFormScreenState extends State<GiftCardSellFormScreen> {
               child: uploaded
                   ? ClipRRect(
                       borderRadius: BorderRadius.circular(6),
-                      child: Image.asset('$_g/apple_card_photo.png',
+                      child: Image.file(File(evidence!.path),
                           height: 92, width: 188, fit: BoxFit.cover),
                     )
                   : Row(
@@ -482,25 +524,85 @@ class _GiftCardSellFormScreenState extends State<GiftCardSellFormScreen> {
                             width: 24,
                             height: 24),
                         const SizedBox(width: 8),
-                        Text('Upload Card Image(s)', style: _body14(context)),
+                        Text(
+                            picking
+                                ? 'Selecting image...'
+                                : 'Upload Card Image(s)',
+                            style: _body14(context)),
                       ],
                     ),
             ),
           ),
+          if (evidence != null)
+            Row(children: [
+              Expanded(child: Text(evidence!.name, style: _caption(context))),
+              TextButton(
+                  onPressed: picking
+                      ? null
+                      : () async {
+                          final old = evidence;
+                          setState(() => evidence = null);
+                          await old?.release();
+                        },
+                  child: const Text('Remove')),
+              TextButton(
+                  onPressed: picking ? null : _pickEvidence,
+                  child: const Text('Replace')),
+            ]),
+          if (evidenceError != null)
+            Text(evidenceError!, style: _caption(context)),
         ],
       ),
     );
+  }
+
+  Future<void> _pickEvidence() async {
+    setState(() {
+      picking = true;
+      evidenceError = null;
+    });
+    final account = WalletAccountState.instance;
+    final generation = account.generation;
+    final accountId = account.snapshot.accountId;
+    try {
+      final picked = await widget.evidencePicker(accountId);
+      if (account.generation != generation ||
+          account.snapshot.accountId != accountId) {
+        await picked?.release();
+        return;
+      }
+      if (!mounted) {
+        await picked?.release();
+        return;
+      }
+      if (picked != null) {
+        final old = evidence;
+        setState(() => evidence = picked);
+        await old?.release();
+      }
+    } on FormatException catch (error) {
+      if (mounted) setState(() => evidenceError = error.message);
+    } catch (_) {
+      if (mounted) {
+        setState(() =>
+            evidenceError = 'Unable to select this image. Please try again.');
+      }
+    } finally {
+      if (mounted) setState(() => picking = false);
+    }
   }
 }
 
 class GiftCardSellReviewScreen extends StatefulWidget {
   const GiftCardSellReviewScreen(
       {super.key,
+      this.draft,
       required this.brand,
       required this.amount,
       this.cardType,
       this.country,
       this.physical});
+  final GiftOrderDraft? draft;
   final GiftCardBrand brand;
   final double amount;
   final String? cardType;
@@ -517,7 +619,8 @@ class _GiftCardSellReviewScreenState extends State<GiftCardSellReviewScreen> {
   bool confirmed = false;
   bool cardValid = false;
 
-  int get payout => (widget.amount * 865).round();
+  int get payout =>
+      (widget.amount * (widget.draft?.product.rateNaira ?? 865)).round();
 
   @override
   Widget build(BuildContext context) {
@@ -543,6 +646,7 @@ class _GiftCardSellReviewScreenState extends State<GiftCardSellReviewScreen> {
                                   naira: payout,
                                   subcategory: widget.cardType,
                                   country: widget.country,
+                                  draft: widget.draft,
                                   cardType: widget.physical == null
                                       ? null
                                       : widget.physical!
@@ -579,15 +683,19 @@ class _GiftCardSellReviewScreenState extends State<GiftCardSellReviewScreen> {
               amount: widget.amount,
               naira: payout,
               sell: true,
+              rate: widget.draft?.product.rateNaira ?? 865,
               cardType: widget.cardType ??
-                  'France ${widget.brand.name}, Physical (50 above)',
+                  widget.draft?.product.label ??
+                  _product(widget.brand).label,
               footer: Column(children: [
                 const SizedBox(height: 14),
                 Center(
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(6),
-                    child: Image.asset('$_g/apple_card_photo.png',
-                        width: 120, height: 68, fit: BoxFit.cover),
+                    child: widget.draft?.evidence == null
+                        ? const SizedBox.shrink()
+                        : Image.file(File(widget.draft!.evidence!.path),
+                            width: 120, height: 68, fit: BoxFit.cover),
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -605,7 +713,9 @@ class _GiftCardSellReviewScreenState extends State<GiftCardSellReviewScreen> {
                   color: DavoColors.of(context).link)),
           const SizedBox(height: 6),
           Text(
-            'Please ensure you have uploaded a physical picture of your FRANCE iTunes gift card purchased from the store. iTunes gift card codes start with X and are 16 digits.',
+            (widget.draft?.product ??
+                    _product(widget.brand, physical: widget.physical ?? true))
+                .terms,
             style: _caption(context),
           ),
           const SizedBox(height: 16),
@@ -664,6 +774,7 @@ class _GiftCardSellReviewScreenState extends State<GiftCardSellReviewScreen> {
 class GiftCardSellSubmittedScreen extends StatefulWidget {
   const GiftCardSellSubmittedScreen(
       {super.key,
+      this.draft,
       this.record,
       this.brand,
       this.amount,
@@ -671,6 +782,7 @@ class GiftCardSellSubmittedScreen extends StatefulWidget {
       this.subcategory,
       this.country,
       this.cardType});
+  final GiftOrderDraft? draft;
   final ReceiptRecord? record;
   final GiftCardBrand? brand;
   final double? amount;
@@ -703,6 +815,7 @@ class _GiftCardSellSubmittedScreenState
           subcategory: widget.subcategory,
           country: widget.country,
           cardType: widget.cardType,
+          draft: widget.draft,
         );
     if (widget.record == null) {
       ReceiptActivity.submitPreview(record);
@@ -922,10 +1035,14 @@ class GiftCardBuyFormScreen extends StatefulWidget {
 class _GiftCardBuyFormScreenState extends State<GiftCardBuyFormScreen> {
   final amount = TextEditingController();
   bool categorySelected = false;
+  GiftCatalogProduct? selectedProduct;
   int quantity = 1;
 
   double get numeric => parseAmount(amount.text);
-  bool get ready => categorySelected && numeric > 0;
+  bool get ready =>
+      selectedProduct != null &&
+      numeric.isFinite &&
+      numeric >= selectedProduct!.minimumDenomination;
 
   @override
   void dispose() {
@@ -946,7 +1063,11 @@ class _GiftCardBuyFormScreenState extends State<GiftCardBuyFormScreen> {
                       builder: (_) => GiftCardDeliveryScreen(
                           brand: widget.brand,
                           amount: numeric,
-                          quantity: quantity)),
+                          quantity: quantity,
+                          draft: GiftOrderDraft(
+                              product: selectedProduct!,
+                              denomination: numeric,
+                              quantity: quantity))),
                 )
             : null,
       ),
@@ -964,14 +1085,17 @@ class _GiftCardBuyFormScreenState extends State<GiftCardBuyFormScreen> {
           _SelectField(
             brand: widget.brand,
             value: categorySelected
-                ? 'France ${widget.brand.name}, Physical (50 above)'
+                ? selectedProduct!.label
                 : 'Select Gift Card Sub Category',
             onTap: () async {
               FocusScope.of(context).unfocus();
               final picked = await _showGiftSubcategories(context, widget.brand,
                   physical: true);
-              if (mounted && picked == true) {
-                setState(() => categorySelected = true);
+              if (mounted && picked != null) {
+                setState(() {
+                  categorySelected = true;
+                  selectedProduct = picked;
+                });
               }
             },
           ),
@@ -980,7 +1104,9 @@ class _GiftCardBuyFormScreenState extends State<GiftCardBuyFormScreen> {
           const SizedBox(height: 6),
           _AmountField(controller: amount, onChanged: (_) => setState(() {})),
           const SizedBox(height: 8),
-          _RateOutput(value: (numeric * 865).round()),
+          _RateOutput(
+              value: (numeric * (selectedProduct?.rateNaira ?? 865)).round(),
+              rate: selectedProduct?.rateNaira ?? 865),
           const SizedBox(height: 22),
           const _Label('QUANTITY'),
           const SizedBox(height: 10),
@@ -1014,9 +1140,11 @@ class _GiftCardBuyFormScreenState extends State<GiftCardBuyFormScreen> {
 class GiftCardDeliveryScreen extends StatefulWidget {
   const GiftCardDeliveryScreen(
       {super.key,
+      this.draft,
       required this.brand,
       required this.amount,
       required this.quantity});
+  final GiftOrderDraft? draft;
   final GiftCardBrand brand;
   final double amount;
   final int quantity;
@@ -1028,6 +1156,7 @@ class GiftCardDeliveryScreen extends StatefulWidget {
 class _GiftCardDeliveryScreenState extends State<GiftCardDeliveryScreen> {
   bool forMe = true;
   bool instant = true;
+  String? deliveryError;
   final email = TextEditingController();
   final phone = TextEditingController();
 
@@ -1099,20 +1228,42 @@ class _GiftCardDeliveryScreenState extends State<GiftCardDeliveryScreen> {
           const SizedBox(height: 10),
           _DeliveryChoice(
             title: 'Email Delivery',
-            subtitle: 'Sent to your email address',
+            subtitle: forMe
+                ? 'Sent to your email address'
+                : 'Sent to the recipient email address',
             active: !instant,
             onTap: () => setState(() => instant = false),
           ),
           const SizedBox(height: 28),
+          if (deliveryError != null)
+            Text(deliveryError!, style: _caption(context)),
           _PrimaryButton(
             label: 'Continue',
-            onTap: () => Navigator.of(context).push<void>(
-              AppPageRoute<void>(
-                  builder: (_) => GiftCardBuyReviewScreen(
-                      brand: widget.brand,
-                      amount: widget.amount,
-                      quantity: widget.quantity)),
-            ),
+            onTap: () {
+              final delivery = GiftDelivery(
+                  forMe: forMe,
+                  instant: instant,
+                  email: email.text.trim(),
+                  phone: phone.text.trim());
+              if (delivery.validationError != null) {
+                setState(() => deliveryError = delivery.validationError);
+                return;
+              }
+              final draft = (widget.draft ??
+                      GiftOrderDraft(
+                          product: _product(widget.brand),
+                          denomination: widget.amount,
+                          quantity: widget.quantity))
+                  .withDelivery(delivery);
+              Navigator.of(context).push<void>(
+                AppPageRoute<void>(
+                    builder: (_) => GiftCardBuyReviewScreen(
+                        brand: widget.brand,
+                        amount: widget.amount,
+                        quantity: widget.quantity,
+                        draft: draft)),
+              );
+            },
           ),
         ],
       ),
@@ -1123,16 +1274,19 @@ class _GiftCardDeliveryScreenState extends State<GiftCardDeliveryScreen> {
 class GiftCardBuyReviewScreen extends StatelessWidget {
   const GiftCardBuyReviewScreen(
       {super.key,
+      this.draft,
       required this.brand,
       required this.amount,
       required this.quantity});
+  final GiftOrderDraft? draft;
   final GiftCardBrand brand;
   final double amount;
   final int quantity;
 
   @override
   Widget build(BuildContext context) {
-    final naira = (amount * 865 * quantity).round();
+    final naira =
+        (amount * (draft?.product.rateNaira ?? 865) * quantity).round();
     return _GiftScaffold(
       scroll: true,
       bottom: _PrimaryButton(
@@ -1144,9 +1298,11 @@ class GiftCardBuyReviewScreen extends StatelessWidget {
                   naira: naira,
                   brand: brand,
                   quantity: quantity,
-                  country: 'France',
-                  cardType: 'Physical',
-                  subcategory: 'France ${brand.name}, Physical (50 above)')),
+                  country: draft?.product.country ?? _product(brand).country,
+                  draft: draft,
+                  cardType:
+                      draft?.product.typeLabel ?? _product(brand).typeLabel,
+                  subcategory: draft?.product.label ?? _product(brand).label)),
         ),
       ),
       child: Column(
@@ -1169,7 +1325,9 @@ class GiftCardBuyReviewScreen extends StatelessWidget {
               amount: amount * quantity,
               naira: naira,
               sell: false,
-              cardType: 'France ${brand.name}, Physical (50 above)'),
+              rate: draft?.product.rateNaira ?? 865,
+              cardType: draft?.product.label ?? _product(brand).label),
+          if (draft != null) _GiftDeliverySummary(delivery: draft!.delivery),
         ],
       ),
     );
@@ -1179,6 +1337,7 @@ class GiftCardBuyReviewScreen extends StatelessWidget {
 class GiftCardPaymentScreen extends StatefulWidget {
   const GiftCardPaymentScreen(
       {super.key,
+      this.draft,
       required this.amount,
       required this.naira,
       this.brand,
@@ -1187,6 +1346,7 @@ class GiftCardPaymentScreen extends StatefulWidget {
       this.cardType,
       this.subcategory,
       this.record});
+  final GiftOrderDraft? draft;
   final double amount;
   final int naira;
 
@@ -1205,6 +1365,7 @@ class _GiftCardPaymentScreenState extends State<GiftCardPaymentScreen> {
   @override
   Widget build(BuildContext context) {
     return _GiftScaffold(
+      scroll: true,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1223,7 +1384,7 @@ class _GiftCardPaymentScreenState extends State<GiftCardPaymentScreen> {
             borderRadius: BorderRadius.circular(12),
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 180),
-              height: 128,
+              constraints: const BoxConstraints(minHeight: 128),
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
               decoration: BoxDecoration(
                 color: DavoColors.of(context).offWhite,
@@ -1253,10 +1414,13 @@ class _GiftCardPaymentScreenState extends State<GiftCardPaymentScreen> {
                       children: [
                         Text('NGN Wallet Balance', style: _section(context)),
                         const SizedBox(height: 4),
-                        Text('Available balance: ₦1,240,500.00',
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: _body14(context)),
+                        ListenableBuilder(
+                            listenable: WalletAccountState.instance,
+                            builder: (context, _) => Text(
+                                'Available balance: ${WalletAccountState.instance.ngnBalanceLabel}',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: _body14(context))),
                         const SizedBox(height: 12),
                         Container(
                           padding: const EdgeInsets.symmetric(
@@ -1277,7 +1441,9 @@ class _GiftCardPaymentScreenState extends State<GiftCardPaymentScreen> {
               ),
             ),
           ),
-          const Spacer(),
+          if (widget.draft != null)
+            _GiftDeliverySummary(delivery: widget.draft!.delivery),
+          const SizedBox(height: 28),
           Container(
             width: double.infinity,
             padding: const EdgeInsets.fromLTRB(22, 16, 22, 14),
@@ -1342,7 +1508,8 @@ class _GiftCardPaymentScreenState extends State<GiftCardPaymentScreen> {
                               country: widget.country,
                               cardType: widget.cardType,
                               subcategory: widget.subcategory,
-                              record: widget.record)),
+                              record: widget.record,
+                              draft: widget.draft)),
                     );
                   },
                 ),
@@ -1384,6 +1551,7 @@ class GiftCardPinScreen extends StatelessWidget {
 class GiftCardBuySuccessScreen extends StatefulWidget {
   const GiftCardBuySuccessScreen(
       {super.key,
+      this.draft,
       required this.amount,
       required this.naira,
       this.brand,
@@ -1392,6 +1560,7 @@ class GiftCardBuySuccessScreen extends StatefulWidget {
       this.cardType,
       this.subcategory,
       this.record});
+  final GiftOrderDraft? draft;
   final double amount;
   final int naira;
 
@@ -1426,6 +1595,7 @@ class _GiftCardBuySuccessScreenState extends State<GiftCardBuySuccessScreen>
           country: widget.country,
           cardType: widget.cardType,
           subcategory: widget.subcategory,
+          draft: widget.draft,
         );
     if (widget.record == null) {
       ReceiptActivity.submitPreview(record);
@@ -2050,9 +2220,10 @@ class _Label extends StatelessWidget {
   Widget build(BuildContext context) => Text(text, style: _caption(context));
 }
 
-Future<bool?> _showGiftSubcategories(BuildContext context, GiftCardBrand brand,
+Future<GiftCatalogProduct?> _showGiftSubcategories(
+        BuildContext context, GiftCardBrand brand,
         {required bool physical}) =>
-    showModalBottomSheet<bool>(
+    showModalBottomSheet<GiftCatalogProduct>(
       context: context,
       sheetAnimationStyle: (MediaQuery.disableAnimationsOf(context) ||
               MediaQuery.accessibleNavigationOf(context))
@@ -2087,7 +2258,8 @@ Future<bool?> _showGiftSubcategories(BuildContext context, GiftCardBrand brand,
                             '${physical ? 'Physical' : 'E-code'} (50 above)'),
                         trailing: Icon(Icons.chevron_right_rounded,
                             color: DavoColors.of(context).link),
-                        onTap: () => Navigator.pop(sheetContext, true)),
+                        onTap: () => Navigator.pop(
+                            sheetContext, _product(brand, physical: physical))),
                   ]))),
     );
 
@@ -2151,7 +2323,8 @@ class _AmountField extends StatelessWidget {
 }
 
 class _RateOutput extends StatelessWidget {
-  const _RateOutput({required this.value});
+  const _RateOutput({required this.value, this.rate = 865});
+  final int rate;
   final int value;
 
   @override
@@ -2176,7 +2349,7 @@ class _RateOutput extends StatelessWidget {
             decoration: BoxDecoration(
                 color: DavoColors.of(context).primarySoft,
                 borderRadius: BorderRadius.circular(20)),
-            child: Text('Rate: \u20a6865/\$1',
+            child: Text('Rate: \u20a6$rate/\$1',
                 style: TextStyle(
                     fontSize: 11, color: DavoColors.of(context).link))),
       ]);
@@ -2187,13 +2360,15 @@ class _BreakdownCard extends StatelessWidget {
       {required this.amount,
       required this.naira,
       required this.sell,
-      this.cardType = 'France iTunes/Apple, Physical (50 above)',
+      required this.cardType,
+      this.rate = 865,
       this.footer});
   final double amount;
   final int naira;
   final bool sell;
   final Widget? footer;
   final String cardType;
+  final int rate;
 
   @override
   Widget build(BuildContext context) => Container(
@@ -2207,7 +2382,7 @@ class _BreakdownCard extends StatelessWidget {
               label: 'Card Value',
               value: '\$${formatGroupedAmount(amount.toStringAsFixed(2))}'),
           Divider(height: 22, color: DavoColors.of(context).divider),
-          const _SummaryLine(label: 'Exchange Rate', value: '₦865/\$1'),
+          _SummaryLine(label: 'Exchange Rate', value: '\u20a6$rate/\$1'),
           Divider(height: 22, color: DavoColors.of(context).divider),
           _SummaryLine(label: 'Gross Amount', value: '₦${_money(naira)}'),
           Divider(height: 22, color: DavoColors.of(context).divider),
@@ -2655,3 +2830,20 @@ BoxDecoration _outlinedCard(BuildContext context) => BoxDecoration(
     color: DavoColors.of(context).surface,
     border: Border.all(color: DavoColors.of(context).divider),
     borderRadius: BorderRadius.circular(12));
+
+class _GiftDeliverySummary extends StatelessWidget {
+  const _GiftDeliverySummary({required this.delivery});
+  final GiftDelivery delivery;
+  @override
+  Widget build(BuildContext context) => Padding(
+      padding: const EdgeInsets.symmetric(vertical: 16),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text(delivery.forMe ? 'For Me' : 'Send Gift', style: _section(context)),
+        const SizedBox(height: 6),
+        Text(delivery.methodLabel, style: _body14(context)),
+        if (delivery.email.isNotEmpty)
+          Text(delivery.email, style: _body14(context)),
+        if (delivery.phone.isNotEmpty)
+          Text(delivery.phone, style: _body14(context)),
+      ]));
+}

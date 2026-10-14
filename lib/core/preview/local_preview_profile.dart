@@ -1,3 +1,4 @@
+import '../../features/wallets/wallet_repository.dart';
 import 'package:flutter/foundation.dart';
 import '../../features/profile_settings/presentation/verification/verification_state.dart';
 import '../../features/funding/funding_outcomes.dart';
@@ -22,6 +23,7 @@ class LocalPreviewProfile extends ChangeNotifier {
   Uint8List? photo;
   int generation = 0;
   void _resetSession() {
+    WalletAccountState.instance.reset();
     ReceiptActivity.reset();
     FundingActivity.reset();
     SettingsPreviewSession.instance.reset();

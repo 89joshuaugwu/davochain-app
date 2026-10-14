@@ -14,7 +14,7 @@ void main() {
   });
 
   test('mock wallets expose frontend balances without services', () {
-    expect(BuyFundingWallet.ngn.balance, 1731540);
+    expect(BuyFundingWallet.ngn.balance, 1284500.35);
     expect(BuyFundingWallet.ngd.balance, 135000);
   });
 }

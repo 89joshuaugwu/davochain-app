@@ -1,5 +1,6 @@
 import 'dart:ui' as ui;
 import 'dart:io';
+import 'dart:async';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -8,7 +9,32 @@ import 'package:path_provider/path_provider.dart';
 import '../../../core/navigation/app_page_route.dart';
 import 'guided_face_capture_screen.dart';
 import 'verification_attachment.dart';
+import 'verification_cache_owner.dart';
 export 'verification_attachment.dart';
+
+VerificationCacheOwner? _cacheOwner;
+Future<VerificationCacheOwner>? _openingCache;
+Timer? _retentionTimer;
+
+Future<VerificationCacheOwner> initializeVerificationCache() {
+  return _openingCache ??=
+      _initializeCache().whenComplete(() => _openingCache = null);
+}
+
+Future<VerificationCacheOwner> _initializeCache() async {
+  final owner = _cacheOwner ??= VerificationCacheOwner(
+      Directory('${(await getTemporaryDirectory()).path}/verification'));
+  await owner.initializeAndReconcile();
+  _retentionTimer ??= Timer.periodic(const Duration(hours: 1), (_) async {
+    try {
+      final result = await owner.reconcileExpired();
+      if (!result.complete) debugPrint('Verification cache cleanup pending.');
+    } catch (_) {
+      debugPrint('Verification cache cleanup pending.');
+    }
+  });
+  return owner;
+}
 
 abstract class VerificationMediaGateway {
   static VerificationMediaGateway instance = DeviceVerificationMediaGateway();
@@ -20,6 +46,7 @@ abstract class VerificationMediaGateway {
 class DeviceVerificationMediaGateway implements VerificationMediaGateway {
   @override
   Future<VerificationAttachment?> pickIdentity({bool camera = false}) async {
+    await initializeVerificationCache();
     final image = await ImagePicker().pickImage(
         source: camera ? ImageSource.camera : ImageSource.gallery,
         imageQuality: camera ? 90 : null,
@@ -35,6 +62,7 @@ class DeviceVerificationMediaGateway implements VerificationMediaGateway {
 
   @override
   Future<VerificationAttachment?> pickDocument({bool camera = false}) async {
+    await initializeVerificationCache();
     String? path, name;
     if (camera) {
       final image = await ImagePicker().pickImage(
@@ -62,10 +90,13 @@ class DeviceVerificationMediaGateway implements VerificationMediaGateway {
   }
 
   @override
-  Future<VerificationAttachment?> captureFace(BuildContext context) =>
-      Navigator.of(context).push<VerificationAttachment>(
-          AppPageRoute<VerificationAttachment>(
-              builder: (_) => const GuidedFaceCaptureScreen()));
+  Future<VerificationAttachment?> captureFace(BuildContext context) async {
+    await initializeVerificationCache();
+    if (!context.mounted) return null;
+    return Navigator.of(context).push<VerificationAttachment>(
+        AppPageRoute<VerificationAttachment>(
+            builder: (_) => const GuidedFaceCaptureScreen()));
+  }
 }
 
 Future<VerificationAttachment> cacheVerificationAttachment(String source,
@@ -105,11 +136,23 @@ Future<VerificationAttachment> cacheVerificationAttachment(String source,
       buffer?.dispose();
     }
   }
-  final root =
-      Directory('${(await getTemporaryDirectory()).path}/verification');
-  await root.create(recursive: true);
-  final cached = await original
-      .copy('${root.path}/${DateTime.now().microsecondsSinceEpoch}.$kind');
+  final owner = await initializeVerificationCache();
+  await owner.reconcileExpired();
+  final root = owner.directory;
+  final cached =
+      File('${root.path}/${DateTime.now().microsecondsSinceEpoch}.$kind');
+  final pdfPreview =
+      '${cached.path.substring(0, cached.path.lastIndexOf('.'))}-preview.png';
+  // Reserve both paths before writing/rendering so concurrent sweeps cannot
+  // remove a copy or a partially written native thumbnail in use.
+  owner.retain(cached.path);
+  if (kind == 'pdf') owner.retain(pdfPreview);
+  try {
+    await original.copy(cached.path);
+  } catch (_) {
+    await owner.releasePaths([cached.path, if (kind == 'pdf') pdfPreview]);
+    rethrow;
+  }
   String? preview;
   if (kind == 'pdf') {
     try {
@@ -117,12 +160,19 @@ Future<VerificationAttachment> cacheVerificationAttachment(String source,
           .invokeMethod<String>('renderPdf', {'path': cached.path});
     } on PlatformException catch (error) {
       if (error.code == 'invalid_pdf') {
-        await cached.delete();
+        await owner.releasePaths([cached.path, pdfPreview]);
         throw const FormatException(
             'This PDF could not be opened. Choose another document.');
       }
     } catch (_) {
       /* The filename remains usable when a device cannot render a PDF preview. */
+    }
+    // Use the known owned sibling even if native rendering failed partway.
+    if (preview == null) {
+      await owner.releasePaths([pdfPreview]);
+    } else if (File(preview).absolute.path != File(pdfPreview).absolute.path) {
+      await owner.releasePaths([pdfPreview]);
+      preview = null;
     }
   }
   return VerificationAttachment(
@@ -132,14 +182,18 @@ Future<VerificationAttachment> cacheVerificationAttachment(String source,
       kind: kind,
       previewPath: preview,
       ownedDirectory: root.path,
+      cacheOwner: owner,
       owned: true);
 }
 
 Future<void> releaseCapturedSource(String path) async {
   try {
-    final root = Directory((await getTemporaryDirectory()).path).absolute.path;
-    final file = File(path).absolute;
-    if (file.path.startsWith(root + Platform.pathSeparator) &&
+    final root = await (await getTemporaryDirectory()).resolveSymbolicLinks();
+    final file = File(path);
+    final canonical = await file.resolveSymbolicLinks();
+    if (await FileSystemEntity.type(path, followLinks: false) ==
+            FileSystemEntityType.file &&
+        canonical.startsWith(root + Platform.pathSeparator) &&
         await file.exists()) {
       await file.delete();
     }

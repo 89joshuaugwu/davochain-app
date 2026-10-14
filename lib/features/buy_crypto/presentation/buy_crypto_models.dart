@@ -1,3 +1,4 @@
+import '../../wallets/wallet_repository.dart';
 import 'package:flutter/material.dart';
 import '../../../shared/formatters/crypto_quantity_formatter.dart';
 import '../../../shared/formatters/grouped_amount_formatter.dart';
@@ -27,30 +28,30 @@ enum BuyFundingWallet {
   ngn(
     'Nigerian Naira',
     'NGN',
-    '₦1,731,540.00',
-    1731540,
     false,
   ),
   ngd(
     'Davochain Naira',
     'NGD',
-    '₦135,000.00',
-    135000,
     true,
   );
 
   const BuyFundingWallet(
     this.name,
     this.symbol,
-    this.formattedBalance,
-    this.balance,
     this.isDavochain,
   );
 
   final String name;
   final String symbol;
-  final String formattedBalance;
-  final double balance;
+  String get formattedBalance =>
+      WalletAccountState.instance.balanceLabel(symbol);
+  double get balance =>
+      WalletAccountState.instance.snapshot
+          .available(symbol)
+          .atomicUnits
+          .toDouble() /
+      100;
   final bool isDavochain;
 
   String get iconAsset => isDavochain

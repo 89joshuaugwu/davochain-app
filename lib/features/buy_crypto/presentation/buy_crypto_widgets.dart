@@ -2,253 +2,126 @@ import '../../../shared/widgets/davo_safe_selection_sheet.dart';
 import '../../../core/theme/davo_colors.dart';
 import '../../../shared/widgets/davo_sheet_header.dart';
 import '../../../shared/widgets/solana_icon.dart';
+import '../../wallets/wallet_repository.dart';
 import 'package:flutter/material.dart';
-
 import 'buy_crypto_models.dart';
 
 class BuyCryptoAssetSheet extends StatelessWidget {
   const BuyCryptoAssetSheet({super.key});
-
   @override
-  Widget build(BuildContext context) {
-    return DavoSafeSelectionSheet(child: Container(
-      height: 351,
-      decoration: BoxDecoration(
-        color: DavoColors.of(context).canvas,
-        borderRadius:
-            const BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      child: Stack(
-        children: [
-          Positioned(
-            left: 0,
-            right: 0,
-            top: 6,
-            child: Center(
-              child: Container(
-                width: 85,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: DavoColors.of(context).bodyMuted,
-                  borderRadius: BorderRadius.circular(100),
-                ),
-              ),
-            ),
-          ),
-          const Positioned(
-              left: 0,
-              right: 0,
-              top: 16,
-              child: DavoSheetHeader(title: 'Select Cryptocurrency')),
-          ...List.generate(BuyCryptoAsset.values.length, (index) {
-            final asset = BuyCryptoAsset.values[index];
-            return Positioned(
-              left: 16,
-              right: 16,
-              top: 67.0 + (index * 63.0),
-              height: 55,
-              child: _ExactAssetSheetRow(
-                asset: asset,
-                onTap: () {
-                  Navigator.pop(context, asset);
-                },
-              ),
-            );
-          }),
-        ],
-      ),
-    ));
-  }
+  Widget build(BuildContext context) => _SelectionBody(
+      title: 'Select Cryptocurrency',
+      children: BuyCryptoAsset.values
+          .map((asset) => _SelectionRow(
+              icon: BuyAssetIcon(asset: asset, size: 37),
+              name: asset.name,
+              symbol: asset.symbol,
+              value: WalletAccountState.instance.balanceLabel(asset.symbol),
+              quantity:
+                  '${WalletAccountState.instance.snapshot.available(asset.symbol).decimal} ${asset.symbol}',
+              onTap: () => Navigator.pop(context, asset)))
+          .toList());
 }
 
 class BuyFundingWalletSheet extends StatelessWidget {
   const BuyFundingWalletSheet({super.key});
+  @override
+  Widget build(BuildContext context) => _SelectionBody(
+      title: 'Select wallet to buy from',
+      children: BuyFundingWallet.values
+          .map((wallet) => _SelectionRow(
+              icon: Image.asset(wallet.iconAsset, width: 32, height: 32),
+              name: wallet.name,
+              symbol: wallet.symbol,
+              value: wallet.formattedBalance,
+              quantity: wallet.symbol,
+              onTap: () => Navigator.pop(context, wallet)))
+          .toList());
+}
 
+class _SelectionBody extends StatelessWidget {
+  const _SelectionBody({required this.title, required this.children});
+  final String title;
+  final List<Widget> children;
+  @override
+  Widget build(BuildContext context) => DavoSafeSelectionSheet(
+      child: Material(
+          color: DavoColors.of(context).canvas,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+          child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+              child: Column(mainAxisSize: MainAxisSize.min, children: [
+                Container(
+                    width: 85,
+                    height: 4,
+                    decoration: BoxDecoration(
+                        color: DavoColors.of(context).bodyMuted,
+                        borderRadius: BorderRadius.circular(100))),
+                const SizedBox(height: 12),
+                DavoSheetHeader(title: title),
+                const SizedBox(height: 16),
+                ...children,
+              ]))));
+}
+
+class _SelectionRow extends StatelessWidget {
+  const _SelectionRow(
+      {required this.icon,
+      required this.name,
+      required this.symbol,
+      required this.value,
+      required this.quantity,
+      required this.onTap});
+  final Widget icon;
+  final String name, symbol, value, quantity;
+  final VoidCallback onTap;
   @override
   Widget build(BuildContext context) {
-    return DavoSafeSelectionSheet(child: Container(
-      height: 242,
-      decoration: BoxDecoration(
-        color: DavoColors.of(context).canvas,
-        borderRadius:
-            const BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      child: Stack(
+    final colors = DavoColors.of(context);
+    final compact = MediaQuery.textScalerOf(context).scale(14) > 20 ||
+        MediaQuery.sizeOf(context).width < 350;
+    final identity =
+        Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Text(name,
+          style:
+              TextStyle(fontFamily: 'Sora', fontSize: 14, color: colors.ink)),
+      const SizedBox(height: 4),
+      Text(symbol, style: TextStyle(fontSize: 12, color: colors.body)),
+    ]);
+    final amounts = Column(
+        crossAxisAlignment:
+            compact ? CrossAxisAlignment.start : CrossAxisAlignment.end,
         children: [
-          Positioned(
-            left: 0,
-            right: 0,
-            top: 6,
-            child: Center(
-              child: Container(
-                width: 85,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: DavoColors.of(context).bodyMuted,
-                  borderRadius: BorderRadius.circular(100),
-                ),
-              ),
-            ),
-          ),
-          const Positioned(
-              left: 0,
-              right: 0,
-              top: 16,
-              child: DavoSheetHeader(title: 'Select wallet to buy from')),
-          ...List.generate(BuyFundingWallet.values.length, (index) {
-            final wallet = BuyFundingWallet.values[index];
-            return Positioned(
-              left: 16,
-              right: 16,
-              top: index == 0 ? 67 : 138,
-              height: 55,
-              child: _ExactWalletSheetRow(
-                wallet: wallet,
-                onTap: () {
-                  Navigator.pop(context, wallet);
-                },
-              ),
-            );
-          }),
-        ],
-      ),
-    ));
+          Text(value, style: TextStyle(fontSize: 14, color: colors.body)),
+          const SizedBox(height: 4),
+          Text(quantity,
+              style: TextStyle(fontSize: 12, color: colors.bodyMuted)),
+        ]);
+    return InkWell(
+        onTap: onTap,
+        child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 12),
+            child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              icon,
+              const SizedBox(width: 12),
+              Expanded(
+                  child: compact
+                      ? Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                              identity,
+                              const SizedBox(height: 8),
+                              amounts
+                            ])
+                      : Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                              Expanded(child: identity),
+                              const SizedBox(width: 12),
+                              Expanded(child: amounts)
+                            ])),
+            ])));
   }
-}
-
-class _ExactAssetSheetRow extends StatelessWidget {
-  const _ExactAssetSheetRow({required this.asset, required this.onTap});
-  final BuyCryptoAsset asset;
-  final VoidCallback onTap;
-
-  String get _bottom => switch (asset) {
-        BuyCryptoAsset.tether => '0.000000 USDT',
-        _ => '0.00000000 ${asset.symbol}',
-      };
-
-  @override
-  Widget build(BuildContext context) => InkWell(
-        onTap: onTap,
-        child: SizedBox(
-          height: 55,
-          child: Stack(
-            children: [
-              Positioned(
-                  left: 0,
-                  top: 7,
-                  width: 37,
-                  height: 37,
-                  child: BuyAssetIcon(asset: asset, size: 37)),
-              Positioned(
-                  left: 49,
-                  top: 7.5,
-                  child: Text(asset.name,
-                      style: TextStyle(
-                          fontFamily: 'Sora',
-                          fontSize: 14,
-                          height: 1.35,
-                          color: DavoColors.of(context).ink))),
-              Positioned(
-                  left: 49,
-                  top: 28.5,
-                  child: Text(asset.symbol,
-                      style: TextStyle(
-                          fontFamily: 'Sora',
-                          fontSize: 12,
-                          height: 1.25,
-                          color: DavoColors.of(context).body))),
-              Positioned(
-                  right: 0,
-                  top: 8.5,
-                  child: Text('0.00 USD',
-                      textAlign: TextAlign.right,
-                      style: TextStyle(
-                          fontFamily: 'Sora',
-                          fontSize: 14,
-                          height: 1.35,
-                          color: DavoColors.of(context).body))),
-              Positioned(
-                  right: 0,
-                  top: 29.5,
-                  child: Text(_bottom,
-                      textAlign: TextAlign.right,
-                      style: TextStyle(
-                          fontFamily: 'Sora',
-                          fontSize: 10,
-                          height: 1.3,
-                          color: DavoColors.of(context).bodyMuted))),
-            ],
-          ),
-        ),
-      );
-}
-
-class _ExactWalletSheetRow extends StatelessWidget {
-  const _ExactWalletSheetRow({required this.wallet, required this.onTap});
-  final BuyFundingWallet wallet;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) => InkWell(
-        onTap: onTap,
-        child: SizedBox(
-          height: 55,
-          child: Stack(
-            children: [
-              Positioned(
-                left: 0,
-                top: 7,
-                width: 32,
-                height: 32,
-                child: Image.asset(wallet.iconAsset,
-                    width: 32, height: 32, fit: BoxFit.contain),
-              ),
-              Positioned(
-                  left: 44,
-                  top: 7,
-                  child: Text(wallet.name,
-                      style: TextStyle(
-                          fontFamily: 'Sora',
-                          fontSize: 14,
-                          height: 1.35,
-                          color: DavoColors.of(context).ink))),
-              Positioned(
-                  left: 44,
-                  top: 28,
-                  child: Text(wallet.symbol,
-                      style: TextStyle(
-                          fontFamily: 'Sora',
-                          fontSize: 12,
-                          height: 1.25,
-                          color: DavoColors.of(context).body))),
-              Positioned(
-                right: 0,
-                top: 8,
-                child: Text(
-                    wallet == BuyFundingWallet.ngn ? '0.00 USD' : '100.50 USD',
-                    textAlign: TextAlign.right,
-                    style: TextStyle(
-                        fontFamily: 'Sora',
-                        fontSize: 14,
-                        height: 1.35,
-                        color: DavoColors.of(context).body)),
-              ),
-              Positioned(
-                right: 0,
-                top: 29,
-                child: Text(
-                    wallet == BuyFundingWallet.ngn ? '0.00₦' : '135,000.00 ₦',
-                    textAlign: TextAlign.right,
-                    style: TextStyle(
-                        fontFamily: 'Sora',
-                        fontSize: 10,
-                        height: 1.3,
-                        color: DavoColors.of(context).bodyMuted)),
-              ),
-            ],
-          ),
-        ),
-      );
 }
 
 class BuyAssetIcon extends StatelessWidget {

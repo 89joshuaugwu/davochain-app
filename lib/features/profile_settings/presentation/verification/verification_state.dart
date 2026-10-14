@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 
 import '../../../../core/preview/preview_account_state.dart';
 import '../../verification_media/verification_attachment.dart';
+import '../../verification_media/verification_cache_owner.dart';
 
 enum BasicIdentityMethod {
   nin('NIN', 'National Identification Number'),
@@ -16,6 +17,22 @@ enum BasicIdentityMethod {
 class VerificationSession extends ChangeNotifier {
   VerificationSession._();
   static final instance = VerificationSession._();
+  Future<void> _cleanup = Future.value();
+  VerificationCleanupOutcome lastCleanupOutcome =
+      const VerificationCleanupOutcome();
+  Future<void> get cleanupComplete => _cleanup;
+
+  void _release(VerificationAttachment? attachment) {
+    if (attachment == null) return;
+    _cleanup = _cleanup.then((_) async {
+      final result = await attachment.release();
+      lastCleanupOutcome = VerificationCleanupOutcome(
+        failed: lastCleanupOutcome.failed + result.failed,
+        rejected: lastCleanupOutcome.rejected + result.rejected,
+      );
+    });
+  }
+
   int _generation = 0;
   int get generation => _generation;
 
@@ -42,17 +59,17 @@ class VerificationSession extends ChangeNotifier {
   void attachIdentity(VerificationAttachment attachment,
       {required bool front}) {
     if (front) {
-      identityFront?.release();
+      _release(identityFront);
       identityFront = attachment;
     } else {
-      identityBack?.release();
+      _release(identityBack);
       identityBack = attachment;
     }
     addIdentitySide(front: front);
   }
 
   void attachSelfie(VerificationAttachment attachment) {
-    selfie?.release();
+    _release(selfie);
     selfie = attachment;
     faceAdded = false;
     identityVerified = false;
@@ -60,7 +77,7 @@ class VerificationSession extends ChangeNotifier {
   }
 
   void attachAddress(VerificationAttachment attachment) {
-    addressAttachment?.release();
+    _release(addressAttachment);
     addressAttachment = attachment;
     addAddressDocument();
   }
@@ -110,9 +127,9 @@ class VerificationSession extends ChangeNotifier {
 
   void chooseDocument(String type) {
     if (identityDocumentType != type) {
-      identityFront?.release();
-      identityBack?.release();
-      selfie?.release();
+      _release(identityFront);
+      _release(identityBack);
+      _release(selfie);
       identityFront = null;
       identityBack = null;
       selfie = null;
@@ -148,9 +165,9 @@ class VerificationSession extends ChangeNotifier {
     notifyListeners();
   }
 
-  void removeIdentityFront() {
-    identityFront?.release();
-    selfie?.release();
+  Future<void> removeIdentityFront() {
+    _release(identityFront);
+    _release(selfie);
     identityFront = null;
     selfie = null;
     identityFrontAdded = false;
@@ -159,18 +176,20 @@ class VerificationSession extends ChangeNotifier {
     addressVerified = false;
     advancedSubmitted = false;
     notifyListeners();
+    return cleanupComplete;
   }
 
-  void removeIdentityBack() {
-    identityBack?.release();
+  Future<void> removeIdentityBack() {
+    _release(identityBack);
     identityBack = null;
     identityBackAdded = false;
     notifyListeners();
+    return cleanupComplete;
   }
 
   void chooseAddressDocument(String type) {
     if (addressDocumentType != type) {
-      addressAttachment?.release();
+      _release(addressAttachment);
       addressAttachment = null;
       addressDocumentAdded = false;
       addressVerified = false;
@@ -189,13 +208,14 @@ class VerificationSession extends ChangeNotifier {
     notifyListeners();
   }
 
-  void removeAddressDocument() {
-    addressAttachment?.release();
+  Future<void> removeAddressDocument() {
+    _release(addressAttachment);
     addressAttachment = null;
     addressDocumentAdded = false;
     addressVerified = false;
     advancedSubmitted = false;
     notifyListeners();
+    return cleanupComplete;
   }
 
   void submitAdvanced() {
@@ -211,14 +231,14 @@ class VerificationSession extends ChangeNotifier {
     notifyListeners();
   }
 
-  void reset() {
+  Future<void> reset() {
     for (final attachment in [
       identityFront,
       identityBack,
       addressAttachment,
       selfie
     ]) {
-      attachment?.release();
+      _release(attachment);
     }
     identityFront = null;
     identityBack = null;
@@ -241,5 +261,6 @@ class VerificationSession extends ChangeNotifier {
     advancedSubmitted = false;
     PreviewAccountState.setupComplete.value = false;
     notifyListeners();
+    return cleanupComplete;
   }
 }

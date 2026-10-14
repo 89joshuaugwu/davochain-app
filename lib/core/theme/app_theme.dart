@@ -31,9 +31,12 @@ abstract final class AppTheme {
   static ThemeData get dark => _build(Brightness.dark);
 
   static ThemeData _build(Brightness brightness) {
-    final colors = brightness == Brightness.dark ? DavoColors.dark : DavoColors.light;
+    final colors =
+        brightness == Brightness.dark ? DavoColors.dark : DavoColors.light;
     final isDark = brightness == Brightness.dark;
-    const baseText = TextStyle(fontFamily: 'Sora', fontFamilyFallback: ['DavoNotoSans', 'DavoNotoEmoji']);
+    const baseText = TextStyle(
+        fontFamily: 'Sora',
+        fontFamilyFallback: ['DavoNotoSans', 'DavoNotoMath', 'DavoNotoEmoji']);
 
     return ThemeData(
       useMaterial3: true,
@@ -41,24 +44,37 @@ abstract final class AppTheme {
       scaffoldBackgroundColor: colors.surface,
       extensions: [colors],
       iconTheme: IconThemeData(color: colors.bodyMuted),
-      textButtonTheme: TextButtonThemeData(style: TextButton.styleFrom(foregroundColor: colors.link)),
-      outlinedButtonTheme: OutlinedButtonThemeData(style: OutlinedButton.styleFrom(foregroundColor: colors.link, side: BorderSide(color: colors.border))),
+      textButtonTheme: TextButtonThemeData(
+          style: TextButton.styleFrom(foregroundColor: colors.link)),
+      outlinedButtonTheme: OutlinedButtonThemeData(
+          style: OutlinedButton.styleFrom(
+              foregroundColor: colors.link,
+              side: BorderSide(color: colors.border))),
       dividerColor: colors.divider,
       disabledColor: colors.muted,
       appBarTheme: AppBarTheme(
-        backgroundColor: colors.surface, surfaceTintColor: Colors.transparent,
+        backgroundColor: colors.surface,
+        surfaceTintColor: Colors.transparent,
         foregroundColor: colors.ink,
         systemOverlayStyle: SystemUiOverlayStyle(
           statusBarColor: Colors.transparent,
           statusBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
           statusBarBrightness: brightness,
           systemNavigationBarColor: colors.surface,
-          systemNavigationBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
+          systemNavigationBarIconBrightness:
+              isDark ? Brightness.light : Brightness.dark,
         ),
       ),
-      bottomSheetTheme: BottomSheetThemeData(backgroundColor: colors.elevated, surfaceTintColor: Colors.transparent),
-      dialogTheme: DialogThemeData(backgroundColor: colors.elevated, surfaceTintColor: Colors.transparent),
-      textSelectionTheme: TextSelectionThemeData(cursorColor: colors.link, selectionColor: colors.link.withValues(alpha: .28), selectionHandleColor: colors.link),
+      bottomSheetTheme: BottomSheetThemeData(
+          backgroundColor: colors.elevated,
+          surfaceTintColor: Colors.transparent),
+      dialogTheme: DialogThemeData(
+          backgroundColor: colors.elevated,
+          surfaceTintColor: Colors.transparent),
+      textSelectionTheme: TextSelectionThemeData(
+          cursorColor: colors.link,
+          selectionColor: colors.link.withValues(alpha: .28),
+          selectionHandleColor: colors.link),
       colorScheme: ColorScheme.fromSeed(
         brightness: brightness,
         seedColor: AppColors.primary,
@@ -71,7 +87,11 @@ abstract final class AppTheme {
         error: colors.danger,
       ),
       fontFamily: 'Sora',
-      fontFamilyFallback: const ['DavoNotoSans', 'DavoNotoEmoji'],
+      fontFamilyFallback: const [
+        'DavoNotoSans',
+        'DavoNotoMath',
+        'DavoNotoEmoji'
+      ],
       splashFactory: InkSparkle.splashFactory,
       textTheme: TextTheme(
         headlineSmall: baseText.copyWith(
@@ -125,7 +145,7 @@ abstract final class AppTheme {
         hintStyle: baseText.copyWith(
           fontSize: 16,
           height: 1.35,
-          color: colors.muted,
+          color: colors.bodyMuted,
           fontWeight: FontWeight.w400,
           letterSpacing: -0.32,
         ),
@@ -135,7 +155,8 @@ abstract final class AppTheme {
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(4),
-          borderSide: BorderSide(color: isDark ? colors.border : const Color(0xFFD2D6DF)),
+          borderSide: BorderSide(
+              color: isDark ? colors.border : const Color(0xFFD2D6DF)),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(4),

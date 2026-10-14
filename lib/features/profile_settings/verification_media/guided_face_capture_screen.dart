@@ -8,6 +8,8 @@ import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
 import '../../../core/theme/app_theme.dart';
 import '../presentation/verification/verification_components.dart';
 import 'face_guidance.dart';
+import 'face_capture_lifetime.dart';
+import '../../../shared/motion/davo_motion_policy.dart';
 import 'face_oval_overlay.dart';
 import 'face_capture_reveal.dart';
 import 'face_frame_freshness.dart';
@@ -25,6 +27,9 @@ class GuidedFaceCaptureScreen extends StatefulWidget {
 class _GuidedFaceState extends State<GuidedFaceCaptureScreen>
     with WidgetsBindingObserver {
   final guide = FaceGuidance();
+  final lifetime = FaceCaptureLifetime();
+  Future<void> cameraTeardown = Future<void>.value();
+  Future<void>? frameAnalysis;
   final detector = FaceDetector(
       options: FaceDetectorOptions(
           performanceMode: FaceDetectorMode.fast, enableTracking: true));
@@ -41,6 +46,7 @@ class _GuidedFaceState extends State<GuidedFaceCaptureScreen>
       delivered = false,
       voice = true;
   int generation = 0;
+  bool foreground = true;
   final monotonic = Stopwatch()..start();
   Duration analyzedAt = Duration.zero, tickAt = Duration.zero;
   FaceGuidanceStage? spoken;
@@ -48,6 +54,8 @@ class _GuidedFaceState extends State<GuidedFaceCaptureScreen>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    foreground = WidgetsBinding.instance.lifecycleState == null ||
+        WidgetsBinding.instance.lifecycleState == AppLifecycleState.resumed;
     guide.addListener(_changed);
     unawaited(_initialize());
   }
@@ -83,6 +91,12 @@ class _GuidedFaceState extends State<GuidedFaceCaptureScreen>
   }
 
   Future<void> _initialize() async {
+    await cameraTeardown;
+    if (!mounted || !foreground || !lifetime.accepting) return;
+    await lifetime.run(_initializeCamera);
+  }
+
+  Future<void> _initializeCamera() async {
     if (starting) return;
     starting = true;
     final ticket = ++generation;
@@ -119,6 +133,7 @@ class _GuidedFaceState extends State<GuidedFaceCaptureScreen>
       }
       camera = controller;
       await controller.startImageStream(_analyze);
+      if (!mounted || ticket != generation) return;
       tickAt = monotonic.elapsed;
       clock = Timer.periodic(const Duration(milliseconds: 200), (_) => _tick());
       spoken = guide.stage;
@@ -163,6 +178,18 @@ class _GuidedFaceState extends State<GuidedFaceCaptureScreen>
   }
 
   Future<void> _analyze(CameraImage frame) async {
+    if (!mounted || !lifetime.accepting) return;
+    if (analyzing || takingPhoto) return;
+    final pending = lifetime.run(() => _analyzeFrame(frame));
+    frameAnalysis = pending;
+    try {
+      await pending;
+    } finally {
+      if (identical(frameAnalysis, pending)) frameAnalysis = null;
+    }
+  }
+
+  Future<void> _analyzeFrame(CameraImage frame) async {
     final controller = camera;
     if (analyzing ||
         takingPhoto ||
@@ -282,6 +309,11 @@ class _GuidedFaceState extends State<GuidedFaceCaptureScreen>
   }
 
   Future<void> _captureFront() async {
+    if (!mounted || !lifetime.accepting) return;
+    await lifetime.run(_takeFrontPhoto);
+  }
+
+  Future<void> _takeFrontPhoto() async {
     takingPhoto = true;
     clock?.cancel();
     final controller = camera, ticket = generation;
@@ -289,6 +321,9 @@ class _GuidedFaceState extends State<GuidedFaceCaptureScreen>
     try {
       if (controller == null) return;
       await controller.stopImageStream();
+      // A frame already accepted by ML Kit must finish before still detection.
+      await frameAnalysis;
+      if (!mounted || ticket != generation) return;
       final photo = await controller.takePicture();
       try {
         final faces =
@@ -311,6 +346,7 @@ class _GuidedFaceState extends State<GuidedFaceCaptureScreen>
       front?.release();
       front = attachment;
       await controller.startImageStream(_analyze);
+      if (!mounted || ticket != generation) return;
       guide.frontCaptured();
       tickAt = monotonic.elapsed;
       analyzedAt = Duration.zero;
@@ -327,22 +363,36 @@ class _GuidedFaceState extends State<GuidedFaceCaptureScreen>
     }
   }
 
+  Future<void> _stopCamera(CameraController? previous) async {
+    if (previous == null) {
+      await lifetime.drain();
+      return;
+    }
+    try {
+      if (previous.value.isStreamingImages) await previous.stopImageStream();
+    } catch (_) {
+      // A capture may have stopped the stream first.
+    }
+    await lifetime.drain();
+    await previous.dispose();
+  }
+
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed && camera == null && !starting) {
-      unawaited(_initialize());
-    } else if (state != AppLifecycleState.resumed &&
-        camera?.value.isInitialized == true) {
-      generation++;
-      clock?.cancel();
-      unawaited(speech.stop());
-      final previous = camera;
-      camera = null;
-      unawaited(previous?.dispose());
-      front?.release();
-      front = null;
-      guide.reset();
+    foreground = state == AppLifecycleState.resumed;
+    if (state == AppLifecycleState.resumed) {
+      if (camera == null) unawaited(_initialize());
+      return;
     }
+    generation++;
+    clock?.cancel();
+    unawaited(speech.stop());
+    final previous = camera;
+    camera = null;
+    cameraTeardown = cameraTeardown.then((_) => _stopCamera(previous));
+    front?.release();
+    front = null;
+    guide.reset();
   }
 
   @override
@@ -353,19 +403,24 @@ class _GuidedFaceState extends State<GuidedFaceCaptureScreen>
     guide.removeListener(_changed);
     guide.dispose();
     if (!delivered) front?.release();
-    unawaited(camera?.dispose());
+    final previous = camera;
+    camera = null;
     unawaited(speech.stop());
-    unawaited(Future<void>.delayed(const Duration(milliseconds: 300), () async {
+    cameraTeardown = cameraTeardown.then((_) => _stopCamera(previous));
+    // Stop admission immediately; drain native work before releasing resources.
+    unawaited(lifetime.close(() async {
       try {
+        await cameraTeardown;
+      } finally {
         await detector.close();
-      } catch (_) {}
+      }
     }));
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final reduced = MediaQuery.disableAnimationsOf(context);
+    final reduced = DavoMotionPolicy.reduce(context);
     return Scaffold(
         backgroundColor: DavoColors.of(context).surface,
         appBar: AppBar(

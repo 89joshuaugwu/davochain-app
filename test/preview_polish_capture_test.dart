@@ -25,6 +25,7 @@ void main() {
       await (FontLoader('Sora')
             ..addFont(rootBundle.load('assets/fonts/sora/Sora-Variable.ttf')))
           .load();
+      await (FontLoader('DavoNotoMath')..addFont(rootBundle.load('assets/fonts/noto/NotoSansMath-Regular.ttf'))).load();
       await (FontLoader('DavoNotoSans')
             ..addFont(
                 rootBundle.load('assets/fonts/noto/NotoSans-Regular.ttf')))
@@ -33,7 +34,11 @@ void main() {
             ..addFont(rootBundle.load('fonts/MaterialIcons-Regular.otf')))
           .load();
     });
-    Future<void> capture(String name) => tester.runAsync(() async {
+    Future<void> capture(String name) async {
+      final images = tester.widgetList<Image>(find.byType(Image)).toList();
+      await tester.runAsync(() => Future.wait(images.map((image) => precacheImage(image.image, key.currentContext!))));
+      await tester.pump();
+      await tester.runAsync(() async {
           final image = await (key.currentContext!.findRenderObject()!
                   as RenderRepaintBoundary)
               .toImage(pixelRatio: 2);
@@ -42,6 +47,7 @@ void main() {
               .writeAsBytes(bytes!.buffer.asUint8List());
           image.dispose();
         });
+    }
     Future<void> mount(Widget screen, bool dark) async {
       await tester.pumpWidget(MaterialApp(
           key: UniqueKey(),

@@ -1,3 +1,4 @@
+import '../gift_order_draft.dart';
 import '../../../shared/formatters/grouped_amount_formatter.dart';
 import '../../../shared/receipts/receipt_record.dart';
 
@@ -14,7 +15,14 @@ ReceiptRecord giftCardPreviewReceipt({
   String? country,
   String? cardType,
   int? quantity,
+  GiftOrderDraft? draft,
 }) {
+  brand = draft?.product.brandName ?? brand;
+  category = draft?.product.category ?? category;
+  country = draft?.product.country ?? country;
+  cardType = draft?.product.typeLabel ?? cardType;
+  subcategory = draft?.product.label ?? subcategory;
+  quantity = draft?.quantity ?? quantity;
   return ReceiptRecord(
     id: id,
     reference: id,
@@ -35,6 +43,17 @@ ReceiptRecord giftCardPreviewReceipt({
         ReceiptField(label: 'Subcategory', value: subcategory),
       if (country != null) ReceiptField(label: 'Country', value: country),
       if (cardType != null) ReceiptField(label: 'Card type', value: cardType),
+      if (draft != null && !sell) ...[
+        ReceiptField(
+            label: 'Delivery recipient',
+            value: draft.delivery.forMe ? 'For Me' : 'Send Gift'),
+        ReceiptField(
+            label: 'Delivery method', value: draft.delivery.methodLabel),
+        if (draft.delivery.email.isNotEmpty)
+          ReceiptField(label: 'Email', value: draft.delivery.email),
+        if (draft.delivery.phone.isNotEmpty)
+          ReceiptField(label: 'Phone', value: draft.delivery.phone),
+      ],
       if (quantity != null) ReceiptField(label: 'Quantity', value: '$quantity'),
     ],
     events: [

@@ -1,3 +1,4 @@
+import '../../wallets/wallet_repository.dart';
 import 'portfolio_performance_screen.dart';
 import '../../../shared/widgets/davo_refresh_region.dart';
 import '../../../shared/widgets/davo_scroll_behavior.dart';
@@ -42,6 +43,21 @@ class DavoDashboardContent extends StatefulWidget {
 
 class _DavochainDashboardScreenState extends State<DavoDashboardContent> {
   bool _balanceVisible = true;
+  @override
+  void initState() {
+    super.initState();
+    WalletAccountState.instance.addListener(_walletChanged);
+  }
+
+  void _walletChanged() {
+    if (mounted) setState(() {});
+  }
+
+  @override
+  void dispose() {
+    WalletAccountState.instance.removeListener(_walletChanged);
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -458,7 +474,9 @@ class _BalanceCard extends StatelessWidget {
                       fit: BoxFit.scaleDown,
                       alignment: Alignment.centerLeft,
                       child: Text(
-                        visible ? '₦1,284,500.35' : '₦••••••••',
+                        visible
+                            ? WalletAccountState.instance.ngnBalanceLabel
+                            : '₦••••••••',
                         key: ValueKey(visible),
                         style: const TextStyle(
                           fontFamily: 'Sora',
@@ -471,7 +489,7 @@ class _BalanceCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  visible ? '≈ \$842.31 USD' : '≈ ••••• USD',
+                  visible ? 'NGN wallet' : 'Balance hidden',
                   style: const TextStyle(
                       fontFamily: 'Sora', fontSize: 14, color: Colors.white),
                 ),
@@ -886,40 +904,45 @@ class _DashboardAssetCard extends StatelessWidget {
                     key: const ValueKey('dashboard-asset-BTC'),
                     rowHeight: rowHeight,
                     asset: CryptoAsset.bitcoin,
-                    amount: '0.0086 BTC',
-                    value: '₦580,200.00',
+                    amount:
+                        '${WalletAccountState.instance.snapshot.available('BTC').decimal} BTC',
+                    value: WalletAccountState.instance.balanceLabel('BTC'),
                     change: '+4.21%'),
                 Divider(height: 1, color: DavoColors.of(context).divider),
                 _AssetRow(
                     key: const ValueKey('dashboard-asset-ETH'),
                     rowHeight: rowHeight,
                     asset: CryptoAsset.ethereum,
-                    amount: '0.102 ETH',
-                    value: '₦342,100.00',
+                    amount:
+                        '${WalletAccountState.instance.snapshot.available('ETH').decimal} ETH',
+                    value: WalletAccountState.instance.balanceLabel('ETH'),
                     change: '+2.18%'),
                 Divider(height: 1, color: DavoColors.of(context).divider),
                 _AssetRow(
                     key: const ValueKey('dashboard-asset-USDT'),
                     rowHeight: rowHeight,
                     asset: CryptoAsset.tether,
-                    amount: '250.00 USDT',
-                    value: '₦250,000.00',
+                    amount:
+                        '${WalletAccountState.instance.snapshot.available('USDT').decimal} USDT',
+                    value: WalletAccountState.instance.balanceLabel('USDT'),
                     change: '0.00%'),
                 Divider(height: 1, color: DavoColors.of(context).divider),
                 _AssetRow(
                     key: const ValueKey('dashboard-asset-USDC'),
                     rowHeight: rowHeight,
                     asset: CryptoAsset.usdCoin,
-                    amount: '112.20 USDC',
-                    value: '₦112,200.35',
+                    amount:
+                        '${WalletAccountState.instance.snapshot.available('USDC').decimal} USDC',
+                    value: WalletAccountState.instance.balanceLabel('USDC'),
                     change: '+0.01%'),
                 Divider(height: 1, color: DavoColors.of(context).divider),
                 _AssetRow(
                     key: const ValueKey('dashboard-asset-SOL'),
                     rowHeight: rowHeight,
                     asset: CryptoAsset.solana,
-                    amount: '0.74 SOL',
-                    value: '\u20a6112,200.00',
+                    amount:
+                        '${WalletAccountState.instance.snapshot.available('SOL').decimal} SOL',
+                    value: WalletAccountState.instance.balanceLabel('SOL'),
                     change: '+4.21%'),
               ],
             ),
@@ -1093,6 +1116,22 @@ class PortfolioScreen extends StatefulWidget {
 }
 
 class _PortfolioScreenState extends State<PortfolioScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WalletAccountState.instance.addListener(_walletChanged);
+  }
+
+  void _walletChanged() {
+    if (mounted) setState(() {});
+  }
+
+  @override
+  void dispose() {
+    WalletAccountState.instance.removeListener(_walletChanged);
+    super.dispose();
+  }
+
   bool _visible = true;
 
   @override
@@ -1201,31 +1240,42 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
               Container(
                 decoration:
                     BoxDecoration(borderRadius: BorderRadius.circular(8)),
-                child: const Column(
+                child: Column(
                   children: [
                     _PortfolioAssetTile(
                         asset: CryptoAsset.bitcoin,
-                        amount: '0.0086 BTC',
-                        value: '₦580,200.00',
+                        amount:
+                            '${WalletAccountState.instance.snapshot.available('BTC').decimal} BTC',
+                        value: WalletAccountState.instance.balanceLabel('BTC'),
                         change: '+4.21%'),
-                    SizedBox(height: 8),
+                    const SizedBox(height: 8),
                     _PortfolioAssetTile(
                         asset: CryptoAsset.ethereum,
-                        amount: '0.102 ETH',
-                        value: '₦342,100.00',
+                        amount:
+                            '${WalletAccountState.instance.snapshot.available('ETH').decimal} ETH',
+                        value: WalletAccountState.instance.balanceLabel('ETH'),
                         change: '+2.18%'),
-                    SizedBox(height: 8),
+                    const SizedBox(height: 8),
                     _PortfolioAssetTile(
                         asset: CryptoAsset.solana,
-                        amount: '0.74 SOL',
-                        value: '₦112,200.00',
+                        amount:
+                            '${WalletAccountState.instance.snapshot.available('SOL').decimal} SOL',
+                        value: WalletAccountState.instance.balanceLabel('SOL'),
                         change: '+4.21%'),
-                    SizedBox(height: 8),
+                    const SizedBox(height: 8),
                     _PortfolioAssetTile(
                         asset: CryptoAsset.tether,
-                        amount: '250.00 USDT',
-                        value: '₦250,000.00',
+                        amount:
+                            '${WalletAccountState.instance.snapshot.available('USDT').decimal} USDT',
+                        value: WalletAccountState.instance.balanceLabel('USDT'),
                         change: '+2.18%'),
+                    const SizedBox(height: 8),
+                    _PortfolioAssetTile(
+                        asset: CryptoAsset.usdCoin,
+                        amount:
+                            '${WalletAccountState.instance.snapshot.available('USDC').decimal} USDC',
+                        value: WalletAccountState.instance.balanceLabel('USDC'),
+                        change: '\u2014'),
                   ],
                 ),
               ),
@@ -1336,7 +1386,9 @@ class _PortfolioValueCard extends StatelessWidget {
                         color: DavoColors.of(context).border)),
                 const SizedBox(height: 8),
                 Text(
-                  visible ? '₦1,284,500.35' : '₦••••••••',
+                  visible
+                      ? WalletAccountState.instance.portfolioBalanceLabel
+                      : '₦••••••••',
                   style: const TextStyle(
                       fontFamily: 'Sora',
                       fontSize: 24,
@@ -1344,8 +1396,8 @@ class _PortfolioValueCard extends StatelessWidget {
                       color: Colors.white),
                 ),
                 const SizedBox(height: 3),
-                Text(visible ? '≈ \$842.31 USD' : '≈ ••••• USD',
-                    style: const TextStyle(
+                const Text('Portfolio valuation',
+                    style: TextStyle(
                         fontFamily: 'Sora', fontSize: 14, color: Colors.white)),
               ],
             ),
@@ -1358,176 +1410,40 @@ class _PortfolioValueCard extends StatelessWidget {
 
 class _AllocationCard extends StatelessWidget {
   const _AllocationCard();
-
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => ListenableBuilder(listenable: WalletAccountState.instance, builder: (context, _) => _content(context));
+  Widget _content(BuildContext context) {
+    final state = WalletAccountState.instance;
+    final assets = state.snapshot.assets
+        .where((asset) => asset != 'NGN' && asset != 'NGD')
+        .toList();
+    final total = state.snapshot.portfolioMinorUnits;
     return Container(
-      height: 205,
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-          color: DavoColors.of(context).surface,
-          borderRadius: BorderRadius.circular(12)),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Text('Asset Allocation',
-                  style: TextStyle(
-                      fontFamily: 'Sora',
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: DavoColors.of(context).ink)),
-              const SizedBox(width: 12),
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                    color: DavoColors.of(context).primarySoft,
-                    borderRadius: BorderRadius.circular(100)),
-                child: Text('4 Coins',
-                    style: TextStyle(
-                        fontFamily: 'Sora',
-                        fontSize: 12,
-                        color: DavoColors.of(context).body)),
-              ),
-            ],
-          ),
-          const SizedBox(height: 14),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(100),
-            child: Row(
-              children: [
-                const Expanded(
-                    flex: 452,
-                    child: SizedBox(
-                        height: 12,
-                        child: ColoredBox(color: Color(0xFFF7931A)))),
-                const Expanded(
-                    flex: 266,
-                    child: SizedBox(
-                        height: 12,
-                        child: ColoredBox(color: Color(0xFF627EEA)))),
-                const Expanded(
-                    flex: 195,
-                    child: SizedBox(
-                        height: 12,
-                        child: ColoredBox(color: Color(0xFF50AF95)))),
-                Expanded(
-                    flex: 87,
-                    child: SizedBox(
-                        height: 12,
-                        child:
-                            ColoredBox(color: DavoColors.of(context).success))),
-              ],
-            ),
-          ),
-          const SizedBox(height: 10),
-          Expanded(
-            child: Column(
-              children: [
-                const Expanded(
-                  child: Row(
-                    children: [
-                      Expanded(
-                          child: _AllocationTile(
-                              name: 'Bitcoin',
-                              percent: '45.2%',
-                              value: '₦580.2k',
-                              color: Color(0xFFF7931A))),
-                      SizedBox(width: 16),
-                      Expanded(
-                          child: _AllocationTile(
-                              name: 'Ethereum',
-                              percent: '26.6%',
-                              value: '₦342.1k',
-                              color: Color(0xFF627EEA))),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 10),
-                Expanded(
-                  child: Row(
-                    children: [
-                      const Expanded(
-                          child: _AllocationTile(
-                              name: 'Tether',
-                              percent: '19.5%',
-                              value: '₦250.0k',
-                              color: Color(0xFF50AF95))),
-                      const SizedBox(width: 16),
-                      Expanded(
-                          child: _AllocationTile(
-                              name: 'Solana',
-                              percent: '8.7%',
-                              value: '₦112.2k',
-                              color: DavoColors.of(context).success)),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _AllocationTile extends StatelessWidget {
-  const _AllocationTile(
-      {required this.name,
-      required this.percent,
-      required this.value,
-      required this.color});
-
-  final String name;
-  final String percent;
-  final String value;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-      decoration: BoxDecoration(
-          color: DavoColors.of(context).primarySoft,
-          borderRadius: BorderRadius.circular(4)),
-      child: Row(
-        children: [
-          Container(
-              width: 8,
-              height: 8,
-              decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
-          const SizedBox(width: 4),
-          Expanded(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(name,
-                    style: TextStyle(
-                        fontFamily: 'Sora',
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: DavoColors.of(context).ink)),
-                Text(percent,
-                    style: TextStyle(
-                        fontFamily: 'Sora',
-                        fontSize: 10,
-                        color: DavoColors.of(context).body)),
-              ],
-            ),
-          ),
-          Text(value,
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+            color: DavoColors.of(context).surface,
+            borderRadius: BorderRadius.circular(12)),
+        child:
+            Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+          Text('Asset Allocation',
               style: TextStyle(
-                  fontFamily: 'Sora',
-                  fontSize: 14,
+                  fontSize: 16,
                   fontWeight: FontWeight.w600,
                   color: DavoColors.of(context).ink)),
-        ],
-      ),
-    );
+          const SizedBox(height: 12),
+          ...assets.map((asset) => Padding(
+              padding: const EdgeInsets.symmetric(vertical: 6),
+              child: Row(children: [
+                Expanded(child: Text(asset)),
+                Text(total == 0
+                    ? '0.0%'
+                    : '${(state.snapshot.valuationMinorUnits(asset) * 100 / total).toStringAsFixed(1)}%'),
+                const SizedBox(width: 12),
+                Expanded(
+                    child: Text(state.balanceLabel(asset),
+                        textAlign: TextAlign.right)),
+              ]))),
+        ]));
   }
 }
 
@@ -1632,32 +1548,32 @@ class _WalletSelectorSheet extends StatelessWidget {
 
   final Future<_WalletOption?> Function() onAddCrypto;
 
-  static const options = [
-    _WalletOption(
+  static final options = [
+    const _WalletOption(
         name: 'Davochain Naira',
         symbol: 'NGD',
         balance: '100.50 USD',
         subBalance: '135,000.00 ₦',
         isFiat: true),
-    _WalletOption(
+    const _WalletOption(
         name: 'Bitcoin',
         symbol: 'BTC',
         balance: '0.00 USD',
         subBalance: '0.00000000 BTC',
         asset: CryptoAsset.bitcoin),
-    _WalletOption(
+    const _WalletOption(
         name: 'Ethereum',
         symbol: 'ETH',
         balance: '0.00 USD',
         subBalance: '0.00000000 ETH',
         asset: CryptoAsset.ethereum),
-    _WalletOption(
+    const _WalletOption(
         name: 'Solana',
         symbol: 'SOL',
         balance: '0.00 USD',
         subBalance: '0.00000000 SOL',
         asset: CryptoAsset.solana),
-    _WalletOption(
+    const _WalletOption(
         name: 'Tether',
         symbol: 'USDT',
         balance: '0.00 USD',
@@ -1711,7 +1627,8 @@ class _WalletTile extends StatelessWidget {
     return InkWell(
       onTap: () => Navigator.pop(context, option),
       child: Container(
-        height: 63,
+        constraints: const BoxConstraints(minHeight: 63),
+        padding: const EdgeInsets.symmetric(vertical: 12),
         decoration: BoxDecoration(
             border: Border(
                 bottom: BorderSide(
@@ -1747,13 +1664,14 @@ class _WalletTile extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                Text(option.balance,
+                Text(WalletAccountState.instance.balanceLabel(option.symbol),
                     style: TextStyle(
                         fontFamily: 'Sora',
                         fontSize: 14,
                         color: DavoColors.of(context).body)),
                 const SizedBox(height: 2),
-                Text(option.subBalance,
+                Text(
+                    '${WalletAccountState.instance.snapshot.available(option.symbol).decimal} ${option.symbol}',
                     style: TextStyle(
                         fontFamily: 'Sora',
                         fontSize: 10,

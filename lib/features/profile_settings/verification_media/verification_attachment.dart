@@ -1,5 +1,5 @@
 import 'dart:io';
-import 'dart:async';
+import 'verification_cache_owner.dart';
 
 class VerificationAttachment {
   const VerificationAttachment(
@@ -9,32 +9,23 @@ class VerificationAttachment {
       required this.kind,
       this.previewPath,
       this.ownedDirectory,
+      this.cacheOwner,
       this.isAsset = false,
       this.owned = false});
   final String path, name, kind;
   final int bytes;
   final String? previewPath, ownedDirectory;
   final bool isAsset, owned;
+  final VerificationCacheOwner? cacheOwner;
   String get sizeLabel => bytes >= 1024 * 1024
       ? '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB'
       : '${(bytes / 1024).ceil()} KB';
-  void release() {
-    if (!owned || isAsset || ownedDirectory == null) return;
-    unawaited(_remove(path));
-    if (previewPath != null && previewPath != path) {
-      unawaited(_remove(previewPath!));
+  Future<VerificationCleanupOutcome> release() async {
+    if (!owned || isAsset || ownedDirectory == null) {
+      return const VerificationCleanupOutcome();
     }
-  }
-
-  Future<void> _remove(String target) async {
-    try {
-      final file = File(target);
-      if (file.absolute.parent.path !=
-          Directory(ownedDirectory!).absolute.path) {
-        return;
-      }
-      if (await file.exists()) await file.delete();
-    } catch (_) {/* Cache cleanup can retry on the next session. */}
+    return (cacheOwner ?? VerificationCacheOwner(Directory(ownedDirectory!)))
+        .releasePaths([path, if (previewPath != null) previewPath!]);
   }
 }
 

@@ -18,13 +18,13 @@ void main() {
       expect(find.text('Wallet Balance'), findsOneWidget);
       expect(find.text('Bitcoin'), findsOneWidget);
       await tester.enterText(find.byType(TextField).at(0), 'demo-recipient');
-      await tester.enterText(find.byType(TextField).at(1), '12345.678900');
+      await tester.enterText(find.byType(TextField).at(1), '0.010100');
       expect(
           tester
               .widget<TextField>(find.byType(TextField).at(1))
               .controller!
               .text,
-          '12,345.678900');
+          '0.010100');
       FocusManager.instance.primaryFocus?.unfocus();
       await tester.pumpAndSettle();
       if (external) {
@@ -55,7 +55,7 @@ void main() {
               .widget<TextField>(find.byType(TextField).at(1))
               .controller!
               .text,
-          '12,345.678900');
+          '0.010100');
       if (external) {
         expect(find.text('Select withdrawal network'), findsOneWidget);
         expect(find.text('Confirm'), findsOneWidget);

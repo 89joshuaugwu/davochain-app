@@ -1,3 +1,4 @@
+import 'support/gift_evidence_fixture.dart';
 import 'package:davochain/core/theme/app_theme.dart';
 import 'package:davochain/features/gift_cards/presentation/gift_card_flow.dart';
 import 'package:davochain/shared/widgets/davo_animated_checkbox.dart';
@@ -64,18 +65,20 @@ void main() {
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
+    final evidence = (await tester.runAsync(giftEvidenceFixture))!;
+    addTearDown(evidence.release);
     await tester.pumpWidget(MaterialApp(
         theme: AppTheme.light,
-        home: const GiftCardSellReviewScreen(brand: brand, amount: 500)));
+        home: GiftCardSellReviewScreen(brand: brand, amount: 500, draft: GiftOrderDraft(
+          product: const GiftCatalogProduct(skuId: "apple-fr-physical", brandName: "iTunes/Apple", country: "France", cardType: GiftCardType.physical, category: "streaming"),
+          denomination: 500, evidence: evidence))));
     await tester.pumpAndSettle();
     final edge = tester.getBottomRight(find.text('₦0')).dx;
     expect(tester.getBottomRight(find.text('₦865/\$1')).dx, closeTo(edge, .01));
     expect(tester.getBottomRight(find.text('₦432,500').last).dx,
         closeTo(edge, .01));
     final image = find.byWidgetPredicate((w) =>
-        w is Image &&
-        w.image is AssetImage &&
-        (w.image as AssetImage).assetName.endsWith('apple_card_photo.png'));
+        w is Image && w.image is FileImage);
     expect(tester.getCenter(image).dx, closeTo(160, .01));
     await tester.ensureVisible(find.byType(DavoAnimatedCheckbox));
     await tester.tap(find.byType(DavoAnimatedCheckbox));

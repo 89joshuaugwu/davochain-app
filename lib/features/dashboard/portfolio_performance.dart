@@ -1,3 +1,4 @@
+import '../wallets/wallet_repository.dart';
 import 'package:flutter/foundation.dart';
 
 enum PortfolioPerformancePeriod {
@@ -41,7 +42,9 @@ class PortfolioPerformanceSnapshot {
   factory PortfolioPerformanceSnapshot.currentBalance({DateTime? timestamp}) =>
       PortfolioPerformanceSnapshot(
           current: PortfolioValuePoint(
-              timestamp: timestamp ?? DateTime.now(), valueKobo: 128450035));
+              timestamp: timestamp ?? DateTime.now(),
+              valueKobo:
+                  WalletAccountState.instance.snapshot.portfolioMinorUnits));
 
   final PortfolioValuePoint current;
   final List<PortfolioValuePoint> history;

@@ -24,7 +24,7 @@ class DavoWorkingIndicator extends StatefulWidget {
 class _WorkingState extends State<DavoWorkingIndicator>
     with SingleTickerProviderStateMixin, WidgetsBindingObserver {
   late final AnimationController controller;
-  bool reduced = false, foreground = true, started = false;
+  bool reduced = false, foreground = true, started = false, visible = true;
   @override
   void initState() {
     super.initState();
@@ -39,7 +39,7 @@ class _WorkingState extends State<DavoWorkingIndicator>
   }
 
   void sync() {
-    if (reduced || !foreground || !widget.active) {
+    if (reduced || !foreground || !visible || !widget.active) {
       controller.stop();
       return;
     }
@@ -57,12 +57,20 @@ class _WorkingState extends State<DavoWorkingIndicator>
   void didChangeDependencies() {
     super.didChangeDependencies();
     reduced = DavoMotionPolicy.reduce(context);
+    visible = TickerMode.valuesOf(context).enabled;
     sync();
   }
 
   @override
   void didUpdateWidget(DavoWorkingIndicator old) {
     super.didUpdateWidget(old);
+    if (old.kind != widget.kind) {
+      controller.stop();
+      controller.duration = Duration(
+          milliseconds: widget.kind == DavoWorkingKind.operation ? 1200 : 3600);
+      controller.value = 0;
+      started = false;
+    }
     sync();
   }
 
@@ -163,5 +171,5 @@ class DavoWorkingPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(DavoWorkingPainter old) =>
-      old.progress != progress || old.kind != kind;
+      old.progress != progress || old.kind != kind || old.color != color;
 }

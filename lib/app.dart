@@ -1,3 +1,4 @@
+import 'core/providers/app_providers.dart';
 import 'shared/widgets/davo_scroll_behavior.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -20,6 +21,7 @@ class DavochainApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    AppProviders.validateCurrentEntrypoint();
     return ListenableBuilder(
         listenable: AppearanceController.instance,
         builder: (context, _) => MaterialApp(

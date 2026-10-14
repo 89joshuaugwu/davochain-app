@@ -1,10 +1,26 @@
 import 'dart:io';
 import 'package:davochain/features/profile_settings/verification_media/verification_media_gateway.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter/services.dart';
 import 'package:image_picker_platform_interface/image_picker_platform_interface.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+  late Directory temporary;
+  const paths = MethodChannel('plugins.flutter.io/path_provider');
+  setUpAll(() async {
+    temporary = await Directory.systemTemp.createTemp('native-verification-');
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(paths, (call) async {
+      if (call.method == 'getTemporaryDirectory') return temporary.path;
+      throw MissingPluginException('Unsupported path-provider test request');
+    });
+  });
+  tearDownAll(() async {
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(paths, null);
+    await temporary.delete(recursive: true);
+  });
   test('ID gallery uses native image selection and handles cancellation',
       () async {
     final original = ImagePickerPlatform.instance;
