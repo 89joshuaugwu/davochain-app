@@ -25,7 +25,7 @@ ReceiptRecord buildBuyReceiptRecord(BuyCryptoOrder order,
         ReceiptField(
             label: 'Amount paid',
             value:
-                '${formatGroupedAmount(order.ngnAmount.toStringAsFixed(2))} ${order.wallet.symbol}'),
+                '${formatGroupedAmount(order.exactNgnAmount.toFixed(2))} ${order.wallet.symbol}'),
         ReceiptField(
             label: 'Asset',
             value: '${order.asset.name} (${order.asset.symbol})'),

@@ -597,3 +597,21 @@ Map history entries to `PortfolioValuePoint(timestamp, valueKobo)` and current v
 Shared refresh now includes `DavoRefreshTarget.portfolioPerformance` and optional `DavoRefreshRequest.period` (for example `1W`). The scope/read adapter must publish its snapshot before completion. A page-supplied loader can override the region callback; otherwise it delegates to the shared scope. Publish actual history when available, preserve last known data on failure, keep adjusted summaries scoped to their range, reject old-account responses and update the parent holdings/balance snapshot consistently.
 
 Acceptance: initial range requests 1M; switching periods filters actual timestamped valuations and requests the matching range; dragging/tapping and accessibility selection inspect the correct point; hidden mode exposes no values through chart/slider semantics; sparse/flat/empty history is valid; exact kobo survives formatting; cash deposits do not imply gains; late responses cannot overwrite a newer period/account; network failures retain existing valuations and permit retry.
+
+
+## Build 39 financial integration boundary
+
+The remaining financial feature calculations now use `ExactDecimal`, BigInt arithmetic and canonical strings. Live input must stay exact across quote/review/acceptance/receipt paths. `BuyCryptoOrder` can carry `quantityDecimals` captured from wallet metadata; its numeric getters and `ngnPerUnit` are compatibility/presentation adapters. Do not serialize them.
+
+Deliver currency/asset/network precision metadata, price/quote IDs, canonical amount and fee quantities, their currencies, rounding rules and minimum/maximum limits. Use decimal strings or atomic/minor-unit strings in JSON, including values beyond JavaScript's safe integer range. Compare quotes and accepted operations using exact values and immutable account/operation identities. A receipt must use the accepted quote/operation snapshot, not a recomputed display estimate or current market rate.
+
+Buy quantities currently resolve down to supported atomic precision; sell/convert percentages resolve down to available atomic units; fiat/gift costs round at two decimal places. These are explicit development policies, not authority to override provider quote rules. Replace seeded pricing and local operation fixtures with agreed server-owned quotes and record the quote's exact quantities before submission. Network fee eligibility must include both amount and fee in the appropriate wallet; do not retry a timed-out money mutation without its original idempotency key.
+
+Portfolio period projections and chart geometry now cache within immutable snapshots. Publish a new snapshot for fresh data; never mutate its lists in place. Account reset invalidates open amount controllers. Continue rejecting late old-account responses and reconcile receipt status from read/event updates.
+
+
+## Shared notification inbox and unread count
+
+`NotificationInbox` now provides immutable stable-ID records to the bell and notification center. Publish the server's total unread count as well as the current page; the badge caps visual counts at `9+` while accessibility announces the exact number. Mark-read uses IDs. `PreviewAccountState.readNotifications` is a legacy fixture title-set view only and must not identify backend records.
+
+Capture an inbox publication token when starting a read; rejected tokens indicate a superseding read/update or account reset. The adapter must also order concurrent server responses using request sequence or server revision, acknowledge read mutations, retry/reconcile errors and preserve account ownership. Local mark-read behavior does not supply an HTTP implementation or durable server acknowledgment. Sign-out/account reset clears the canonical inbox scope. See `notification-unread-badge.md`.

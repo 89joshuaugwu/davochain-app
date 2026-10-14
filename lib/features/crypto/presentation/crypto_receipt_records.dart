@@ -1,3 +1,5 @@
+import '../../wallets/wallet_repository.dart';
+import '../../../core/money/exact_decimal.dart';
 import '../../../shared/formatters/crypto_quantity_formatter.dart';
 import '../../../shared/receipts/receipt_record.dart';
 import '../../../shared/formatters/grouped_amount_formatter.dart';
@@ -8,7 +10,7 @@ export '../../../shared/formatters/crypto_quantity_formatter.dart';
 ReceiptRecord buildCryptoReceiptRecord(
     {required TxKind kind,
     required String target,
-    required double amount,
+    required Object amount,
     BuyCryptoAsset asset = BuyCryptoAsset.bitcoin,
     ReceiptStatus status = ReceiptStatus.completed,
     DateTime? occurredAt,
@@ -16,7 +18,7 @@ ReceiptRecord buildCryptoReceiptRecord(
     String? reference,
     String? network,
     String? transactionHash,
-    double? fee,
+    Object? fee,
     bool preview = true}) {
   final date = occurredAt ?? DateTime.now();
   final type = switch (kind) {
@@ -27,14 +29,14 @@ ReceiptRecord buildCryptoReceiptRecord(
   };
   final identity = id ?? receiptDemoId(date);
   final quantity = '${formatCryptoQuantity(amount)} ${asset.symbol}';
-  final ngn = amount * asset.ngnPerUnit;
+  final ngn = ExactDecimal.from(amount) * asset.ngnPrice;
   final destination = BuyCryptoAsset.values
       .where((a) => a.symbol == target || a.name == target)
       .firstOrNull;
   final received = kind == TxKind.sell
-      ? '₦${formatGroupedAmount(ngn.toStringAsFixed(2))}'
+      ? '₦${formatGroupedAmount(ngn.toFixed(2))}'
       : kind == TxKind.conversion && destination != null
-          ? '${formatCryptoQuantity(ngn / destination.ngnPerUnit)} ${destination.symbol}'
+          ? '${formatCryptoQuantity(ngn.divide(destination.ngnPrice, scale: WalletAccountState.instance.snapshot.available(destination.symbol).decimals, rounding: DecimalRounding.floor))} ${destination.symbol}'
           : null;
   return ReceiptRecord(
       id: identity,
@@ -63,19 +65,19 @@ ReceiptRecord buildCryptoReceiptRecord(
             label: 'Network Fee',
             value: fee == null
                 ? 'Not supplied'
-                : fee == 0
+                : ExactDecimal.from(fee).isZero
                     ? 'Free'
                     : '${formatCryptoQuantity(fee)} ${asset.symbol}'),
         if (kind == TxKind.sell)
           ReceiptField(
               label: 'Exchange Rate',
               value:
-                  '1 ${asset.symbol} ≈ ₦${formatGroupedAmount(asset.ngnPerUnit.toStringAsFixed(2))}'),
+                  '1 ${asset.symbol} ≈ ₦${formatGroupedAmount(asset.ngnPrice.toFixed(2))}'),
         if (kind == TxKind.conversion && destination != null)
           ReceiptField(
               label: 'Exchange Rate',
               value:
-                  '1 ${asset.symbol} ≈ ${formatCryptoQuantity(asset.ngnPerUnit / destination.ngnPerUnit)} ${destination.symbol}'),
+                  '1 ${asset.symbol} ≈ ${formatCryptoQuantity(asset.ngnPrice.divide(destination.ngnPrice))} ${destination.symbol}'),
         if (transactionHash != null)
           ReceiptField(
               label: 'Transaction Hash',

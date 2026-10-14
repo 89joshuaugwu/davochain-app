@@ -15,7 +15,7 @@ void main() {
     await tester.tap(find.text('25%'));
     await tester.pump();
     expect(tester.widget<TextField>(find.byType(TextField)).controller!.text,
-        '1.25');
+        '0.0255'); // 25% of the shared 0.102 ETH wallet snapshot.
     await tester.tap(find.text('Swap').last);
     await tester.pumpAndSettle();
     expect(
@@ -130,7 +130,7 @@ void main() {
     await tester.ensureVisible(find.byTooltip('Swap assets'));
     await tester.tap(find.byTooltip('Swap assets'));
     await tester.pump();
-    expect(find.text('675.32 USDT'), findsOneWidget);
+    expect(find.text('675.324675 USDT'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 

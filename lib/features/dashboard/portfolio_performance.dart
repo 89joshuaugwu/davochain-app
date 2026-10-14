@@ -51,18 +51,27 @@ class PortfolioPerformanceSnapshot {
   final Map<PortfolioPerformancePeriod, PortfolioAdjustedPerformance>
       performance;
 
-  List<PortfolioValuePoint> pointsFor(PortfolioPerformancePeriod period) {
+  // A snapshot is immutable. Reuse period projections while inspecting the chart
+  // instead of rebuilding and sorting the same history on every pointer move.
+  final Map<PortfolioPerformancePeriod, List<PortfolioValuePoint>>
+      _periodPoints = {};
+
+  List<PortfolioValuePoint> pointsFor(PortfolioPerformancePeriod period) =>
+      _periodPoints.putIfAbsent(period, () => _projectPoints(period));
+
+  List<PortfolioValuePoint> _projectPoints(PortfolioPerformancePeriod period) {
     final cutoff = period.duration == null
         ? null
         : current.timestamp.subtract(period.duration!);
     // The latest valuation wins if a repository includes it in both fields.
     final byTime = <DateTime, PortfolioValuePoint>{};
-    for (final point in [...history, current]) {
+    for (final point in history) {
       if (!point.timestamp.isAfter(current.timestamp) &&
           (cutoff == null || !point.timestamp.isBefore(cutoff))) {
         byTime[point.timestamp] = point;
       }
     }
+    byTime[current.timestamp] = current;
     return List.unmodifiable(byTime.values.toList()
       ..sort((a, b) => a.timestamp.compareTo(b.timestamp)));
   }

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+import 'davo_action_icon.dart';
 import '../../core/navigation/app_page_route.dart';
 import '../../core/theme/app_theme.dart';
 import '../motion/davo_motion_policy.dart';
@@ -149,11 +149,11 @@ class DavoMainNavigation extends StatelessWidget {
   final int index;
   final ValueChanged<int> onChanged;
   static const labels = ['Home', 'Trade', 'Gift Cards', 'Settings'];
-  static const assets = [
-    'nav_home_full.svg',
-    'nav_trade_full.svg',
-    'nav_gift_full.svg',
-    'nav_settings_full.svg'
+  static const glyphs = [
+    DavoActionGlyph.home,
+    DavoActionGlyph.trade,
+    DavoActionGlyph.gift,
+    DavoActionGlyph.settings
   ];
   @override
   Widget build(BuildContext context) => DecoratedBox(
@@ -165,9 +165,9 @@ class DavoMainNavigation extends StatelessWidget {
             top: false,
             child: SizedBox(
               height: 72 +
-                  (MediaQuery.textScalerOf(context).scale(11) - 11)
-                          .clamp(0, 44) *
-                      6,
+                  (MediaQuery.textScalerOf(context).scale(10) - 10)
+                          .clamp(0, 30) *
+                      2.8,
               child: Row(
                   children: List.generate(4, (item) {
                 final selected = item == index;
@@ -179,25 +179,25 @@ class DavoMainNavigation extends StatelessWidget {
                   selected: selected,
                   button: true,
                   label: '${labels[item]} tab',
+                  excludeSemantics: true,
+                  onTap: () => onChanged(item),
                   child: InkWell(
                       key: ValueKey('main-tab-$item'),
                       onTap: () => onChanged(item),
                       child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            SvgPicture.asset(
-                                'assets/figma_exact/${assets[item]}',
-                                width: 24,
-                                height: 24,
-                                colorFilter:
-                                    ColorFilter.mode(color, BlendMode.srcIn)),
+                            DavoActionIcon(glyphs[item],
+                                size: 24, color: color),
                             const SizedBox(height: 5),
                             Text(labels[item],
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
                                     fontFamily: 'Sora',
                                     fontSize: 10,
-                                    height: 1.2,
+                                    height: 1.1,
                                     fontWeight: FontWeight.w500,
                                     color: color)),
                           ])),

@@ -9,7 +9,7 @@ class DavoSheetHeader extends StatelessWidget {
   Widget build(BuildContext context) => Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16),
         child: Row(children: [
-          const SizedBox(width: 44),
+          const SizedBox(width: 48),
           Expanded(
               child: Text(title,
                   textAlign: TextAlign.center,
@@ -21,7 +21,7 @@ class DavoSheetHeader extends StatelessWidget {
           IconButton(
               tooltip: 'Close',
               onPressed: () => Navigator.pop(context),
-              constraints: const BoxConstraints.tightFor(width: 44, height: 44),
+              constraints: const BoxConstraints.tightFor(width: 48, height: 48),
               padding: EdgeInsets.zero,
               icon: const Icon(Icons.close_rounded, size: 24)),
         ]),

@@ -1,3 +1,4 @@
+import '../motion/davo_motion_policy.dart';
 import 'package:flutter/material.dart';
 import '../../core/theme/app_theme.dart';
 import 'auth_widgets.dart';
@@ -32,7 +33,7 @@ class _TransactionPinEntryScreenState extends State<TransactionPinEntryScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final reduced = MediaQuery.disableAnimationsOf(context);
+    final reduced = DavoMotionPolicy.reduce(context);
     return DavoAuthScaffold(
       child: LayoutBuilder(
           builder: (context, constraints) => SingleChildScrollView(
@@ -158,9 +159,14 @@ class _TransactionPinEntryScreenState extends State<TransactionPinEntryScreen> {
                               }
                               return Expanded(
                                   child: SizedBox(
-                                      height: 56,
+                                      height: 56 +
+                                          (MediaQuery.textScalerOf(context)
+                                                      .scale(25) -
+                                                  25)
+                                              .clamp(0, double.infinity),
                                       child: Semantics(
                                         button: true,
+                                        onTap: () => key(values[i]),
                                         label: values[i] == 'back'
                                             ? 'Delete PIN digit'
                                             : values[i],

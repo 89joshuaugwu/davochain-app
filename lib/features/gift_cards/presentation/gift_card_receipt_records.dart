@@ -1,3 +1,4 @@
+import '../../../core/money/exact_decimal.dart';
 import '../gift_order_draft.dart';
 import '../../../shared/formatters/grouped_amount_formatter.dart';
 import '../../../shared/receipts/receipt_record.dart';
@@ -7,8 +8,8 @@ ReceiptRecord giftCardPreviewReceipt({
   required bool sell,
   required DateTime occurredAt,
   required String id,
-  double? cardValue,
-  int? naira,
+  Object? cardValue,
+  Object? naira,
   String? brand,
   String? category,
   String? subcategory,
@@ -17,6 +18,8 @@ ReceiptRecord giftCardPreviewReceipt({
   int? quantity,
   GiftOrderDraft? draft,
 }) {
+  cardValue = draft?.totalDenomination ?? cardValue;
+  naira = draft?.costNaira ?? naira;
   brand = draft?.product.brandName ?? brand;
   category = draft?.product.category ?? category;
   country = draft?.product.country ?? country;
@@ -31,12 +34,13 @@ ReceiptRecord giftCardPreviewReceipt({
     occurredAt: occurredAt,
     amount: naira == null
         ? 'Amount unavailable'
-        : '₦${formatGroupedAmount(naira.toString())}',
+        : '₦${formatGroupedAmount(ExactDecimal.from(naira).toFixed(2).replaceFirst(RegExp(r"\.00$"), ""))}',
     fields: [
       if (cardValue != null)
         ReceiptField(
             label: 'Card Value',
-            value: '\$${formatGroupedAmount(cardValue.toStringAsFixed(2))}'),
+            value:
+                '\$${formatGroupedAmount(ExactDecimal.from(cardValue).toFixed(2))}'),
       if (brand != null) ReceiptField(label: 'Brand', value: brand),
       if (category != null) ReceiptField(label: 'Category', value: category),
       if (subcategory != null)

@@ -27,10 +27,15 @@ class DavoAuthScaffold extends StatelessWidget {
   Widget build(BuildContext context) {
     final overlayStyle = SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
-      statusBarIconBrightness: Theme.of(context).brightness == Brightness.dark ? Brightness.light : Brightness.dark,
+      statusBarIconBrightness: Theme.of(context).brightness == Brightness.dark
+          ? Brightness.light
+          : Brightness.dark,
       statusBarBrightness: Theme.of(context).brightness,
       systemNavigationBarColor: DavoColors.of(context).surface,
-      systemNavigationBarIconBrightness: Theme.of(context).brightness == Brightness.dark ? Brightness.light : Brightness.dark,
+      systemNavigationBarIconBrightness:
+          Theme.of(context).brightness == Brightness.dark
+              ? Brightness.light
+              : Brightness.dark,
     );
 
     final page = Scaffold(
@@ -71,6 +76,7 @@ class DavoAuthScaffold extends StatelessWidget {
       value: overlayStyle,
       child: keyboardDismiss
           ? GestureDetector(
+              excludeFromSemantics: true,
               behavior: HitTestBehavior.translucent,
               onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
               child: page,
@@ -90,11 +96,12 @@ class _BackButton extends StatelessWidget {
       tooltip: 'Back',
       onPressed: onPressed,
       padding: EdgeInsets.zero,
-      constraints: const BoxConstraints.tightFor(width: 40, height: 40),
+      constraints: const BoxConstraints.tightFor(width: 48, height: 48),
       splashRadius: 20,
       icon: Image.asset(
         '$_iconRoot/arrow_left.png',
-        color: DavoColors.of(context).isDark ? DavoColors.of(context).ink : null,
+        color:
+            DavoColors.of(context).isDark ? DavoColors.of(context).ink : null,
         width: 24,
         height: 24,
         filterQuality: FilterQuality.high,
@@ -187,9 +194,9 @@ class _DavoPrimaryButtonState extends State<DavoPrimaryButton> {
             ? Duration.zero
             : Duration(milliseconds: _pressed ? 90 : 140),
         curve: Curves.easeOutCubic,
-        child: SizedBox(
-          width: double.infinity,
-          height: widget.height,
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+              minWidth: double.infinity, minHeight: widget.height),
           child: AnimatedContainer(
             duration:
                 reduce ? Duration.zero : const Duration(milliseconds: 180),
@@ -219,27 +226,32 @@ class _DavoPrimaryButtonState extends State<DavoPrimaryButton> {
                   if (_pressed != pressed) setState(() => _pressed = pressed);
                 },
                 borderRadius: BorderRadius.circular(4),
-                child: Center(
-                  child: widget.loading
-                      ? SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: reduce
-                              ? const Icon(Icons.hourglass_top,
-                                  color: Colors.white, size: 20)
-                              : const CircularProgressIndicator(
-                                  strokeWidth: 2, color: Colors.white),
-                        )
-                      : Text(
-                          widget.label,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 14,
-                            height: 1.35,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                ),
+                child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 12),
+                    child: Center(
+                      heightFactor: 1,
+                      child: widget.loading
+                          ? SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: reduce
+                                  ? const Icon(Icons.hourglass_top,
+                                      color: Colors.white, size: 20)
+                                  : const CircularProgressIndicator(
+                                      strokeWidth: 2, color: Colors.white),
+                            )
+                          : Text(
+                              widget.label,
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 14,
+                                height: 1.35,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                    )),
               ),
             ),
           ),
@@ -263,26 +275,29 @@ class DavoSecondaryButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: double.infinity,
-      height: height,
+    return ConstrainedBox(
+      constraints: BoxConstraints(minWidth: double.infinity, minHeight: height),
       child: Material(
         color: DavoColors.of(context).primarySoft,
         borderRadius: BorderRadius.circular(4),
         child: InkWell(
-          onTap: onPressed,
-          borderRadius: BorderRadius.circular(4),
-          child: Center(
-            child: Text(
-              label,
-              style: TextStyle(
-                color: DavoColors.of(context).link,
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
+            onTap: onPressed,
+            borderRadius: BorderRadius.circular(4),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              child: Center(
+                heightFactor: 1,
+                child: Text(
+                  label,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: DavoColors.of(context).link,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
               ),
-            ),
-          ),
-        ),
+            )),
       ),
     );
   }
@@ -385,99 +400,115 @@ class _DavoTextFieldState extends State<DavoTextField> {
         ),
         const SizedBox(height: 8),
         AnimatedContainer(
-          duration: const Duration(milliseconds: 180),
+          duration: DavoMotionPolicy.reduce(context)
+              ? Duration.zero
+              : const Duration(milliseconds: 180),
           decoration: BoxDecoration(
             color: DavoColors.of(context).fieldFill,
             borderRadius: BorderRadius.circular(widget.borderRadius),
             border: Border.all(color: borderColor),
           ),
-          child: TextField(
-            focusNode: _focusNode,
-            onTapOutside: (_) => _focusNode.unfocus(),
-            controller: widget.controller,
-            keyboardType: widget.keyboardType,
-            textInputAction: widget.textInputAction,
-            obscureText: _obscure,
-            obscuringCharacter: '•',
-            onChanged: widget.onChanged,
-            onSubmitted: widget.onSubmitted,
-            autofillHints: widget.autofillHints,
-            maxLength: widget.maxLength,
-            inputFormatters: widget.inputFormatters,
-            style: TextStyle(
-              fontFamily: 'Sora',
-              fontSize: 14,
-              height: 1.35,
-              color: DavoColors.of(context).bodyMuted,
-            ),
-            decoration: InputDecoration(
-              filled: false,
-              counterText: '',
-              hintText: widget.hint,
-              border: InputBorder.none,
-              enabledBorder: InputBorder.none,
-              disabledBorder: InputBorder.none,
-              focusedBorder: InputBorder.none,
-              errorBorder: InputBorder.none,
-              focusedErrorBorder: InputBorder.none,
-              contentPadding:
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
-              prefixIcon: widget.iconAsset == null
-                  ? null
-                  : Padding(
-                      padding: const EdgeInsets.only(left: 14, right: 8),
-                      child: Image.asset(
-                        widget.iconAsset!,
-                        color: DavoColors.of(context).isDark ? DavoColors.of(context).bodyMuted : null,
-                        width: 20,
-                        height: 20,
-                        filterQuality: FilterQuality.high,
+          child: Semantics(
+            label: widget.label,
+            child: TextField(
+              focusNode: _focusNode,
+              onTapOutside: (_) => _focusNode.unfocus(),
+              controller: widget.controller,
+              keyboardType: widget.keyboardType,
+              textInputAction: widget.textInputAction,
+              obscureText: _obscure,
+              obscuringCharacter: '•',
+              onChanged: widget.onChanged,
+              onSubmitted: widget.onSubmitted,
+              autofillHints: widget.autofillHints,
+              maxLength: widget.maxLength,
+              inputFormatters: widget.inputFormatters,
+              style: TextStyle(
+                fontFamily: 'Sora',
+                fontSize: 14,
+                height: 1.35,
+                color: DavoColors.of(context).bodyMuted,
+              ),
+              decoration: InputDecoration(
+                filled: false,
+                counterText: '',
+                hintText: widget.hint,
+                border: InputBorder.none,
+                enabledBorder: InputBorder.none,
+                disabledBorder: InputBorder.none,
+                focusedBorder: InputBorder.none,
+                errorBorder: InputBorder.none,
+                focusedErrorBorder: InputBorder.none,
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
+                prefixIcon: widget.iconAsset == null
+                    ? null
+                    : Padding(
+                        padding: const EdgeInsets.only(left: 14, right: 8),
+                        child: Image.asset(
+                          widget.iconAsset!,
+                          color: DavoColors.of(context).isDark
+                              ? DavoColors.of(context).bodyMuted
+                              : null,
+                          width: 20,
+                          height: 20,
+                          filterQuality: FilterQuality.high,
+                        ),
                       ),
-                    ),
-              prefixIconConstraints:
-                  const BoxConstraints(minWidth: 42, minHeight: 20),
-              suffixIcon: widget.showVisibilityToggle
-                  ? IconButton(
-                      tooltip: _obscure ? 'Show password' : 'Hide password',
-                      onPressed: () => setState(() => _obscure = !_obscure),
-                      splashRadius: 18,
-                      icon: Image.asset(
-                        '$_iconRoot/eye.png',
-                        color: DavoColors.of(context).isDark ? DavoColors.of(context).bodyMuted : null,
-                        width: 20,
-                        height: 20,
-                        filterQuality: FilterQuality.high,
-                      ),
-                    )
-                  : widget.errorText != null
-                      ? Padding(
-                          padding: const EdgeInsets.all(13),
-                          child: Image.asset(
-                            '$_iconRoot/danger.png',
-                            color: DavoColors.of(context).isDark ? DavoColors.of(context).danger : null,
-                            width: 18,
-                            height: 18,
-                            filterQuality: FilterQuality.high,
-                          ),
-                        )
-                      : null,
+                prefixIconConstraints:
+                    const BoxConstraints(minWidth: 42, minHeight: 20),
+                suffixIcon: widget.showVisibilityToggle
+                    ? IconButton(
+                        tooltip: _obscure ? 'Show password' : 'Hide password',
+                        onPressed: () => setState(() => _obscure = !_obscure),
+                        splashRadius: 18,
+                        icon: Image.asset(
+                          '$_iconRoot/eye.png',
+                          color: DavoColors.of(context).isDark
+                              ? DavoColors.of(context).bodyMuted
+                              : null,
+                          width: 20,
+                          height: 20,
+                          filterQuality: FilterQuality.high,
+                        ),
+                      )
+                    : widget.errorText != null
+                        ? Padding(
+                            padding: const EdgeInsets.all(13),
+                            child: Image.asset(
+                              '$_iconRoot/danger.png',
+                              color: DavoColors.of(context).isDark
+                                  ? DavoColors.of(context).danger
+                                  : null,
+                              width: 18,
+                              height: 18,
+                              filterQuality: FilterQuality.high,
+                            ),
+                          )
+                        : null,
+              ),
             ),
           ),
         ),
         AnimatedSize(
-          duration: const Duration(milliseconds: 180),
+          duration: DavoMotionPolicy.reduce(context)
+              ? Duration.zero
+              : const Duration(milliseconds: 180),
           alignment: Alignment.topLeft,
           child: (widget.errorText != null || widget.successText != null)
               ? Padding(
                   padding: const EdgeInsets.only(top: 5),
-                  child: Text(
-                    widget.errorText ?? widget.successText!,
-                    style: TextStyle(
-                      fontSize: 12,
-                      height: 1.3,
-                      color: widget.errorText != null
-                          ? DavoColors.of(context).danger
-                          : DavoColors.of(context).success,
+                  child: Semantics(
+                    liveRegion: true,
+                    child: Text(
+                      widget.errorText ?? widget.successText!,
+                      style: TextStyle(
+                        fontSize: 12,
+                        height: 1.3,
+                        color: widget.errorText != null
+                            ? DavoColors.of(context).danger
+                            : DavoColors.of(context).success,
+                      ),
                     ),
                   ),
                 )
@@ -550,23 +581,27 @@ class LinkText extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
+    return Wrap(
+      alignment: WrapAlignment.center,
+      crossAxisAlignment: WrapCrossAlignment.center,
       children: [
         Text(prefix, style: Theme.of(context).textTheme.bodySmall),
         const SizedBox(width: 4),
         InkWell(
           onTap: onTap,
           borderRadius: BorderRadius.circular(6),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 4),
-            child: Text(
-              action,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: DavoColors.of(context).link,
-                    fontWeight: FontWeight.w500,
-                  ),
-            ),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
+            child: Center(
+                widthFactor: 1,
+                heightFactor: 1,
+                child: Text(
+                  action,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: DavoColors.of(context).link,
+                        fontWeight: FontWeight.w500,
+                      ),
+                )),
           ),
         ),
       ],

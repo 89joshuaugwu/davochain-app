@@ -422,6 +422,7 @@ class _PortfolioChartPainter extends CustomPainter {
   final int? selected;
   final Color line;
   final Color grid;
+  static final _geometryCache = Expando<_PortfolioChartGeometry>();
   @override
   void paint(Canvas canvas, Size size) {
     final gridPaint = Paint()
@@ -431,34 +432,13 @@ class _PortfolioChartPainter extends CustomPainter {
       final y = 12 + (size.height - 24) * i / 3;
       canvas.drawLine(Offset(0, y), Offset(size.width, y), gridPaint);
     }
-    final minValue = points.map((point) => point.valueKobo).reduce(math.min);
-    final maxValue = points.map((point) => point.valueKobo).reduce(math.max);
-    final span = maxValue - minValue;
-    final timeSpan =
-        points.last.timestamp.difference(points.first.timestamp).inMicroseconds;
-    final offsets = points
-        .map((point) => Offset(
-            timeSpan == 0
-                ? size.width / 2
-                : 12 +
-                    (size.width - 24) *
-                        point.timestamp
-                            .difference(points.first.timestamp)
-                            .inMicroseconds /
-                        timeSpan,
-            span == 0
-                ? size.height / 2
-                : size.height -
-                    16 -
-                    (size.height - 32) * (point.valueKobo - minValue) / span))
-        .toList();
+    final geometry = (_geometryCache[points] ??=
+            _PortfolioChartGeometry(points))
+        .forSize(size);
+    final offsets = geometry.$1;
     if (offsets.length > 1) {
-      final path = Path()..moveTo(offsets.first.dx, offsets.first.dy);
-      for (final offset in offsets.skip(1)) {
-        path.lineTo(offset.dx, offset.dy);
-      }
       canvas.drawPath(
-          path,
+          geometry.$2,
           Paint()
             ..color = line
             ..strokeWidth = 2.5
@@ -481,5 +461,48 @@ class _PortfolioChartPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(_PortfolioChartPainter oldDelegate) => true;
+  bool shouldRepaint(_PortfolioChartPainter oldDelegate) =>
+      !identical(points, oldDelegate.points) ||
+      selected != oldDelegate.selected ||
+      line != oldDelegate.line ||
+      grid != oldDelegate.grid;
+}
+
+/// One size projection per immutable point list; inspecting a different point
+/// reuses the line geometry. Expando releases it when the snapshot is discarded.
+class _PortfolioChartGeometry {
+  _PortfolioChartGeometry(this.points);
+  final List<PortfolioValuePoint> points;
+  Size? _size;
+  (List<Offset>, Path)? _projection;
+  (List<Offset>, Path) forSize(Size size) {
+    if (_size == size && _projection != null) return _projection!;
+    final minValue = points.map((point) => point.valueKobo).reduce(math.min);
+    final maxValue = points.map((point) => point.valueKobo).reduce(math.max);
+    final span = maxValue - minValue;
+    final timeSpan =
+        points.last.timestamp.difference(points.first.timestamp).inMicroseconds;
+    final offsets = points
+        .map((point) => Offset(
+            timeSpan == 0
+                ? size.width / 2
+                : 12 +
+                    (size.width - 24) *
+                        point.timestamp
+                            .difference(points.first.timestamp)
+                            .inMicroseconds /
+                        timeSpan,
+            span == 0
+                ? size.height / 2
+                : size.height -
+                    16 -
+                    (size.height - 32) * (point.valueKobo - minValue) / span))
+        .toList();
+    final path = Path()..moveTo(offsets.first.dx, offsets.first.dy);
+    for (final offset in offsets.skip(1)) {
+      path.lineTo(offset.dx, offset.dy);
+    }
+    _size = size;
+    return _projection = (offsets, path);
+  }
 }

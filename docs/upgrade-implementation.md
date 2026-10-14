@@ -21,7 +21,7 @@ Version 0.15.0+38. Implements the frontend correction batch from the combined re
 
 Deliver authenticated account/challenge/quote/operation/upload adapters using the existing backend-engineer handoff. Local OTP/PIN/recovery and execution fixtures must be replaced before production. Server balances/fees/limits, KYC approval, durable idempotency, accepted operation reconciliation, reversal/refund propagation into receipts, push/read refresh publication, session secret storage and fulfillment are external acceptance gates. The new event store supports explicit versioned reversal/refund transitions; the legacy receipt observer has not been represented as a fully integrated server event adapter.
 
-Exact `AssetAmount` models protect new parsing/eligibility boundaries. Some legacy quote/order/receipt presentation still uses double denomination values; serialize neither those values nor rounded display labels as authoritative money. Wire adapters must use agreed atomic-unit/minor-unit or decimal-string DTOs, server quotes and exact fee currency rules. Product must confirm NGD rules, network fees/minimums/limits, catalog availability/requirements and retention policy.
+Exact `AssetAmount` models protect new parsing/eligibility boundaries. Build 39 migrates the remaining buy/sell/convert/gift/funding/receipt calculations to exact decimal arithmetic; see `frontend-completion.md`. Numerical compatibility getters are presentation adapters: serialize neither those values nor rounded display labels as authoritative money. Wire adapters must use agreed atomic-unit/minor-unit or decimal-string DTOs, server quotes and exact fee currency rules. Product must confirm NGD rules, network fees/minimums/limits, catalog availability/requirements and retention policy.
 
 ## Release configuration
 
@@ -33,4 +33,4 @@ Regression tests cover exact parsing, stale session/snapshot rejection, asset pr
 
 Final command results and capture/artifact locations are recorded in the project review implementation ledger. Widget/native-bridge tests do not substitute for physical camera/biometric tests. Remaining validation includes live picker/camera/background/reopen, real iOS PDF parity, TalkBack traversal, profile-device performance, configured production certificate and authenticated staging integration. No FPS guarantee or full production-security claim is made.
 
-Broader controller extraction, all financial-flow exact-money conversion, optional visual refinements and all backend adapter delivery remain subsequent plan work; this batch prioritizes verified user-visible and security-lifetime defects.
+Build 39 completes the approved frontend controller/component extraction, financial-flow exact arithmetic and visual/accessibility refinement batch; see `frontend-completion.md`. Backend adapter delivery and the physical/platform acceptance gates above remain outstanding.

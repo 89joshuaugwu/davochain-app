@@ -31,17 +31,13 @@ class DavochainApp extends StatelessWidget {
               darkTheme: AppTheme.dark,
               themeMode: AppearanceController.instance.mode,
               themeAnimationDuration: Duration.zero,
-              builder: (context, child) => Listener(
-                onPointerDown: (event) {
-                  final focused = FocusManager.instance.primaryFocus;
-                  final box = focused?.context?.findRenderObject();
-                  if (box is RenderBox &&
-                      box.hasSize &&
-                      !(box.localToGlobal(Offset.zero) & box.size)
-                          .contains(event.position)) {
-                    focused?.unfocus();
-                  }
-                },
+              // Let field and suffix controls win their tap gestures before
+              // dismissing focus. Pointer-down dismissal closes the input
+              // connection while a tap is still transferring between fields.
+              builder: (context, child) => GestureDetector(
+                excludeFromSemantics: true,
+                behavior: HitTestBehavior.translucent,
+                onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
                 child: AnnotatedRegion<SystemUiOverlayStyle>(
                   value: SystemUiOverlayStyle(
                     statusBarColor: Colors.transparent,

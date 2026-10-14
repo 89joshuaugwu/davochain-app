@@ -27,7 +27,7 @@ class LocalPreviewProfile extends ChangeNotifier {
     ReceiptActivity.reset();
     FundingActivity.reset();
     SettingsPreviewSession.instance.reset();
-    PreviewAccountState.readNotifications.clear();
+    PreviewAccountState.notificationInbox.reset();
     PreviewAccountState.notificationPreferences.fillRange(0, 11, true);
     for (final channels in PreviewAccountState.notificationChannels) {
       channels.setAll(0, [true, false, false]);

@@ -1,3 +1,7 @@
+import '../../../shared/motion/davo_motion_policy.dart';
+import '../../../core/money/exact_decimal.dart';
+import '../../wallets/wallet_repository.dart';
+import 'buy_amount_controller.dart';
 import '../../../shared/receipts/receipt_record.dart';
 import '../../../shared/receipts/receipt_activity.dart';
 import '../../../shared/receipts/transaction_record_details_screen.dart';
@@ -11,7 +15,6 @@ import '../../../shared/widgets/trade_form_layout.dart';
 import '../../crypto/presentation/crypto_full_flow.dart';
 import '../../../shared/widgets/transaction_pin_entry.dart';
 import 'dart:async';
-import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
@@ -23,7 +26,11 @@ import 'buy_crypto_widgets.dart';
 import 'buy_receipt_screen.dart';
 
 class BuyAmountScreen extends StatefulWidget {
-  const BuyAmountScreen({super.key, required this.initialOrder, this.onBack, this.onModeSelected});
+  const BuyAmountScreen(
+      {super.key,
+      required this.initialOrder,
+      this.onBack,
+      this.onModeSelected});
   final void Function(int, BuyCryptoAsset)? onModeSelected;
   final VoidCallback? onBack;
   final BuyCryptoOrder initialOrder;
@@ -33,15 +40,19 @@ class BuyAmountScreen extends StatefulWidget {
 }
 
 class _BuyAmountScreenState extends State<BuyAmountScreen> {
-  late BuyCryptoOrder _order;
-  late final TextEditingController _amountController;
+  late final BuyAmountController _flow;
+  BuyCryptoOrder get _order => _flow.order;
+  TextEditingController get _amountController => _flow.input;
+  void _flowChanged() {
+    if (mounted) setState(() {});
+  }
+
   final FocusNode _focusNode = FocusNode();
 
   @override
   void initState() {
     super.initState();
-    _order = widget.initialOrder;
-    _amountController = TextEditingController();
+    _flow = BuyAmountController(widget.initialOrder)..addListener(_flowChanged);
     _focusNode.addListener(() {
       if (mounted) setState(() {});
     });
@@ -49,26 +60,14 @@ class _BuyAmountScreenState extends State<BuyAmountScreen> {
 
   @override
   void dispose() {
-    _amountController.dispose();
+    _flow.removeListener(_flowChanged);
+    _flow.dispose();
     _focusNode.dispose();
     super.dispose();
   }
 
-  double get _amount {
-    final normalized =
-        _amountController.text.replaceAll(',', '').replaceAll('₦', '').trim();
-    return parseAmount(normalized);
-  }
-
-  bool get _canContinue => _amount > 0 && _amount <= _order.wallet.balance;
-
-  void _setAmount(double value) {
-    final safe = value.clamp(0.0, _order.wallet.balance).toDouble();
-    _amountController.text = _formatEditable(safe);
-    _amountController.selection =
-        TextSelection.collapsed(offset: _amountController.text.length);
-    setState(() {});
-  }
+  ExactDecimal get _amount => _flow.amount;
+  bool get _canContinue => _flow.canContinue;
 
   Future<void> _changeAsset() async {
     final asset = await showModalBottomSheet<BuyCryptoAsset>(
@@ -85,7 +84,7 @@ class _BuyAmountScreenState extends State<BuyAmountScreen> {
       builder: (_) => const BuyCryptoAssetSheet(),
     );
     if (!mounted || asset == null) return;
-    setState(() => _order = _order.copyWith(asset: asset));
+    _flow.selectAsset(asset);
   }
 
   Future<void> _changeWallet() async {
@@ -103,21 +102,16 @@ class _BuyAmountScreenState extends State<BuyAmountScreen> {
       builder: (_) => const BuyFundingWalletSheet(),
     );
     if (!mounted || wallet == null) return;
-    final shouldClamp = _amount > wallet.balance;
-    if (shouldClamp) {
-      _amountController.text = _formatEditable(wallet.balance);
-      _amountController.selection =
-          TextSelection.collapsed(offset: _amountController.text.length);
-    }
-    setState(() => _order = _order.copyWith(wallet: wallet));
+    _flow.selectWallet(wallet);
   }
 
   @override
   Widget build(BuildContext context) {
     return TradeFormLayout(
-      header:
-          _ExactTradeHeader(title: 'Buy', onBack: widget.onBack ?? () => Navigator.pop(context)),
-      tabs: _ModeToggle(asset: _order.asset, onModeSelected: widget.onModeSelected),
+      header: _ExactTradeHeader(
+          title: 'Buy', onBack: widget.onBack ?? () => Navigator.pop(context)),
+      tabs: _ModeToggle(
+          asset: _order.asset, onModeSelected: widget.onModeSelected),
       content: Column(children: [
         InkWell(
           onTap: _changeWallet,
@@ -150,7 +144,9 @@ class _BuyAmountScreenState extends State<BuyAmountScreen> {
         ),
         const SizedBox(height: 24),
         AnimatedContainer(
-          duration: const Duration(milliseconds: 180),
+          duration: DavoMotionPolicy.reduce(context)
+              ? Duration.zero
+              : const Duration(milliseconds: 180),
           padding: const EdgeInsets.symmetric(horizontal: 16),
           decoration: BoxDecoration(
             color: DavoColors.of(context).surface,
@@ -253,7 +249,7 @@ class _BuyAmountScreenState extends State<BuyAmountScreen> {
                     fontSize: 14,
                     color: DavoColors.of(context).bodyMuted)),
             const SizedBox(width: 4),
-            Text('(₦${_formatNgn(_order.asset.ngnPerUnit)})',
+            Text('(₦${_formatNgn(_order.asset.ngnPrice)})',
                 style: TextStyle(
                     fontFamily: 'Sora',
                     fontSize: 14,
@@ -262,8 +258,8 @@ class _BuyAmountScreenState extends State<BuyAmountScreen> {
           ],
         ),
         const SizedBox(height: 24),
-        _PercentageButtons(balance: _order.wallet.balance, onPick: _setAmount),
-        if (_amount > _order.wallet.balance) ...[
+        _PercentageButtons(onPick: _flow.pickPercentage),
+        if (_amount.compareTo(_order.wallet.exactBalance) > 0) ...[
           const SizedBox(height: 16),
           Text('Amount exceeds your selected wallet balance.',
               textAlign: TextAlign.center,
@@ -317,15 +313,11 @@ class BuyReviewScreen extends StatelessWidget {
                   _ReviewExchangeCards(order: order),
                   const SizedBox(height: 24),
                   _ExactReviewSummary(rows: [
-                    (
-                      'Exchange Rate',
-                      order.formattedExchangeRate,
-                      false
-                    ),
+                    ('Exchange Rate', order.formattedExchangeRate, false),
                     ('Network Fee', 'Free', true),
                     (
                       'Total you Pay',
-                      '\u20a6${_formatNgn(order.ngnAmount)}',
+                      '\u20a6${_formatNgn(order.exactNgnAmount)}',
                       false
                     ),
                   ]),
@@ -355,6 +347,7 @@ class BuyProgressScreen extends StatefulWidget {
 
 class _BuyProgressScreenState extends State<BuyProgressScreen> {
   bool failed = false;
+  final int _generation = WalletAccountState.instance.generation;
   @override
   void initState() {
     super.initState();
@@ -365,7 +358,11 @@ class _BuyProgressScreenState extends State<BuyProgressScreen> {
     try {
       final accepted =
           await (widget.operation ?? PreviewTransactionOperation.buy());
-      if (!mounted || ModalRoute.of(context)?.isCurrent == false) return;
+      if (!mounted ||
+          _generation != WalletAccountState.instance.generation ||
+          ModalRoute.of(context)?.isCurrent == false) {
+        return;
+      }
       if (accepted == PreviewTransactionOutcome.failed) {
         setState(() => failed = true);
         return;
@@ -428,14 +425,20 @@ class BuySuccessScreen extends StatefulWidget {
   State<BuySuccessScreen> createState() => _BuySuccessScreenState();
 }
 
-class _BuySuccessScreenState extends State<BuySuccessScreen> with ReceiptActivityObserver<BuySuccessScreen> {
+class _BuySuccessScreenState extends State<BuySuccessScreen>
+    with ReceiptActivityObserver<BuySuccessScreen> {
   BuyCryptoOrder get order => widget.order;
   late final ReceiptRecord _fallback = buildBuyReceiptRecord(order);
-  ReceiptRecord get record => ReceiptActivity.resolve(widget.record ?? _fallback);
+  ReceiptRecord get record =>
+      ReceiptActivity.resolve(widget.record ?? _fallback);
   @override
   void initState() {
     super.initState();
-    if (widget.record == null) { ReceiptActivity.submitPreview(record); } else { ReceiptActivity.accept(record); }
+    if (widget.record == null) {
+      ReceiptActivity.submitPreview(record);
+    } else {
+      ReceiptActivity.accept(record);
+    }
   }
 
   @override
@@ -507,7 +510,8 @@ class BuyTransactionDetailsScreen extends StatefulWidget {
 class _BuyTransactionDetailsScreenState
     extends State<BuyTransactionDetailsScreen> {
   late final ReceiptRecord _fallback = buildBuyReceiptRecord(widget.order);
-  ReceiptRecord get record => ReceiptActivity.resolve(widget.record ?? _fallback);
+  ReceiptRecord get record =>
+      ReceiptActivity.resolve(widget.record ?? _fallback);
   @override
   Widget build(BuildContext context) => TransactionRecordDetailsScreen(
       record: record,
@@ -621,19 +625,19 @@ class _ModeToggle extends StatelessWidget {
                         onTap: index == 0
                             ? null
                             : () {
-                              if (onModeSelected != null) {
-                                onModeSelected!(index, asset);
-                                return;
-                              }
-                              Navigator.pushReplacement(
-                                context,
-                                AppPageRoute<void>(
-                                    builder: (_) => TradeAmountScreen(
-                                        mode: index == 1
-                                            ? TradeMode.sell
-                                            : TradeMode.convert,
-                                        asset: asset)));
-                            },
+                                if (onModeSelected != null) {
+                                  onModeSelected!(index, asset);
+                                  return;
+                                }
+                                Navigator.pushReplacement(
+                                    context,
+                                    AppPageRoute<void>(
+                                        builder: (_) => TradeAmountScreen(
+                                            mode: index == 1
+                                                ? TradeMode.sell
+                                                : TradeMode.convert,
+                                            asset: asset)));
+                              },
                         child: Padding(
                             padding: const EdgeInsets.symmetric(vertical: 12),
                             child: Center(
@@ -664,13 +668,12 @@ class _WalletBadge extends StatelessWidget {
 }
 
 class _PercentageButtons extends StatelessWidget {
-  const _PercentageButtons({required this.balance, required this.onPick});
-  final double balance;
-  final ValueChanged<double> onPick;
+  const _PercentageButtons({required this.onPick});
+  final ValueChanged<int> onPick;
 
   @override
   Widget build(BuildContext context) {
-    const values = [0.10, 0.25, 0.50, 0.75, 1.0];
+    const values = [10, 25, 50, 75, 100];
     const labels = ['10%', '25%', '50%', '75%', 'Max'];
     return Wrap(
       alignment: WrapAlignment.center,
@@ -678,7 +681,7 @@ class _PercentageButtons extends StatelessWidget {
       runSpacing: 8,
       children: List.generate(values.length, (index) {
         return InkWell(
-          onTap: () => onPick(balance * values[index]),
+          onTap: () => onPick(values[index]),
           borderRadius: BorderRadius.circular(4),
           child: Container(
             width: 48,
@@ -774,7 +777,7 @@ class _ReviewExchangeCards extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Column(children: [
         _card(context, 'You will pay', _WalletBadge(wallet: order.wallet),
-            '\u20a6${_formatNgn(order.ngnAmount)}', order.wallet.name),
+            '\u20a6${_formatNgn(order.exactNgnAmount)}', order.wallet.name),
         Stack(clipBehavior: Clip.none, children: [
           Padding(
               padding: const EdgeInsets.only(top: 10),
@@ -783,7 +786,7 @@ class _ReviewExchangeCards extends StatelessWidget {
                   'You will receive',
                   BuyAssetIcon(asset: order.asset, size: 32),
                   '${order.formattedCryptoAmount} ${order.asset.symbol}',
-                  '\u2248 \$${formatGroupedAmount(order.usdAmount.toStringAsFixed(2))} USD')),
+                  '\u2248 \$${formatGroupedAmount(order.exactUsdAmount.toFixed(2))} USD')),
           Positioned(
               top: -15,
               left: 0,
@@ -802,20 +805,4 @@ class _ReviewExchangeCards extends StatelessWidget {
       ]);
 }
 
-String _formatNgn(double value) {
-  final fixed = value.toStringAsFixed(2);
-  final parts = fixed.split('.');
-  final whole = parts[0];
-  final reversed = whole.split('').reversed.toList();
-  final chunks = <String>[];
-  for (var i = 0; i < reversed.length; i += 3) {
-    chunks.add(
-        reversed.sublist(i, math.min(i + 3, reversed.length)).reversed.join());
-  }
-  return '${chunks.reversed.join(',')}.${parts[1]}';
-}
-
-String _formatEditable(double value) =>
-    formatGroupedAmount(value == value.roundToDouble()
-        ? value.toStringAsFixed(0)
-        : value.toStringAsFixed(2));
+String _formatNgn(ExactDecimal value) => formatGroupedAmount(value.toFixed(2));

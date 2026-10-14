@@ -12,7 +12,7 @@ void main() {
         wallet: BuyFundingWallet.ngn,
         ngnAmount: 10000);
     final receipt = buildBuyReceiptRecord(order);
-    expect(receipt.amount, '0.00041667 BTC');
+    expect(receipt.amount, '0.00041666 BTC');
     final rate = receipt.fields
         .firstWhere((field) => field.label == 'Exchange Rate')
         .value;

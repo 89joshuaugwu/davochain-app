@@ -1,3 +1,4 @@
+import '../../core/money/exact_decimal.dart';
 import 'gift_evidence_picker.dart';
 
 enum GiftCardType { physical, eCode }
@@ -15,7 +16,10 @@ class GiftCatalogProduct {
       this.rateNaira = 865});
   final String skuId, brandName, country, category;
   final GiftCardType cardType;
-  final int minimumDenomination, rateNaira;
+  final Object minimumDenomination, rateNaira;
+  ExactDecimal get exactMinimumDenomination =>
+      ExactDecimal.from(minimumDenomination);
+  ExactDecimal get exactRateNaira => ExactDecimal.from(rateNaira);
   String get typeLabel =>
       cardType == GiftCardType.physical ? 'Physical' : 'E-code';
   String get label =>
@@ -51,18 +55,27 @@ class GiftDelivery {
 class GiftOrderDraft {
   const GiftOrderDraft(
       {required this.product,
-      required this.denomination,
+      required Object denomination,
       this.quantity = 1,
       this.evidence,
-      this.delivery = const GiftDelivery()});
+      this.delivery = const GiftDelivery()})
+      : _denomination = denomination;
   final GiftCatalogProduct product;
-  final double denomination;
+  final Object _denomination;
+  ExactDecimal get exactDenomination => ExactDecimal.from(_denomination);
+  double get denomination => exactDenomination.toDouble();
+  ExactDecimal get totalDenomination =>
+      exactDenomination * ExactDecimal.from(quantity);
+  ExactDecimal get costNaira => ExactDecimal.parse(
+      (totalDenomination * product.exactRateNaira).toFixed(2));
+  int get costMinorUnits =>
+      int.parse((costNaira * ExactDecimal.from(100)).toFixed(0));
   final int quantity;
   final GiftEvidence? evidence;
   final GiftDelivery delivery;
   GiftOrderDraft withDelivery(GiftDelivery value) => GiftOrderDraft(
       product: product,
-      denomination: denomination,
+      denomination: exactDenomination,
       quantity: quantity,
       evidence: evidence,
       delivery: value);

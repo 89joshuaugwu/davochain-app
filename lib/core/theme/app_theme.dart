@@ -24,6 +24,8 @@ abstract final class AppColors {
   static const warningSurface = Color(0xFFFEF9F1);
   static const warningBorder = Color(0xFFF5F0C5);
   static const danger = Color(0xFFF44336);
+  // White 10px counter text needs stronger contrast than a standalone red icon.
+  static const notificationBadge = Color(0xFFD92D20);
 }
 
 abstract final class AppTheme {

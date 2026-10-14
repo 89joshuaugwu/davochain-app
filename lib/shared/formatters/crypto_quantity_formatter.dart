@@ -1,6 +1,8 @@
-/// Expand the supplied double's shortest decimal representation without
-/// introducing rounding to four places or artificial binary tail digits.
-String formatCryptoQuantity(double value) {
+import '../../core/money/exact_decimal.dart';
+
+/// Decimal strings preserve quantities across entry, review and receipts.
+String formatCryptoQuantity(Object value) {
+  if (value is! double) return ExactDecimal.from(value).toString();
   final raw = value.toString();
   if (!raw.contains('e')) {
     return raw.endsWith('.0') ? raw.substring(0, raw.length - 2) : raw;
@@ -20,4 +22,3 @@ String formatCryptoQuantity(double value) {
           : '${digits.substring(0, point)}.${digits.substring(point)}';
   return '${negative ? '-' : ''}$expanded';
 }
-

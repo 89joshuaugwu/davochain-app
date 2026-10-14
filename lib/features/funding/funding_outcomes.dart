@@ -1,3 +1,4 @@
+import '../../core/money/exact_decimal.dart';
 import '../../shared/receipts/receipt_activity.dart';
 import 'package:flutter/material.dart';
 import '../../core/navigation/app_page_route.dart';
@@ -37,7 +38,7 @@ class FundingRecord {
   final String id, currency, destination;
   final FundingDirection direction;
   final FundingStatus status;
-  final double amount, fee;
+  final Object amount, fee;
   final DateTime occurredAt;
   final String? network,
       reference,
@@ -49,7 +50,7 @@ class FundingRecord {
   bool get deposit => direction == FundingDirection.deposit;
   String get amountLabel =>
       '${currency == 'NGN' || currency == 'NGD' ? '₦' : ''}'
-      '${formatGroupedAmount(currency == 'NGN' || currency == 'NGD' ? amount.toStringAsFixed(2) : formatCryptoQuantity(amount))}'
+      '${formatGroupedAmount(currency == 'NGN' || currency == 'NGD' ? ExactDecimal.from(amount).toFixed(2) : formatCryptoQuantity(amount))}'
       '${currency == 'NGN' || currency == 'NGD' ? '' : ' $currency'}';
   String get title => status == FundingStatus.failed
       ? (deposit ? 'Deposit unsuccessful' : 'Withdrawal unsuccessful')
@@ -80,35 +81,46 @@ abstract final class FundingActivity {
       _observing = true;
       ReceiptActivity.records.addListener(_syncReceipts);
     }
-    final receipt = ReceiptActivity.submitPreview(FundingDetailsScreen._receipt(record));
+    final receipt =
+        ReceiptActivity.submitPreview(FundingDetailsScreen._receipt(record));
     accept(_withStatus(record, receipt.status));
   }
 
   static void _syncReceipts() {
     final updated = records.value.map((record) {
-      final matches = ReceiptActivity.records.value.where((r) => r.id == record.id);
+      final matches =
+          ReceiptActivity.records.value.where((r) => r.id == record.id);
       if (matches.isEmpty) return record;
       return _withStatus(record, matches.first.status);
     }).toList();
-    if (updated.asMap().entries.any((entry) =>
-        entry.value.status != records.value[entry.key].status)) {
+    if (updated.asMap().entries.any(
+        (entry) => entry.value.status != records.value[entry.key].status)) {
       records.value = List.unmodifiable(updated);
     }
   }
 
-  static FundingRecord _withStatus(FundingRecord record, ReceiptStatus status) => FundingRecord(
-      id: record.id, direction: record.direction,
-      status: switch (status) {
-        ReceiptStatus.pending => FundingStatus.pending,
-        ReceiptStatus.completed => FundingStatus.completed,
-        ReceiptStatus.failed => FundingStatus.failed,
-      },
-      amount: record.amount, currency: record.currency,
-      destination: record.destination, occurredAt: record.occurredAt,
-      network: record.network, reference: record.reference,
-      transactionHash: record.transactionHash, bank: record.bank,
-      accountNumber: record.accountNumber, accountName: record.accountName,
-      fee: record.fee, preview: record.preview);
+  static FundingRecord _withStatus(
+          FundingRecord record, ReceiptStatus status) =>
+      FundingRecord(
+          id: record.id,
+          direction: record.direction,
+          status: switch (status) {
+            ReceiptStatus.pending => FundingStatus.pending,
+            ReceiptStatus.completed => FundingStatus.completed,
+            ReceiptStatus.failed => FundingStatus.failed,
+          },
+          amount: record.amount,
+          currency: record.currency,
+          destination: record.destination,
+          occurredAt: record.occurredAt,
+          network: record.network,
+          reference: record.reference,
+          transactionHash: record.transactionHash,
+          bank: record.bank,
+          accountNumber: record.accountNumber,
+          accountName: record.accountName,
+          fee: record.fee,
+          preview: record.preview);
 
   static void reset() {
     _presented.clear();
@@ -116,9 +128,15 @@ abstract final class FundingActivity {
   }
 
   static void accept(FundingRecord record) {
-    if (record.id.isEmpty || !record.amount.isFinite || record.amount <= 0) {
+    if (record.id.isEmpty) return;
+    late final ExactDecimal amount, fee;
+    try {
+      amount = ExactDecimal.from(record.amount);
+      fee = ExactDecimal.from(record.fee);
+    } on FormatException {
       return;
     }
+    if (amount.isNegative || amount.isZero || fee.isNegative) return;
     final previous = records.value.where((r) => r.id == record.id);
     if (previous.isNotEmpty &&
         previous.first.status == FundingStatus.completed &&
@@ -193,7 +211,7 @@ class NairaWithdrawalProgressScreen extends StatefulWidget {
       required this.accountNumber,
       required this.accountName,
       this.operation});
-  final double amount;
+  final Object amount;
   final String bank, accountNumber, accountName;
   final Future<FundingStatus> Function()? operation;
   @override
@@ -383,13 +401,14 @@ class FundingDetailsScreen extends StatelessWidget {
   final FundingRecord record;
 
   @override
-  Widget build(BuildContext context) => ValueListenableBuilder<List<FundingRecord>>(
-      valueListenable: FundingActivity.records,
-      builder: (context, records, _) {
-        final matches = records.where((r) => r.id == record.id);
-        final value = matches.isEmpty ? record : matches.first;
-        return TransactionRecordDetailsScreen(record: _receipt(value));
-      });
+  Widget build(BuildContext context) =>
+      ValueListenableBuilder<List<FundingRecord>>(
+          valueListenable: FundingActivity.records,
+          builder: (context, records, _) {
+            final matches = records.where((r) => r.id == record.id);
+            final value = matches.isEmpty ? record : matches.first;
+            return TransactionRecordDetailsScreen(record: _receipt(value));
+          });
 
   static ReceiptRecord _receipt(FundingRecord value) {
     final status = switch (value.status) {
@@ -399,7 +418,7 @@ class FundingDetailsScreen extends StatelessWidget {
     };
     final fiat = value.currency == 'NGN' || value.currency == 'NGD';
     final fee = '${fiat ? '₦' : ''}'
-        '${formatGroupedAmount(fiat ? value.fee.toStringAsFixed(2) : formatCryptoQuantity(value.fee))}'
+        '${formatGroupedAmount(fiat ? ExactDecimal.from(value.fee).toFixed(2) : formatCryptoQuantity(value.fee))}'
         '${fiat ? '' : ' ${value.currency}'}';
     return ReceiptRecord(
       id: value.id,
@@ -411,28 +430,43 @@ class FundingDetailsScreen extends StatelessWidget {
       preview: value.preview,
       fields: [
         ReceiptField(label: 'Wallet', value: value.currency),
-        ReceiptField(label: 'Destination', value: value.destination,
+        ReceiptField(
+            label: 'Destination',
+            value: value.destination,
             sensitive: !fiat || value.destination == value.accountNumber),
         if (value.bank != null) ReceiptField(label: 'Bank', value: value.bank!),
         if (value.accountNumber != null)
-          ReceiptField(label: 'Account', value: value.accountNumber!, sensitive: true),
+          ReceiptField(
+              label: 'Account', value: value.accountNumber!, sensitive: true),
         if (value.accountName != null)
-          ReceiptField(label: 'Account name', value: value.accountName!, sensitive: true),
-        if (!value.deposit || value.fee > 0) ReceiptField(label: 'Fee', value: fee),
-        if (value.network != null) ReceiptField(label: 'Network', value: value.network!),
+          ReceiptField(
+              label: 'Account name',
+              value: value.accountName!,
+              sensitive: true),
+        if (!value.deposit || !ExactDecimal.from(value.fee).isZero)
+          ReceiptField(label: 'Fee', value: fee),
+        if (value.network != null)
+          ReceiptField(label: 'Network', value: value.network!),
         if (value.transactionHash != null)
-          ReceiptField(label: 'Transaction hash', value: value.transactionHash!, copyable: true),
+          ReceiptField(
+              label: 'Transaction hash',
+              value: value.transactionHash!,
+              copyable: true),
       ],
       events: [
         ReceiptEvent(
           label: switch (status) {
             ReceiptStatus.pending => 'Request accepted',
-            ReceiptStatus.completed => value.deposit ? 'Deposit received' : 'Withdrawal confirmed',
-            ReceiptStatus.failed => value.deposit ? 'Deposit unsuccessful' : 'Withdrawal unsuccessful',
+            ReceiptStatus.completed =>
+              value.deposit ? 'Deposit received' : 'Withdrawal confirmed',
+            ReceiptStatus.failed => value.deposit
+                ? 'Deposit unsuccessful'
+                : 'Withdrawal unsuccessful',
           },
           description: switch (status) {
             ReceiptStatus.pending => 'This request is pending confirmation.',
-            ReceiptStatus.completed => 'This transaction is recorded as completed.',
+            ReceiptStatus.completed =>
+              'This transaction is recorded as completed.',
             ReceiptStatus.failed => 'This transaction is recorded as failed.',
           },
           occurredAt: value.occurredAt,
@@ -441,7 +475,8 @@ class FundingDetailsScreen extends StatelessWidget {
               : ReceiptEventState.complete,
         ),
         if (status == ReceiptStatus.pending)
-          const ReceiptEvent(label: 'Awaiting confirmation',
+          const ReceiptEvent(
+              label: 'Awaiting confirmation',
               description: 'Confirmation has not been received.',
               state: ReceiptEventState.current),
       ],

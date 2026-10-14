@@ -30,8 +30,13 @@ class GiftOrderQuote {
     return current.product.skuId == previous.product.skuId &&
         current.product.country == previous.product.country &&
         current.product.cardType == previous.product.cardType &&
-        current.product.rateNaira == previous.product.rateNaira &&
-        current.denomination == previous.denomination &&
+        current.product.exactRateNaira
+                .compareTo(previous.product.exactRateNaira) ==
+            0 &&
+        current.product.exactMinimumDenomination
+                .compareTo(previous.product.exactMinimumDenomination) ==
+            0 &&
+        current.exactDenomination.compareTo(previous.exactDenomination) == 0 &&
         current.quantity == previous.quantity &&
         current.evidence?.path == previous.evidence?.path &&
         current.delivery.forMe == previous.delivery.forMe &&
