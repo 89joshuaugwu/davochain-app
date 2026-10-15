@@ -1,3 +1,5 @@
+import 'package:davochain/shared/receipts/receipt_activity.dart';
+import 'package:davochain/shared/motion/davo_motion_spec.dart';
 import 'package:davochain/core/theme/app_theme.dart';
 import 'package:davochain/features/buy_crypto/presentation/buy_crypto_models.dart';
 import 'package:davochain/features/buy_crypto/presentation/buy_crypto_screens.dart';
@@ -22,6 +24,26 @@ const order = BuyCryptoOrder(
     wallet: BuyFundingWallet.ngn,
     ngnAmount: 1000);
 void main() {
+  testWidgets(
+      'pending swap message identifies conversion rather than withdrawal',
+      (tester) async {
+    addTearDown(ReceiptActivity.reset);
+    await tester.pumpWidget(MaterialApp(
+        theme: AppTheme.light,
+        home: const TransactionSuccessScreen(
+            kind: TxKind.conversion,
+            target: 'USDT',
+            amount: 1,
+            outcomeKind: DavoOutcomeKind.submitted)));
+    await tester.pumpAndSettle();
+    expect(
+        find.text(
+            'Your conversion has been submitted. Its status will update after confirmation.'),
+        findsOneWidget);
+    expect(find.textContaining('Your withdrawal'), findsNothing);
+    await tester.pumpWidget(const SizedBox());
+    ReceiptActivity.reset();
+  });
   final cases = <String, (Widget Function(), int)>{
     'crypto buy': (() => BuySuccessScreen(order: order, record: accepted), 1),
     'crypto sell': (

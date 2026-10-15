@@ -248,7 +248,11 @@ class _TransactionSuccessScreenState extends State<TransactionSuccessScreen>
           ? null
           : outcomeKind == DavoOutcomeKind.submitted
               ? Text(
-                  'Your withdrawal has been submitted. It will update after network confirmation.',
+                  transfer
+                      ? 'Your transfer has been submitted. Its status will update after confirmation.'
+                      : kind == TxKind.sell
+                          ? 'Your sale has been submitted. Its status will update after confirmation.'
+                          : 'Your conversion has been submitted. Its status will update after confirmation.',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontFamily: 'Sora',
