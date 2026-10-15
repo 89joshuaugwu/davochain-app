@@ -21,6 +21,7 @@ class DavoResultScreen extends StatelessWidget {
     this.eventKey,
     this.appBar,
     this.refreshRecordId,
+    this.onExit,
   });
 
   final String title;
@@ -35,15 +36,21 @@ class DavoResultScreen extends StatelessWidget {
 
   /// Financial outcomes opt in with the accepted transaction identity.
   final String? refreshRecordId;
+  final VoidCallback? onExit;
 
   @override
-  Widget build(BuildContext context) => refreshRecordId == null
-      ? _buildOutcome(context)
-      : DavoRefreshRegion(
-          target: DavoRefreshTarget.transaction,
-          recordId: refreshRecordId,
-          builder: _buildOutcome,
-        );
+  Widget build(BuildContext context) => PopScope(
+      canPop: onExit == null,
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop) onExit?.call();
+      },
+      child: refreshRecordId == null
+          ? _buildOutcome(context)
+          : DavoRefreshRegion(
+              target: DavoRefreshTarget.transaction,
+              recordId: refreshRecordId,
+              builder: _buildOutcome,
+            ));
 
   Widget _buildOutcome(BuildContext context) => DavoOutcomeSequence(
       kind: kind,

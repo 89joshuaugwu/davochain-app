@@ -222,6 +222,7 @@ class _TransactionSuccessScreenState extends State<TransactionSuccessScreen>
   Widget build(BuildContext context) {
     final transfer = kind == TxKind.internal || kind == TxKind.external;
     return DavoResultScreen(
+      onExit: () => finishDavoTransaction(context, tab: transfer ? 0 : 1),
       eventKey: '${record.id}-${record.status.name}',
       refreshRecordId: record.id,
       kind: outcomeKind,
@@ -264,6 +265,11 @@ class _TransactionSuccessScreenState extends State<TransactionSuccessScreen>
                 ),
       appBar: AppBar(
         backgroundColor: DavoColors.of(context).surface,
+        leading: IconButton(
+            tooltip: transfer ? 'Back to wallet' : 'Back to trade',
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () =>
+                finishDavoTransaction(context, tab: transfer ? 0 : 1)),
         title: transfer
             ? const Text(
                 'Crypto withdrawal',
@@ -297,7 +303,15 @@ class _TransactionSuccessScreenState extends State<TransactionSuccessScreen>
                 : kind == TxKind.sell
                     ? 'Sell more crypto'
                     : 'Convert more crypto',
-            onTap: () => Navigator.of(context).popUntil((r) => r.isFirst),
+            onTap: () => finishDavoTransaction(context,
+                tab: transfer ? 0 : 1,
+                start: transfer
+                    ? null
+                    : (_) => TradeAmountScreen(
+                        mode: kind == TxKind.sell
+                            ? TradeMode.sell
+                            : TradeMode.convert,
+                        asset: asset)),
           ),
         ],
       ),
@@ -416,7 +430,11 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> {
       ? ReceiptScreen(record: record)
       : TransactionRecordDetailsScreen(
           record: record,
-          onDone: () => Navigator.of(context).popUntil((r) => r.isFirst),
+          onDone: () => finishDavoTransaction(context,
+              tab:
+                  widget.kind == TxKind.sell || widget.kind == TxKind.conversion
+                      ? 1
+                      : 0),
           receiptBuilder: (_) => TransactionDetailsScreen(
             kind: widget.kind,
             target: widget.target,

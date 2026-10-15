@@ -4,6 +4,20 @@ import 'package:davochain/features/auth/presentation/signup_flow.dart';
 
 void main() {
   testWidgets(
+      'country selection can redirect to Login without continuing signup',
+      (tester) async {
+    await tester
+        .pumpWidget(MaterialApp(home: const CountrySelectionScreen(), routes: {
+      '/login': (_) => const Scaffold(body: Text('Login destination')),
+    }));
+    await tester.pumpAndSettle();
+    expect(find.text('Already have an account?'), findsOneWidget);
+    await tester.tap(find.text('Login'));
+    await tester.pumpAndSettle();
+    expect(find.text('Login destination'), findsOneWidget);
+    expect(find.byType(CountrySelectionScreen), findsNothing);
+  });
+  testWidgets(
       'signup picker offers only Nigeria and renders its flag without emoji',
       (tester) async {
     await tester.pumpWidget(const MaterialApp(home: CountrySelectionScreen()));

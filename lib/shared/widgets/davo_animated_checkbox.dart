@@ -9,12 +9,14 @@ class DavoAnimatedCheckbox extends StatefulWidget {
       required this.value,
       required this.onChanged,
       this.semanticLabel,
+      this.selectedColor,
       this.size = 20})
       : assert(size > 0);
   final bool value;
   final ValueChanged<bool>? onChanged;
   final String? semanticLabel;
   final double size;
+  final Color? selectedColor;
   @override
   State<DavoAnimatedCheckbox> createState() => _DavoAnimatedCheckboxState();
 }
@@ -104,6 +106,7 @@ class _DavoAnimatedCheckboxState extends State<DavoAnimatedCheckbox>
                           size: Size.square(widget.size),
                           painter: _CheckboxPainter(_selection.value,
                               colors: DavoColors.of(context),
+                              selectedColor: widget.selectedColor,
                               enabled: widget.onChanged != null,
                               focused: _focused),
                         )),
@@ -116,8 +119,12 @@ class _DavoAnimatedCheckboxState extends State<DavoAnimatedCheckbox>
 
 class _CheckboxPainter extends CustomPainter {
   const _CheckboxPainter(this.progress,
-      {required this.enabled, required this.focused, required this.colors});
+      {required this.enabled,
+      required this.focused,
+      required this.colors,
+      this.selectedColor});
   final DavoColors colors;
+  final Color? selectedColor;
   final double progress;
   final bool enabled;
   final bool focused;
@@ -125,7 +132,8 @@ class _CheckboxPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final center = size.center(Offset.zero);
     final radius = size.shortestSide / 2 - 1;
-    final blue = enabled ? AppColors.primary : colors.bodyMuted;
+    final blue =
+        enabled ? (selectedColor ?? AppColors.primary) : colors.bodyMuted;
     if (focused) {
       canvas.drawCircle(
           center,
@@ -170,6 +178,7 @@ class _CheckboxPainter extends CustomPainter {
   @override
   bool shouldRepaint(_CheckboxPainter oldDelegate) =>
       progress != oldDelegate.progress ||
+      selectedColor != oldDelegate.selectedColor ||
       colors != oldDelegate.colors ||
       enabled != oldDelegate.enabled ||
       focused != oldDelegate.focused;

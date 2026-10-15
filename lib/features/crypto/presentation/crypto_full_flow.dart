@@ -1,3 +1,4 @@
+import '../../../core/navigation/transaction_navigation.dart';
 import '../../../shared/widgets/trade_amount_card.dart';
 import '../../../shared/widgets/davo_blue_balance_card.dart';
 import '../crypto_trade_amounts.dart';

@@ -358,7 +358,7 @@ class _GiftCardSellReviewScreenState extends State<GiftCardSellReviewScreen> {
                     child: widget.draft?.evidence == null
                         ? const SizedBox.shrink()
                         : Image.file(File(widget.draft!.evidence!.path),
-                            width: 120, height: 68, fit: BoxFit.cover),
+                            width: 140, height: 84, fit: BoxFit.contain),
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -370,8 +370,10 @@ class _GiftCardSellReviewScreenState extends State<GiftCardSellReviewScreen> {
           const SizedBox(height: 14),
           Text('Trade Terms',
               style: TextStyle(
+                  decoration: TextDecoration.underline,
+                  decorationColor: DavoColors.of(context).link,
                   fontFamily: 'Sora',
-                  fontSize: 12,
+                  fontSize: 16,
                   fontWeight: FontWeight.w600,
                   color: DavoColors.of(context).link)),
           const SizedBox(height: 6),
@@ -389,6 +391,7 @@ class _GiftCardSellReviewScreenState extends State<GiftCardSellReviewScreen> {
                 child: Row(children: [
                   DavoAnimatedCheckbox(
                       value: accepted,
+                      selectedColor: const Color(0xFF45CF78),
                       semanticLabel: 'I have read and accepted the terms',
                       onChanged: (value) => setState(() => accepted = value)),
                   const SizedBox(width: 4),
@@ -494,11 +497,15 @@ class _GiftCardSellSubmittedScreenState
       builder: _buildRefreshed);
   Widget _buildRefreshed(BuildContext context) {
     return _GiftScaffold(
+      onExit: () =>
+          finishDavoTransaction(context, tab: 2, giftMode: GiftCardMode.sell),
       child: Column(
         children: [
           Align(
               alignment: Alignment.centerLeft,
-              child: _BackButton(onTap: () => Navigator.pop(context))),
+              child: _BackButton(
+                  onTap: () => finishDavoTransaction(context,
+                      tab: 2, giftMode: GiftCardMode.sell))),
           Expanded(
               child: SingleChildScrollView(
                   child: Padding(
@@ -538,11 +545,11 @@ class _GiftCardSellSubmittedScreenState
           const SizedBox(height: 12),
           _PrimaryButton(
             label: 'Start New Trade',
-            onTap: () => Navigator.of(context).pushReplacement<void, void>(
-              AppPageRoute<void>(
-                  builder: (_) =>
-                      const GiftCardBrandScreen(mode: GiftCardMode.sell)),
-            ),
+            onTap: () => finishDavoTransaction(context,
+                tab: 2,
+                giftMode: GiftCardMode.sell,
+                start: (_) =>
+                    const GiftCardBrandScreen(mode: GiftCardMode.sell)),
           ),
           const SizedBox(height: 10),
           _SecondaryButton(

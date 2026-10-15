@@ -49,8 +49,10 @@ class _GiftOutcomeDetails extends StatelessWidget {
 }
 
 class _GiftScaffold extends StatelessWidget {
-  const _GiftScaffold({required this.child, this.scroll = false, this.bottom});
+  const _GiftScaffold(
+      {required this.child, this.scroll = false, this.bottom, this.onExit});
   final Widget child;
+  final VoidCallback? onExit;
   final Widget? bottom;
   final bool scroll;
 
@@ -58,25 +60,30 @@ class _GiftScaffold extends StatelessWidget {
   Widget build(BuildContext context) {
     final body = Padding(
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 18), child: child);
-    return Scaffold(
-      backgroundColor: DavoColors.of(context).surface,
-      bottomNavigationBar: bottom == null
-          ? null
-          : SafeArea(
-              top: false,
-              child: Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 18),
-                  child: bottom)),
-      body: SafeArea(
-        child: scroll
-            ? SingleChildScrollView(
-                keyboardDismissBehavior:
-                    ScrollViewKeyboardDismissBehavior.onDrag,
-                padding: EdgeInsets.zero,
-                child: body)
-            : body,
-      ),
-    );
+    return PopScope(
+        canPop: onExit == null,
+        onPopInvokedWithResult: (didPop, result) {
+          if (!didPop) onExit?.call();
+        },
+        child: Scaffold(
+          backgroundColor: DavoColors.of(context).surface,
+          bottomNavigationBar: bottom == null
+              ? null
+              : SafeArea(
+                  top: false,
+                  child: Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 8, 16, 18),
+                      child: bottom)),
+          body: SafeArea(
+            child: scroll
+                ? SingleChildScrollView(
+                    keyboardDismissBehavior:
+                        ScrollViewKeyboardDismissBehavior.onDrag,
+                    padding: EdgeInsets.zero,
+                    child: body)
+                : body,
+          ),
+        ));
   }
 }
 

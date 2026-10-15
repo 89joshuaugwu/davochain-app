@@ -749,8 +749,9 @@ class _ResetCriterion extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color =
-        met ? DavoColors.of(context).success : DavoColors.of(context).bodyMuted;
+    final color = met
+        ? PasswordStrengthPalette.forScore(3, context: context)
+        : DavoColors.of(context).bodyMuted;
     return Row(
       children: [
         AnimatedContainer(
@@ -760,7 +761,7 @@ class _ResetCriterion extends StatelessWidget {
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             color: met
-                ? DavoColors.of(context).success
+                ? PasswordStrengthPalette.forScore(3, context: context)
                 : DavoColors.of(context).border,
           ),
         ),

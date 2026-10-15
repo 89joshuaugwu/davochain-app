@@ -1,3 +1,4 @@
+import '../../../core/navigation/transaction_navigation.dart';
 import '../../../shared/widgets/trade_amount_card.dart';
 import '../../../core/money/exact_decimal.dart';
 import '../../wallets/wallet_repository.dart';
@@ -19,7 +20,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../../../core/navigation/app_page_route.dart';
-import '../../../core/navigation/app_routes.dart';
 import '../../../core/theme/app_theme.dart';
 import 'buy_crypto_models.dart';
 import 'buy_crypto_widgets.dart';
@@ -317,6 +317,7 @@ class _BuySuccessScreenState extends State<BuySuccessScreen>
 
   @override
   Widget build(BuildContext context) => DavoResultScreen(
+        onExit: () => finishDavoTransaction(context, tab: 1),
         eventKey: '${record.id}-${record.status.name}',
         refreshRecordId: record.id,
         title: switch (record.status) {
@@ -336,10 +337,9 @@ class _BuySuccessScreenState extends State<BuySuccessScreen>
         appBar: AppBar(
             backgroundColor: DavoColors.of(context).surface,
             leading: IconButton(
-              tooltip: 'Back to dashboard',
+              tooltip: 'Back to trade',
               icon: const Icon(Icons.arrow_back),
-              onPressed: () => Navigator.of(context).pushNamedAndRemoveUntil(
-                  AppRoutes.dashboard, (route) => false),
+              onPressed: () => finishDavoTransaction(context, tab: 1),
             )),
         actions: Column(mainAxisSize: MainAxisSize.min, children: [
           _PrimaryButton(
@@ -351,10 +351,10 @@ class _BuySuccessScreenState extends State<BuySuccessScreen>
                           order: order, record: record)))),
           const SizedBox(height: 12),
           FilledButton(
-            onPressed: () => Navigator.of(context).pushReplacement<void, void>(
-                AppPageRoute<void>(
-                    builder: (_) => BuyAmountScreen(
-                        initialOrder: order.copyWith(ngnAmount: 0)))),
+            onPressed: () => finishDavoTransaction(context,
+                tab: 1,
+                start: (_) => BuyAmountScreen(
+                    initialOrder: order.copyWith(ngnAmount: 0))),
             style: FilledButton.styleFrom(
                 minimumSize: const Size(double.infinity, 48),
                 backgroundColor: DavoColors.of(context).primarySoft,
@@ -389,7 +389,7 @@ class _BuyTransactionDetailsScreenState
   @override
   Widget build(BuildContext context) => TransactionRecordDetailsScreen(
       record: record,
-      onDone: () => Navigator.of(context).popUntil((r) => r.isFirst),
+      onDone: () => finishDavoTransaction(context, tab: 1),
       receiptBuilder: (_) => BuyReceiptScreen(
           order: widget.order,
           date: record.occurredAt,

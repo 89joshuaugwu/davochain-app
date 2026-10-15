@@ -5,8 +5,8 @@ import 'app_theme.dart';
 /// Account creation and password recovery share one strength colour scale.
 abstract final class PasswordStrengthPalette {
   static const low = Color(0xFFB42318);
-  static const medium = Color(0xFFAD6800);
-  static const strong = Color(0xFF13803D);
+  static const medium = Color(0xFFFF9800);
+  static const strong = Color(0xFF19C55D);
 
   static Color forScore(int score, {BuildContext? context}) {
     if (context != null && DavoColors.of(context).isDark) {

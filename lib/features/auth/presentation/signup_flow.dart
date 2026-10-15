@@ -1,8 +1,8 @@
+import '../../../core/navigation/app_routes.dart';
 import '../../../core/preview/local_preview_profile.dart';
 import '../../../core/preview/preview_auth_state.dart';
 import '../../../shared/widgets/davo_safe_selection_sheet.dart';
 import '../../../shared/formatters/nigerian_phone_formatter.dart';
-import '../../../shared/widgets/davo_animated_checkbox.dart';
 import 'package:flutter/material.dart';
 
 import '../../../core/navigation/app_page_route.dart';
@@ -92,7 +92,7 @@ class _CountrySelectionScreenState extends State<CountrySelectionScreen> {
                         onTap: _pickCountry,
                       ),
                     ),
-                    const Spacer(),
+                    const SizedBox(height: 72),
                     Entrance(
                       delay: const Duration(milliseconds: 130),
                       child: Row(
@@ -126,6 +126,21 @@ class _CountrySelectionScreenState extends State<CountrySelectionScreen> {
                             : null,
                       ),
                     ),
+                    const SizedBox(height: 24),
+                    const Spacer(),
+                    Center(
+                        child: Wrap(
+                            crossAxisAlignment: WrapCrossAlignment.center,
+                            children: [
+                          Text('Already have an account?',
+                              style: TextStyle(
+                                  fontSize: 12,
+                                  color: DavoColors.of(context).body)),
+                          TextButton(
+                              onPressed: () => Navigator.of(context)
+                                  .pushReplacementNamed(AppRoutes.login),
+                              child: const Text('Login')),
+                        ])),
                     const SizedBox(height: 12),
                   ],
                 )),
@@ -169,12 +184,11 @@ class _CountryField extends StatelessWidget {
         onTap: onTap,
         borderRadius: BorderRadius.circular(4),
         child: Ink(
-          height: 48,
           decoration: BoxDecoration(
             border: Border.all(color: DavoColors.of(context).border),
             borderRadius: BorderRadius.circular(4),
           ),
-          padding: const EdgeInsets.symmetric(horizontal: 16),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
           child: Row(
             children: [
               if (country != null) ...[
@@ -212,12 +226,16 @@ class _AgreementCheckbox extends StatelessWidget {
   final bool checked;
   final ValueChanged<bool> onChanged;
   @override
-  Widget build(BuildContext context) => DavoAnimatedCheckbox(
+  Widget build(BuildContext context) => SizedBox(
+      width: 44,
+      height: 44,
+      child: Checkbox(
         value: checked,
-        onChanged: onChanged,
-        size: 24,
+        onChanged: (value) => onChanged(value ?? false),
         semanticLabel: 'Agree to terms and privacy policy',
-      );
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+        activeColor: AppColors.primary,
+      ));
 }
 
 class _AgreementCopy extends StatelessWidget {
@@ -252,30 +270,31 @@ class _CountryPickerSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return DavoSafeSelectionSheet(backgroundColor: DavoColors.of(context).surface,
+    return DavoSafeSelectionSheet(
+        backgroundColor: DavoColors.of(context).surface,
         child: Padding(
-      padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('Select your country',
-              style: Theme.of(context).textTheme.titleMedium),
-          const SizedBox(height: 12),
-          ..._countries.map(
-            (country) => ListTile(
-              contentPadding: EdgeInsets.zero,
-              minLeadingWidth: 34,
-              onTap: () => Navigator.pop(context, country),
-              leading: const _NigeriaFlag(),
-              title: Text(country.name),
-              trailing: Text(country.dialCode,
-                  style: Theme.of(context).textTheme.bodyMedium),
-            ),
+          padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Select your country',
+                  style: Theme.of(context).textTheme.titleMedium),
+              const SizedBox(height: 12),
+              ..._countries.map(
+                (country) => ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  minLeadingWidth: 34,
+                  onTap: () => Navigator.pop(context, country),
+                  leading: const _NigeriaFlag(),
+                  title: Text(country.name),
+                  trailing: Text(country.dialCode,
+                      style: Theme.of(context).textTheme.bodyMedium),
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
-    ));
+        ));
   }
 }
 
@@ -395,10 +414,14 @@ class _AccountDetailsScreenState extends State<_AccountDetailsScreen> {
                       enabled: _canContinue,
                       onPressed: _canContinue
                           ? () {
-                              LocalPreviewProfile.instance.register(name: _name.text,
-                                email: _email.text, phone: '+234 ${_phone.text}');
-                              PreviewAuthState.accountEmail = _email.text.trim().toLowerCase();
-                              pushAppPage<void>(context, (_) => const CreatePasswordScreen());
+                              LocalPreviewProfile.instance.register(
+                                  name: _name.text,
+                                  email: _email.text,
+                                  phone: '+234 ${_phone.text}');
+                              PreviewAuthState.accountEmail =
+                                  _email.text.trim().toLowerCase();
+                              pushAppPage<void>(
+                                  context, (_) => const CreatePasswordScreen());
                             }
                           : null,
                     ),

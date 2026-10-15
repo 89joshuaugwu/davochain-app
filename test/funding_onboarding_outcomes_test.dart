@@ -1,3 +1,4 @@
+import 'package:davochain/shared/widgets/davo_main_shell.dart';
 import 'dart:async';
 import 'package:davochain/core/theme/app_theme.dart';
 import 'package:davochain/features/auth/presentation/account_welcome_screen.dart';
@@ -46,7 +47,11 @@ void main() {
     await tester.pumpAndSettle();
     await tester.binding.handlePopRoute();
     await tester.pumpAndSettle();
-    expect(find.text('Wallet destination'), findsOneWidget);
+    expect(find.byType(DavoMainShell), findsOneWidget);
+    expect(
+        tester.widget<DavoMainShell>(find.byType(DavoMainShell)).initialIndex,
+        0);
+    expect(find.text('Wallet destination', skipOffstage: false), findsNothing);
     expect(find.text('Old withdrawal form'), findsNothing);
   });
   testWidgets(
@@ -100,8 +105,7 @@ void main() {
     expect(find.byType(DavochainDashboardScreen), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
-  testWidgets(
-      'accepted deposits appear above existing history activity',
+  testWidgets('accepted deposits appear above existing history activity',
       (tester) async {
     FundingActivity.accept(deposit(FundingStatus.completed));
     await tester.pumpWidget(MaterialApp(

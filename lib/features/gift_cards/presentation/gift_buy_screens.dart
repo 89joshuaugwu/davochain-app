@@ -607,11 +607,15 @@ class _GiftCardBuySuccessScreenState extends State<GiftCardBuySuccessScreen>
       builder: _buildRefreshed);
   Widget _buildRefreshed(BuildContext context) {
     return _GiftScaffold(
+      onExit: () =>
+          finishDavoTransaction(context, tab: 2, giftMode: GiftCardMode.buy),
       child: Column(
         children: [
           Align(
               alignment: Alignment.centerLeft,
-              child: _BackButton(onTap: () => Navigator.pop(context))),
+              child: _BackButton(
+                  onTap: () => finishDavoTransaction(context,
+                      tab: 2, giftMode: GiftCardMode.buy))),
           Expanded(
               child: SingleChildScrollView(
                   child: Padding(
@@ -642,11 +646,11 @@ class _GiftCardBuySuccessScreenState extends State<GiftCardBuySuccessScreen>
           const SizedBox(height: 12),
           _PrimaryButton(
             label: 'Start New Trade',
-            onTap: () => Navigator.of(context).pushReplacement<void, void>(
-              AppPageRoute<void>(
-                  builder: (_) =>
-                      const GiftCardBrandScreen(mode: GiftCardMode.buy)),
-            ),
+            onTap: () => finishDavoTransaction(context,
+                tab: 2,
+                giftMode: GiftCardMode.buy,
+                start: (_) =>
+                    const GiftCardBrandScreen(mode: GiftCardMode.buy)),
           ),
           const SizedBox(height: 10),
           _SecondaryButton(

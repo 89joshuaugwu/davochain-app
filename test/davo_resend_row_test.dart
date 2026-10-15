@@ -34,7 +34,8 @@ void main() {
     ));
   }
 
-  testWidgets('countdown ends at the right edge beside the resend action',
+  testWidgets(
+      'resend follows the prompt while only countdown sits at the right edge',
       (tester) async {
     await open(tester, 360, 1);
     final row = tester.getRect(find.byType(DavoResendRow));
@@ -42,8 +43,9 @@ void main() {
     final prompt = tester.getRect(find.text('Didn\u2019t get a code?'));
     expect(timer.right, closeTo(row.right, 0.1));
     expect(timer.center.dy, closeTo(prompt.center.dy, 0.1));
-    expect(
-        tester.getRect(find.text('Resend Code')).right, lessThan(timer.left));
+    final resend = tester.getRect(find.text('Resend Code'));
+    expect(resend.right, lessThan(timer.left));
+    expect(resend.left - prompt.right, lessThan(32));
     expect(tester.takeException(), isNull);
   });
 

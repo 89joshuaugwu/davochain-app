@@ -20,17 +20,16 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     _WelcomePage(
         image: 'assets/images/onboarding/trade_crypto.png',
         title: 'Trade Crypto, Your Way',
-        body: 'Buy, sell and swap. Your next move starts with Davochain.'),
+        body: 'Buy, sell and swap crypto with a simple and secure experience.'),
     _WelcomePage(
         image: 'assets/images/onboarding/gift_cards.png',
         title: 'Simple. Fast. Secure.',
-        body:
-            'Your digital assets, together. Keep track of your balance and every move you make.'),
+        body: 'Everything you need to trade digital assets, all in one place.'),
     _WelcomePage(
         image: 'assets/images/onboarding/digital_assets.png',
         title: 'Turn Gift Cards Into Cash',
         body:
-            'Give your gift cards a fresh start. Choose a card, see the rate and take it from there.'),
+            'Trade your gift cards at competitive rates and get paid with ease.'),
   ];
   @override
   void dispose() {
@@ -70,7 +69,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             statusBarIconBrightness: Brightness.light,
             statusBarBrightness: Brightness.dark,
             systemNavigationBarColor: DavoColors.of(context).surface,
-            systemNavigationBarIconBrightness: Theme.of(context).brightness == Brightness.dark ? Brightness.light : Brightness.dark),
+            systemNavigationBarIconBrightness:
+                Theme.of(context).brightness == Brightness.dark
+                    ? Brightness.light
+                    : Brightness.dark),
         child: Scaffold(
           backgroundColor: DavoColors.of(context).surface,
           body: DecoratedBox(
@@ -81,8 +83,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               colors: [
                 AppColors.primary,
                 AppColors.primary,
-                DavoColors.of(context).isDark ? const Color(0xFF224581) : const Color(0xFF91B6FF),
-                DavoColors.of(context).isDark ? DavoColors.of(context).surface : const Color(0xFFF0F5FF),
+                DavoColors.of(context).isDark
+                    ? const Color(0xFF224581)
+                    : const Color(0xFF91B6FF),
+                DavoColors.of(context).isDark
+                    ? DavoColors.of(context).surface
+                    : const Color(0xFFF0F5FF),
                 DavoColors.of(context).surface
               ],
               stops: const [0, .16, .42, .8, 1],
@@ -127,41 +133,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               Padding(
                 padding: const EdgeInsets.fromLTRB(24, 0, 24, 8),
                 child: Column(mainAxisSize: MainAxisSize.min, children: [
-                  Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: List.generate(
-                          _pages.length,
-                          (page) => Semantics(
-                                label:
-                                    'Introduction ${page + 1} of ${_pages.length}',
-                                selected: _index == page,
-                                button: true,
-                                child: InkResponse(
-                                    splashFactory:
-                                        reduced ? NoSplash.splashFactory : null,
-                                    onTap: () => _goTo(page),
-                                    radius: 22,
-                                    child: SizedBox(
-                                        width: 48,
-                                        height: 48,
-                                        child: Center(
-                                          child: AnimatedContainer(
-                                            duration: reduced
-                                                ? Duration.zero
-                                                : const Duration(
-                                                    milliseconds: 220),
-                                            curve: Curves.easeOutCubic,
-                                            width: _index == page ? 28 : 8,
-                                            height: 6,
-                                            decoration: BoxDecoration(
-                                                color: _index == page
-                                                    ? AppColors.primary
-                                                    : const Color(0xFFD4DDF0),
-                                                borderRadius:
-                                                    BorderRadius.circular(8)),
-                                          ),
-                                        ))),
-                              ))),
                   DavoPrimaryButton(
                     label: _index == 2 ? 'Create Account' : 'Next',
                     height: math.max(52,
@@ -176,7 +147,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       child: TextButton(
                         onPressed: () => _open(AppRoutes.login),
                         style: TextButton.styleFrom(
-                            minimumSize: const Size(48, 48)),
+                            minimumSize: const Size(double.infinity, 52),
+                            backgroundColor: DavoColors.of(context).primarySoft,
+                            foregroundColor: DavoColors.of(context).link,
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(4))),
                         child: const Text('Login'),
                       )),
                 ]),
@@ -209,7 +184,7 @@ class _WelcomeContent extends StatelessWidget {
         child: ConstrainedBox(
           constraints: BoxConstraints(minHeight: constraints.maxHeight),
           child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.end,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 SizedBox(
@@ -236,6 +211,26 @@ class _WelcomeContent extends StatelessWidget {
                     )),
                 const SizedBox(height: 24),
                 Semantics(
+                  label: 'Introduction ${index + 1} of 3',
+                  child: SizedBox(
+                      height: 24,
+                      child: Row(
+                          children: List.generate(
+                              3,
+                              (page) => Padding(
+                                  padding: const EdgeInsets.only(right: 4),
+                                  child: Container(
+                                      width: index == page ? 28 : 8,
+                                      height: 7,
+                                      decoration: BoxDecoration(
+                                          color: index == page
+                                              ? AppColors.primary
+                                              : DavoColors.of(context).border,
+                                          borderRadius:
+                                              BorderRadius.circular(8))))))),
+                ),
+                const SizedBox(height: 8),
+                Semantics(
                     header: true,
                     child: Text(data.title,
                         style: Theme.of(context)
@@ -245,14 +240,14 @@ class _WelcomeContent extends StatelessWidget {
                                 fontSize: 28,
                                 height: 1.2,
                                 letterSpacing: -.7,
-                                color: DavoColors.of(context).ink))),
+                                color: DavoColors.of(context).link))),
                 const SizedBox(height: 14),
                 Text(data.body,
                     style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        fontSize: 15,
-                        height: 1.55,
-                        color: DavoColors.of(context).bodyMuted)),
-                const SizedBox(height: 12),
+                        fontSize: 16,
+                        height: 1.45,
+                        color: DavoColors.of(context).body)),
+                const SizedBox(height: 32),
               ]),
         ),
       );

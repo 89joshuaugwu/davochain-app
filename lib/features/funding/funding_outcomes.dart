@@ -1,3 +1,4 @@
+import '../../core/navigation/transaction_navigation.dart';
 import '../../core/money/exact_decimal.dart';
 import '../../shared/receipts/receipt_activity.dart';
 import 'package:flutter/material.dart';
@@ -329,6 +330,12 @@ class FundingOutcomeScreen extends StatelessWidget {
             final current = records.where((r) => r.id == record.id);
             final value = current.isEmpty ? record : current.first;
             final child = DavoResultScreen(
+                onExit: () => finishDavoTransaction(context),
+                appBar: AppBar(
+                    leading: IconButton(
+                        tooltip: 'Back to wallet',
+                        icon: const Icon(Icons.arrow_back),
+                        onPressed: () => finishDavoTransaction(context))),
                 eventKey: '${value.id}-${value.status.name}',
                 refreshRecordId: value.id,
                 kind: value.status == FundingStatus.completed
@@ -368,14 +375,7 @@ class FundingOutcomeScreen extends StatelessWidget {
                               builder: (_) =>
                                   FundingDetailsScreen(record: value)))),
                   TextButton(
-                      onPressed: () {
-                        if (returnToWallet) {
-                          Navigator.of(context)
-                              .popUntil((route) => route.isFirst);
-                        } else {
-                          Navigator.of(context).pop();
-                        }
-                      },
+                      onPressed: () => finishDavoTransaction(context),
                       child: const Text('Back to wallet')),
                 ]));
             final presentation = animate
@@ -384,15 +384,7 @@ class FundingOutcomeScreen extends StatelessWidget {
                     data: MediaQuery.of(context)
                         .copyWith(disableAnimations: true),
                     child: child);
-            return PopScope(
-              canPop: !returnToWallet,
-              onPopInvokedWithResult: (didPop, result) {
-                if (!didPop && returnToWallet) {
-                  Navigator.of(context).popUntil((route) => route.isFirst);
-                }
-              },
-              child: presentation,
-            );
+            return presentation;
           });
 }
 
