@@ -34,7 +34,7 @@ ReceiptRecord buildCryptoReceiptRecord(
       .where((a) => a.symbol == target || a.name == target)
       .firstOrNull;
   final received = kind == TxKind.sell
-      ? '₦${formatGroupedAmount(ngn.toFixed(2))}'
+      ? '₦${formatGroupedAmount(ngn.toFixed(2, rounding: DecimalRounding.floor))}'
       : kind == TxKind.conversion && destination != null
           ? '${formatCryptoQuantity(ngn.divide(destination.ngnPrice, scale: WalletAccountState.instance.snapshot.available(destination.symbol).decimals, rounding: DecimalRounding.floor))} ${destination.symbol}'
           : null;
@@ -46,6 +46,29 @@ ReceiptRecord buildCryptoReceiptRecord(
       occurredAt: date,
       amount: received ?? quantity,
       preview: preview,
+      walletEffect: preview && WalletAccountState.instance.simulationEnabled
+          ? WalletAccountState.instance.effect(
+              debits: {
+                  asset.symbol:
+                      (ExactDecimal.from(amount) + ExactDecimal.from(fee ?? 0))
+                          .toFixed(WalletAccountState.instance.snapshot
+                              .available(asset.symbol)
+                              .decimals)
+                },
+              credits: kind == TxKind.sell
+                  ? {'NGN': ngn.toFixed(2, rounding: DecimalRounding.floor)}
+                  : kind == TxKind.conversion && destination != null
+                      ? {
+                          destination.symbol: ngn
+                              .divide(destination.ngnPrice,
+                                  scale: WalletAccountState.instance.snapshot
+                                      .available(destination.symbol)
+                                      .decimals,
+                                  rounding: DecimalRounding.floor)
+                              .toString()
+                        }
+                      : {})
+          : null,
       fields: [
         ReceiptField(label: 'Asset', value: '${asset.name} (${asset.symbol})'),
         ReceiptField(

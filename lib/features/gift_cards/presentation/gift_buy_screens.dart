@@ -483,8 +483,26 @@ class _GiftCardPaymentScreenState extends State<GiftCardPaymentScreen> {
                   ],
                 ),
                 const SizedBox(height: 16),
+                if (WalletAccountState.instance.simulationEnabled &&
+                    ExactDecimal.from(widget.naira).compareTo(
+                            ExactDecimal.parse(WalletAccountState
+                                .instance.snapshot
+                                .available('NGN')
+                                .decimal)) >
+                        0)
+                  const Padding(
+                      padding: EdgeInsets.only(bottom: 12),
+                      child: Text(
+                          'Insufficient Naira balance. Deposit funds before continuing.')),
                 _PrimaryButton(
                   label: 'Continue',
+                  enabled: !WalletAccountState.instance.simulationEnabled ||
+                      ExactDecimal.from(widget.naira).compareTo(
+                              ExactDecimal.parse(WalletAccountState
+                                  .instance.snapshot
+                                  .available('NGN')
+                                  .decimal)) <=
+                          0,
                   onTap: () async {
                     final ok = await Navigator.of(context).push<bool>(
                         AppPageRoute<bool>(
@@ -492,6 +510,15 @@ class _GiftCardPaymentScreenState extends State<GiftCardPaymentScreen> {
                     if (!context.mounted ||
                         ok != true ||
                         _generation != WalletAccountState.instance.generation) {
+                      return;
+                    }
+                    if (WalletAccountState.instance.simulationEnabled &&
+                        ExactDecimal.from(widget.naira).compareTo(
+                                ExactDecimal.parse(WalletAccountState
+                                    .instance.snapshot
+                                    .available('NGN')
+                                    .decimal)) >
+                            0) {
                       return;
                     }
                     Navigator.of(context).pushReplacement<void, void>(

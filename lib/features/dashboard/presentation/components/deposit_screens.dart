@@ -330,6 +330,7 @@ class _CryptoDepositScreenState extends State<CryptoDepositScreen> {
               _SimpleAppBar(
                   title: 'Deposit', onBack: () => Navigator.pop(context)),
               DepositActivityBanner(currency: asset.symbol),
+              SimulationDepositButton(currency: asset.symbol),
               const SizedBox(height: 23),
               Expanded(
                 child: SingleChildScrollView(
@@ -916,6 +917,7 @@ class NairaDepositScreen extends StatelessWidget {
               _SimpleAppBar(
                   title: 'Deposit', onBack: () => Navigator.pop(context)),
               const DepositActivityBanner(currency: 'NGD'),
+              const SimulationDepositButton(currency: 'NGD'),
               const SizedBox(height: 34),
               Expanded(
                 child: SingleChildScrollView(

@@ -1,3 +1,4 @@
+import '../../features/wallets/wallet_effect.dart';
 import 'package:flutter/widgets.dart' show StringCharacters;
 import 'receipt_asset.dart';
 export 'receipt_asset.dart' show ReceiptAsset;
@@ -54,6 +55,7 @@ class ReceiptRecord {
       required this.occurredAt,
       required this.amount,
       this.preview = true,
+      this.walletEffect,
       List<ReceiptAsset>? assets,
       required List<ReceiptField> fields,
       List<ReceiptEvent> events = const []})
@@ -65,27 +67,41 @@ class ReceiptRecord {
   final ReceiptStatus status;
   final DateTime occurredAt;
   final bool preview;
+  final WalletEffect? walletEffect;
   final List<ReceiptAsset> assets;
   final List<ReceiptField> fields;
   final List<ReceiptEvent> events;
 
   ReceiptRecord withStatus(ReceiptStatus value) => ReceiptRecord(
-      id: id, reference: reference, type: type, status: value,
-      occurredAt: occurredAt, amount: amount, preview: preview,
-      assets: assets, fields: fields,
-      events: [
-        ReceiptEvent(label: 'Submitted', description: 'Request accepted.',
-            occurredAt: occurredAt, state: ReceiptEventState.complete),
-        ReceiptEvent(label: value.label,
-            description: switch (value) {
-              ReceiptStatus.completed => 'Transaction completed.',
-              ReceiptStatus.pending => 'Transaction is being processed.',
-              ReceiptStatus.failed => 'Transaction failed.',
-            },
-            occurredAt: value == ReceiptStatus.completed ? DateTime.now() : null,
-            state: value == ReceiptStatus.pending
-                ? ReceiptEventState.current : ReceiptEventState.complete),
-      ]);
+          id: id,
+          reference: reference,
+          type: type,
+          status: value,
+          occurredAt: occurredAt,
+          amount: amount,
+          preview: preview,
+          walletEffect: walletEffect,
+          assets: assets,
+          fields: fields,
+          events: [
+            ReceiptEvent(
+                label: 'Submitted',
+                description: 'Request accepted.',
+                occurredAt: occurredAt,
+                state: ReceiptEventState.complete),
+            ReceiptEvent(
+                label: value.label,
+                description: switch (value) {
+                  ReceiptStatus.completed => 'Transaction completed.',
+                  ReceiptStatus.pending => 'Transaction is being processed.',
+                  ReceiptStatus.failed => 'Transaction failed.',
+                },
+                occurredAt:
+                    value == ReceiptStatus.completed ? DateTime.now() : null,
+                state: value == ReceiptStatus.pending
+                    ? ReceiptEventState.current
+                    : ReceiptEventState.complete),
+          ]);
 }
 
 List<ReceiptAsset> _inferAssets(

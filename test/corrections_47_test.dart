@@ -30,7 +30,8 @@ void main() {
     await tester.enterText(search, 'ada');
     await tester.pumpAndSettle();
     expect(find.text('Cardano'), findsOneWidget);
-    expect(find.text('Unavailable'), findsOneWidget);
+    expect(find.text('0 ADA'), findsOneWidget);
+    expect(find.text('Unavailable'), findsNothing);
   });
   testWidgets('article paragraphs use requested justification', (tester) async {
     await tester.pumpWidget(MaterialApp(

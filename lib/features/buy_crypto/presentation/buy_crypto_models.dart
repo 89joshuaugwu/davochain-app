@@ -1,3 +1,4 @@
+import '../../wallets/simulation_quotes.dart';
 import '../../wallets/wallet_repository.dart';
 import 'package:flutter/material.dart';
 import '../../../core/money/exact_decimal.dart';
@@ -28,13 +29,23 @@ enum BuyCryptoAsset {
   final String glyph;
   final Color color;
   final String? _ngnPrice;
-  bool get hasQuote => _ngnPrice != null;
-  ExactDecimal get ngnPrice => ExactDecimal.parse(
-      _ngnPrice ?? (throw StateError('No quote available for $symbol')));
+  bool get hasQuote => WalletAccountState.instance.simulationEnabled
+      ? WalletAccountState.instance.snapshot.priceMinorUnits(symbol) != null
+      : _ngnPrice != null;
+  ExactDecimal get ngnPrice => WalletAccountState.instance.simulationEnabled
+      ? ExactDecimal.from(
+              WalletAccountState.instance.snapshot.priceMinorUnits(symbol)!)
+          .divide(ExactDecimal.from(100))
+      : ExactDecimal.parse(
+          _ngnPrice ?? (throw StateError('No quote available for $symbol')));
   double get ngnPerUnit => ngnPrice.toDouble();
   int get quantityDecimals => switch (this) {
         BuyCryptoAsset.solana => 9,
-        BuyCryptoAsset.tether || BuyCryptoAsset.usdCoin => 6,
+        BuyCryptoAsset.tether ||
+        BuyCryptoAsset.usdCoin ||
+        BuyCryptoAsset.xrp ||
+        BuyCryptoAsset.cardano =>
+          6,
         _ => 8,
       };
 }
@@ -94,8 +105,7 @@ class BuyCryptoOrder {
 
   String get formattedExchangeRate =>
       '1 ${asset.symbol} \u2248 \u20a6${formatGroupedAmount(asset.ngnPrice.toFixed(2))}';
-  ExactDecimal get exactUsdAmount =>
-      exactNgnAmount.divide(ExactDecimal.parse('1463.08'));
+  ExactDecimal get exactUsdAmount => usdEquivalentForNgn(exactNgnAmount);
   double get usdAmount => exactUsdAmount.toDouble();
   static const double usdtNgnRate = 1540;
   BuyCryptoOrder copyWith(
@@ -112,3 +122,12 @@ class BuyCryptoOrder {
                   ? null
                   : this.quantityDecimals));
 }
+
+/// Shared indicative FX conversion for buy, sell and swap review.
+ExactDecimal usdEquivalentForNgn(ExactDecimal amount) =>
+    amount.divide(WalletAccountState.instance.simulationEnabled
+        ? ExactDecimal.from(
+                WalletAccountState.instance.snapshot.usdNgnMinorUnits ??
+                    SimulationQuotes.usdNgnMinorUnits)
+            .divide(ExactDecimal.from(100))
+        : ExactDecimal.parse('1463.08'));

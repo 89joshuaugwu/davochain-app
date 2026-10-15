@@ -215,7 +215,8 @@ class _TradeAmountScreenState extends State<TradeAmountScreen> {
               label: 'You receive',
               selector: const TradeCurrencySelector(
                   icon: NairaCoinMark(), name: 'Nigerian Naira', symbol: 'NGN'),
-              value: '\u2248 \u20a6${formatGroupedAmount(ngn.toFixed(2))}',
+              value:
+                  '\u2248 \u20a6${formatGroupedAmount(ngn.toFixed(2, rounding: DecimalRounding.floor))}',
               footer:
                   '1 ${sourceAsset.symbol} \u2248 \u20a6${formatGroupedAmount(sourceAsset.ngnPrice.toFixed(2))}'),
         ],
@@ -354,8 +355,7 @@ class _TradeReviewScreenState extends State<TradeReviewScreen> {
             .decimals,
         rounding: DecimalRounding.floor);
     final receivedText = formatGroupedAmount(formatCryptoQuantity(received));
-    final usdText = formatGroupedAmount(
-        (ngn.divide(ExactDecimal.parse('1463.08'))).toFixed(2));
+    final usdText = formatGroupedAmount(usdEquivalentForNgn(ngn).toFixed(2));
     final rate =
         '1 ${destinationAsset.symbol} \u2248 ${formatGroupedAmount((destinationAsset.ngnPrice.divide(sourceAsset.ngnPrice)).toFixed(8))} ${sourceAsset.symbol}';
     return Scaffold(
@@ -426,7 +426,7 @@ class _TradeReviewScreenState extends State<TradeReviewScreen> {
                                           CrossAxisAlignment.start,
                                       children: [
                                     Text(
-                                        '\u20a6${formatGroupedAmount(ngn.toFixed(2))}',
+                                        '\u20a6${formatGroupedAmount(ngn.toFixed(2, rounding: DecimalRounding.floor))}',
                                         style: const TextStyle(
                                             fontSize: 16,
                                             fontWeight: FontWeight.w600)),
@@ -453,7 +453,7 @@ class _TradeReviewScreenState extends State<TradeReviewScreen> {
                     conv ? 'Total Amount' : 'Total Received',
                     conv
                         ? '$receivedText ${destinationAsset.symbol}\n\$$usdText'
-                        : '\u20a6${formatGroupedAmount(ngn.toFixed(2))}',
+                        : '\u20a6${formatGroupedAmount(ngn.toFixed(2, rounding: DecimalRounding.floor))}',
                     false
                   ),
                 ]),
@@ -689,7 +689,8 @@ bool _positiveTradeProceeds(
   if (quantity.isNegative || quantity.isZero) return false;
   final naira = quantity * source.ngnPrice;
   return destination == null
-      ? !ExactDecimal.parse(naira.toFixed(2)).isZero
+      ? !ExactDecimal.parse(naira.toFixed(2, rounding: DecimalRounding.floor))
+          .isZero
       : !naira
           .divide(destination.ngnPrice,
               scale: WalletAccountState.instance.snapshot

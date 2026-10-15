@@ -1,3 +1,4 @@
+import '../wallets/wallet_repository.dart';
 import '../../core/navigation/transaction_navigation.dart';
 import '../../core/money/exact_decimal.dart';
 import '../../shared/receipts/receipt_activity.dart';
@@ -222,6 +223,7 @@ class NairaWithdrawalProgressScreen extends StatefulWidget {
 
 class _NairaWithdrawalProgressScreenState
     extends State<NairaWithdrawalProgressScreen> {
+  final _generation = WalletAccountState.instance.generation;
   bool _failed = false;
   bool _running = false;
   @override
@@ -241,7 +243,11 @@ class _NairaWithdrawalProgressScreenState
           ? await Future<FundingStatus>.delayed(
               const Duration(milliseconds: 1500), () => FundingStatus.pending)
           : await widget.operation!();
-      if (!mounted || ModalRoute.of(context)?.isCurrent == false) return;
+      if (!mounted ||
+          ModalRoute.of(context)?.isCurrent == false ||
+          _generation != WalletAccountState.instance.generation) {
+        return;
+      }
       if (status == FundingStatus.failed) {
         setState(() => _failed = true);
         return;
@@ -420,6 +426,27 @@ class FundingDetailsScreen extends StatelessWidget {
       occurredAt: value.occurredAt,
       amount: value.amountLabel,
       preview: value.preview,
+      walletEffect:
+          value.preview && WalletAccountState.instance.simulationEnabled
+              ? WalletAccountState.instance.effect(
+                  debits: value.deposit
+                      ? {}
+                      : {
+                          value.currency: (ExactDecimal.from(value.amount) +
+                                  ExactDecimal.from(value.fee))
+                              .toFixed(WalletAccountState.instance.snapshot
+                                  .available(value.currency)
+                                  .decimals)
+                        },
+                  credits: value.deposit
+                      ? {
+                          value.currency: ExactDecimal.from(value.amount)
+                              .toFixed(WalletAccountState.instance.snapshot
+                                  .available(value.currency)
+                                  .decimals)
+                        }
+                      : {})
+              : null,
       fields: [
         ReceiptField(label: 'Wallet', value: value.currency),
         ReceiptField(

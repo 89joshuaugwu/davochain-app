@@ -1,3 +1,4 @@
+import '../../features/wallets/wallet_repository.dart';
 import 'dart:async';
 import 'package:flutter/widgets.dart';
 import 'receipt_record.dart';
@@ -9,9 +10,9 @@ abstract final class ReceiptActivity {
   static final Map<String, Timer> _timers = {};
   static int _session = 0;
 
-  static ReceiptRecord resolve(ReceiptRecord fallback) => records.value
-      .where((record) => record.id == fallback.id)
-      .firstOrNull ?? fallback;
+  static ReceiptRecord resolve(ReceiptRecord fallback) =>
+      records.value.where((record) => record.id == fallback.id).firstOrNull ??
+      fallback;
 
   /// Only explicit new local submissions enter the simulated lifecycle.
   /// Accepting historical or provider facts never starts a completion timer.
@@ -26,19 +27,23 @@ abstract final class ReceiptActivity {
     }
     final pending = record.withStatus(ReceiptStatus.pending);
     accept(pending);
+    final accepted = resolve(pending);
+    if (accepted.status != ReceiptStatus.pending) return accepted;
     final session = _session;
     _timers[record.id] = Timer(previewDelay, () {
       if (session != _session) return;
       _timers.remove(record.id);
       final current = resolve(pending);
       if (!records.value.any((r) => r.id == record.id) ||
-          !current.preview || current.status != ReceiptStatus.pending) {
+          !current.preview ||
+          current.status != ReceiptStatus.pending) {
         return;
       }
       accept(current.withStatus(ReceiptStatus.completed));
     });
-    return pending;
+    return resolve(pending);
   }
+
   static void accept(ReceiptRecord record) {
     if (record.id.isEmpty) return;
     final prior = records.value.where((r) => r.id == record.id);
@@ -46,6 +51,15 @@ abstract final class ReceiptActivity {
         prior.first.status == ReceiptStatus.completed &&
         record.status != ReceiptStatus.completed) {
       return;
+    }
+    final wallet = WalletAccountState.instance;
+    if (record.preview &&
+        record.walletEffect != null &&
+        wallet.simulationEnabled) {
+      final applied = wallet.applyEffect(record.id, record.walletEffect!,
+          completed: record.status == ReceiptStatus.completed,
+          failed: record.status == ReceiptStatus.failed);
+      if (!applied) record = record.withStatus(ReceiptStatus.failed);
     }
     records.value = List.unmodifiable([
       record,
@@ -55,7 +69,9 @@ abstract final class ReceiptActivity {
 
   static void reset() {
     _session++;
-    for (final timer in _timers.values) { timer.cancel(); }
+    for (final timer in _timers.values) {
+      timer.cancel();
+    }
     _timers.clear();
     records.value = const [];
   }
@@ -68,7 +84,11 @@ mixin ReceiptActivityObserver<T extends StatefulWidget> on State<T> {
     super.initState();
     ReceiptActivity.records.addListener(_refreshReceipt);
   }
-  void _refreshReceipt() { if (mounted) setState(() {}); }
+
+  void _refreshReceipt() {
+    if (mounted) setState(() {});
+  }
+
   @override
   void dispose() {
     ReceiptActivity.records.removeListener(_refreshReceipt);

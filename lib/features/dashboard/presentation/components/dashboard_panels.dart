@@ -871,6 +871,8 @@ class _DashboardAssetCard extends StatelessWidget {
                         '${WalletAccountState.instance.snapshot.available('SOL').decimal} SOL',
                     value: WalletAccountState.instance.balanceLabel('SOL'),
                     change: '+4.21%'),
+                ..._additionalHoldings
+                    .map((asset) => _AdditionalHoldingRow(asset: asset)),
               ],
             ),
           ),
@@ -897,7 +899,9 @@ class _AssetRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final positive = change.startsWith('+');
+    final displayChange =
+        WalletAccountState.instance.simulationEnabled ? '' : change;
+    final positive = displayChange.startsWith('+');
     if (MediaQuery.textScalerOf(context).scale(14) > 18) {
       return Padding(
         padding: const EdgeInsets.symmetric(vertical: 12),
@@ -923,12 +927,13 @@ class _AssetRow extends StatelessWidget {
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
                         color: DavoColors.of(context).ink)),
-                Text(change,
-                    style: TextStyle(
-                        fontSize: 11,
-                        color: positive
-                            ? DavoColors.of(context).success
-                            : DavoColors.of(context).bodyMuted)),
+                if (displayChange.isNotEmpty)
+                  Text(displayChange,
+                      style: TextStyle(
+                          fontSize: 11,
+                          color: positive
+                              ? DavoColors.of(context).success
+                              : DavoColors.of(context).bodyMuted)),
               ],
             )),
           ],
@@ -1001,25 +1006,27 @@ class _AssetRow extends StatelessWidget {
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
                       color: DavoColors.of(context).ink)),
-              const SizedBox(height: 2),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                decoration: BoxDecoration(
-                  color: positive
-                      ? DavoColors.of(context).elevated
-                      : DavoColors.of(context).primarySoft,
-                  borderRadius: BorderRadius.circular(4),
+              if (displayChange.isNotEmpty) const SizedBox(height: 2),
+              if (displayChange.isNotEmpty)
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: positive
+                        ? DavoColors.of(context).elevated
+                        : DavoColors.of(context).primarySoft,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Text(
+                    displayChange,
+                    style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: positive
+                            ? DavoColors.of(context).success
+                            : DavoColors.of(context).body),
+                  ),
                 ),
-                child: Text(
-                  change,
-                  style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600,
-                      color: positive
-                          ? DavoColors.of(context).success
-                          : DavoColors.of(context).body),
-                ),
-              ),
             ],
           )),
           if (chevron)

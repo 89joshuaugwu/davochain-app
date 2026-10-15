@@ -101,9 +101,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                     child: Padding(
                       padding: EdgeInsets.only(right: index == 2 ? 0 : 16),
                       child: Material(
-                        color: index == 0
-                            ? AppColors.primary
-                            : DavoColors.of(context).primarySoft,
+                        color: DavoColors.of(context).primarySoft,
                         borderRadius: BorderRadius.circular(6),
                         child: InkWell(
                           onTap: () {
@@ -130,9 +128,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                                     fontFamily: 'Sora',
                                     fontSize: 14,
                                     fontWeight: FontWeight.w600,
-                                    color: index == 0
-                                        ? Colors.white
-                                        : DavoColors.of(context).body),
+                                    color: DavoColors.of(context).body),
                               ),
                             ),
                           ),
@@ -191,6 +187,9 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                             '${WalletAccountState.instance.snapshot.available('USDC').decimal} USDC',
                         value: WalletAccountState.instance.balanceLabel('USDC'),
                         change: '\u2014'),
+                    ..._additionalHoldings.map((asset) => Padding(
+                        padding: const EdgeInsets.only(top: 8),
+                        child: _AdditionalHoldingRow(asset: asset))),
                   ],
                 ),
               ),
@@ -283,50 +282,57 @@ class _PortfolioValueCardState extends State<_PortfolioValueCard> {
                     WalletAccountState.instance.snapshot.portfolioMinorUnits) ??
                 'Portfolio valuation'
             : 'Balance hidden',
-        trailing: canRefresh
-            ? Semantics(
-                liveRegion: true,
-                child: Tooltip(
-                    message: 'Refresh portfolio',
-                    child: TextButton(
-                        onPressed: _updating ? null : _refresh,
-                        style: TextButton.styleFrom(
-                            minimumSize: const Size(48, 48),
-                            padding: const EdgeInsets.symmetric(horizontal: 4),
-                            foregroundColor: AppColors.primary,
-                            disabledForegroundColor: AppColors.primary),
-                        child: Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 7, vertical: 4),
+        trailing: WalletAccountState.instance.simulationEnabled
+            ? null
+            : canRefresh
+                ? Semantics(
+                    liveRegion: true,
+                    child: Tooltip(
+                        message: 'Refresh portfolio',
+                        child: TextButton(
+                            onPressed: _updating ? null : _refresh,
+                            style: TextButton.styleFrom(
+                                minimumSize: const Size(48, 48),
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 4),
+                                foregroundColor: AppColors.primary,
+                                disabledForegroundColor: AppColors.primary),
+                            child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 7, vertical: 4),
+                                decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(20)),
+                                child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      const Icon(Icons.sync_rounded, size: 12),
+                                      const SizedBox(width: 3),
+                                      Text(status,
+                                          style: const TextStyle(fontSize: 10))
+                                    ])))))
+                : const SizedBox(
+                    height: 48,
+                    child: Center(
+                        child: DecoratedBox(
                             decoration: BoxDecoration(
                                 color: Colors.white,
-                                borderRadius: BorderRadius.circular(20)),
-                            child:
-                                Row(mainAxisSize: MainAxisSize.min, children: [
-                              const Icon(Icons.sync_rounded, size: 12),
-                              const SizedBox(width: 3),
-                              Text(status, style: const TextStyle(fontSize: 10))
-                            ])))))
-            : const SizedBox(
-                height: 48,
-                child: Center(
-                    child: DecoratedBox(
-                        decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius:
-                                BorderRadius.all(Radius.circular(20))),
-                        child: Padding(
-                            padding: EdgeInsets.symmetric(
-                                horizontal: 8, vertical: 4),
-                            child:
-                                Row(mainAxisSize: MainAxisSize.min, children: [
-                              Icon(Icons.circle,
-                                  size: 5, color: AppColors.primary),
-                              SizedBox(width: 4),
-                              Text('Live Sync',
-                                  style: TextStyle(
-                                      fontSize: 10, color: AppColors.primary)),
-                            ]))))));
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(20))),
+                            child: Padding(
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 8, vertical: 4),
+                                child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(Icons.circle,
+                                          size: 5, color: AppColors.primary),
+                                      SizedBox(width: 4),
+                                      Text('Live Sync',
+                                          style: TextStyle(
+                                              fontSize: 10,
+                                              color: AppColors.primary)),
+                                    ]))))));
   }
 }
 
@@ -344,7 +350,12 @@ class _AllocationCard extends StatelessWidget {
     'ETH': 'Ethereum',
     'SOL': 'Solana',
     'USDT': 'Tether',
-    'USDC': 'USD Coin'
+    'USDC': 'USD Coin',
+    'XRP': 'XRP',
+    'ADA': 'Cardano',
+    'DOGE': 'Dogecoin',
+    'LTC': 'Litecoin',
+    'BNB': 'BNB'
   };
   @override
   Widget build(BuildContext context) => ListenableBuilder(
@@ -352,7 +363,11 @@ class _AllocationCard extends StatelessWidget {
       builder: (context, _) {
         final state = WalletAccountState.instance;
         final assets = state.snapshot.assets
-            .where((asset) => asset != 'NGN' && asset != 'NGD')
+            .where((asset) =>
+                asset != 'NGN' &&
+                asset != 'NGD' &&
+                (!state.simulationEnabled ||
+                    state.snapshot.available(asset).atomicUnits > BigInt.zero))
             .toList();
         final total = state.snapshot.portfolioMinorUnits;
         final large = MediaQuery.textScalerOf(context).scale(12) > 18;
@@ -402,6 +417,13 @@ class _AllocationCard extends StatelessWidget {
                                               color: colors[
                                                   index % colors.length]));
                                 })))),
+                  if (assets.isEmpty)
+                    Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 18),
+                        child: Text(
+                            'Your allocation will appear when you hold crypto.',
+                            style: TextStyle(
+                                color: DavoColors.of(context).bodyMuted))),
                   const SizedBox(height: 10),
                   LayoutBuilder(
                       builder: (context, constraints) => Wrap(
@@ -542,4 +564,39 @@ class _CryptoIcon extends StatelessWidget {
           fit: BoxFit.contain, filterQuality: FilterQuality.high),
     );
   }
+}
+
+Iterable<BuyCryptoAsset> get _additionalHoldings =>
+    BuyCryptoAsset.values.where((asset) =>
+        !const {'BTC', 'ETH', 'SOL', 'USDT', 'USDC'}.contains(asset.symbol) &&
+        WalletAccountState.instance.snapshot.assets.contains(asset.symbol) &&
+        WalletAccountState.instance.snapshot
+                .available(asset.symbol)
+                .atomicUnits >
+            BigInt.zero);
+
+class _AdditionalHoldingRow extends StatelessWidget {
+  const _AdditionalHoldingRow({required this.asset});
+  final BuyCryptoAsset asset;
+  @override
+  Widget build(BuildContext context) => Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+      decoration: BoxDecoration(
+          color: DavoColors.of(context).surface,
+          borderRadius: BorderRadius.circular(6)),
+      child: Row(children: [
+        BuyAssetIcon(asset: asset, size: 37),
+        const SizedBox(width: 12),
+        Expanded(
+            child:
+                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text(asset.name, style: const TextStyle(fontWeight: FontWeight.w600)),
+          Text(
+              '${WalletAccountState.instance.snapshot.available(asset.symbol).decimal} ${asset.symbol}',
+              style: const TextStyle(fontSize: 12))
+        ])),
+        Flexible(
+            child: Text(WalletAccountState.instance.balanceLabel(asset.symbol),
+                textAlign: TextAlign.end)),
+      ]));
 }

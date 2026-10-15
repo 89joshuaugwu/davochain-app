@@ -1,3 +1,4 @@
+import '../../wallets/wallet_repository.dart';
 import '../../../shared/receipts/receipt_record.dart';
 import '../../../shared/formatters/grouped_amount_formatter.dart';
 import 'buy_crypto_models.dart';
@@ -18,6 +19,14 @@ ReceiptRecord buildBuyReceiptRecord(BuyCryptoOrder order,
       occurredAt: date,
       amount: '${order.formattedCryptoAmount} ${order.asset.symbol}',
       preview: preview,
+      walletEffect: preview && WalletAccountState.instance.simulationEnabled
+          ? WalletAccountState.instance.effect(debits: {
+              order.wallet.symbol: order.exactNgnAmount.toFixed(2)
+            }, credits: {
+              order.asset.symbol: order.exactCryptoAmount.toFixed(
+                  order.quantityDecimals ?? order.asset.quantityDecimals)
+            })
+          : null,
       fields: [
         ReceiptField(
             label: 'Paid from',

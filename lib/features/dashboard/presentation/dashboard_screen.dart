@@ -1,3 +1,6 @@
+import '../../wallets/simulation_deposit_button.dart';
+import '../../buy_crypto/presentation/buy_crypto_widgets.dart'
+    show BuyAssetIcon;
 import '../../../shared/widgets/davo_celebration_emoji.dart';
 import 'dart:async';
 import '../../../shared/motion/davo_motion_policy.dart';

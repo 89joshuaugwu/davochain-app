@@ -50,11 +50,11 @@ class _BuyCryptoAssetSheetState extends State<BuyCryptoAssetSheet> {
               value: WalletAccountState.instance.snapshot.assets
                       .contains(asset.symbol)
                   ? WalletAccountState.instance.balanceLabel(asset.symbol)
-                  : 'Unavailable',
+                  : '\u20a60.00',
               quantity: WalletAccountState.instance.snapshot.assets
                       .contains(asset.symbol)
                   ? '${WalletAccountState.instance.snapshot.available(asset.symbol).decimal} ${asset.symbol}'
-                  : asset.symbol,
+                  : '0 ${asset.symbol}',
               onTap: !asset.hasQuote ||
                       !WalletAccountState.instance.snapshot.assets
                           .contains(asset.symbol)

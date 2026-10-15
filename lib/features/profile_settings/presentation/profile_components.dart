@@ -1090,11 +1090,14 @@ class _SettingsOutlineIcon extends StatelessWidget {
         '<rect x="7" y="3" width="14" height="11" rx="2"/><path d="M7 7h14m-10 4h3M4 8H3a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2v-2M1 14h3m0 4h4"/>',
       'Enable Biometrics' =>
         '<path d="M5 12a7 7 0 0 1 14 0m-11 5v-5a4 4 0 0 1 8 0v6m-4-7v9m-7-4v-1m14 0v4M7 5a9 9 0 0 1 10 0"/>',
-      'Change Password' ||
-      'Transaction Pin' ||
-      'Security questions' ||
+      'Change Password' =>
+        '<rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0m-4 7v3m5-12 2 2 2-2M19 7V3"/>',
+      'Transaction Pin' =>
+        '<rect x="5" y="2" width="14" height="20" rx="3"/><path d="M9 6h6m-6 4h.01M12 10h.01M15 10h.01M9 14h.01M12 14h.01M15 14h.01M9 18h.01M12 18h.01M15 18h.01"/>',
+      'Security questions' =>
+        '<path d="M4 4h16v12H9l-5 4zM9 8a3 3 0 1 1 4 3c-1 0-1 1-1 2m0 2h.01"/>',
       'Crypto Security' =>
-        '<rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3m-4 5v2"/>',
+        '<path d="m12 2 8 3v6c0 5-8 10-8 10S4 16 4 11V5z"/><path d="m8 11 3 3 5-6"/>',
       'Notifications' ||
       'Notification Settings' =>
         '<path d="M5 17h14l-2-3V9a5 5 0 0 0-10 0v5zM10 21h4"/>',

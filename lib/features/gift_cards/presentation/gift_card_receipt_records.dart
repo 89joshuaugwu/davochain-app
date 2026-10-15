@@ -1,3 +1,4 @@
+import '../../wallets/wallet_repository.dart';
 import '../../../core/money/exact_decimal.dart';
 import '../gift_order_draft.dart';
 import '../../../shared/formatters/grouped_amount_formatter.dart';
@@ -35,6 +36,11 @@ ReceiptRecord giftCardPreviewReceipt({
     amount: naira == null
         ? 'Amount unavailable'
         : '₦${formatGroupedAmount(ExactDecimal.from(naira).toFixed(2).replaceFirst(RegExp(r"\.00$"), ""))}',
+    walletEffect: naira != null && WalletAccountState.instance.simulationEnabled
+        ? WalletAccountState.instance.effect(
+            debits: sell ? {} : {'NGN': ExactDecimal.from(naira).toFixed(2)},
+            credits: sell ? {'NGN': ExactDecimal.from(naira).toFixed(2)} : {})
+        : null,
     fields: [
       if (cardValue != null)
         ReceiptField(

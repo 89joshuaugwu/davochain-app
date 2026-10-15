@@ -50,6 +50,7 @@ class LocalPreviewProfile extends ChangeNotifier {
       {required String name, required String email, required String phone}) {
     generation++;
     _resetSession();
+    WalletAccountState.instance.startSimulation(empty: true);
     PreviewAuthState.resetSession();
     fullName = name.trim();
     this.email = email.trim();
@@ -73,6 +74,7 @@ class LocalPreviewProfile extends ChangeNotifier {
   void loginSample() {
     generation++;
     _resetSession();
+    WalletAccountState.instance.startSimulation(empty: false);
     PreviewAuthState.resetSession(samplePin: true);
     fullName = 'Vincent Chukwu';
     email = 'chukwuvncnt1@gmail.com';
