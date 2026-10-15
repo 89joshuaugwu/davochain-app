@@ -192,7 +192,14 @@ class _BalanceCard extends StatelessWidget {
                                           color: Colors.white,
                                           height: 1.2))),
                               const SizedBox(height: 2),
-                              Text(visible ? 'NGN wallet' : 'Balance hidden',
+                              Text(
+                                  visible
+                                      ? WalletAccountState.instance.snapshot
+                                              .usdEquivalentLabel(
+                                                  WalletAccountState.instance
+                                                      .ngnAvailableMinorUnits) ??
+                                          'NGN wallet'
+                                      : 'Balance hidden',
                                   style: const TextStyle(
                                       fontFamily: 'Sora',
                                       fontSize: 14,
@@ -371,8 +378,8 @@ class _QuickActions extends StatelessWidget {
                 compact: compact,
                 label: 'Sell Crypto',
                 glyph: DavoActionGlyph.sell,
-                bg: DavoColors.of(context).elevated,
-                fg: DavoColors.of(context).success,
+                bg: const Color(0xFFD9F8E9),
+                fg: const Color(0xFF0BB56B),
                 onTap: onSell)),
         const SizedBox(width: 16),
         Expanded(
@@ -436,7 +443,16 @@ class _QuickAction extends StatelessWidget {
                     alignment: Alignment.center,
                     decoration:
                         BoxDecoration(color: bg, shape: BoxShape.circle),
-                    child: DavoActionIcon(glyph, color: fg, size: 22),
+                    child: glyph == DavoActionGlyph.buy
+                        ? Container(
+                            margin: const EdgeInsets.all(3),
+                            decoration: const BoxDecoration(
+                                color: Color(0xFFFF9B0B),
+                                shape: BoxShape.circle),
+                            child: const Center(
+                                child: DavoActionIcon(DavoActionGlyph.buy,
+                                    color: Colors.white, size: 24)))
+                        : DavoActionIcon(glyph, color: fg, size: 22),
                   ),
                   SizedBox(height: compact ? 4 : 8),
                   Padding(
@@ -528,62 +544,70 @@ class _PromoBannerState extends State<_PromoBanner>
   @override
   Widget build(BuildContext context) {
     final large = MediaQuery.textScalerOf(context).scale(14) > 18;
-    return Column(children: [
-      SizedBox(
-          height: large
-              ? 120 + MediaQuery.textScalerOf(context).scale(180)
-              : widget.compact
-                  ? 152
-                  : 160,
-          child: Listener(
-              onPointerDown: (_) => _schedule(),
-              child: PageView.builder(
-                  controller: _pages,
-                  onPageChanged: (index) => setState(() => _page = index % 3),
-                  itemBuilder: (context, index) {
-                    final slide = index % 3;
-                    final content = slide == 0
-                        ? _TradingPromoSlide(compact: widget.compact)
-                        : _FeaturePromoSlide(
-                            portfolio: slide == 1, compact: widget.compact);
-                    return Semantics(
-                        label: 'Featured ${slide + 1} of 3',
-                        button: true,
-                        child: InkWell(
-                            onTap: () => _open(slide),
-                            borderRadius: BorderRadius.circular(12),
-                            child: large
-                                ? SingleChildScrollView(child: content)
-                                : content));
-                  }))),
-      Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-        for (var i = 0; i < 3; i++)
-          IconButton(
-              tooltip: 'Show featured banner ${i + 1}',
-              onPressed: () {
-                _schedule();
-                final current = (_pages.page ?? 300).round();
-                final target = current - current % 3 + i;
-                if (DavoMotionPolicy.reduce(context)) {
-                  _pages.jumpToPage(target);
-                } else {
-                  _pages.animateToPage(target,
-                      duration: const Duration(milliseconds: 300),
-                      curve: Curves.easeOutCubic);
-                }
-              },
-              icon: Container(
-                  width: _page == i ? 18 : 6,
-                  height: 6,
-                  decoration: BoxDecoration(
-                      color: _page == i
-                          ? DavoColors.of(context).link
-                          : DavoColors.of(context)
-                              .bodyMuted
-                              .withValues(alpha: .35),
-                      borderRadius: BorderRadius.circular(4)))),
-      ]),
-    ]);
+    return SizedBox(
+        key: const ValueKey('dashboard-feature-carousel'),
+        height: large
+            ? 120 + MediaQuery.textScalerOf(context).scale(180)
+            : widget.compact
+                ? 106
+                : 121,
+        child: Stack(children: [
+          Positioned.fill(
+              child: Listener(
+                  onPointerDown: (_) => _schedule(),
+                  child: PageView.builder(
+                      controller: _pages,
+                      onPageChanged: (index) =>
+                          setState(() => _page = index % 3),
+                      itemBuilder: (context, index) {
+                        final slide = index % 3;
+                        final content = slide == 0
+                            ? _TradingPromoSlide(compact: widget.compact)
+                            : _FeaturePromoSlide(
+                                portfolio: slide == 1, compact: widget.compact);
+                        return Semantics(
+                            label: 'Featured ${slide + 1} of 3',
+                            button: true,
+                            child: InkWell(
+                                onTap: () => _open(slide),
+                                borderRadius: BorderRadius.circular(12),
+                                child: large
+                                    ? SingleChildScrollView(child: content)
+                                    : content));
+                      }))),
+          Positioned(
+              left: 0,
+              right: 0,
+              bottom: 4,
+              child: IgnorePointer(
+                  child: Center(
+                      child: Semantics(
+                          label: 'Featured banner ${_page + 1} of 3',
+                          child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 6, vertical: 3),
+                              decoration: BoxDecoration(
+                                  color: Colors.white.withValues(alpha: .94),
+                                  borderRadius: BorderRadius.circular(10)),
+                              child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    for (var i = 0; i < 3; i++)
+                                      Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 2),
+                                          child: Container(
+                                              width: _page == i ? 14 : 4,
+                                              height: 3,
+                                              decoration: BoxDecoration(
+                                                  color: _page == i
+                                                      ? AppColors.primary
+                                                      : const Color(0xFFA7B5D3),
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                          3)))),
+                                  ])))))),
+        ]));
   }
 }
 
@@ -593,62 +617,105 @@ class _FeaturePromoSlide extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final large = MediaQuery.textScalerOf(context).scale(14) > 18;
-    final text = Column(
+    final ink = portfolio ? Colors.white : const Color(0xFF152A56);
+    final copy = Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
               portfolio
-                  ? 'Your crypto.\nOne clear view.'
+                  ? 'Your portfolio,\nat a glance'
                   : 'Refer & Earn \u20a65,000',
               style: TextStyle(
-                  fontSize: compact ? 12 : 14,
+                  fontFamily: 'Sora',
+                  fontSize: compact ? 12 : 13,
                   fontWeight: FontWeight.w700,
-                  color: portfolio ? const Color(0xFF183D65) : Colors.white,
-                  height: 1.3)),
-          const SizedBox(height: 6),
+                  height: 1.3,
+                  color: ink)),
+          const SizedBox(height: 5),
           Text(
               portfolio
-                  ? 'See your holdings, allocation and portfolio value.'
-                  : 'Get \u20a6500 for every friend who trades',
+                  ? 'Track your holdings and allocation in one place.'
+                  : 'Get \u20a6500 for every friend who trades.',
               style: TextStyle(
                   fontSize: 10,
-                  height: 1.35,
-                  color: portfolio ? const Color(0xFF294B62) : Colors.white)),
+                  height: 1.3,
+                  color: portfolio
+                      ? const Color(0xFFE1E9FF)
+                      : const Color(0xFF304467))),
           const SizedBox(height: 6),
           Text(portfolio ? 'View portfolio \u2192' : 'Invite a friend \u2192',
               style: TextStyle(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w600,
-                  color: portfolio ? const Color(0xFF183D65) : Colors.white)),
+                  fontSize: 10, fontWeight: FontWeight.w600, color: ink)),
         ]);
     final art = portfolio
-        ? Stack(alignment: Alignment.center, children: [
-            Image.asset('assets/figma_exact/eth.png',
-                width: 56, height: 56, filterQuality: FilterQuality.high),
-            Positioned(
-                right: 0,
-                bottom: 0,
-                child: Image.asset('assets/figma_exact/btc.png',
-                    width: 64, height: 64, filterQuality: FilterQuality.high)),
-          ])
-        : SvgPicture.asset('assets/figma_exact/referral_party.svg',
-            width: 86, height: 86);
+        ? SizedBox(
+            width: 92,
+            height: 80,
+            child: Stack(children: [
+              Positioned(
+                  left: 4,
+                  top: 0,
+                  child: Transform.rotate(
+                      angle: -.13,
+                      child: Container(
+                          width: 73,
+                          height: 52,
+                          decoration: BoxDecoration(
+                              color: const Color(0xFFB8CBFF),
+                              borderRadius: BorderRadius.circular(9))))),
+              Positioned(
+                  left: 0,
+                  top: 11,
+                  child: Container(
+                      width: 84,
+                      height: 58,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(10)),
+                      child: SvgPicture.asset(
+                          'assets/figma_exact/davo_wallet.svg',
+                          width: 52,
+                          height: 52,
+                          colorFilter: const ColorFilter.mode(
+                              Color(0xFF1F4FBC), BlendMode.srcIn)))),
+              Positioned(
+                  right: 0,
+                  bottom: 0,
+                  child: Image.asset('assets/figma_exact/btc.png',
+                      width: 35,
+                      height: 35,
+                      filterQuality: FilterQuality.high)),
+            ]))
+        : const DavoCelebrationEmoji();
     return Container(
-        padding: const EdgeInsets.all(14),
+        padding: const EdgeInsets.fromLTRB(14, 10, 14, 15),
         decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(12),
-            color: portfolio ? const Color(0xFFDDF4EF) : AppColors.primary),
+            gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: portfolio
+                    ? const [Color(0xFF112650), Color(0xFF2357BA)]
+                    : const [Color(0xFFFFF6E4), Color(0xFFFFE5AB)])),
         child: large
             ? Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                text,
+                copy,
                 const SizedBox(height: 16),
-                SizedBox(height: 100, width: 120, child: art)
+                Center(child: art)
               ])
             : Row(children: [
-                Expanded(flex: 3, child: text),
-                const SizedBox(width: 12),
-                Expanded(flex: 2, child: SizedBox(height: 90, child: art))
+                Expanded(
+                    flex: 3,
+                    child: LayoutBuilder(
+                        builder: (context, space) => FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerLeft,
+                            child:
+                                SizedBox(width: space.maxWidth, child: copy)))),
+                const SizedBox(width: 8),
+                Expanded(flex: 2, child: Center(child: art))
               ]));
   }
 }

@@ -24,8 +24,6 @@ void main() {
       await tester.pumpAndSettle();
       final viewport = find.byKey(const ValueKey('dashboard-assets'));
       expect(viewport, findsOneWidget);
-      await tester.ensureVisible(viewport);
-      await tester.pumpAndSettle();
       final visible = tester.getRect(viewport);
       final scrollable = tester.state<ScrollableState>(
           find.descendant(of: viewport, matching: find.byType(Scrollable)));

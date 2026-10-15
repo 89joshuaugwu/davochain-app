@@ -25,6 +25,7 @@ import '../../../shared/motion/davo_outcome_content.dart';
 import 'verification/verification_overview_screen.dart';
 import 'verification/verification_state.dart';
 import '../../../shared/widgets/davo_state_picker.dart';
+import '../../../shared/widgets/davo_resend_row.dart';
 import 'dart:async';
 import '../../../shared/widgets/davo_toast.dart';
 import '../../../shared/widgets/davo_result_screen.dart';

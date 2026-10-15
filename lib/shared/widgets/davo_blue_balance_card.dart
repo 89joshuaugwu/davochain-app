@@ -17,6 +17,7 @@ class DavoBlueBalanceCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Container(
       width: double.infinity,
+      constraints: const BoxConstraints(minHeight: 130),
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
           color: AppColors.primary, borderRadius: BorderRadius.circular(16)),
@@ -25,27 +26,26 @@ class DavoBlueBalanceCard extends StatelessWidget {
             right: 0,
             bottom: 0,
             width: 268,
-            height: 76,
+            height: 60,
             child: Image.asset('assets/figma_exact/balance_wave.png',
                 fit: BoxFit.fill,
                 filterQuality: FilterQuality.high,
                 excludeFromSemantics: true)),
         Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
             child:
                 Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Row(children: [
-                Expanded(
-                    child: Row(children: [
-                  Flexible(
-                      child: Text(label,
-                          style: const TextStyle(
-                              fontSize: 12, color: Colors.white))),
-                  if (labelAction != null) labelAction!
-                ])),
-                if (trailing != null) trailing!
-              ]),
-              const SizedBox(height: 10),
+              Padding(
+                  padding: EdgeInsets.only(
+                      right: trailing != null
+                          ? MediaQuery.textScalerOf(context).scale(10) * 7 + 28
+                          : labelAction != null
+                              ? 40
+                              : 0),
+                  child: Text(label,
+                      style:
+                          const TextStyle(fontSize: 12, color: Colors.white))),
+              const SizedBox(height: 6),
               Semantics(
                   label: '$label: $amount',
                   excludeSemantics: true,
@@ -63,5 +63,11 @@ class DavoBlueBalanceCard extends StatelessWidget {
               Text(caption,
                   style: const TextStyle(fontSize: 13, color: Colors.white)),
             ])),
+        if (labelAction != null)
+          Positioned(
+              top: 0,
+              right: 4,
+              child: SizedBox(width: 48, height: 48, child: labelAction!)),
+        if (trailing != null) Positioned(top: 0, right: 8, child: trailing!),
       ]));
 }

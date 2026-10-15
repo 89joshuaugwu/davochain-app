@@ -6,6 +6,19 @@ class NairaWithdrawScreen extends StatefulWidget {
   State<NairaWithdrawScreen> createState() => _NairaWithdrawScreenState();
 }
 
+// Local product limit; the backend must enforce cumulative daily usage.
+const _nairaWithdrawalDailyLimit = 5000000;
+
+bool _withinNairaWithdrawalLimit(String text) {
+  try {
+    final input = AssetAmount.parse(text.replaceAll(',', ''), 'NGN', 2);
+    return input.atomicUnits > BigInt.zero &&
+        input.atomicUnits <= BigInt.from(_nairaWithdrawalDailyLimit * 100);
+  } on FormatException {
+    return false;
+  }
+}
+
 class _NairaWithdrawScreenState extends State<NairaWithdrawScreen> {
   final amount = TextEditingController();
   BankAccount? account;
@@ -34,7 +47,7 @@ class _NairaWithdrawScreenState extends State<NairaWithdrawScreen> {
     try {
       final input =
           AssetAmount.parse(amount.text.replaceAll(',', ''), 'NGN', 2);
-      return input.atomicUnits > BigInt.zero &&
+      return _withinNairaWithdrawalLimit(amount.text) &&
           // Includes the same ₦100 fee shown in review and funding records.
           WalletAccountState.instance.snapshot.available('NGN').covers(
               AssetAmount('NGN', input.atomicUnits + BigInt.from(10000), 2)) &&
@@ -98,6 +111,10 @@ class _NairaWithdrawScreenState extends State<NairaWithdrawScreen> {
                     color: DavoColors.of(context).ink),
               ),
             ),
+            const SizedBox(height: 8),
+            Text('Max daily amount - \u20a65,000,000',
+                style: TextStyle(
+                    fontSize: 12, color: DavoColors.of(context).bodyMuted)),
             const SizedBox(height: 20),
             _ExactNairaField(
               label: 'Payment Method',
@@ -445,16 +462,13 @@ class _AddBankScreenState extends State<AddBankScreen> {
       content: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SizedBox(
-            height: 44,
-            child: Text(
-              'Add your bank account to receive money fast and secured easily',
-              style: TextStyle(
-                  fontFamily: 'Sora',
-                  fontSize: 16,
-                  height: 1.35,
-                  color: DavoColors.of(context).body),
-            ),
+          Text(
+            'Add your bank account to receive money fast and secured easily',
+            style: TextStyle(
+                fontFamily: 'Sora',
+                fontSize: 16,
+                height: 1.35,
+                color: DavoColors.of(context).body),
           ),
           const SizedBox(height: 24),
           _BankFormBox(
@@ -613,10 +627,8 @@ class _BankFormBox extends StatelessWidget {
                                               : DavoColors.of(context).ink)),
                             ),
                             if (onTap != null)
-                              Image.asset('$_cf/chevron_right.png',
-                                  color: DavoColors.of(context).ink,
-                                  width: 16,
-                                  height: 16),
+                              Icon(Icons.keyboard_arrow_down_rounded,
+                                  color: DavoColors.of(context).ink, size: 20),
                           ],
                         ),
                       ],
@@ -923,9 +935,15 @@ class _NairaConfirmState extends State<_NairaConfirm> {
                 height: 48,
                 child: _Button(
                     label: 'Confirm Withdrawal',
-                    enabled: agreed,
+                    enabled:
+                        agreed && _withinNairaWithdrawalLimit(widget.amount),
                     fontWeight: FontWeight.w700,
-                    onTap: () => Navigator.pop(context, true))),
+                    onTap: () {
+                      if (agreed &&
+                          _withinNairaWithdrawalLimit(widget.amount)) {
+                        Navigator.pop(context, true);
+                      }
+                    })),
           ],
         ),
       ));

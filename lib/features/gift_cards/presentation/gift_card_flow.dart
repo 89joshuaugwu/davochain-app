@@ -1,3 +1,4 @@
+import '../../../shared/widgets/davo_celebration_emoji.dart';
 import 'gift_card_models.dart';
 export 'gift_card_models.dart';
 import '../../../core/money/exact_decimal.dart';

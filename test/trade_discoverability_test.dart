@@ -92,12 +92,11 @@ void main() {
     await tester.pumpAndSettle();
     await tester.pump(const Duration(seconds: 6));
     await tester.pumpAndSettle();
-    expect(find.text('Your crypto.\nOne clear view.').hitTestable(),
+    expect(find.text('Your portfolio,\nat a glance').hitTestable(),
         findsOneWidget);
     expect(find.byTooltip('Pause featured banners'), findsNothing);
     expect(find.byTooltip('Play featured banners'), findsNothing);
-    await tester.ensureVisible(find.byTooltip('Show featured banner 3'));
-    await tester.tap(find.byTooltip('Show featured banner 3'));
+    await tester.drag(find.byType(PageView), const Offset(-320, 0));
     await tester.pumpAndSettle();
     expect(find.text('Refer & Earn \u20a65,000').hitTestable(), findsOneWidget);
     await tester.pumpWidget(const SizedBox());
@@ -120,10 +119,9 @@ void main() {
         find.byKey(const ValueKey('dashboard-coins-and-cards')).hitTestable(),
         findsOneWidget);
     expect(find.byTooltip('Pause featured banners'), findsNothing);
-    await tester.ensureVisible(find.byTooltip('Show featured banner 2'));
-    await tester.tap(find.byTooltip('Show featured banner 2'));
+    await tester.drag(find.byType(PageView), const Offset(-320, 0));
     await tester.pumpAndSettle();
-    expect(find.text('Your crypto.\nOne clear view.'), findsOneWidget);
+    expect(find.text('Your portfolio,\nat a glance'), findsOneWidget);
     await tester.pumpWidget(const SizedBox());
   });
 
@@ -142,10 +140,11 @@ void main() {
             child: child!),
         home: const DavochainDashboardScreen()));
     await tester.pumpAndSettle();
-    for (var i = 1; i <= 3; i++) {
-      final control = find.byTooltip('Show featured banner $i');
-      await tester.ensureVisible(control);
-      await tester.tap(control);
+    await tester.ensureVisible(find.byType(PageView));
+    for (var i = 0; i < 3; i++) {
+      if (i > 0) {
+        await tester.drag(find.byType(PageView), const Offset(-280, 0));
+      }
       await tester.pumpAndSettle();
       expect(tester.takeException(), isNull);
     }

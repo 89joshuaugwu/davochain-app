@@ -13,6 +13,7 @@ import 'package:flutter/services.dart';
 import '../../../core/navigation/app_routes.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/widgets/auth_widgets.dart';
+import '../../../shared/widgets/davo_resend_row.dart';
 
 enum VerificationKind { email, sms }
 
@@ -219,48 +220,42 @@ class _VerificationScreenState extends State<VerificationScreen>
               onPressed: _complete ? _submit : null,
             ),
             const SizedBox(height: 16),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              crossAxisAlignment: WrapCrossAlignment.center,
-              children: [
-                Text(
-                  'Didn’t get a code?',
+            DavoResendRow(
+              prompt: Text(
+                'Didn’t get a code?',
+                style: TextStyle(
+                    fontFamily: 'Sora',
+                    fontSize: 14,
+                    color: DavoColors.of(context).body),
+              ),
+              resend: InkWell(
+                onTap: _seconds == 0 ? _resend : null,
+                child: Text(
+                  'Resend Code',
                   style: TextStyle(
-                      fontFamily: 'Sora',
-                      fontSize: 14,
-                      color: DavoColors.of(context).body),
-                ),
-                const SizedBox(width: 4),
-                InkWell(
-                  onTap: _seconds == 0 ? _resend : null,
-                  child: Text(
-                    'Resend Code',
-                    style: TextStyle(
-                      fontFamily: 'Sora',
-                      fontSize: 14,
-                      color: _seconds == 0
-                          ? AppColors.primary
-                          : DavoColors.of(context).bodyMuted,
-                    ),
+                    fontFamily: 'Sora',
+                    fontSize: 14,
+                    color: _seconds == 0
+                        ? AppColors.primary
+                        : DavoColors.of(context).bodyMuted,
                   ),
                 ),
-                AnimatedSwitcher(
-                  duration: DavoMotionPolicy.reduce(context)
-                      ? Duration.zero
-                      : const Duration(milliseconds: 180),
-                  child: _seconds > 0
-                      ? Text(
-                          '0:${_seconds.toString().padLeft(2, '0')}',
-                          key: ValueKey(_seconds),
-                          style: TextStyle(
-                              fontFamily: 'Sora',
-                              fontSize: 14,
-                              color: DavoColors.of(context).body),
-                        )
-                      : const SizedBox.shrink(),
-                ),
-              ],
+              ),
+              countdown: AnimatedSwitcher(
+                duration: DavoMotionPolicy.reduce(context)
+                    ? Duration.zero
+                    : const Duration(milliseconds: 180),
+                child: _seconds > 0
+                    ? Text(
+                        '0:${_seconds.toString().padLeft(2, '0')}',
+                        key: ValueKey(_seconds),
+                        style: TextStyle(
+                            fontFamily: 'Sora',
+                            fontSize: 14,
+                            color: DavoColors.of(context).body),
+                      )
+                    : const SizedBox.shrink(),
+              ),
             ),
           ],
         ),

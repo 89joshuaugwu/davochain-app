@@ -1,3 +1,4 @@
+import 'package:davochain/features/auth/presentation/verification_flow.dart';
 import 'package:davochain/features/buy_crypto/presentation/buy_crypto_screens.dart';
 import 'package:davochain/features/dashboard/presentation/portfolio_performance_screen.dart';
 import 'package:davochain/features/dashboard/portfolio_performance.dart';
@@ -26,6 +27,13 @@ void main() {
     final directory = Directory('../tmp/preview-polish-review')
       ..createSync(recursive: true);
     await tester.runAsync(() async {
+      final emojiFont = File('C:/Windows/Fonts/seguiemj.ttf');
+      if (emojiFont.existsSync()) {
+        await (FontLoader('Noto Color Emoji')
+              ..addFont(
+                  emojiFont.readAsBytes().then((b) => ByteData.sublistView(b))))
+            .load();
+      }
       await (FontLoader('Sora')
             ..addFont(rootBundle.load('assets/fonts/sora/Sora-Variable.ttf')))
           .load();
@@ -71,7 +79,7 @@ void main() {
       await mount(const DavochainDashboardScreen(), dark);
       await capture('$theme-home');
       for (final slide in [2, 3]) {
-        await tester.tap(find.byTooltip('Show featured banner $slide'));
+        await tester.drag(find.byType(PageView), const Offset(-350, 0));
         await tester.pumpAndSettle();
         await capture('$theme-home-banner-$slide');
       }
@@ -129,6 +137,12 @@ void main() {
       await capture('$theme-deposit');
       await mount(const FingerprintSettingsScreen(), dark);
       await capture('$theme-fingerprint-settings');
+      await mount(const VerificationScreen(kind: VerificationKind.email), dark);
+      await capture('$theme-otp');
+      await mount(const VerifyPinCodeScreen(email: true), dark);
+      await capture('$theme-payment-pin-otp');
+      await mount(const AddBankScreen(), dark);
+      await capture('$theme-add-bank');
     }
     LocalPreviewProfile.instance.register(
         name: 'Joshua Eze', email: 'joshua@example.com', phone: '8161780381');

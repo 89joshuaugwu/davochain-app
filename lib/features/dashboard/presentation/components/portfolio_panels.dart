@@ -234,38 +234,99 @@ class _RoundIconButton extends StatelessWidget {
       );
 }
 
-class _PortfolioValueCard extends StatelessWidget {
+class _PortfolioValueCard extends StatefulWidget {
   const _PortfolioValueCard({required this.visible});
   final bool visible;
   @override
-  Widget build(BuildContext context) => DavoBlueBalanceCard(
-      label: 'Total Portfolio Value',
-      amount: visible
-          ? WalletAccountState.instance.portfolioBalanceLabel
-          : '\u20a6\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022',
-      caption: visible
-          ? WalletAccountState.instance.snapshot.usdEquivalentLabel(
-                  WalletAccountState.instance.snapshot.portfolioMinorUnits) ??
-              'Portfolio valuation'
-          : 'Balance hidden',
-      trailing: TextButton.icon(
-          onPressed: () async {
-            try {
-              await DavoRefreshScope.refresh(
-                  context, DavoRefreshTarget.portfolio);
-            } catch (_) {
-              if (context.mounted) {
-                showDavoToast(context, 'Could not refresh. Please try again.');
-              }
-            }
-          },
-          style: TextButton.styleFrom(
-              backgroundColor: Colors.white,
-              foregroundColor: AppColors.primary,
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-              minimumSize: const Size(48, 36)),
-          icon: const Icon(Icons.sync_rounded, size: 14),
-          label: const Text('Refresh', style: TextStyle(fontSize: 10))));
+  State<_PortfolioValueCard> createState() => _PortfolioValueCardState();
+}
+
+class _PortfolioValueCardState extends State<_PortfolioValueCard> {
+  bool _updating = false;
+  bool _updated = false;
+
+  Future<void> _refresh() async {
+    if (_updating) return;
+    setState(() {
+      _updating = true;
+      _updated = false;
+    });
+    try {
+      await DavoRefreshScope.refresh(context, DavoRefreshTarget.portfolio);
+      if (mounted) setState(() => _updated = true);
+    } catch (_) {
+      if (mounted) {
+        showDavoToast(context, 'Could not refresh. Please try again.');
+      }
+    } finally {
+      if (mounted) setState(() => _updating = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final canRefresh =
+        context.dependOnInheritedWidgetOfExactType<DavoRefreshScope>() != null;
+    final status = _updating
+        ? 'Updating'
+        : _updated
+            ? 'Updated'
+            : 'Sync';
+    return DavoBlueBalanceCard(
+        label: 'Total Portfolio Value',
+        amount: widget.visible
+            ? WalletAccountState.instance.portfolioBalanceLabel
+            : '\u20a6\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022',
+        caption: widget.visible
+            ? WalletAccountState.instance.snapshot.usdEquivalentLabel(
+                    WalletAccountState.instance.snapshot.portfolioMinorUnits) ??
+                'Portfolio valuation'
+            : 'Balance hidden',
+        trailing: canRefresh
+            ? Semantics(
+                liveRegion: true,
+                child: Tooltip(
+                    message: 'Refresh portfolio',
+                    child: TextButton(
+                        onPressed: _updating ? null : _refresh,
+                        style: TextButton.styleFrom(
+                            minimumSize: const Size(48, 48),
+                            padding: const EdgeInsets.symmetric(horizontal: 4),
+                            foregroundColor: AppColors.primary,
+                            disabledForegroundColor: AppColors.primary),
+                        child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 7, vertical: 4),
+                            decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(20)),
+                            child:
+                                Row(mainAxisSize: MainAxisSize.min, children: [
+                              const Icon(Icons.sync_rounded, size: 12),
+                              const SizedBox(width: 3),
+                              Text(status, style: const TextStyle(fontSize: 10))
+                            ])))))
+            : const SizedBox(
+                height: 48,
+                child: Center(
+                    child: DecoratedBox(
+                        decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius:
+                                BorderRadius.all(Radius.circular(20))),
+                        child: Padding(
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 4),
+                            child:
+                                Row(mainAxisSize: MainAxisSize.min, children: [
+                              Icon(Icons.circle,
+                                  size: 5, color: AppColors.primary),
+                              SizedBox(width: 4),
+                              Text('Snapshot',
+                                  style: TextStyle(
+                                      fontSize: 10, color: AppColors.primary)),
+                            ]))))));
+  }
 }
 
 class _AllocationCard extends StatelessWidget {

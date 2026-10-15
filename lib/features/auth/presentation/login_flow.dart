@@ -15,6 +15,7 @@ import '../../../core/navigation/app_routes.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/password_strength_palette.dart';
 import '../../../shared/widgets/auth_widgets.dart';
+import '../../../shared/widgets/davo_resend_row.dart';
 
 const _iconRoot = 'assets/icons/auth';
 
@@ -518,22 +519,21 @@ class _CodeStage extends StatelessWidget {
             enabled: complete,
             onPressed: complete ? onVerify : null),
         const SizedBox(height: 8),
-        Row(
-          children: [
-            Text('Didn’t get a code?',
-                style: Theme.of(context).textTheme.bodyMedium),
-            TextButton(
-              onPressed: seconds == 0 ? onResend : null,
-              style: TextButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-                minimumSize: Size.zero,
-                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              ),
-              child: const Text('Resend Code'),
+        DavoResendRow(
+          prompt: Text('Didn’t get a code?',
+              style: Theme.of(context).textTheme.bodyMedium),
+          resend: TextButton(
+            onPressed: seconds == 0 ? onResend : null,
+            style: TextButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+              minimumSize: Size.zero,
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
             ),
-            const Spacer(),
-            if (seconds > 0) Text('0:${seconds.toString().padLeft(2, '0')}'),
-          ],
+            child: const Text('Resend Code'),
+          ),
+          countdown: seconds > 0
+              ? Text('0:${seconds.toString().padLeft(2, '0')}')
+              : null,
         ),
         const Spacer(),
       ],

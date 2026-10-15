@@ -94,7 +94,7 @@ class _VerifyPinCodeScreenState extends State<VerifyPinCodeScreen> {
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           const SizedBox(height: 26),
           Text(
-              'To reset your transaction PIN, you?ll need to verify with a verification code sent to your ${widget.email ? 'email' : 'phone number'}.',
+              'To reset your transaction PIN, you\u2019ll need to verify with a verification code sent to your ${widget.email ? 'email' : 'phone number'}.',
               style: _t14(context)),
           const SizedBox(height: 24),
           _Input(
@@ -108,18 +108,15 @@ class _VerifyPinCodeScreenState extends State<VerifyPinCodeScreen> {
               maxLength: 4,
               inputFormatters: [FilteringTextInputFormatter.digitsOnly]),
           const SizedBox(height: 12),
-          Wrap(
-              crossAxisAlignment: WrapCrossAlignment.center,
-              spacing: 8,
-              children: [
-                Text('Didn?t get a code?', style: _t12(context)),
-                TextButton(
-                    onPressed: remaining == 0 ? _resend : null,
-                    child: const Text('Resend Code')),
-                if (remaining > 0)
-                  Text('0:${remaining.toString().padLeft(2, '0')}',
-                      style: _t12(context)),
-              ]),
+          DavoResendRow(
+              prompt: Text('Didn\u2019t get a code?', style: _t12(context)),
+              resend: TextButton(
+                  onPressed: remaining == 0 ? _resend : null,
+                  child: const Text('Resend Code')),
+              countdown: remaining > 0
+                  ? Text('0:${remaining.toString().padLeft(2, '0')}',
+                      style: _t12(context))
+                  : null),
           const SizedBox(height: 36),
           _PrimaryButton('Next',
               enabled: enabled,

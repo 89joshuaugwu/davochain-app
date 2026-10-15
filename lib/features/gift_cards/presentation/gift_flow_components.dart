@@ -138,11 +138,11 @@ class _ModeTabs extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 56,
+      constraints: const BoxConstraints(minHeight: 56),
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
           color: DavoColors.of(context).fieldFill,
-          borderRadius: BorderRadius.circular(20)),
+          borderRadius: BorderRadius.circular(8)),
       child: Row(children: [
         Expanded(
             child: _ModeTab(
@@ -169,18 +169,16 @@ class _ModeTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) => InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(6),
         child: AnimatedContainer(
           duration: DavoMotionPolicy.reduce(context)
               ? Duration.zero
               : const Duration(milliseconds: 180),
           decoration: BoxDecoration(
-              color:
-                  active ? DavoColors.of(context).elevated : Colors.transparent,
-              borderRadius: BorderRadius.circular(18),
-              boxShadow: active
-                  ? const [BoxShadow(color: Color(0x11000000), blurRadius: 6)]
-                  : null),
+              color: active ? AppColors.primary : Colors.transparent,
+              borderRadius: BorderRadius.circular(6)),
+          constraints: const BoxConstraints(minHeight: 48),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
           alignment: Alignment.center,
           child: Text(label,
               style: TextStyle(
@@ -188,7 +186,7 @@ class _ModeTab extends StatelessWidget {
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
                   color: active
-                      ? AppColors.primary
+                      ? Colors.white
                       : DavoColors.of(context).bodyMuted)),
         ),
       );
@@ -325,11 +323,7 @@ class _ReferralCard extends StatelessWidget {
         decoration: BoxDecoration(
             color: AppColors.primary, borderRadius: BorderRadius.circular(20)),
         child: Row(children: [
-          SizedBox(
-              width: 32,
-              height: 32,
-              child: SvgPicture.asset('assets/figma_exact/referral_party.svg',
-                  excludeFromSemantics: true)),
+          const DavoCelebrationEmoji(size: 28),
           const SizedBox(width: 10),
           const Expanded(
               child: Column(
@@ -597,8 +591,6 @@ Future<GiftCatalogProduct?> _showGiftSubcategories(
                                 fontSize: 14, fontWeight: FontWeight.w600)),
                         subtitle: Text(
                             '${physical ? 'Physical' : 'E-code'} (50 above)'),
-                        trailing: Icon(Icons.chevron_right_rounded,
-                            color: DavoColors.of(context).link),
                         onTap: () => Navigator.pop(
                             sheetContext, _product(brand, physical: physical))),
                   ]))),

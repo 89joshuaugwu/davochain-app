@@ -1,5 +1,5 @@
 name: davochain
-version: 0.18.0+42
+version: 0.18.1+43
 publish_to: 'none'
 description: Davochain Flutter mobile application.
 

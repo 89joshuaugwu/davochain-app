@@ -1536,7 +1536,7 @@ class _BalanceCard extends StatelessWidget {
               tooltip: visible ? 'Hide balance' : 'Show balance',
               onPressed: onVisibilityToggle,
               iconSize: 16,
-              visualDensity: VisualDensity.compact,
+              constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
               icon: Icon(
                   visible
                       ? Icons.visibility_outlined
@@ -1577,7 +1577,7 @@ class _CryptoBalance extends StatelessWidget {
                       style: TextStyle(
                           fontSize: 10, color: DavoColors.of(context).link)),
                   const SizedBox(width: 4),
-                  const Icon(Icons.chevron_right_rounded,
+                  const Icon(Icons.keyboard_arrow_down_rounded,
                       size: 16, color: AppColors.primary),
                 ])),
           ]),

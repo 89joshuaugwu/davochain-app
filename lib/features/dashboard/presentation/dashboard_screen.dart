@@ -1,3 +1,4 @@
+import '../../../shared/widgets/davo_celebration_emoji.dart';
 import 'dart:async';
 import '../../../shared/motion/davo_motion_policy.dart';
 import '../../buy_crypto/presentation/buy_crypto_models.dart';
@@ -153,9 +154,9 @@ class _DavochainDashboardScreenState extends State<DavoDashboardContent> {
                         SizedBox(height: compact ? 4 : 8),
                       ],
                     );
-                    // Tall phones keep the header stationary. The carousel, shorter views
-                    // and enlarged text use full-page scrolling to keep controls reachable.
-                    final needsFullScroll = constraints.maxHeight < 800 ||
+                    // Standard phones retain three complete assets below the compact carousel.
+                    // Short views and enlarged text keep every control reachable by scrolling.
+                    final needsFullScroll = constraints.maxHeight < 640 ||
                         MediaQuery.textScalerOf(context).scale(14) > 18;
                     if (needsFullScroll) {
                       return SingleChildScrollView(

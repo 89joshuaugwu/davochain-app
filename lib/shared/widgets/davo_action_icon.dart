@@ -56,7 +56,7 @@ class DavoActionIcon extends StatelessWidget {
           DavoActionGlyph.notifications => Icons.notifications_none_rounded,
           DavoActionGlyph.visible => Icons.visibility_outlined,
           DavoActionGlyph.hidden => Icons.visibility_off_outlined,
-          DavoActionGlyph.deposit => Icons.add_circle_outline_rounded,
+          DavoActionGlyph.deposit => Icons.add_circle_rounded,
           DavoActionGlyph.withdraw => Icons.arrow_outward_rounded,
           DavoActionGlyph.buy => Icons.south_west_rounded,
           DavoActionGlyph.sell => Icons.north_east_rounded,
