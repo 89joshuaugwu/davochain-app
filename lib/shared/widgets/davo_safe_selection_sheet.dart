@@ -16,7 +16,7 @@ class DavoSafeSelectionSheet extends StatelessWidget {
         child: ClipRRect(
           borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
           child: Material(
-            color: backgroundColor ?? DavoColors.of(context).canvas,
+            color: backgroundColor ?? DavoColors.of(context).sheetSurface,
             child: SafeArea(
               top: false,
               child: SingleChildScrollView(child: child),

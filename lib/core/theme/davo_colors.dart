@@ -26,6 +26,8 @@ class DavoColors extends ThemeExtension<DavoColors> {
   final Color warningBorder;
   final Color danger;
   final Color dangerSurface;
+  Color get sheetSurface => elevated;
+  Color get sheetField => isDark ? fieldFill : canvas;
   bool get isDark => surface.computeLuminance() < 0.1;
   static DavoColors of(BuildContext context) => Theme.of(context).extension<DavoColors>() ?? (Theme.of(context).brightness == Brightness.dark ? dark : light);
   static const light = DavoColors(

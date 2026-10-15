@@ -138,7 +138,7 @@ class _WithdrawWalletSheet extends StatelessWidget {
           child: Container(
         height: 472,
         decoration: BoxDecoration(
-            color: DavoColors.of(context).canvas,
+            color: DavoColors.of(context).sheetSurface,
             borderRadius:
                 const BorderRadius.vertical(top: Radius.circular(16))),
         child: Stack(
@@ -312,7 +312,7 @@ class _SellWalletSheet extends StatelessWidget {
           child: Container(
         height: 242,
         decoration: BoxDecoration(
-            color: DavoColors.of(context).canvas,
+            color: DavoColors.of(context).sheetSurface,
             borderRadius:
                 const BorderRadius.vertical(top: Radius.circular(20))),
         child: Stack(

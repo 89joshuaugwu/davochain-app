@@ -65,7 +65,9 @@ class _FingerprintSetupScreenState extends State<FingerprintSetupScreen> {
                           constraints: BoxConstraints(
                               minHeight: constraints.maxHeight - 48),
                           child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
+                              mainAxisAlignment: _enabled
+                                  ? MainAxisAlignment.center
+                                  : MainAxisAlignment.start,
                               children: [
                                 if (_enabled)
                                   DavoOutcomeContent(

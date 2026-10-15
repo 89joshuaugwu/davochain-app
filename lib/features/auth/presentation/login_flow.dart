@@ -269,6 +269,10 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     return DavoAuthScaffold(
       onBack: _back,
       child: AnimatedSwitcher(
+        layoutBuilder: (current, previous) => Stack(
+          alignment: Alignment.topLeft,
+          children: [...previous, if (current != null) current],
+        ),
         duration: const Duration(milliseconds: 360),
         switchInCurve: Curves.easeOutCubic,
         switchOutCurve: Curves.easeInCubic,
@@ -622,61 +626,66 @@ class _ResetPasswordStageState extends State<_ResetPasswordStage> {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      key: const ValueKey('new-password-content'),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Set New Password',
-            style: Theme.of(context)
-                .textTheme
-                .titleLarge
-                ?.copyWith(fontWeight: FontWeight.w600),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'Choose something you haven’t used before',
-            style: Theme.of(context).textTheme.bodyLarge,
-          ),
-          const SizedBox(height: 24),
-          DavoTextField(
-            label: 'Password',
-            controller: widget.password,
-            hint: 'At least 8 characters',
-            obscureText: true,
-            showVisibilityToggle: true,
-            onChanged: (_) => setState(() {}),
-          ),
-          const SizedBox(height: 20),
-          _CriteriaBlock(
-              hasPassword: widget.password.text.isNotEmpty,
-              lengthOk: lengthOk,
-              numberOrSymbol: numberOrSymbol,
-              capital: capital),
-          const SizedBox(height: 24),
-          DavoTextField(
-            label: 'Confirm Password',
-            controller: widget.confirm,
-            hint: 'At least 8 characters',
-            obscureText: true,
-            showVisibilityToggle: true,
-            errorText: widget.confirm.text.isNotEmpty && !match
-                ? 'Password did not match'
-                : null,
-            successText: match ? 'Password match' : null,
-            onChanged: (_) => setState(() {}),
-          ),
-          const SizedBox(height: 102),
-          DavoPrimaryButton(
-            label: 'Update Password',
-            enabled: enabled,
-            onPressed: enabled ? widget.onUpdated : null,
-          ),
-          const SizedBox(height: 16),
-        ],
-      ),
-    );
+    return LayoutBuilder(
+        builder: (context, constraints) => SingleChildScrollView(
+              key: const ValueKey('new-password-content'),
+              child: ConstrainedBox(
+                  constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                  child: IntrinsicHeight(
+                      child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Set New Password',
+                        style: Theme.of(context)
+                            .textTheme
+                            .titleLarge
+                            ?.copyWith(fontWeight: FontWeight.w600),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Choose something you haven’t used before',
+                        style: Theme.of(context).textTheme.bodyLarge,
+                      ),
+                      const SizedBox(height: 24),
+                      DavoTextField(
+                        label: 'Password',
+                        controller: widget.password,
+                        hint: 'At least 8 characters',
+                        obscureText: true,
+                        showVisibilityToggle: true,
+                        onChanged: (_) => setState(() {}),
+                      ),
+                      const SizedBox(height: 20),
+                      _CriteriaBlock(
+                          hasPassword: widget.password.text.isNotEmpty,
+                          lengthOk: lengthOk,
+                          numberOrSymbol: numberOrSymbol,
+                          capital: capital),
+                      const SizedBox(height: 24),
+                      DavoTextField(
+                        label: 'Confirm Password',
+                        controller: widget.confirm,
+                        hint: 'At least 8 characters',
+                        obscureText: true,
+                        showVisibilityToggle: true,
+                        errorText: widget.confirm.text.isNotEmpty && !match
+                            ? 'Password did not match'
+                            : null,
+                        successText: match ? 'Password match' : null,
+                        onChanged: (_) => setState(() {}),
+                      ),
+                      const SizedBox(height: 32),
+                      const Spacer(),
+                      DavoPrimaryButton(
+                        label: 'Update Password',
+                        enabled: enabled,
+                        onPressed: enabled ? widget.onUpdated : null,
+                      ),
+                      const SizedBox(height: 16),
+                    ],
+                  ))),
+            ));
   }
 }
 
@@ -766,7 +775,8 @@ class _ResetCriterion extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 9),
-        Text(label, style: TextStyle(fontSize: 14, color: color)),
+        Expanded(
+            child: Text(label, style: TextStyle(fontSize: 14, color: color))),
       ],
     );
   }

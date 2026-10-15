@@ -278,7 +278,7 @@ class _PaymentSheet extends StatelessWidget {
           BankAccount(bank.bank, bank.number, bank.name),
     ];
     return Material(
-        color: DavoColors.of(context).canvas,
+        color: DavoColors.of(context).sheetSurface,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
         clipBehavior: Clip.antiAlias,
         child: SafeArea(

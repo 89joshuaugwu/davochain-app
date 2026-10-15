@@ -18,7 +18,8 @@ void main() {
                     child: const Text('Settings entry'))))));
     await tester.tap(find.text('Settings entry'));
     await tester.pumpAndSettle();
-    expect(find.text('This content is not available yet.'), findsOneWidget);
+    expect(find.text('Your information, your choices'), findsOneWidget);
+    expect(find.text('This content is not available yet.'), findsNothing);
     SettingsContentStore.update('Privacy Policy', 'Approved privacy content');
     await tester.pump();
     expect(find.text('Approved privacy content'), findsOneWidget);

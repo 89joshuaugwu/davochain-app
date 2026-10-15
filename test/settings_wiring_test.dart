@@ -22,7 +22,7 @@ void main() {
         of: find.text('Saved accounts'), matching: find.byType(Material));
     expect(
         panel.evaluate().any((element) {
-          return (element.widget as Material).color == DavoColors.dark.canvas;
+          return (element.widget as Material).color == DavoColors.dark.sheetSurface;
         }),
         isTrue);
     await tester.scrollUntilVisible(find.text('Kuda Bank - 1234567890'), 100,

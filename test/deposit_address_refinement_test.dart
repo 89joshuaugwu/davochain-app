@@ -28,7 +28,7 @@ void main() {
     expect(find.text(address), findsNothing);
     expect(
         tester.widget<Text>(find.byKey(const ValueKey('deposit-address'))).data,
-        '0x4C55D1...06cE28B4');
+        '0x4C55...E28B4');
     await tester.tap(find.text('Copy Address'));
     await tester.pump();
     expect(copied, address);

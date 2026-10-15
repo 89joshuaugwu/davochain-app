@@ -27,9 +27,11 @@ class _BuyCryptoAssetSheetState extends State<BuyCryptoAssetSheet> {
           onChanged: (value) =>
               setState(() => _query = value.trim().toLowerCase()),
           textInputAction: TextInputAction.search,
-          decoration: const InputDecoration(
+          decoration: InputDecoration(
+              filled: true,
+              fillColor: DavoColors.of(context).sheetField,
               hintText: 'Search name or symbol',
-              prefixIcon: Icon(Icons.search_rounded))),
+              prefixIcon: const Icon(Icons.search_rounded))),
       const SizedBox(height: 12),
       if (assets.isEmpty)
         Padding(
@@ -74,7 +76,7 @@ class _SelectionBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) => DavoSafeSelectionSheet(
       child: Material(
-          color: DavoColors.of(context).canvas,
+          color: DavoColors.of(context).sheetSurface,
           borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
           child: Padding(
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),

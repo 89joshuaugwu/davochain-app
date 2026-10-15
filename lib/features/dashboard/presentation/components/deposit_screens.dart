@@ -230,7 +230,7 @@ class _DavoSheet extends StatelessWidget {
       heightFactor: heightFactor,
       child: Container(
         decoration: BoxDecoration(
-          color: DavoColors.of(context).canvas,
+          color: DavoColors.of(context).sheetSurface,
           borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
         ),
         child: SafeArea(
@@ -388,63 +388,61 @@ class _CryptoDepositScreenState extends State<CryptoDepositScreen> {
                       ),
                       const SizedBox(height: 24),
                       Container(
+                        key: const ValueKey('compact-deposit-address-card'),
                         width: double.infinity,
-                        padding: const EdgeInsets.all(18),
+                        padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
                             color: DavoColors.of(context).fieldFill,
                             border: Border.all(
-                                color: DavoColors.of(context).border),
-                            borderRadius: BorderRadius.circular(16)),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text('Deposit Address',
-                                style: TextStyle(
-                                    fontFamily: 'Sora',
-                                    fontSize: 14,
-                                    height: 1.35,
-                                    color: DavoColors.of(context).bodyMuted)),
-                            const SizedBox(height: 8),
-                            Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Expanded(
-                                    child: Text(
+                                color: DavoColors.of(context).divider),
+                            borderRadius: BorderRadius.circular(10)),
+                        child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Expanded(
+                                  child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                    Text('${asset.name} address',
+                                        style: TextStyle(
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.w600,
+                                            color: DavoColors.of(context).ink)),
+                                    const SizedBox(height: 4),
+                                    Text(
                                         _addressExpanded
                                             ? _address
-                                            : '${_address.substring(0, 8)}...${_address.substring(_address.length - 8)}',
+                                            : '${_address.substring(0, 6)}...${_address.substring(_address.length - 5)}',
                                         key: const ValueKey('deposit-address'),
                                         style: TextStyle(
-                                            fontFamily: 'Sora',
-                                            fontSize: 16,
-                                            height: 1.35,
-                                            color:
-                                                DavoColors.of(context).ink))),
-                                const SizedBox(width: 18),
-                                IconButton(
-                                    tooltip: 'Copy full address',
-                                    onPressed: () => _copy(context, _address),
-                                    icon: Icon(Icons.copy_rounded,
-                                        size: 20,
-                                        color: DavoColors.of(context).link)),
-                              ],
-                            ),
-                            const SizedBox(height: 4),
-                            TextButton(
-                                onPressed: () => setState(
-                                    () => _addressExpanded = !_addressExpanded),
-                                style: TextButton.styleFrom(
-                                    padding: EdgeInsets.zero,
-                                    foregroundColor:
-                                        DavoColors.of(context).link),
-                                child: Text(
-                                    _addressExpanded ? 'Hide' : 'Show all',
-                                    style: const TextStyle(
-                                        fontFamily: 'Sora',
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w600))),
-                          ],
-                        ),
+                                            fontSize: 12,
+                                            height: 1.4,
+                                            color: DavoColors.of(context)
+                                                .bodyMuted)),
+                                  ])),
+                              const SizedBox(width: 8),
+                              TextButton(
+                                  onPressed: () => setState(() =>
+                                      _addressExpanded = !_addressExpanded),
+                                  style: TextButton.styleFrom(
+                                      minimumSize: const Size(48, 48),
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 4)),
+                                  child: Text(
+                                      _addressExpanded ? 'Hide' : 'Show all',
+                                      style: const TextStyle(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w600))),
+                              IconButton(
+                                  tooltip: 'Copy full address',
+                                  onPressed: () => _copy(context, _address),
+                                  constraints: const BoxConstraints(
+                                      minWidth: 48, minHeight: 48),
+                                  icon: Icon(Icons.copy_rounded,
+                                      size: 18,
+                                      color: DavoColors.of(context).link)),
+                            ]),
                       ),
                       const SizedBox(height: 24),
                       _DepositMetaRow(
