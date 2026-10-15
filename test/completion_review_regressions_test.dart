@@ -78,6 +78,11 @@ void main() {
       await tester.pump();
       await tester.tap(find.text('Continue'));
       await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('Read terms and conditions'));
+      await tester.pumpAndSettle();
+      expect(find.text('Using Davochain'), findsOneWidget);
+      await tester.tap(find.byTooltip('Close'));
+      await tester.pumpAndSettle();
       await tester.tap(find.text('I agree to the terms and condition'));
       await tester.pump();
       await tester.tap(find.text('Confirm Withdrawal'));

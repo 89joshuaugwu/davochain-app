@@ -772,6 +772,12 @@ class _PrivacyScreenState extends State<PrivacyScreen> {
               subtitle: 'Manage how your data is used',
               onTap: () => _details('Data & Permissions',
                   'Manage device permissions in your device settings.')),
+          Align(
+              alignment: Alignment.centerLeft,
+              child: TextButton(
+                  onPressed: () =>
+                      showSettingsContent(context, 'Privacy Policy'),
+                  child: const Text('Read Privacy Policy'))),
           _PreferenceRow(
               asset: 'block_users',
               title: 'Block Users',

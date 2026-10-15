@@ -924,3 +924,18 @@ BoxDecoration _outlinedCard(BuildContext context) => BoxDecoration(
     color: DavoColors.of(context).surface,
     border: Border.all(color: DavoColors.of(context).divider),
     borderRadius: BorderRadius.circular(12));
+
+/// Account policies supplement the selected card's trade-specific terms.
+class _GiftLegalLinks extends StatelessWidget {
+  const _GiftLegalLinks();
+  @override
+  Widget build(BuildContext context) => Wrap(spacing: 8, children: [
+        TextButton(
+            onPressed: () =>
+                showSettingsContent(context, 'Terms and Condition'),
+            child: const Text('Terms and Conditions')),
+        TextButton(
+            onPressed: () => showSettingsContent(context, 'Privacy Policy'),
+            child: const Text('Privacy Policy')),
+      ]);
+}

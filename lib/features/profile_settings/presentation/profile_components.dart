@@ -2017,7 +2017,8 @@ class _HelpCategory extends StatelessWidget {
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
               style: _t12(context)),
-          trailing: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+          trailing:
+              Column(mainAxisAlignment: MainAxisAlignment.center, children: [
             Image.asset('$_exactAssets/profile_chevron_exact.png',
                 color: DavoColors.of(context).muted,
                 width: 16,
@@ -2032,7 +2033,20 @@ class _HelpCategory extends StatelessWidget {
           children: [
             Align(
                 alignment: Alignment.centerLeft,
-                child: Text(s, style: _t12(context)))
+                child: Text(s, style: _t12(context))),
+            if (t == 'Legal & Compliance')
+              Align(
+                  alignment: Alignment.centerLeft,
+                  child: Wrap(spacing: 8, children: [
+                    TextButton(
+                        onPressed: () =>
+                            showSettingsContent(context, 'Terms and Condition'),
+                        child: const Text('Terms and Conditions')),
+                    TextButton(
+                        onPressed: () =>
+                            showSettingsContent(context, 'Privacy Policy'),
+                        child: const Text('Privacy Policy')),
+                  ])),
           ]);
 }
 
@@ -2124,8 +2138,8 @@ const _helpCats = <(String, String, String)>[
   ),
   (
     'Legal & Compliance',
-    "Read Davochain's Terms of Service, Privacy Policy, AML policy, prohibited transactions, and regulatory compliance information.",
-    '8 Articles'
+    "Read the Terms and Conditions and Privacy Policy for your Davochain account.",
+    '2 Articles'
   )
 ];
 const _people = <(String, String, String)>[

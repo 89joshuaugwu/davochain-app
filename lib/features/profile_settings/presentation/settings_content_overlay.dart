@@ -65,12 +65,15 @@ class _ArticleReader extends StatelessWidget {
         child: ListView(
             padding: const EdgeInsets.only(top: 4, bottom: 32),
             children: [
-          Text(article.heading,
-              style: TextStyle(
-                  fontSize: 22,
-                  height: 1.3,
-                  fontWeight: FontWeight.w600,
-                  color: colors.ink)),
+          Semantics(
+              header: true,
+              child: Text(article.heading,
+                  textAlign: TextAlign.start,
+                  style: TextStyle(
+                      fontSize: 22,
+                      height: 1.3,
+                      fontWeight: FontWeight.w600,
+                      color: colors.ink))),
           const SizedBox(height: 12),
           Text(article.introduction,
               style: TextStyle(
@@ -90,19 +93,22 @@ class _ArticleReader extends StatelessWidget {
                       childrenPadding: const EdgeInsets.only(bottom: 20),
                       iconColor: colors.link,
                       collapsedIconColor: colors.bodyMuted,
-                      title: Text(section.heading,
-                          style: TextStyle(
-                              fontSize: 14,
-                              height: 1.5,
-                              fontWeight: FontWeight.w600,
-                              color: colors.ink)),
+                      title: Semantics(
+                          header: true,
+                          child: Text(section.heading,
+                              textAlign: TextAlign.start,
+                              style: TextStyle(
+                                  fontSize: 14,
+                                  height: 1.5,
+                                  fontWeight: FontWeight.w600,
+                                  color: colors.ink))),
                       children: [
                         Align(
                             alignment: Alignment.centerLeft,
                             child: Text(section.body,
                                 style: TextStyle(
-                                    fontSize: 13,
-                                    height: 1.7,
+                                    fontSize: 14,
+                                    height: 1.65,
                                     color: colors.body)))
                       ],
                     )),
@@ -114,16 +120,19 @@ class _ArticleReader extends StatelessWidget {
                 child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(section.heading,
-                          style: TextStyle(
-                              fontSize: 15,
-                              height: 1.4,
-                              fontWeight: FontWeight.w600,
-                              color: colors.ink)),
+                      Semantics(
+                          header: true,
+                          child: Text(section.heading,
+                              textAlign: TextAlign.start,
+                              style: TextStyle(
+                                  fontSize: 15,
+                                  height: 1.4,
+                                  fontWeight: FontWeight.w600,
+                                  color: colors.ink))),
                       const SizedBox(height: 8),
                       Text(section.body,
                           style: TextStyle(
-                              fontSize: 13, height: 1.7, color: colors.body)),
+                              fontSize: 14, height: 1.65, color: colors.body)),
                     ]));
           }),
         ]));

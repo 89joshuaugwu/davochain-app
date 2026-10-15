@@ -178,6 +178,17 @@ class _AdvancedVerificationFlowScreenState
                         ? ''
                         : 'Verify Your Account',
             onBack: _back,
+            showPrivacyLink: const {
+              _Stage.intro,
+              _Stage.overview,
+              _Stage.idChoice,
+              _Stage.idUpload,
+              _Stage.selfieIntro,
+              _Stage.photoReview,
+              _Stage.addressChoice,
+              _Stage.addressUpload,
+              _Stage.addressReview,
+            }.contains(stage),
             bottom: _actions(),
             child: DavoStepTransition(
                 backwards: backwards,
@@ -880,19 +891,23 @@ class _AdvancedVerificationFlowScreenState
                   'PDF selected. A thumbnail is not available on this device.',
                   style: verificationCaption)
             ]))
-        : _scanAttachment(attachment, Image.file(File(path),
-            width: width,
-            height: height,
-            fit: BoxFit.contain,
-            cacheWidth:
-                ((width.isFinite ? width : MediaQuery.sizeOf(context).width) *
+        : _scanAttachment(
+            attachment,
+            Image.file(File(path),
+                width: width,
+                height: height,
+                fit: BoxFit.contain,
+                cacheWidth: ((width.isFinite
+                            ? width
+                            : MediaQuery.sizeOf(context).width) *
                         MediaQuery.devicePixelRatioOf(context))
                     .ceil()));
   }
 
   Widget _scanAttachment(VerificationAttachment attachment, Widget image) =>
-      attachment == session.selfie ? image : AttachmentScanPreview(
-          key: ValueKey(attachment.path), child: image);
+      attachment == session.selfie
+          ? image
+          : AttachmentScanPreview(key: ValueKey(attachment.path), child: image);
 
   Future<void> _pickIdentity({required bool front, bool camera = false}) =>
       _pickMedia(

@@ -317,6 +317,8 @@ class GiftCardBuyReviewScreen extends StatelessWidget {
               rate: draft?.product.rateNaira ?? 865,
               cardType: draft?.product.label ?? _product(brand).label),
           if (draft != null) _GiftDeliverySummary(delivery: draft!.delivery),
+          const SizedBox(height: 12),
+          const _GiftLegalLinks(),
         ],
       ),
     );

@@ -1,3 +1,5 @@
+import 'package:flutter/gestures.dart';
+import '../../profile_settings/presentation/settings_content_overlay.dart';
 import '../../../core/navigation/app_routes.dart';
 import '../../../core/preview/local_preview_profile.dart';
 import '../../../core/preview/preview_auth_state.dart';
@@ -238,7 +240,21 @@ class _AgreementCheckbox extends StatelessWidget {
       ));
 }
 
-class _AgreementCopy extends StatelessWidget {
+class _AgreementCopy extends StatefulWidget {
+  @override
+  State<_AgreementCopy> createState() => _AgreementCopyState();
+}
+
+class _AgreementCopyState extends State<_AgreementCopy> {
+  final _terms = TapGestureRecognizer();
+  final _privacy = TapGestureRecognizer();
+  @override
+  void dispose() {
+    _terms.dispose();
+    _privacy.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     final style = Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -247,14 +263,17 @@ class _AgreementCopy extends StatelessWidget {
         );
     final link = style?.copyWith(color: DavoColors.of(context).link);
 
+    _terms.onTap = () => showSettingsContent(context, 'Terms and Condition');
+    _privacy.onTap = () => showSettingsContent(context, 'Privacy Policy');
     return RichText(
       text: TextSpan(
         style: style,
         children: [
           const TextSpan(text: 'By continuing you agree to our '),
-          TextSpan(text: 'Terms and conditions', style: link),
+          TextSpan(
+              text: 'Terms and conditions', style: link, recognizer: _terms),
           const TextSpan(text: ' as well as our '),
-          TextSpan(text: 'Privacy policy', style: link),
+          TextSpan(text: 'Privacy policy', style: link, recognizer: _privacy),
           const TextSpan(
             text:
                 ' including verification of your identity through our third party provider',

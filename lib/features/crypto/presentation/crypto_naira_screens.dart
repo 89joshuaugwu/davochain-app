@@ -905,8 +905,9 @@ class _NairaConfirmState extends State<_NairaConfirm> {
             ),
             Positioned(
               left: 16,
-              top: 411,
-              height: 16,
+              right: 70,
+              top: 395,
+              height: 64,
               child: InkWell(
                 onTap: () => setState(() => agreed = !agreed),
                 child: Row(
@@ -918,16 +919,28 @@ class _NairaConfirmState extends State<_NairaConfirm> {
                         width: 16,
                         height: 16),
                     const SizedBox(width: 8),
-                    Text('I agree to the terms and condition',
-                        style: TextStyle(
-                            fontFamily: 'Sora',
-                            fontSize: 12,
-                            height: 1.25,
-                            color: DavoColors.of(context).link)),
+                    Expanded(
+                        child: Text('I agree to the terms and condition',
+                            style: TextStyle(
+                                fontFamily: 'Sora',
+                                fontSize: 12,
+                                height: 1.25,
+                                color: DavoColors.of(context).link))),
                   ],
                 ),
               ),
             ),
+            Positioned(
+                right: 14,
+                top: 403,
+                child: IconButton(
+                    tooltip: 'Read terms and conditions',
+                    constraints:
+                        const BoxConstraints(minWidth: 48, minHeight: 48),
+                    onPressed: () =>
+                        showSettingsContent(context, 'Terms and Condition'),
+                    icon: Icon(Icons.info_outline,
+                        size: 20, color: DavoColors.of(context).link))),
             Positioned(
                 left: 16,
                 right: 14,
