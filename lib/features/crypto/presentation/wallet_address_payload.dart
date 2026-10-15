@@ -51,7 +51,9 @@ String walletAddressFromPayload(String payload,
             ? (bitcoin && (scheme == null || scheme == 'bitcoin')) ||
                 (evm && (scheme == null || scheme == 'ethereum'))
             : bitcoin && (scheme == null || scheme == 'bitcoin'),
-    BuyCryptoAsset.ethereum => evm && (scheme == null || scheme == 'ethereum'),
+    BuyCryptoAsset.ethereum ||
+    BuyCryptoAsset.usdCoin =>
+      evm && (scheme == null || scheme == 'ethereum'),
     BuyCryptoAsset.solana => solana && (scheme == null || scheme == 'solana'),
     BuyCryptoAsset.tether => chain.contains('trc20')
         ? tron && (scheme == null || scheme == 'tron')
@@ -59,6 +61,7 @@ String walletAddressFromPayload(String payload,
             ? (tron && (scheme == null || scheme == 'tron')) ||
                 (evm && (scheme == null || scheme == 'ethereum'))
             : evm && (scheme == null || scheme == 'ethereum'),
+    _ => false,
   };
   if (!valid) {
     throw FormatException(

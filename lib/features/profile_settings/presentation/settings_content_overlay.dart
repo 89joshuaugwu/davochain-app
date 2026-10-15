@@ -41,6 +41,7 @@ Future<void> showSettingsContent(BuildContext context, String title) =>
                         return SingleChildScrollView(
                             padding: const EdgeInsets.only(bottom: 28),
                             child: SelectableText(published,
+                                textAlign: TextAlign.justify,
                                 style: TextStyle(
                                     fontSize: 14,
                                     height: 1.65,
@@ -76,6 +77,7 @@ class _ArticleReader extends StatelessWidget {
                       color: colors.ink))),
           const SizedBox(height: 12),
           Text(article.introduction,
+              textAlign: TextAlign.justify,
               style: TextStyle(
                   fontSize: 14, height: 1.65, color: colors.bodyMuted)),
           const SizedBox(height: 28),
@@ -106,6 +108,7 @@ class _ArticleReader extends StatelessWidget {
                         Align(
                             alignment: Alignment.centerLeft,
                             child: Text(section.body,
+                                textAlign: TextAlign.justify,
                                 style: TextStyle(
                                     fontSize: 14,
                                     height: 1.65,
@@ -131,6 +134,7 @@ class _ArticleReader extends StatelessWidget {
                                   color: colors.ink))),
                       const SizedBox(height: 8),
                       Text(section.body,
+                          textAlign: TextAlign.justify,
                           style: TextStyle(
                               fontSize: 14, height: 1.65, color: colors.body)),
                     ]));

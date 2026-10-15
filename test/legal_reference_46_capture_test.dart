@@ -94,8 +94,6 @@ void main() {
               amount: 100,
               quantity: 1),
           dark);
-      await tester.ensureVisible(find.text('Terms and Conditions'));
-      await tester.pumpAndSettle();
       await capture('$theme-gift-buy-policy');
       await mount(
           const GiftCardSellReviewScreen(
@@ -103,8 +101,6 @@ void main() {
                   name: 'iTunes/Apple', asset: 'assets/figma_exact/apple.png'),
               amount: 100),
           dark);
-      await tester.ensureVisible(find.text('Terms and Conditions'));
-      await tester.pumpAndSettle();
       await capture('$theme-gift-sell-policy');
       for (final title in [
         'Privacy Policy',

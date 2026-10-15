@@ -343,9 +343,6 @@ class _CompleteProfileV12ScreenState extends State<CompleteProfileV12Screen> {
                           labelSize: 16,
                           hintSize: 12)))),
           const SizedBox(height: 32),
-          TextButton(
-              onPressed: () => showSettingsContent(context, 'Privacy Policy'),
-              child: const Text('Read Privacy Policy')),
           _PrimaryButton('Continue',
               enabled: enabled,
               onTap: () =>
@@ -422,9 +419,6 @@ class _CompleteProfileContactV12ScreenState
           const SizedBox(height: 24),
           const _CountryField(),
           const SizedBox(height: 28),
-          TextButton(
-              onPressed: () => showSettingsContent(context, 'Privacy Policy'),
-              child: const Text('Read Privacy Policy')),
           _PrimaryButton(
             'Continue',
             enabled: enabled,

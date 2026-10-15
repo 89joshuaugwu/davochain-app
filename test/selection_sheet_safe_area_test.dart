@@ -97,7 +97,11 @@ void main() {
                   )))));
       await tester.tap(find.text('Open'));
       await tester.pumpAndSettle();
-      await tester.ensureVisible(find.text('Tether'));
+      await tester.scrollUntilVisible(find.text('Tether'), 100,
+          scrollable: find
+              .descendant(
+                  of: find.byType(ListView), matching: find.byType(Scrollable))
+              .first);
       await tester.pumpAndSettle();
       final rect = tester.getRect(find.text('Tether'));
       expect(rect.bottom, lessThanOrEqualTo(size.height - 96));

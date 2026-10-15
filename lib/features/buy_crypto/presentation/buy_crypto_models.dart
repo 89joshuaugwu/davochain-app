@@ -7,7 +7,13 @@ enum BuyCryptoAsset {
   bitcoin('Bitcoin', 'BTC', '₿', Color(0xFFF7931A), '24000000'),
   ethereum('Ethereum', 'ETH', '◆', Color(0xFF627EEA), '5200000'),
   solana('Solana', 'SOL', '≋', Color(0xFF090909), '265000'),
-  tether('Tether', 'USDT', '₮', Color(0xFF009393), '1540');
+  tether('Tether', 'USDT', '₮', Color(0xFF009393), '1540'),
+  usdCoin('USD Coin', 'USDC', r'$', Color(0xFF2775CA), '1540'),
+  xrp('XRP', 'XRP', '', Color(0xFF23292F), null),
+  cardano('Cardano', 'ADA', '', Color(0xFF0033AD), null),
+  dogecoin('Dogecoin', 'DOGE', '', Color(0xFFC2A633), null),
+  litecoin('Litecoin', 'LTC', '', Color(0xFF345D9D), null),
+  bnb('BNB', 'BNB', '', Color(0xFFF3BA2F), null);
 
   const BuyCryptoAsset(
     this.name,
@@ -21,12 +27,14 @@ enum BuyCryptoAsset {
   final String symbol;
   final String glyph;
   final Color color;
-  final String _ngnPrice;
-  ExactDecimal get ngnPrice => ExactDecimal.parse(_ngnPrice);
+  final String? _ngnPrice;
+  bool get hasQuote => _ngnPrice != null;
+  ExactDecimal get ngnPrice => ExactDecimal.parse(
+      _ngnPrice ?? (throw StateError('No quote available for $symbol')));
   double get ngnPerUnit => ngnPrice.toDouble();
   int get quantityDecimals => switch (this) {
         BuyCryptoAsset.solana => 9,
-        BuyCryptoAsset.tether => 6,
+        BuyCryptoAsset.tether || BuyCryptoAsset.usdCoin => 6,
         _ => 8,
       };
 }

@@ -235,7 +235,7 @@ class _TopBrandCard extends StatelessWidget {
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
-                                      Image.asset(brand.asset,
+                                      _giftBrandImage(brand.asset,
                                           width: 30,
                                           height: 30,
                                           fit: BoxFit.contain),
@@ -305,7 +305,7 @@ class _PopularBrand extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 8),
             decoration: _outlinedCard(context),
             child: Column(children: [
-              Image.asset(brand.asset,
+              _giftBrandImage(brand.asset,
                   width: 30, height: 30, fit: BoxFit.contain),
               const SizedBox(height: 6),
               Text(brand.name.split(' ').first,
@@ -429,7 +429,7 @@ class _BrandListTile extends StatelessWidget {
                     color: selected ? AppColors.primary : Colors.transparent),
                 borderRadius: BorderRadius.circular(8)),
             child: Row(children: [
-              Image.asset(brand.asset,
+              _giftBrandImage(brand.asset,
                   width: 30, height: 30, fit: BoxFit.contain),
               const SizedBox(width: 12),
               Expanded(
@@ -591,7 +591,7 @@ Future<GiftCatalogProduct?> _showGiftSubcategories(
                     ListTile(
                         contentPadding: const EdgeInsets.symmetric(
                             horizontal: 8, vertical: 8),
-                        leading: Image.asset(brand.asset,
+                        leading: _giftBrandImage(brand.asset,
                             width: 36, height: 36, fit: BoxFit.contain),
                         title: Text('France ${brand.name}',
                             style: const TextStyle(
@@ -619,7 +619,7 @@ class _SelectField extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 12),
             decoration: _fieldDecoration(context),
             child: Row(children: [
-              Image.asset(brand.asset,
+              _giftBrandImage(brand.asset,
                   width: 24, height: 24, fit: BoxFit.contain),
               const SizedBox(width: 10),
               Expanded(
@@ -925,17 +925,21 @@ BoxDecoration _outlinedCard(BuildContext context) => BoxDecoration(
     border: Border.all(color: DavoColors.of(context).divider),
     borderRadius: BorderRadius.circular(12));
 
-/// Account policies supplement the selected card's trade-specific terms.
-class _GiftLegalLinks extends StatelessWidget {
-  const _GiftLegalLinks();
-  @override
-  Widget build(BuildContext context) => Wrap(spacing: 8, children: [
-        TextButton(
-            onPressed: () =>
-                showSettingsContent(context, 'Terms and Condition'),
-            child: const Text('Terms and Conditions')),
-        TextButton(
-            onPressed: () => showSettingsContent(context, 'Privacy Policy'),
-            child: const Text('Privacy Policy')),
-      ]);
-}
+Widget _giftBrandImage(String asset,
+        {double? width,
+        double? height,
+        BoxFit fit = BoxFit.contain,
+        FilterQuality filterQuality = FilterQuality.high}) =>
+    asset.endsWith('.svg')
+        ? Container(
+            width: width,
+            height: height,
+            padding: const EdgeInsets.all(4),
+            decoration: BoxDecoration(
+                color: Colors.white, borderRadius: BorderRadius.circular(6)),
+            child: SvgPicture.asset(asset, fit: fit))
+        : Image.asset(asset,
+            width: width,
+            height: height,
+            fit: fit,
+            filterQuality: filterQuality);

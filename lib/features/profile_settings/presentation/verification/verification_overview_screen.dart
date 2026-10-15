@@ -19,7 +19,6 @@ class VerificationOverviewScreen extends StatelessWidget {
         final session = VerificationSession.instance;
         return VerificationPage(
             title: 'Verify Your Account',
-            showPrivacyLink: true,
             child:
                 Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               const Text(
@@ -64,7 +63,6 @@ class _BasicIdentityChoiceState extends State<BasicIdentityChoiceScreen> {
   @override
   Widget build(BuildContext context) => VerificationPage(
       title: 'Verify Your Account',
-      showPrivacyLink: true,
       bottom: VerificationButton('Continue', onPressed: () {
         VerificationSession.instance.chooseIdentity(selected);
         pushAppPage<void>(
@@ -93,7 +91,6 @@ class BasicVerificationIntroScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) => VerificationPage(
       title: 'Verify Your Account',
-      showPrivacyLink: true,
       bottom: VerificationButton('Start',
           onPressed: () => pushAppPage<void>(
               context, (_) => const CompleteProfileV12Screen())),
@@ -191,7 +188,6 @@ class _BasicIdentityNumberState extends State<BasicIdentityNumberScreen> {
   @override
   Widget build(BuildContext context) => VerificationPage(
       title: verifying ? 'Verify Your Account' : 'Verify your identity',
-      showPrivacyLink: !verifying,
       bottom: verifying
           ? null
           : VerificationButton('Continue',

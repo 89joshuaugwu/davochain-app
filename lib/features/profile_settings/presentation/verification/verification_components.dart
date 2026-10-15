@@ -1,4 +1,3 @@
-import '../settings_content_overlay.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../../../core/theme/app_theme.dart';
@@ -37,12 +36,10 @@ class VerificationPage extends StatelessWidget {
       required this.title,
       required this.child,
       this.bottom,
-      this.showPrivacyLink = false,
       this.onBack});
   final String title;
   final Widget child;
   final Widget? bottom;
-  final bool showPrivacyLink;
   final VoidCallback? onBack;
   @override
   Widget build(BuildContext context) => Scaffold(
@@ -83,16 +80,6 @@ class VerificationPage extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
                               child,
-                              if (showPrivacyLink) ...[
-                                const SizedBox(height: 16),
-                                Align(
-                                    alignment: Alignment.centerLeft,
-                                    child: TextButton(
-                                        onPressed: () => showSettingsContent(
-                                            context, 'Privacy Policy'),
-                                        child:
-                                            const Text('Read Privacy Policy'))),
-                              ],
                               if (!sticky && bottom != null) ...[
                                 const SizedBox(height: 24),
                                 action

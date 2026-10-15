@@ -1,4 +1,3 @@
-import '../../profile_settings/presentation/settings_content_overlay.dart';
 import '../../../core/navigation/transaction_navigation.dart';
 import '../../../shared/widgets/davo_celebration_emoji.dart';
 import 'gift_card_models.dart';
@@ -83,6 +82,22 @@ const _brands = <GiftCardBrand>[
       name: 'Razer Gold',
       asset: '$_g/razer.png',
       category: GiftCardCategory.gaming),
+  GiftCardBrand(
+      name: 'Xbox',
+      asset: 'assets/icons/gift/xbox.svg',
+      category: GiftCardCategory.gaming),
+  GiftCardBrand(
+      name: 'PlayStation',
+      asset: 'assets/icons/gift/playstation.svg',
+      category: GiftCardCategory.gaming),
+  GiftCardBrand(
+      name: 'Nintendo eShop',
+      asset: 'assets/icons/gift/nintendo.svg',
+      category: GiftCardCategory.gaming),
+  GiftCardBrand(
+      name: 'Spotify',
+      asset: 'assets/icons/gift/spotify.svg',
+      category: GiftCardCategory.streaming),
   GiftCardBrand(name: 'Ebay Gift Card', asset: '$_g/ebay.png'),
   GiftCardBrand(
       name: 'American Express (AMEX) Gift Card', asset: '$_g/amex.png'),
@@ -306,7 +321,7 @@ class _GiftCardBrandScreenState extends State<GiftCardBrandScreen> {
                     onChanged: (_) => setState(() {}),
                     textInputAction: TextInputAction.search,
                     decoration: const DavoInlineInputDecoration(
-                        hintText: 'Search 50+ gift card brands...'),
+                        hintText: 'Search gift card brands...'),
                     style: _body14(context),
                   ),
                 ),

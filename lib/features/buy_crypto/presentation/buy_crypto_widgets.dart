@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+import 'package:flutter_svg/flutter_svg.dart';
 import '../../../shared/widgets/davo_safe_selection_sheet.dart';
 import '../../../core/theme/davo_colors.dart';
 import '../../../shared/widgets/davo_sheet_header.dart';
@@ -21,35 +23,47 @@ class _BuyCryptoAssetSheetState extends State<BuyCryptoAssetSheet> {
             asset.name.toLowerCase().contains(_query) ||
             asset.symbol.toLowerCase().contains(_query))
         .toList();
-    return _SelectionBody(title: 'Select Cryptocurrency', children: [
-      TextField(
-          key: const ValueKey('asset-search'),
-          onChanged: (value) =>
-              setState(() => _query = value.trim().toLowerCase()),
-          textInputAction: TextInputAction.search,
-          decoration: InputDecoration(
-              filled: true,
-              fillColor: DavoColors.of(context).sheetField,
-              hintText: 'Search name or symbol',
-              prefixIcon: const Icon(Icons.search_rounded))),
-      const SizedBox(height: 12),
-      if (assets.isEmpty)
-        Padding(
-            padding: const EdgeInsets.symmetric(vertical: 24),
-            child: Text('No matching assets. Try another name or symbol.',
-                style: TextStyle(color: DavoColors.of(context).body))),
-      ...assets.map((asset) => _SelectionRow(
-          icon: BuyAssetIcon(asset: asset, size: 37),
-          name: asset.name,
-          symbol: asset.symbol,
-          value: WalletAccountState.instance.balanceLabel(asset.symbol),
-          quantity:
-              '${WalletAccountState.instance.snapshot.available(asset.symbol).decimal} ${asset.symbol}',
-          onTap: () {
-            FocusScope.of(context).unfocus();
-            Navigator.pop(context, asset);
-          })),
-    ]);
+    return _SelectionBody(
+        title: 'Select Cryptocurrency',
+        stableHeight: true,
+        children: [
+          TextField(
+              key: const ValueKey('asset-search'),
+              onChanged: (value) =>
+                  setState(() => _query = value.trim().toLowerCase()),
+              textInputAction: TextInputAction.search,
+              decoration: InputDecoration(
+                  filled: true,
+                  fillColor: DavoColors.of(context).sheetField,
+                  hintText: 'Search name or symbol',
+                  prefixIcon: const Icon(Icons.search_rounded))),
+          const SizedBox(height: 12),
+          if (assets.isEmpty)
+            Padding(
+                padding: const EdgeInsets.symmetric(vertical: 24),
+                child: Text('No matching assets. Try another name or symbol.',
+                    style: TextStyle(color: DavoColors.of(context).body))),
+          ...assets.map((asset) => _SelectionRow(
+              icon: BuyAssetIcon(asset: asset, size: 37),
+              name: asset.name,
+              symbol: asset.symbol,
+              value: WalletAccountState.instance.snapshot.assets
+                      .contains(asset.symbol)
+                  ? WalletAccountState.instance.balanceLabel(asset.symbol)
+                  : 'Unavailable',
+              quantity: WalletAccountState.instance.snapshot.assets
+                      .contains(asset.symbol)
+                  ? '${WalletAccountState.instance.snapshot.available(asset.symbol).decimal} ${asset.symbol}'
+                  : asset.symbol,
+              onTap: !asset.hasQuote ||
+                      !WalletAccountState.instance.snapshot.assets
+                          .contains(asset.symbol)
+                  ? null
+                  : () {
+                      FocusScope.of(context).unfocus();
+                      Navigator.pop(context, asset);
+                    })),
+        ]);
   }
 }
 
@@ -70,28 +84,53 @@ class BuyFundingWalletSheet extends StatelessWidget {
 }
 
 class _SelectionBody extends StatelessWidget {
-  const _SelectionBody({required this.title, required this.children});
+  const _SelectionBody(
+      {required this.title, required this.children, this.stableHeight = false});
+  final bool stableHeight;
   final String title;
   final List<Widget> children;
   @override
-  Widget build(BuildContext context) => DavoSafeSelectionSheet(
-      child: Material(
-          color: DavoColors.of(context).sheetSurface,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-          child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
-              child: Column(mainAxisSize: MainAxisSize.min, children: [
-                Container(
-                    width: 85,
-                    height: 4,
-                    decoration: BoxDecoration(
-                        color: DavoColors.of(context).bodyMuted,
-                        borderRadius: BorderRadius.circular(100))),
-                const SizedBox(height: 12),
-                DavoSheetHeader(title: title),
-                const SizedBox(height: 16),
-                ...children,
-              ]))));
+  Widget build(BuildContext context) =>
+      LayoutBuilder(builder: (context, constraints) {
+        final content = Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+            child: Column(
+                mainAxisSize:
+                    stableHeight ? MainAxisSize.max : MainAxisSize.min,
+                children: [
+                  Container(
+                      width: 85,
+                      height: 4,
+                      decoration: BoxDecoration(
+                          color: DavoColors.of(context).bodyMuted,
+                          borderRadius: BorderRadius.circular(100))),
+                  const SizedBox(height: 12),
+                  DavoSheetHeader(title: title),
+                  const SizedBox(height: 16),
+                  if (stableHeight)
+                    Expanded(
+                        child: ListView(
+                            padding: EdgeInsets.zero, children: children))
+                  else
+                    ...children,
+                ]));
+        final available = math.max(
+            0.0,
+            constraints.maxHeight -
+                MediaQuery.viewInsetsOf(context).bottom -
+                MediaQuery.paddingOf(context).bottom);
+        return DavoSafeSelectionSheet(
+            child: Material(
+                color: DavoColors.of(context).sheetSurface,
+                borderRadius:
+                    const BorderRadius.vertical(top: Radius.circular(20)),
+                child: stableHeight
+                    ? SizedBox(
+                        key: const ValueKey('asset-sheet-body'),
+                        height: math.min(540.0, available),
+                        child: content)
+                    : content));
+      });
 }
 
 class _SelectionRow extends StatelessWidget {
@@ -104,7 +143,7 @@ class _SelectionRow extends StatelessWidget {
       required this.onTap});
   final Widget icon;
   final String name, symbol, value, quantity;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
   @override
   Widget build(BuildContext context) {
     final colors = DavoColors.of(context);
@@ -160,35 +199,13 @@ class BuyAssetIcon extends StatelessWidget {
   final BuyCryptoAsset asset;
   final double size;
 
-  String get _assetPath => switch (asset) {
-        BuyCryptoAsset.bitcoin => 'assets/figma_exact/btc.png',
-        BuyCryptoAsset.ethereum => 'assets/figma_exact/eth.png',
-        BuyCryptoAsset.solana => 'assets/figma_exact/sol.png',
-        BuyCryptoAsset.tether => 'assets/figma_exact/usdt.png',
-      };
-
   @override
   Widget build(BuildContext context) {
     if (asset == BuyCryptoAsset.solana) return SolanaIcon(size: size);
-    final visualSize = switch (asset) {
-      BuyCryptoAsset.bitcoin => size * (36 / 37),
-      BuyCryptoAsset.ethereum => size,
-      BuyCryptoAsset.solana => size,
-      BuyCryptoAsset.tether => size * (28 / 37),
-    };
-    return SizedBox(
-      width: size,
-      height: size,
-      child: Center(
-        child: Image.asset(
-          _assetPath,
-          width: visualSize,
-          height: visualSize,
-          fit: BoxFit.contain,
-          filterQuality: FilterQuality.high,
-        ),
-      ),
-    );
+    return SvgPicture.asset(
+        'assets/icons/crypto/${asset.symbol.toLowerCase()}.svg',
+        width: size,
+        height: size);
   }
 }
 

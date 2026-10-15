@@ -383,8 +383,6 @@ class _GiftCardSellReviewScreenState extends State<GiftCardSellReviewScreen> {
                 .terms,
             style: _caption(context),
           ),
-          const SizedBox(height: 8),
-          const _GiftLegalLinks(),
           const SizedBox(height: 16),
           if (!confirmed)
             Container(
