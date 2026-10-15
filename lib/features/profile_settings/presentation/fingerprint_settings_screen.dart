@@ -56,13 +56,14 @@ class _FingerprintSettingsScreenState extends State<FingerprintSettingsScreen> {
       scroll: true,
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         const SizedBox(height: 24),
-        const Icon(Icons.fingerprint_rounded,
-            size: 64, color: AppColors.primary),
+        const Center(
+            child: Icon(Icons.fingerprint_rounded,
+                size: 72, color: AppColors.primary)),
         const SizedBox(height: 24),
         Text('Choose where to use fingerprint', style: _t20(context)),
         const SizedBox(height: 12),
         Text(
-            'Use the fingerprint enrolled on your device. You can always use your password or PIN instead.',
+            'Use the fingerprint enrolled on your device. Use your password to sign in, or your payment PIN to confirm transactions.',
             style: _t14(context)),
         const SizedBox(height: 24),
         ValueListenableBuilder<bool>(

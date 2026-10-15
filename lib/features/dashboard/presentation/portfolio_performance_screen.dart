@@ -1,3 +1,4 @@
+import '../../../shared/widgets/davo_blue_balance_card.dart';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_theme.dart';
@@ -152,80 +153,75 @@ class _PortfolioPerformanceScreenState
           onRefresh: _load,
           builder: (context) => SingleChildScrollView(
               physics: const AlwaysScrollableScrollPhysics(),
-              padding: const EdgeInsets.fromLTRB(20, 24, 20, 32),
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
               child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Text('Total portfolio value',
-                        style:
-                            TextStyle(color: colors.bodyMuted, fontSize: 14)),
-                    const SizedBox(height: 10),
-                    Text(
-                        _visible
-                            ? formatPortfolioNaira(snapshot.current.valueKobo)
-                            : '••••••',
+                    DavoBlueBalanceCard(
                         key: const ValueKey('portfolio-total'),
+                        label: 'Total portfolio value',
+                        amount: _visible
+                            ? formatPortfolioNaira(snapshot.current.valueKobo)
+                            : '\u2022\u2022\u2022\u2022\u2022\u2022',
+                        caption:
+                            'As of ${_timestamp(snapshot.current.timestamp)}'),
+                    const SizedBox(height: 20),
+                    Text('Value over time',
                         style: TextStyle(
-                            color: colors.ink,
-                            fontSize: 30,
-                            fontWeight: FontWeight.w700,
-                            letterSpacing: -1)),
-                    const SizedBox(height: 28),
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: colors.ink)),
+                    const SizedBox(height: 10),
+                    Wrap(
+                        spacing: 6,
+                        runSpacing: 6,
+                        children: PortfolioPerformancePeriod.values
+                            .map((period) => ChoiceChip(
+                                key: ValueKey(
+                                    'portfolio-period-${period.wireKey}'),
+                                label: Text(period.wireKey),
+                                selected: _period == period,
+                                showCheckmark: false,
+                                selectedColor: AppColors.primary,
+                                side: BorderSide.none,
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8)),
+                                labelStyle: TextStyle(
+                                    fontWeight: FontWeight.w600,
+                                    color: _period == period
+                                        ? Colors.white
+                                        : colors.body),
+                                onSelected: (_) => _changePeriod(period)))
+                            .toList()),
+                    const SizedBox(height: 16),
+                    if (_loading) const LinearProgressIndicator(minHeight: 2),
                     Container(
                         padding: const EdgeInsets.all(18),
                         decoration: BoxDecoration(
-                            color: colors.elevated,
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(color: colors.divider)),
+                            color: colors.surface,
+                            borderRadius: BorderRadius.circular(16)),
                         child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text('Portfolio value',
-                                  style: TextStyle(
-                                      color: colors.ink,
-                                      fontWeight: FontWeight.w600)),
-                              const SizedBox(height: 16),
-                              Wrap(
-                                  spacing: 4,
-                                  runSpacing: 4,
-                                  children: PortfolioPerformancePeriod.values
-                                      .map((period) => ChoiceChip(
-                                          key: ValueKey(
-                                              'portfolio-period-${period.wireKey}'),
-                                          label: Text(period.wireKey),
-                                          selected: _period == period,
-                                          showCheckmark: false,
-                                          selectedColor: colors.primarySoft,
-                                          labelStyle: TextStyle(
-                                              color: _period == period
-                                                  ? colors.link
-                                                  : colors.bodyMuted),
-                                          onSelected: (_) =>
-                                              _changePeriod(period)))
-                                      .toList()),
-                              const SizedBox(height: 20),
-                              if (_loading)
-                                const LinearProgressIndicator(minHeight: 2),
-                              const SizedBox(height: 12),
                               Text(
                                   selected == null
                                       ? 'Latest valuation'
                                       : 'Selected valuation',
                                   style: TextStyle(
-                                      fontSize: 12, color: colors.bodyMuted)),
+                                      fontSize: 12, color: colors.body)),
                               const SizedBox(height: 6),
                               Text(
                                   _visible
                                       ? formatPortfolioNaira(
                                           (selected ?? snapshot.current)
                                               .valueKobo)
-                                      : '••••••',
+                                      : '\u2022\u2022\u2022\u2022\u2022\u2022',
                                   key: const ValueKey(
                                       'portfolio-inspected-value'),
                                   style: TextStyle(
-                                      color: colors.ink,
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.w600)),
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.w600,
+                                      color: colors.ink)),
                               const SizedBox(height: 4),
                               Text(
                                   _timestamp(
@@ -233,9 +229,44 @@ class _PortfolioPerformanceScreenState
                                   key: const ValueKey(
                                       'portfolio-inspected-date'),
                                   style: TextStyle(
-                                      color: colors.bodyMuted, fontSize: 12)),
-                              const SizedBox(height: 16),
-                              if (_visible)
+                                      fontSize: 12, color: colors.body)),
+                              const SizedBox(height: 20),
+                              if (!_visible)
+                                Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 16),
+                                    child: Text('Portfolio values hidden',
+                                        style: TextStyle(color: colors.body)))
+                              else if (points.length == 1) ...[
+                                Divider(color: colors.divider),
+                                const SizedBox(height: 14),
+                                Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Icon(Icons.timeline_rounded,
+                                          color: colors.link, size: 28),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                          child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                            Text('Your first valuation',
+                                                style: TextStyle(
+                                                    color: colors.ink,
+                                                    fontWeight:
+                                                        FontWeight.w600)),
+                                            const SizedBox(height: 6),
+                                            Text(
+                                                'A trend appears when more valuations are available. Pull down to refresh.',
+                                                style: TextStyle(
+                                                    fontSize: 12,
+                                                    height: 1.5,
+                                                    color: colors.body)),
+                                          ])),
+                                    ]),
+                              ] else ...[
                                 LayoutBuilder(
                                     builder: (context, constraints) => Semantics(
                                         label:
@@ -244,17 +275,17 @@ class _PortfolioPerformanceScreenState
                                             key: const ValueKey(
                                                 'portfolio-chart'),
                                             behavior: HitTestBehavior.opaque,
-                                            onTapDown: (details) => _inspect(
-                                                details.localPosition.dx,
+                                            onTapDown: (d) => _inspect(
+                                                d.localPosition.dx,
                                                 constraints.maxWidth,
                                                 points),
-                                            onHorizontalDragStart: (details) => _inspect(
-                                                details.localPosition.dx,
+                                            onHorizontalDragStart: (d) => _inspect(
+                                                d.localPosition.dx,
                                                 constraints.maxWidth,
                                                 points),
-                                            onHorizontalDragUpdate: (details) =>
+                                            onHorizontalDragUpdate: (d) =>
                                                 _inspect(
-                                                    details.localPosition.dx,
+                                                    d.localPosition.dx,
                                                     constraints.maxWidth,
                                                     points),
                                             child: SizedBox(
@@ -265,31 +296,25 @@ class _PortfolioPerformanceScreenState
                                                         points: points,
                                                         selected: _selected,
                                                         line: colors.link,
-                                                        grid: colors.divider))))))
-                              else
-                                Container(height: 180, alignment: Alignment.center, child: Text('Portfolio values hidden', style: TextStyle(color: colors.bodyMuted))),
-                              const SizedBox(height: 12),
-                              Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(_shortDate(points.first.timestamp),
-                                        style: TextStyle(
-                                            color: colors.bodyMuted,
-                                            fontSize: 12)),
-                                    Text(
-                                        points.length == 1
-                                            ? 'Now'
-                                            : _shortDate(points.last.timestamp),
-                                        style: TextStyle(
-                                            color: colors.bodyMuted,
-                                            fontSize: 12)),
-                                  ]),
-                              if (_visible && points.length > 1) ...[
+                                                        grid: colors.divider)))))),
+                                const SizedBox(height: 12),
+                                Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(_shortDate(points.first.timestamp),
+                                          style: TextStyle(
+                                              fontSize: 12,
+                                              color: colors.body)),
+                                      Text(_shortDate(points.last.timestamp),
+                                          style: TextStyle(
+                                              fontSize: 12,
+                                              color: colors.body)),
+                                    ]),
                                 const SizedBox(height: 12),
                                 Text('Inspect a valuation',
                                     style: TextStyle(
-                                        color: colors.bodyMuted, fontSize: 12)),
+                                        fontSize: 12, color: colors.body)),
                                 Slider(
                                     value: (_selected ?? points.length - 1)
                                         .toDouble(),
@@ -298,58 +323,59 @@ class _PortfolioPerformanceScreenState
                                     divisions: points.length - 1,
                                     label: _timestamp(
                                         (selected ?? points.last).timestamp),
-                                    semanticFormatterCallback: (value) =>
-                                        '${formatPortfolioNaira(points[value.round()].valueKobo)}, ${_timestamp(points[value.round()].timestamp)}',
-                                    onChanged: (value) => setState(
-                                        () => _selected = value.round())),
+                                    semanticFormatterCallback: (v) =>
+                                        '${formatPortfolioNaira(points[v.round()].valueKobo)}, ${_timestamp(points[v.round()].timestamp)}',
+                                    onChanged: (v) =>
+                                        setState(() => _selected = v.round())),
                               ],
                             ])),
-                    const SizedBox(height: 24),
-                    if (_error != null) ...[
-                      Text(_error!, style: TextStyle(color: colors.danger)),
-                      const SizedBox(height: 16)
-                    ],
-                    if (points.length == 1) ...[
-                      Text('Performance history starts here',
-                          style: TextStyle(
-                              color: colors.ink,
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600)),
-                      const SizedBox(height: 8),
-                      Text(
-                          'Your current valuation is recorded above. Future valuations will show how your portfolio changes over time.',
-                          style:
-                              TextStyle(color: colors.bodyMuted, height: 1.5)),
-                    ] else ...[
-                      _metric(
-                          context,
-                          'Value change · ${_period.wireKey}',
-                          _visible
-                              ? '${change! > 0 ? '+' : ''}${formatPortfolioNaira(change)}'
-                              : '••••••'),
-                      const SizedBox(height: 8),
-                      Text('Includes deposits and withdrawals.',
-                          style:
-                              TextStyle(color: colors.bodyMuted, fontSize: 12)),
-                    ],
+                    if (_error != null)
+                      Padding(
+                          padding: const EdgeInsets.only(top: 16),
+                          child: Text(_error!,
+                              style: TextStyle(color: colors.danger))),
                     const SizedBox(height: 20),
-                    _metric(
-                        context,
-                        'Investment performance',
-                        !_visible
-                            ? '••••••'
-                            : performance == null
-                                ? '—'
-                                : '${performance.changeKobo > 0 ? '+' : ''}${formatPortfolioNaira(performance.changeKobo)}${performance.percent == null ? '' : ' (${performance.percent! > 0 ? '+' : ''}${performance.percent!.toStringAsFixed(2)}%)'}'),
-                    const SizedBox(height: 8),
-                    Text(
-                        performance == null
-                            ? 'Investment gains are shown separately from money you add or withdraw.'
-                            : 'Adjusted for deposits and withdrawals.',
-                        style: TextStyle(
-                            color: colors.bodyMuted,
-                            fontSize: 12,
-                            height: 1.5)),
+                    Container(
+                        padding: const EdgeInsets.all(18),
+                        decoration: BoxDecoration(
+                            color: colors.surface,
+                            borderRadius: BorderRadius.circular(16)),
+                        child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _metric(
+                                  context,
+                                  'Value change \u00b7 ${_period.wireKey}',
+                                  !_visible
+                                      ? '\u2022\u2022\u2022\u2022\u2022\u2022'
+                                      : change == null
+                                          ? 'Awaiting history'
+                                          : '${change > 0 ? '+' : ''}${formatPortfolioNaira(change)}'),
+                              const SizedBox(height: 6),
+                              Text('Includes deposits and withdrawals.',
+                                  style: TextStyle(
+                                      fontSize: 12, color: colors.body)),
+                              const SizedBox(height: 14),
+                              Divider(color: colors.divider),
+                              const SizedBox(height: 14),
+                              _metric(
+                                  context,
+                                  'Investment performance',
+                                  !_visible
+                                      ? '\u2022\u2022\u2022\u2022\u2022\u2022'
+                                      : performance == null
+                                          ? 'Not available yet'
+                                          : '${performance.changeKobo > 0 ? '+' : ''}${formatPortfolioNaira(performance.changeKobo)}${performance.percent == null ? '' : ' (${performance.percent! > 0 ? '+' : ''}${performance.percent!.toStringAsFixed(2)}%)'}'),
+                              const SizedBox(height: 6),
+                              Text(
+                                  performance == null
+                                      ? 'Investment gains exclude money you add or withdraw.'
+                                      : 'Adjusted for deposits and withdrawals.',
+                                  style: TextStyle(
+                                      fontSize: 12,
+                                      color: colors.body,
+                                      height: 1.5)),
+                            ])),
                   ]))),
     );
   }
@@ -437,6 +463,20 @@ class _PortfolioChartPainter extends CustomPainter {
         .forSize(size);
     final offsets = geometry.$1;
     if (offsets.length > 1) {
+      final area = Path.from(geometry.$2)
+        ..lineTo(offsets.last.dx, size.height)
+        ..lineTo(offsets.first.dx, size.height)
+        ..close();
+      canvas.drawPath(
+          area,
+          Paint()
+            ..shader = LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  line.withValues(alpha: .18),
+                  line.withValues(alpha: 0)
+                ]).createShader(Offset.zero & size));
       canvas.drawPath(
           geometry.$2,
           Paint()

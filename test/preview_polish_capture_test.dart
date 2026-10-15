@@ -1,3 +1,6 @@
+import 'package:davochain/features/buy_crypto/presentation/buy_crypto_screens.dart';
+import 'package:davochain/features/dashboard/presentation/portfolio_performance_screen.dart';
+import 'package:davochain/features/dashboard/portfolio_performance.dart';
 import 'dart:io';
 import 'dart:ui' as ui;
 import 'package:davochain/core/preview/local_preview_profile.dart';
@@ -67,6 +70,12 @@ void main() {
       final theme = dark ? 'dark' : 'light';
       await mount(const DavochainDashboardScreen(), dark);
       await capture('$theme-home');
+      for (final slide in [2, 3]) {
+        await tester.tap(find.byTooltip('Show featured banner $slide'));
+        await tester.pumpAndSettle();
+        await capture('$theme-home-banner-$slide');
+      }
+
       for (final tab in [1, 2, 3]) {
         await tester.tap(find.byKey(ValueKey('main-tab-$tab')));
         await tester.pumpAndSettle();
@@ -86,6 +95,36 @@ void main() {
               mode: TradeMode.convert, asset: BuyCryptoAsset.bitcoin),
           dark);
       await capture('$theme-swap');
+      await mount(
+          const BuyAmountScreen(
+              initialOrder: BuyCryptoOrder(
+                  asset: BuyCryptoAsset.bitcoin,
+                  wallet: BuyFundingWallet.ngn,
+                  ngnAmount: 0)),
+          dark);
+      await capture('$theme-buy');
+      await mount(
+          const TradeAmountScreen(
+              mode: TradeMode.sell, asset: BuyCryptoAsset.bitcoin),
+          dark);
+      await capture('$theme-sell');
+      await mount(const PortfolioPerformanceScreen(), dark);
+      await capture('$theme-performance-start');
+      final controller = PortfolioPerformanceController(
+          PortfolioPerformanceSnapshot(
+              current: PortfolioValuePoint(
+                  timestamp: DateTime(2026, 10, 15), valueKobo: 182458800),
+              history: [
+            PortfolioValuePoint(
+                timestamp: DateTime(2026, 10, 1), valueKobo: 170000000),
+            PortfolioValuePoint(
+                timestamp: DateTime(2026, 10, 7), valueKobo: 175000000)
+          ]));
+      await mount(PortfolioPerformanceScreen(controller: controller), dark);
+      await capture('$theme-performance-history');
+      await mount(const SizedBox(), dark);
+      controller.dispose();
+
       await mount(const CryptoDepositScreen(asset: CryptoAsset.bitcoin), dark);
       await capture('$theme-deposit');
       await mount(const FingerprintSettingsScreen(), dark);

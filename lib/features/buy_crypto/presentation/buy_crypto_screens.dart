@@ -1,4 +1,4 @@
-import '../../../shared/motion/davo_motion_policy.dart';
+import '../../../shared/widgets/trade_amount_card.dart';
 import '../../../core/money/exact_decimal.dart';
 import '../../wallets/wallet_repository.dart';
 import 'buy_amount_controller.dart';
@@ -47,22 +47,16 @@ class _BuyAmountScreenState extends State<BuyAmountScreen> {
     if (mounted) setState(() {});
   }
 
-  final FocusNode _focusNode = FocusNode();
-
   @override
   void initState() {
     super.initState();
     _flow = BuyAmountController(widget.initialOrder)..addListener(_flowChanged);
-    _focusNode.addListener(() {
-      if (mounted) setState(() {});
-    });
   }
 
   @override
   void dispose() {
     _flow.removeListener(_flowChanged);
     _flow.dispose();
-    _focusNode.dispose();
     super.dispose();
   }
 
@@ -70,6 +64,7 @@ class _BuyAmountScreenState extends State<BuyAmountScreen> {
   bool get _canContinue => _flow.canContinue;
 
   Future<void> _changeAsset() async {
+    FocusScope.of(context).unfocus();
     final asset = await showModalBottomSheet<BuyCryptoAsset>(
       context: context,
       sheetAnimationStyle: (MediaQuery.disableAnimationsOf(context) ||
@@ -79,6 +74,7 @@ class _BuyAmountScreenState extends State<BuyAmountScreen> {
               duration: Duration(milliseconds: 280),
               reverseDuration: Duration(milliseconds: 200)),
       isScrollControlled: true,
+      useSafeArea: true,
       backgroundColor: Colors.transparent,
       barrierColor: Colors.black.withValues(alpha: .32),
       builder: (_) => const BuyCryptoAssetSheet(),
@@ -113,151 +109,29 @@ class _BuyAmountScreenState extends State<BuyAmountScreen> {
       tabs: _ModeToggle(
           asset: _order.asset, onModeSelected: widget.onModeSelected),
       content: Column(children: [
-        InkWell(
-          onTap: _changeWallet,
-          borderRadius: BorderRadius.circular(16),
-          child: Column(
-            children: [
-              _WalletBadge(wallet: _order.wallet),
-              const SizedBox(height: 12),
-              Text(
-                '${_order.wallet.symbol} Balance',
-                style: TextStyle(
-                    fontFamily: 'Sora',
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    height: 1.25,
-                    color: DavoColors.of(context).body),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                _order.wallet.formattedBalance,
-                style: TextStyle(
-                    fontFamily: 'Sora',
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    height: 1.35,
-                    color: DavoColors.of(context).ink),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 24),
-        AnimatedContainer(
-          duration: DavoMotionPolicy.reduce(context)
-              ? Duration.zero
-              : const Duration(milliseconds: 180),
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          decoration: BoxDecoration(
-            color: DavoColors.of(context).surface,
-            border: Border.all(
-                color: _focusNode.hasFocus
-                    ? AppColors.primary
-                    : DavoColors.of(context).divider,
-                width: _focusNode.hasFocus ? 1.2 : 1),
-            borderRadius: BorderRadius.circular(4),
-          ),
-          height: 77,
-          child: Row(
-            children: [
-              if (_amountController.text.isNotEmpty)
-                Text('₦',
-                    style: TextStyle(
-                        fontFamily: 'Sora',
-                        fontSize: 20,
-                        fontWeight: FontWeight.w600,
-                        color: DavoColors.of(context).ink)),
-              Expanded(
-                child: TextField(
-                  controller: _amountController,
-                  focusNode: _focusNode,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(decimal: true),
-                  inputFormatters: const [GroupedAmountInputFormatter()],
-                  onChanged: (_) => setState(() {}),
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                      fontFamily: 'Sora',
-                      fontSize: 20,
-                      fontWeight: FontWeight.w600,
-                      color: DavoColors.of(context).ink),
-                  decoration: InputDecoration(
-                    border: InputBorder.none,
-                    enabledBorder: InputBorder.none,
-                    focusedBorder: InputBorder.none,
-                    contentPadding: EdgeInsets.zero,
-                    hintText: '0.00',
-                    hintStyle: TextStyle(
-                        fontFamily: 'Sora',
-                        fontSize: 20,
-                        fontWeight: FontWeight.w600,
-                        color: DavoColors.of(context).ink),
-                  ),
-                ),
-              ),
-              Text(_order.wallet.symbol,
-                  style: TextStyle(
-                      fontFamily: 'Sora',
-                      fontSize: 14,
-                      height: 1.35,
-                      color: DavoColors.of(context).body)),
-            ],
-          ),
-        ),
-        const SizedBox(height: 20),
-        InkWell(
-          onTap: _changeAsset,
-          child: Wrap(
-            alignment: WrapAlignment.center,
-            crossAxisAlignment: WrapCrossAlignment.center,
-            children: [
-              Text('≈',
-                  style: TextStyle(
-                      fontFamily: 'Sora',
-                      fontSize: 16,
-                      height: 1.2,
-                      color: DavoColors.of(context).bodyMuted)),
-              const SizedBox(width: 4),
-              Text(
+        TradeAmountCard(
+            label: 'You pay',
+            selector: TradeCurrencySelector(
+                icon:
+                    Image.asset(_order.wallet.iconAsset, width: 32, height: 32),
+                name: _order.wallet.name,
+                symbol: _order.wallet.symbol,
+                onTap: _changeWallet),
+            controller: _amountController,
+            onChanged: () => setState(() {}),
+            footer: 'Available: ${_order.wallet.formattedBalance}'),
+        const SizedBox(height: 16),
+        TradeAmountCard(
+            label: 'You receive',
+            selector: TradeCurrencySelector(
+                icon: BuyAssetIcon(asset: _order.asset, size: 32),
+                name: _order.asset.name,
+                symbol: _order.asset.symbol,
+                onTap: _changeAsset),
+            value:
                 '${_order.copyWith(ngnAmount: _amount).formattedCryptoAmount} ${_order.asset.symbol}',
-                style: TextStyle(
-                    fontFamily: 'Sora',
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    height: 1.35,
-                    color: DavoColors.of(context).body),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 12),
-        Wrap(
-          alignment: WrapAlignment.center,
-          crossAxisAlignment: WrapCrossAlignment.center,
-          children: [
-            Text('1 ${_order.asset.symbol}',
-                style: TextStyle(
-                    fontFamily: 'Sora',
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    height: 1.35,
-                    color: DavoColors.of(context).ink)),
-            const SizedBox(width: 12),
-            Text('≈',
-                style: TextStyle(
-                    fontFamily: 'Sora',
-                    fontSize: 14,
-                    color: DavoColors.of(context).bodyMuted)),
-            const SizedBox(width: 4),
-            Text('(₦${_formatNgn(_order.asset.ngnPrice)})',
-                style: TextStyle(
-                    fontFamily: 'Sora',
-                    fontSize: 14,
-                    height: 1.35,
-                    color: DavoColors.of(context).bodyMuted)),
-          ],
-        ),
-        const SizedBox(height: 24),
+            footer: _order.formattedExchangeRate),
+        const SizedBox(height: 20),
         _PercentageButtons(onPick: _flow.pickPercentage),
         if (_amount.compareTo(_order.wallet.exactBalance) > 0) ...[
           const SizedBox(height: 16),

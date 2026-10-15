@@ -28,6 +28,17 @@ class WalletSnapshot {
         .toInt();
   }
 
+  /// Indicative USD equivalent using the same snapshot's USDC/NGN quote.
+  /// A service-provided FX quote can replace this estimate at integration.
+  String? usdEquivalentLabel(int ngnMinorUnits) {
+    final price = _prices['USDC'];
+    if (price == null || price <= 0) return null;
+    final cents =
+        BigInt.from(ngnMinorUnits) * BigInt.from(100) ~/ BigInt.from(price);
+    final whole = formatGroupedAmount((cents ~/ BigInt.from(100)).toString());
+    return '\u2248 \$$whole.${(cents % BigInt.from(100)).toString().padLeft(2, '0')} USD';
+  }
+
   static WalletSnapshot seeded() =>
       WalletSnapshot(accountId: 'local-account', version: 1, available: {
         'NGN': AssetAmount.parse('1284500.35', 'NGN', 2),

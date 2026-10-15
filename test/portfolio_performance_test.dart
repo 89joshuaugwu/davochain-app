@@ -76,9 +76,9 @@ void main() {
       (tester) async {
     await show(tester);
     expect(find.text('₦1,824,588.00'), findsNWidgets(2));
-    expect(find.text('Performance history starts here'), findsOneWidget);
+    expect(find.text('Your first valuation'), findsOneWidget);
     expect(find.textContaining('%'), findsNothing);
-    expect(find.byKey(const ValueKey('portfolio-chart')), findsOneWidget);
+    expect(find.byKey(const ValueKey('portfolio-chart')), findsNothing);
     expect(tester.takeException(), isNull);
   });
 

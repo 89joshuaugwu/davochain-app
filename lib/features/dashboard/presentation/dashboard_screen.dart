@@ -1,3 +1,7 @@
+import 'dart:async';
+import '../../../shared/motion/davo_motion_policy.dart';
+import '../../buy_crypto/presentation/buy_crypto_models.dart';
+import '../../buy_crypto/presentation/buy_crypto_screens.dart';
 import '../../../shared/widgets/davo_blue_balance_card.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../wallets/wallet_repository.dart';
@@ -149,9 +153,9 @@ class _DavochainDashboardScreenState extends State<DavoDashboardContent> {
                         SizedBox(height: compact ? 4 : 8),
                       ],
                     );
-                    // Ordinary phones keep the header stationary. Landscape and enlarged
-                    // text retain full-page scrolling so controls never become unreachable.
-                    final needsFullScroll = constraints.maxHeight < 640 ||
+                    // Tall phones keep the header stationary. The carousel, shorter views
+                    // and enlarged text use full-page scrolling to keep controls reachable.
+                    final needsFullScroll = constraints.maxHeight < 800 ||
                         MediaQuery.textScalerOf(context).scale(14) > 18;
                     if (needsFullScroll) {
                       return SingleChildScrollView(
@@ -159,7 +163,7 @@ class _DavochainDashboardScreenState extends State<DavoDashboardContent> {
                         child: Column(children: [
                           header,
                           SizedBox(
-                              height: 240,
+                              height: setupComplete ? 320 : 240,
                               child: _DashboardAssetCard(
                                   rowHeight: MediaQuery.textScalerOf(context)
                                               .scale(14) >

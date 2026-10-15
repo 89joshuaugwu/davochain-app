@@ -6,21 +6,49 @@ import '../../wallets/wallet_repository.dart';
 import 'package:flutter/material.dart';
 import 'buy_crypto_models.dart';
 
-class BuyCryptoAssetSheet extends StatelessWidget {
+class BuyCryptoAssetSheet extends StatefulWidget {
   const BuyCryptoAssetSheet({super.key});
   @override
-  Widget build(BuildContext context) => _SelectionBody(
-      title: 'Select Cryptocurrency',
-      children: BuyCryptoAsset.values
-          .map((asset) => _SelectionRow(
-              icon: BuyAssetIcon(asset: asset, size: 37),
-              name: asset.name,
-              symbol: asset.symbol,
-              value: WalletAccountState.instance.balanceLabel(asset.symbol),
-              quantity:
-                  '${WalletAccountState.instance.snapshot.available(asset.symbol).decimal} ${asset.symbol}',
-              onTap: () => Navigator.pop(context, asset)))
-          .toList());
+  State<BuyCryptoAssetSheet> createState() => _BuyCryptoAssetSheetState();
+}
+
+class _BuyCryptoAssetSheetState extends State<BuyCryptoAssetSheet> {
+  String _query = '';
+  @override
+  Widget build(BuildContext context) {
+    final assets = BuyCryptoAsset.values
+        .where((asset) =>
+            asset.name.toLowerCase().contains(_query) ||
+            asset.symbol.toLowerCase().contains(_query))
+        .toList();
+    return _SelectionBody(title: 'Select Cryptocurrency', children: [
+      TextField(
+          key: const ValueKey('asset-search'),
+          onChanged: (value) =>
+              setState(() => _query = value.trim().toLowerCase()),
+          textInputAction: TextInputAction.search,
+          decoration: const InputDecoration(
+              hintText: 'Search name or symbol',
+              prefixIcon: Icon(Icons.search_rounded))),
+      const SizedBox(height: 12),
+      if (assets.isEmpty)
+        Padding(
+            padding: const EdgeInsets.symmetric(vertical: 24),
+            child: Text('No matching assets. Try another name or symbol.',
+                style: TextStyle(color: DavoColors.of(context).body))),
+      ...assets.map((asset) => _SelectionRow(
+          icon: BuyAssetIcon(asset: asset, size: 37),
+          name: asset.name,
+          symbol: asset.symbol,
+          value: WalletAccountState.instance.balanceLabel(asset.symbol),
+          quantity:
+              '${WalletAccountState.instance.snapshot.available(asset.symbol).decimal} ${asset.symbol}',
+          onTap: () {
+            FocusScope.of(context).unfocus();
+            Navigator.pop(context, asset);
+          })),
+    ]);
+  }
 }
 
 class BuyFundingWalletSheet extends StatelessWidget {

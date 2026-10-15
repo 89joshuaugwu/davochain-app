@@ -8,11 +8,12 @@ class DavoBlueBalanceCard extends StatelessWidget {
       required this.label,
       required this.amount,
       required this.caption,
-      this.trailing});
+      this.trailing,
+      this.labelAction});
   final String label;
   final String amount;
   final String caption;
-  final Widget? trailing;
+  final Widget? trailing, labelAction;
   @override
   Widget build(BuildContext context) => Container(
       width: double.infinity,
@@ -24,7 +25,7 @@ class DavoBlueBalanceCard extends StatelessWidget {
             right: 0,
             bottom: 0,
             width: 268,
-            height: 104,
+            height: 76,
             child: Image.asset('assets/figma_exact/balance_wave.png',
                 fit: BoxFit.fill,
                 filterQuality: FilterQuality.high,
@@ -35,9 +36,13 @@ class DavoBlueBalanceCard extends StatelessWidget {
                 Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Row(children: [
                 Expanded(
-                    child: Text(label,
-                        style: const TextStyle(
-                            fontSize: 12, color: Colors.white))),
+                    child: Row(children: [
+                  Flexible(
+                      child: Text(label,
+                          style: const TextStyle(
+                              fontSize: 12, color: Colors.white))),
+                  if (labelAction != null) labelAction!
+                ])),
                 if (trailing != null) trailing!
               ]),
               const SizedBox(height: 10),

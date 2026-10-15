@@ -199,26 +199,25 @@ class _TradeAmountScreenState extends State<TradeAmountScreen> {
             ('Estimated fee', 'Free', true),
           ]),
         ] else ...[
-          _AssetBalance(asset: sourceAsset),
-          const SizedBox(height: 24),
-          _Amount(
+          TradeAmountCard(
+              label: 'You sell',
+              selector: TradeCurrencySelector(
+                  icon: BuyAssetIcon(asset: sourceAsset, size: 32),
+                  name: sourceAsset.name,
+                  symbol: sourceAsset.symbol,
+                  onTap: () => _selectAsset(source: true)),
               controller: amount,
-              suffix: sourceAsset.symbol,
-              onChanged: () => setState(() {})),
-          const SizedBox(height: 20),
-          Text('\u2248 \u20a6${formatGroupedAmount(ngn.toFixed(2))}',
-              style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: DavoColors.of(context).ink)),
-        ],
-        if (!convert) ...[
-          const SizedBox(height: 12),
-          Text(
-              '1 ${sourceAsset.symbol} \u2248 (\u20a6${formatGroupedAmount(sourceAsset.ngnPrice.toFixed(2))})',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                  fontSize: 12, color: DavoColors.of(context).bodyMuted)),
+              onChanged: () => setState(() {}),
+              footer:
+                  'Available: ${formatGroupedAmount(balance.toString())} ${sourceAsset.symbol}'),
+          const SizedBox(height: 16),
+          TradeAmountCard(
+              label: 'You receive',
+              selector: const TradeCurrencySelector(
+                  icon: NairaCoinMark(), name: 'Nigerian Naira', symbol: 'NGN'),
+              value: '\u2248 \u20a6${formatGroupedAmount(ngn.toFixed(2))}',
+              footer:
+                  '1 ${sourceAsset.symbol} \u2248 \u20a6${formatGroupedAmount(sourceAsset.ngnPrice.toFixed(2))}'),
         ],
         const SizedBox(height: 20),
         Wrap(

@@ -10,6 +10,7 @@ class _NairaWithdrawScreenState extends State<NairaWithdrawScreen> {
   final amount = TextEditingController();
   BankAccount? account;
   bool _reviewing = false;
+  bool _balanceVisible = true;
   @override
   void dispose() {
     WalletAccountState.instance.removeListener(_walletChanged);
@@ -49,83 +50,90 @@ class _NairaWithdrawScreenState extends State<NairaWithdrawScreen> {
     return Scaffold(
       backgroundColor: DavoColors.of(context).canvas,
       body: SafeArea(
-          child: SingleChildScrollView(
-        keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
-        child:
-            Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-          Row(children: [
-            IconButton(
-                tooltip: 'Back',
-                onPressed: () => Navigator.pop(context),
-                icon: const Icon(Icons.arrow_back)),
-            Expanded(
-                child: Text('Naira withdrawal',
-                    style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                        color: DavoColors.of(context).ink)))
-          ]),
-          const SizedBox(height: 16),
-          const _BalanceCard(),
-          const SizedBox(height: 24),
-          _ExactNairaField(
-            label: 'Amount',
-            child: TextField(
-              controller: amount,
-              inputFormatters: const [GroupedAmountInputFormatter()],
-              keyboardType:
-                  const TextInputType.numberWithOptions(decimal: true),
-              onChanged: (_) => setState(() {}),
-              decoration: DavoInlineInputDecoration(
-                hintText: '0',
-                hintStyle: TextStyle(
+          child: Column(children: [
+        Expanded(
+            child: SingleChildScrollView(
+          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+          child:
+              Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+            Row(children: [
+              IconButton(
+                  tooltip: 'Back',
+                  onPressed: () => Navigator.pop(context),
+                  icon: const Icon(Icons.arrow_back)),
+              Expanded(
+                  child: Text('Naira withdrawal',
+                      style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                          color: DavoColors.of(context).ink)))
+            ]),
+            const SizedBox(height: 16),
+            _BalanceCard(
+                visible: _balanceVisible,
+                onVisibilityToggle: () =>
+                    setState(() => _balanceVisible = !_balanceVisible)),
+            const SizedBox(height: 24),
+            _ExactNairaField(
+              label: 'Amount',
+              child: TextField(
+                controller: amount,
+                inputFormatters: const [GroupedAmountInputFormatter()],
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
+                onChanged: (_) => setState(() {}),
+                decoration: DavoInlineInputDecoration(
+                  hintText: '0',
+                  hintStyle: TextStyle(
+                      fontFamily: 'Sora',
+                      fontSize: 16,
+                      height: 1.35,
+                      color: DavoColors.of(context).bodyMuted),
+                ),
+                style: TextStyle(
                     fontFamily: 'Sora',
                     fontSize: 16,
                     height: 1.35,
-                    color: DavoColors.of(context).bodyMuted),
+                    color: DavoColors.of(context).ink),
               ),
-              style: TextStyle(
-                  fontFamily: 'Sora',
-                  fontSize: 16,
-                  height: 1.35,
-                  color: DavoColors.of(context).ink),
             ),
-          ),
-          const SizedBox(height: 20),
-          _ExactNairaField(
-            label: 'Payment Method',
-            onTap: _payment,
-            trailing: Image.asset('$_exact/naira_payment_chevron_exact.png',
-                color: DavoColors.of(context).ink,
-                width: 24,
-                height: 24,
-                fit: BoxFit.contain),
-            child: account == null
-                ? Text('Select a payment method',
-                    style: TextStyle(
-                        fontFamily: 'Sora',
-                        fontSize: 16,
-                        height: 1.35,
-                        color: DavoColors.of(context).bodyMuted))
-                : Padding(
-                    padding: const EdgeInsets.only(left: 5),
-                    child: Text(account!.bank,
-                        style: TextStyle(
-                            fontFamily: 'Sora',
-                            fontSize: 14,
-                            height: 1.35,
-                            color: DavoColors.of(context).ink)),
-                  ),
-          ),
-          const SizedBox(height: 32),
-          _Button(
-              label: 'Continue',
-              enabled: ready,
-              fontWeight: FontWeight.w700,
-              onTap: ready ? _review : () {}),
-        ]),
-      )),
+            const SizedBox(height: 20),
+            _ExactNairaField(
+              label: 'Payment Method',
+              onTap: _payment,
+              trailing: Image.asset('$_exact/naira_payment_chevron_exact.png',
+                  color: DavoColors.of(context).ink,
+                  width: 24,
+                  height: 24,
+                  fit: BoxFit.contain),
+              child: account == null
+                  ? Text('Select a payment method',
+                      style: TextStyle(
+                          fontFamily: 'Sora',
+                          fontSize: 16,
+                          height: 1.35,
+                          color: DavoColors.of(context).bodyMuted))
+                  : Padding(
+                      padding: const EdgeInsets.only(left: 5),
+                      child: Text(account!.bank,
+                          style: TextStyle(
+                              fontFamily: 'Sora',
+                              fontSize: 14,
+                              height: 1.35,
+                              color: DavoColors.of(context).ink)),
+                    ),
+            ),
+          ]),
+        )),
+        Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+            child: _Button(
+                label: 'Continue',
+                enabled: ready,
+                fontWeight: FontWeight.w700,
+                onTap: ready ? _review : () {})),
+      ])),
     );
   }
 

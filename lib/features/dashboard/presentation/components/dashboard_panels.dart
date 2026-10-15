@@ -459,8 +459,214 @@ class _QuickAction extends StatelessWidget {
   }
 }
 
-class _PromoBanner extends StatelessWidget {
+class _PromoBanner extends StatefulWidget {
   const _PromoBanner({this.compact = false});
+  final bool compact;
+  @override
+  State<_PromoBanner> createState() => _PromoBannerState();
+}
+
+class _PromoBannerState extends State<_PromoBanner>
+    with WidgetsBindingObserver {
+  final _pages = PageController(initialPage: 300);
+  Timer? _timer;
+  int _page = 0;
+  bool _paused = false;
+  bool _active = true;
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _schedule();
+  }
+
+  void _schedule() {
+    _timer?.cancel();
+    if (_paused || !_active || DavoMotionPolicy.reduce(context)) return;
+    _timer = Timer.periodic(const Duration(seconds: 6), (_) {
+      if (!mounted ||
+          !_pages.hasClients ||
+          !TickerMode.valuesOf(context).enabled ||
+          !(ModalRoute.of(context)?.isCurrent ?? true) ||
+          _pages.position.isScrollingNotifier.value) {
+        return;
+      }
+      _pages.animateToPage((_pages.page ?? 300).round() + 1,
+          duration: const Duration(milliseconds: 450),
+          curve: Curves.easeInOutCubic);
+    });
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    _active = state == AppLifecycleState.resumed;
+    _schedule();
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    WidgetsBinding.instance.removeObserver(this);
+    _pages.dispose();
+    super.dispose();
+  }
+
+  void _open(int slide) {
+    if (slide == 0) {
+      startSellCryptoFlow(context);
+      return;
+    }
+    Navigator.of(context).push(_davoRoute<void>(slide == 1
+        ? const PortfolioScreen()
+        : const ReferralDashboardScreen()));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final large = MediaQuery.textScalerOf(context).scale(14) > 18;
+    return Column(children: [
+      SizedBox(
+          height: large
+              ? 120 + MediaQuery.textScalerOf(context).scale(180)
+              : widget.compact
+                  ? 152
+                  : 160,
+          child: Listener(
+              onPointerDown: (_) => _schedule(),
+              child: PageView.builder(
+                  controller: _pages,
+                  onPageChanged: (index) => setState(() => _page = index % 3),
+                  itemBuilder: (context, index) {
+                    final slide = index % 3;
+                    final content = slide == 0
+                        ? _TradingPromoSlide(compact: widget.compact)
+                        : _FeaturePromoSlide(
+                            portfolio: slide == 1, compact: widget.compact);
+                    return Semantics(
+                        label: 'Featured ${slide + 1} of 3',
+                        button: true,
+                        child: InkWell(
+                            onTap: () => _open(slide),
+                            borderRadius: BorderRadius.circular(12),
+                            child: large
+                                ? SingleChildScrollView(child: content)
+                                : content));
+                  }))),
+      Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+        for (var i = 0; i < 3; i++)
+          IconButton(
+              tooltip: 'Show featured banner ${i + 1}',
+              onPressed: () {
+                _schedule();
+                final current = (_pages.page ?? 300).round();
+                final target = current - current % 3 + i;
+                if (DavoMotionPolicy.reduce(context)) {
+                  _pages.jumpToPage(target);
+                } else {
+                  _pages.animateToPage(target,
+                      duration: const Duration(milliseconds: 300),
+                      curve: Curves.easeOutCubic);
+                }
+              },
+              icon: Container(
+                  width: _page == i ? 18 : 6,
+                  height: 6,
+                  decoration: BoxDecoration(
+                      color: _page == i
+                          ? DavoColors.of(context).link
+                          : DavoColors.of(context)
+                              .bodyMuted
+                              .withValues(alpha: .35),
+                      borderRadius: BorderRadius.circular(4)))),
+        if (!DavoMotionPolicy.reduce(context))
+          IconButton(
+              tooltip:
+                  _paused ? 'Play featured banners' : 'Pause featured banners',
+              onPressed: () {
+                setState(() => _paused = !_paused);
+                _schedule();
+              },
+              icon: Icon(
+                  _paused ? Icons.play_arrow_rounded : Icons.pause_rounded,
+                  size: 16)),
+      ]),
+    ]);
+  }
+}
+
+class _FeaturePromoSlide extends StatelessWidget {
+  const _FeaturePromoSlide({required this.portfolio, required this.compact});
+  final bool portfolio, compact;
+  @override
+  Widget build(BuildContext context) {
+    final large = MediaQuery.textScalerOf(context).scale(14) > 18;
+    final text = Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+              portfolio
+                  ? 'Your crypto.\nOne clear view.'
+                  : 'Refer & Earn \u20a65,000',
+              style: TextStyle(
+                  fontSize: compact ? 12 : 14,
+                  fontWeight: FontWeight.w700,
+                  color: portfolio ? const Color(0xFF183D65) : Colors.white,
+                  height: 1.3)),
+          const SizedBox(height: 6),
+          Text(
+              portfolio
+                  ? 'See your holdings, allocation and portfolio value.'
+                  : 'Get \u20a6500 for every friend who trades',
+              style: TextStyle(
+                  fontSize: 10,
+                  height: 1.35,
+                  color: portfolio ? const Color(0xFF294B62) : Colors.white)),
+          const SizedBox(height: 6),
+          Text(portfolio ? 'View portfolio \u2192' : 'Invite a friend \u2192',
+              style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w600,
+                  color: portfolio ? const Color(0xFF183D65) : Colors.white)),
+        ]);
+    final art = portfolio
+        ? Stack(alignment: Alignment.center, children: [
+            Image.asset('assets/figma_exact/eth.png',
+                width: 56, height: 56, filterQuality: FilterQuality.high),
+            Positioned(
+                right: 0,
+                bottom: 0,
+                child: Image.asset('assets/figma_exact/btc.png',
+                    width: 64, height: 64, filterQuality: FilterQuality.high)),
+          ])
+        : SvgPicture.asset('assets/figma_exact/referral_party.svg',
+            width: 86, height: 86);
+    return Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            color: portfolio ? const Color(0xFFDDF4EF) : AppColors.primary),
+        child: large
+            ? Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                text,
+                const SizedBox(height: 16),
+                SizedBox(height: 100, width: 120, child: art)
+              ])
+            : Row(children: [
+                Expanded(flex: 3, child: text),
+                const SizedBox(width: 12),
+                Expanded(flex: 2, child: SizedBox(height: 90, child: art))
+              ]));
+  }
+}
+
+class _TradingPromoSlide extends StatelessWidget {
+  const _TradingPromoSlide({this.compact = false});
   final bool compact;
   @override
   Widget build(BuildContext context) {

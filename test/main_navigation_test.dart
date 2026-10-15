@@ -19,7 +19,7 @@ void main() {
         findsOneWidget);
     await tester.tap(find.byKey(const ValueKey('main-tab-1')));
     await tester.pumpAndSettle();
-    expect(find.text('NGN Balance'), findsOneWidget);
+    expect(find.text('Nigerian Naira'), findsOneWidget);
     expect(find.byType(DavoMainNavigation), findsOneWidget);
     await tester.tap(find.text('Sell').first);
     await tester.pumpAndSettle();
@@ -29,7 +29,7 @@ void main() {
     expect(find.byType(DavoMainNavigation), findsOneWidget);
     await tester.tap(find.text('Buy').first);
     await tester.pumpAndSettle();
-    expect(find.text('NGN Balance'), findsOneWidget);
+    expect(find.text('Nigerian Naira'), findsOneWidget);
     await tester.tap(find.byKey(const ValueKey('main-tab-2')));
     await tester.pumpAndSettle();
     expect(find.text('Buy and sell gift cards instantly'), findsOneWidget);

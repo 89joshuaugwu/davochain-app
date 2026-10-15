@@ -41,12 +41,12 @@ class _FingerprintSetupScreenState extends State<FingerprintSetupScreen> {
         setState(() => _enabled = true);
       } else {
         setState(() => _error =
-            'Fingerprint was not confirmed. Enroll a fingerprint in device settings or use password/PIN.');
+            'Fingerprint was not confirmed. Enroll a fingerprint in device settings or use your password.');
       }
     } catch (_) {
       if (mounted) {
-        setState(() => _error =
-            'Biometric unlock is unavailable. Use your password or PIN.');
+        setState(() =>
+            _error = 'Biometric unlock is unavailable. Use your password.');
       }
     } finally {
       if (mounted) setState(() => _busy = false);

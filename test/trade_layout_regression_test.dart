@@ -12,6 +12,7 @@ void main() {
     await tester.pumpWidget(const MaterialApp(
         home: TradeAmountScreen(
             mode: TradeMode.sell, asset: BuyCryptoAsset.ethereum)));
+    await tester.ensureVisible(find.text('25%'));
     await tester.tap(find.text('25%'));
     await tester.pump();
     expect(tester.widget<TextField>(find.byType(TextField)).controller!.text,
@@ -221,7 +222,8 @@ void main() {
         findsNothing);
     expect(tester.takeException(), isNull);
   });
-  testWidgets('sell input and proceeds are centered with computed balance USD',
+  testWidgets(
+      'sell pay and receive cards show shared available units and exact proceeds',
       (tester) async {
     tester.view.physicalSize = const Size(393, 852);
     tester.view.devicePixelRatio = 1;
@@ -232,12 +234,11 @@ void main() {
             mode: TradeMode.sell, asset: BuyCryptoAsset.bitcoin)));
     await tester.pumpAndSettle();
     final input = tester.widget<TextField>(find.byType(TextField));
-    expect(input.style!.fontSize, 24);
-    expect(input.decoration!.hintStyle!.fontSize, 24);
+    expect(input.style!.fontSize, 26);
     expect(tester.getCenter(find.byType(TextField)).dx, closeTo(393 / 2, .01));
     expect(find.text('\u2248 \u20a60.00'), findsOneWidget);
-    expect(find.textContaining('\u2248 (\$'), findsOneWidget);
-    expect(find.text('1 BTC \u2248 (\u20a624,000,000.00)'), findsOneWidget);
+    expect(find.text('Available: 0.0086 BTC'), findsOneWidget);
+    expect(find.text('1 BTC \u2248 \u20a624,000,000.00'), findsOneWidget);
     await tester.enterText(find.byType(TextField), '0.03045');
     await tester.pump();
     expect(find.text('\u2248 \u20a6730,800.00'), findsOneWidget);

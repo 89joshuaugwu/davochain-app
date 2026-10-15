@@ -1,3 +1,4 @@
+import '../../../shared/widgets/trade_amount_card.dart';
 import '../../../shared/widgets/davo_blue_balance_card.dart';
 import '../crypto_trade_amounts.dart';
 import '../../../core/money/exact_decimal.dart';
@@ -1523,15 +1524,32 @@ class _Choice extends StatelessWidget {
 }
 
 class _BalanceCard extends StatelessWidget {
-  const _BalanceCard();
+  const _BalanceCard({required this.visible, required this.onVisibilityToggle});
+  final bool visible;
+  final VoidCallback onVisibilityToggle;
   @override
   Widget build(BuildContext context) => ListenableBuilder(
       listenable: WalletAccountState.instance,
-      builder: (context, _) => _content(context));
-  Widget _content(BuildContext context) => DavoBlueBalanceCard(
-      label: 'Available NGN balance',
-      amount: WalletAccountState.instance.ngnBalanceLabel,
-      caption: 'NGN wallet');
+      builder: (context, _) => DavoBlueBalanceCard(
+          label: 'Available NGN balance',
+          labelAction: IconButton(
+              tooltip: visible ? 'Hide balance' : 'Show balance',
+              onPressed: onVisibilityToggle,
+              iconSize: 16,
+              visualDensity: VisualDensity.compact,
+              icon: Icon(
+                  visible
+                      ? Icons.visibility_outlined
+                      : Icons.visibility_off_outlined,
+                  color: Colors.white)),
+          amount: visible
+              ? WalletAccountState.instance.ngnBalanceLabel
+              : '\u20a6\u2022\u2022\u2022\u2022\u2022\u2022',
+          caption: visible
+              ? WalletAccountState.instance.snapshot.usdEquivalentLabel(
+                      WalletAccountState.instance.ngnAvailableMinorUnits) ??
+                  'NGN wallet'
+              : 'Balance hidden'));
 }
 
 class _CryptoBalance extends StatelessWidget {
@@ -1644,94 +1662,6 @@ class _Tabs extends StatelessWidget {
   }
 }
 
-class _AssetBalance extends StatelessWidget {
-  const _AssetBalance({required this.asset});
-  final BuyCryptoAsset asset;
-  @override
-  Widget build(BuildContext context) {
-    final balance = asset == BuyCryptoAsset.bitcoin ? .33048 : 5.0;
-    final balanceText = formatGroupedAmount(balance.toString());
-    final usd = formatGroupedAmount(
-        (ExactDecimal.from(balance) * asset.ngnPrice)
-            .divide(ExactDecimal.parse('1463.08'))
-            .toFixed(2));
-    return Column(children: [
-      BuyAssetIcon(asset: asset, size: 40),
-      const SizedBox(height: 12),
-      Text('Available Balance',
-          style: TextStyle(fontSize: 12, color: DavoColors.of(context).body)),
-      const SizedBox(height: 6),
-      Wrap(
-          alignment: WrapAlignment.center,
-          crossAxisAlignment: WrapCrossAlignment.center,
-          spacing: 8,
-          runSpacing: 4,
-          children: [
-            Text('$balanceText ${asset.symbol}',
-                style:
-                    const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-            Text('\u2248 (\$$usd)',
-                style: TextStyle(
-                    fontSize: 12, color: DavoColors.of(context).bodyMuted)),
-          ]),
-    ]);
-  }
-}
-
-class _Amount extends StatelessWidget {
-  const _Amount(
-      {required this.controller,
-      required this.suffix,
-      required this.onChanged});
-  final TextEditingController controller;
-  final String suffix;
-  final VoidCallback onChanged;
-  @override
-  Widget build(BuildContext context) => Focus(
-      child: Builder(
-          builder: (context) => Container(
-                height: 77,
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                decoration: BoxDecoration(
-                    color: DavoColors.of(context).surface,
-                    border: Border.all(
-                        color: Focus.of(context).hasFocus
-                            ? AppColors.primary
-                            : DavoColors.of(context).border),
-                    borderRadius: BorderRadius.circular(8)),
-                child: Row(children: [
-                  const SizedBox(width: 48),
-                  Expanded(
-                      child: TextField(
-                          controller: controller,
-                          keyboardType: const TextInputType.numberWithOptions(
-                              decimal: true),
-                          inputFormatters: const [
-                            GroupedAmountInputFormatter()
-                          ],
-                          onChanged: (_) => onChanged(),
-                          decoration: DavoInlineInputDecoration(
-                              hintText: '0.00',
-                              hintStyle: TextStyle(
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.w600,
-                                  color: DavoColors.of(context).bodyMuted)),
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                              fontSize: 24,
-                              fontWeight: FontWeight.w600,
-                              color: DavoColors.of(context).ink))),
-                  SizedBox(
-                      width: 48,
-                      child: Text(suffix,
-                          textAlign: TextAlign.right,
-                          style: TextStyle(
-                              fontSize: 14,
-                              color: DavoColors.of(context).body))),
-                ]),
-              )));
-}
-
 class _Percent extends StatelessWidget {
   const _Percent({required this.label, required this.onTap});
   final String label;
@@ -1742,7 +1672,7 @@ class _Percent extends StatelessWidget {
       borderRadius: BorderRadius.circular(8),
       child: Container(
           width: 48,
-          height: 44,
+          height: 48,
           alignment: Alignment.center,
           decoration: BoxDecoration(
               border: Border.all(color: DavoColors.of(context).border),
@@ -1751,7 +1681,7 @@ class _Percent extends StatelessWidget {
               style: TextStyle(
                   fontSize: 12,
                   color: label == 'Max'
-                      ? Colors.white
+                      ? DavoColors.of(context).link
                       : DavoColors.of(context).body))));
 }
 

@@ -24,6 +24,8 @@ void main() {
       await tester.pumpAndSettle();
       final viewport = find.byKey(const ValueKey('dashboard-assets'));
       expect(viewport, findsOneWidget);
+      await tester.ensureVisible(viewport);
+      await tester.pumpAndSettle();
       final visible = tester.getRect(viewport);
       final scrollable = tester.state<ScrollableState>(
           find.descendant(of: viewport, matching: find.byType(Scrollable)));
@@ -67,6 +69,9 @@ void main() {
       await tester.tap(find.text('Back to Home'));
       await tester.pumpAndSettle();
       expect(find.text('Complete basic verification'), findsNothing);
+      await tester
+          .ensureVisible(find.byKey(const ValueKey('dashboard-assets')));
+      await tester.pumpAndSettle();
       final viewport =
           tester.getRect(find.byKey(const ValueKey('dashboard-assets')));
       for (final code in ['BTC', 'ETH', 'USDT', 'USDC']) {

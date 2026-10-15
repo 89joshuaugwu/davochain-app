@@ -4,7 +4,6 @@ import '../../../core/device/biometric_gateway.dart';
 import '../../../shared/widgets/davo_toast.dart';
 import '../../security_questions/presentation/security_questions_login_gate.dart';
 import '../../security_questions/security_questions_service.dart';
-import '../../../shared/widgets/transaction_pin_entry.dart';
 import '../../profile_settings/presentation/verification/verification_state.dart';
 import '../../../shared/widgets/davo_auth_journey.dart';
 import 'package:flutter/material.dart';
@@ -26,8 +25,8 @@ class ReturningUnlockScreen extends StatefulWidget {
 class _ReturningUnlockScreenState extends State<ReturningUnlockScreen> {
   final _password = TextEditingController();
   AuthJourneyMethod? _method;
-  bool _pinOpening = false, _biometricOpening = false;
-  bool get _opening => _method != null || _pinOpening || _biometricOpening;
+  bool _biometricOpening = false;
+  bool get _opening => _method != null || _biometricOpening;
   @override
   void initState() {
     super.initState();
@@ -63,8 +62,7 @@ class _ReturningUnlockScreenState extends State<ReturningUnlockScreen> {
       setState(() => _biometricOpening = false);
       if (generation != VerificationSession.instance.generation) return;
       if (!accepted) {
-        showDavoToast(
-            context, 'Fingerprint not confirmed. Use your password or PIN.');
+        showDavoToast(context, 'Fingerprint not confirmed. Use your password.');
         return;
       }
     }
@@ -90,22 +88,6 @@ class _ReturningUnlockScreenState extends State<ReturningUnlockScreen> {
             authHandoff: true,
             builder: (_) => const DavochainDashboardScreen()),
         (_) => false);
-  }
-
-  Future<void> _pinUnlock() async {
-    if (_opening || _checkingQuestions) return;
-    setState(() => _pinOpening = true);
-    final accepted = await Navigator.of(context).push<bool>(AppPageRoute<bool>(
-      builder: (pinContext) => TransactionPinEntryScreen(
-        title: 'Unlock with PIN',
-        paymentConfirmation: false,
-        message: 'Enter your four-digit PIN to unlock your account.',
-        onConfirm: () => Navigator.of(pinContext).pop(true),
-      ),
-    ));
-    if (!mounted) return;
-    setState(() => _pinOpening = false);
-    if (accepted == true) _unlock();
   }
 
   void _cancel() {
@@ -271,13 +253,6 @@ class _ReturningUnlockScreenState extends State<ReturningUnlockScreen> {
                                                             _unlock();
                                                           }
                                                         }),
-                                                    TextButton(
-                                                      onPressed: _opening
-                                                          ? null
-                                                          : _pinUnlock,
-                                                      child:
-                                                          const Text('Use PIN'),
-                                                    ),
                                                     const SizedBox(height: 12),
                                                     DavoPrimaryButton(
                                                         label: 'Unlock',

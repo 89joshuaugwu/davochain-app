@@ -107,15 +107,18 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                         borderRadius: BorderRadius.circular(6),
                         child: InkWell(
                           onTap: () {
-                            if (index == 0) {
-                              startBuyCryptoFlow(context);
-                              return;
-                            }
-                            if (index == 1) {
-                              startSellCryptoFlow(context);
-                              return;
-                            }
-                            startConvertCryptoFlow(context);
+                            Navigator.of(context).push(_davoRoute<void>(
+                                index == 0
+                                    ? const BuyAmountScreen(
+                                        initialOrder: BuyCryptoOrder(
+                                            asset: BuyCryptoAsset.bitcoin,
+                                            wallet: BuyFundingWallet.ngn,
+                                            ngnAmount: 0))
+                                    : TradeAmountScreen(
+                                        mode: index == 1
+                                            ? TradeMode.sell
+                                            : TradeMode.convert,
+                                        asset: BuyCryptoAsset.bitcoin)));
                           },
                           borderRadius: BorderRadius.circular(6),
                           child: SizedBox(
@@ -240,7 +243,29 @@ class _PortfolioValueCard extends StatelessWidget {
       amount: visible
           ? WalletAccountState.instance.portfolioBalanceLabel
           : '\u20a6\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022',
-      caption: 'Portfolio valuation');
+      caption: visible
+          ? WalletAccountState.instance.snapshot.usdEquivalentLabel(
+                  WalletAccountState.instance.snapshot.portfolioMinorUnits) ??
+              'Portfolio valuation'
+          : 'Balance hidden',
+      trailing: TextButton.icon(
+          onPressed: () async {
+            try {
+              await DavoRefreshScope.refresh(
+                  context, DavoRefreshTarget.portfolio);
+            } catch (_) {
+              if (context.mounted) {
+                showDavoToast(context, 'Could not refresh. Please try again.');
+              }
+            }
+          },
+          style: TextButton.styleFrom(
+              backgroundColor: Colors.white,
+              foregroundColor: AppColors.primary,
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              minimumSize: const Size(48, 36)),
+          icon: const Icon(Icons.sync_rounded, size: 14),
+          label: const Text('Refresh', style: TextStyle(fontSize: 10))));
 }
 
 class _AllocationCard extends StatelessWidget {
