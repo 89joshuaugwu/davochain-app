@@ -16,3 +16,12 @@
 ## Verification
 
 Full suite: 600 passed, 11 optional captures skipped. Final focused run: 33 passed, including fresh light/dark captures, coin switching, chart history/hidden states and carousel lifecycle/tab/route guards. After removing playback controls, 17 focused carousel/navigation/dashboard checks passed, including an assertion that neither playback button exists. The 64-case phone matrix and all banner variants at 200% text passed. Analyzer: no issues. Independent read-only code review: no blocking findings. Artifact identity and installation results are recorded in the workspace implementation ledger. Physical-phone acceptance, real biometric prompts, backend quote freshness, authoritative auth and production signing remain separate integration/device work. No state-management migration is included.
+
+## Local Android artifact
+
+- Optimized local release: `0.18.0+42`, package `com.example.davochain`, non-debuggable, development signed.
+- APK: `build/app/outputs/flutter-apk/app-release.apk`, 133,649,886 bytes.
+- SHA-256: `5ACBD0420FD92D678163B008885FA450BB0EAA397830448C94E88B083DE8A864`.
+- Corrected local PowerShell wrapper: Java/native stderr warnings are retained; the native process exit code determines success. Actual release rebuild succeeded; a simulated nonzero exit still throws. No signing gate was relaxed.
+- Phone `CI49FIXKM7BUOVA6`: in-place installation returned Success, version 0.18.0/code 42 confirmed; app launch requested on 15 October 2026.
+- Emulator `emulator-5554`: version 0.18.0/code 42 confirmed; app launch requested.
