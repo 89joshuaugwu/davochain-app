@@ -82,7 +82,7 @@ void main() {
     expect(find.textContaining('1,284,500'), findsNothing);
     expect(find.text('Balance hidden'), findsOneWidget);
   });
-  testWidgets('featured banners rotate, pause, and support manual selection',
+  testWidgets('featured banners rotate with dots and no playback buttons',
       (tester) async {
     tester.view.physicalSize = const Size(393, 852);
     tester.view.devicePixelRatio = 1;
@@ -94,11 +94,9 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Your crypto.\nOne clear view.').hitTestable(),
         findsOneWidget);
-    await tester.ensureVisible(find.byTooltip('Pause featured banners'));
-    await tester.tap(find.byTooltip('Pause featured banners'));
-    await tester.pump(const Duration(seconds: 12));
-    expect(find.text('Your crypto.\nOne clear view.').hitTestable(),
-        findsOneWidget);
+    expect(find.byTooltip('Pause featured banners'), findsNothing);
+    expect(find.byTooltip('Play featured banners'), findsNothing);
+    await tester.ensureVisible(find.byTooltip('Show featured banner 3'));
     await tester.tap(find.byTooltip('Show featured banner 3'));
     await tester.pumpAndSettle();
     expect(find.text('Refer & Earn \u20a65,000').hitTestable(), findsOneWidget);

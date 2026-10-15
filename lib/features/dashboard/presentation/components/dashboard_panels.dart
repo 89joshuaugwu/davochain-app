@@ -471,7 +471,6 @@ class _PromoBannerState extends State<_PromoBanner>
   final _pages = PageController(initialPage: 300);
   Timer? _timer;
   int _page = 0;
-  bool _paused = false;
   bool _active = true;
   @override
   void initState() {
@@ -487,7 +486,7 @@ class _PromoBannerState extends State<_PromoBanner>
 
   void _schedule() {
     _timer?.cancel();
-    if (_paused || !_active || DavoMotionPolicy.reduce(context)) return;
+    if (!_active || DavoMotionPolicy.reduce(context)) return;
     _timer = Timer.periodic(const Duration(seconds: 6), (_) {
       if (!mounted ||
           !_pages.hasClients ||
@@ -583,17 +582,6 @@ class _PromoBannerState extends State<_PromoBanner>
                               .bodyMuted
                               .withValues(alpha: .35),
                       borderRadius: BorderRadius.circular(4)))),
-        if (!DavoMotionPolicy.reduce(context))
-          IconButton(
-              tooltip:
-                  _paused ? 'Play featured banners' : 'Pause featured banners',
-              onPressed: () {
-                setState(() => _paused = !_paused);
-                _schedule();
-              },
-              icon: Icon(
-                  _paused ? Icons.play_arrow_rounded : Icons.pause_rounded,
-                  size: 16)),
       ]),
     ]);
   }
