@@ -1532,7 +1532,7 @@ class _BalanceCard extends StatelessWidget {
       listenable: WalletAccountState.instance,
       builder: (context, _) => DavoBlueBalanceCard(
           label: 'Available NGN balance',
-          artBottom: -8,
+          artBottom: -21,
           labelAction: IconButton(
               tooltip: visible ? 'Hide balance' : 'Show balance',
               onPressed: onVisibilityToggle,

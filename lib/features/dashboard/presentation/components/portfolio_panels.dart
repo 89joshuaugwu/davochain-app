@@ -271,9 +271,10 @@ class _PortfolioValueCardState extends State<_PortfolioValueCard> {
         ? 'Updating'
         : _updated
             ? 'Updated'
-            : 'Sync';
+            : 'Live Sync';
     return DavoBlueBalanceCard(
         label: 'Total Portfolio Value',
+        artBottom: -21,
         amount: widget.visible
             ? WalletAccountState.instance.portfolioBalanceLabel
             : '\u20a6\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022',
@@ -322,7 +323,7 @@ class _PortfolioValueCardState extends State<_PortfolioValueCard> {
                               Icon(Icons.circle,
                                   size: 5, color: AppColors.primary),
                               SizedBox(width: 4),
-                              Text('Snapshot',
+                              Text('Live Sync',
                                   style: TextStyle(
                                       fontSize: 10, color: AppColors.primary)),
                             ]))))));
