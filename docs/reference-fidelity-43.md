@@ -15,3 +15,5 @@
 Verification and installed artifact identity are recorded in review/implementation-progress.md after the final checks. Full backend acceptance and physical-phone testing remain separate work.
 
 Verified before APK packaging: `flutter analyze --no-pub` reported no issues; the full suite passed 606 tests with 11 optional capture tests skipped. The explicit screenshot test then passed and generated 41 light/dark captures. Two independent scoped reviews found no remaining blockers in the carousel/emoji and OTP/balance/limit changes. `git diff --check` passed.
+
+Follow-up screenshot correction: lowered only the Naira withdrawal mountain by 8 logical pixels using the shared card's optional art offset. Other balance cards retain their existing artwork position.

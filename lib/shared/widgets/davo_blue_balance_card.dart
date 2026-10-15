@@ -8,11 +8,13 @@ class DavoBlueBalanceCard extends StatelessWidget {
       required this.label,
       required this.amount,
       required this.caption,
+      this.artBottom = 0,
       this.trailing,
       this.labelAction});
   final String label;
   final String amount;
   final String caption;
+  final double artBottom;
   final Widget? trailing, labelAction;
   @override
   Widget build(BuildContext context) => Container(
@@ -24,7 +26,7 @@ class DavoBlueBalanceCard extends StatelessWidget {
       child: Stack(children: [
         Positioned(
             right: 0,
-            bottom: 0,
+            bottom: artBottom,
             width: 268,
             height: 60,
             child: Image.asset('assets/figma_exact/balance_wave.png',
