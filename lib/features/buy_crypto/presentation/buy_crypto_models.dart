@@ -34,46 +34,35 @@ enum BuyCryptoAsset {
       : _ngnPrice != null;
   ExactDecimal get ngnPrice => WalletAccountState.instance.simulationEnabled
       ? ExactDecimal.from(
-              WalletAccountState.instance.snapshot.priceMinorUnits(symbol)!)
-          .divide(ExactDecimal.from(100))
+          WalletAccountState.instance.snapshot.priceMinorUnits(symbol)!,
+        ).divide(ExactDecimal.from(100))
       : ExactDecimal.parse(
-          _ngnPrice ?? (throw StateError('No quote available for $symbol')));
+          _ngnPrice ?? (throw StateError('No quote available for $symbol')),
+        );
   double get ngnPerUnit => ngnPrice.toDouble();
   int get quantityDecimals => switch (this) {
-        BuyCryptoAsset.solana => 9,
-        BuyCryptoAsset.tether ||
-        BuyCryptoAsset.usdCoin ||
-        BuyCryptoAsset.xrp ||
-        BuyCryptoAsset.cardano =>
-          6,
-        _ => 8,
-      };
+    BuyCryptoAsset.solana => 9,
+    BuyCryptoAsset.tether ||
+    BuyCryptoAsset.usdCoin ||
+    BuyCryptoAsset.xrp ||
+    BuyCryptoAsset.cardano => 6,
+    _ => 8,
+  };
 }
 
 enum BuyFundingWallet {
-  ngn(
-    'Nigerian Naira',
-    'NGN',
-    false,
-  ),
-  ngd(
-    'Davochain Naira',
-    'NGD',
-    true,
-  );
+  ngn('Nigerian Naira', 'NGN', false),
+  ngd('Davochain Naira', 'NGD', true);
 
-  const BuyFundingWallet(
-    this.name,
-    this.symbol,
-    this.isDavochain,
-  );
+  const BuyFundingWallet(this.name, this.symbol, this.isDavochain);
 
   final String name;
   final String symbol;
   String get formattedBalance =>
       WalletAccountState.instance.balanceLabel(symbol);
   ExactDecimal get exactBalance => ExactDecimal.parse(
-      WalletAccountState.instance.snapshot.available(symbol).decimal);
+    WalletAccountState.instance.snapshot.available(symbol).decimal,
+  );
   double get balance => exactBalance.toDouble();
   final bool isDavochain;
 
@@ -83,51 +72,112 @@ enum BuyFundingWallet {
 }
 
 class BuyCryptoOrder {
-  const BuyCryptoOrder(
-      {required this.asset,
-      required this.wallet,
-      required Object ngnAmount,
-      this.quantityDecimals})
-      : _ngnAmount = ngnAmount;
+  const BuyCryptoOrder({
+    required this.asset,
+    required this.wallet,
+    required this._ngnAmount,
+    this.quantityDecimals,
+    this.lockedPriceMinorUnits,
+    this.lockedUsdNgnMinorUnits,
+    this.quoteId,
+    this.quoteExpiresAt,
+    this.accountId,
+    this.accountGeneration,
+  });
   final BuyCryptoAsset asset;
   final BuyFundingWallet wallet;
   final Object _ngnAmount;
   final int? quantityDecimals;
+  final int? lockedPriceMinorUnits, lockedUsdNgnMinorUnits;
+  final String? quoteId;
+  final DateTime? quoteExpiresAt;
+  final String? accountId;
+  final int? accountGeneration;
+  ExactDecimal get assetNgnPrice => lockedPriceMinorUnits == null
+      ? asset.ngnPrice
+      : ExactDecimal.from(
+          lockedPriceMinorUnits!,
+        ).divide(ExactDecimal.from(100));
+  bool get quoteCurrent =>
+      (accountId == null ||
+          (accountId == WalletAccountState.instance.snapshot.accountId &&
+              accountGeneration == WalletAccountState.instance.generation)) &&
+      (quoteId == null ||
+          ((WalletAccountState.instance.quoteId ??
+                      'coingecko-${SimulationQuotes.observedAtSeconds}') ==
+                  quoteId &&
+              (quoteExpiresAt == null ||
+                  DateTime.now().isBefore(quoteExpiresAt!))));
+  BuyCryptoOrder freezeQuote() => BuyCryptoOrder(
+    asset: asset,
+    wallet: wallet,
+    ngnAmount: exactNgnAmount,
+    quantityDecimals: quantityDecimals,
+    lockedPriceMinorUnits: WalletAccountState.instance.snapshot.priceMinorUnits(
+      asset.symbol,
+    ),
+    lockedUsdNgnMinorUnits:
+        WalletAccountState.instance.snapshot.usdNgnMinorUnits,
+    quoteId:
+        WalletAccountState.instance.quoteId ??
+        'coingecko-${SimulationQuotes.observedAtSeconds}',
+    quoteExpiresAt: WalletAccountState.instance.activeQuote?.expiresAt,
+    accountId: WalletAccountState.instance.snapshot.accountId,
+    accountGeneration: WalletAccountState.instance.generation,
+  );
+
   ExactDecimal get exactNgnAmount => ExactDecimal.from(_ngnAmount);
   // Compatibility presentation adapters for existing numeric callers.
   double get ngnAmount => exactNgnAmount.toDouble();
-  ExactDecimal get exactCryptoAmount => exactNgnAmount.divide(asset.ngnPrice,
-      scale: quantityDecimals ?? asset.quantityDecimals,
-      rounding: DecimalRounding.floor);
+  ExactDecimal get exactCryptoAmount => exactNgnAmount.divide(
+    assetNgnPrice,
+    scale: quantityDecimals ?? asset.quantityDecimals,
+    rounding: DecimalRounding.floor,
+  );
   double get cryptoAmount => exactCryptoAmount.toDouble();
   String get formattedCryptoAmount =>
       formatGroupedAmount(exactCryptoAmount.toString());
 
   String get formattedExchangeRate =>
-      '1 ${asset.symbol} \u2248 \u20a6${formatGroupedAmount(asset.ngnPrice.toFixed(2))}';
-  ExactDecimal get exactUsdAmount => usdEquivalentForNgn(exactNgnAmount);
+      '1 ${asset.symbol} \u2248 \u20a6${formatGroupedAmount(assetNgnPrice.toFixed(2))}';
+  ExactDecimal get exactUsdAmount => lockedUsdNgnMinorUnits == null
+      ? usdEquivalentForNgn(exactNgnAmount)
+      : exactNgnAmount.divide(
+          ExactDecimal.from(
+            lockedUsdNgnMinorUnits!,
+          ).divide(ExactDecimal.from(100)),
+        );
   double get usdAmount => exactUsdAmount.toDouble();
   static const double usdtNgnRate = 1540;
-  BuyCryptoOrder copyWith(
-          {BuyCryptoAsset? asset,
-          BuyFundingWallet? wallet,
-          Object? ngnAmount,
-          int? quantityDecimals}) =>
-      BuyCryptoOrder(
-          asset: asset ?? this.asset,
-          wallet: wallet ?? this.wallet,
-          ngnAmount: ngnAmount ?? exactNgnAmount,
-          quantityDecimals: quantityDecimals ??
-              (asset != null && asset != this.asset
-                  ? null
-                  : this.quantityDecimals));
+  BuyCryptoOrder copyWith({
+    BuyCryptoAsset? asset,
+    BuyFundingWallet? wallet,
+    Object? ngnAmount,
+    int? quantityDecimals,
+  }) => BuyCryptoOrder(
+    asset: asset ?? this.asset,
+    wallet: wallet ?? this.wallet,
+    lockedPriceMinorUnits: asset != null && asset != this.asset
+        ? null
+        : lockedPriceMinorUnits,
+    lockedUsdNgnMinorUnits: lockedUsdNgnMinorUnits,
+    quoteId: asset != null && asset != this.asset ? null : quoteId,
+    quoteExpiresAt: quoteExpiresAt,
+    accountId: accountId,
+    accountGeneration: accountGeneration,
+    ngnAmount: ngnAmount ?? exactNgnAmount,
+    quantityDecimals:
+        quantityDecimals ??
+        (asset != null && asset != this.asset ? null : this.quantityDecimals),
+  );
 }
 
 /// Shared indicative FX conversion for buy, sell and swap review.
-ExactDecimal usdEquivalentForNgn(ExactDecimal amount) =>
-    amount.divide(WalletAccountState.instance.simulationEnabled
-        ? ExactDecimal.from(
-                WalletAccountState.instance.snapshot.usdNgnMinorUnits ??
-                    SimulationQuotes.usdNgnMinorUnits)
-            .divide(ExactDecimal.from(100))
-        : ExactDecimal.parse('1463.08'));
+ExactDecimal usdEquivalentForNgn(ExactDecimal amount) => amount.divide(
+  WalletAccountState.instance.simulationEnabled
+      ? ExactDecimal.from(
+          WalletAccountState.instance.snapshot.usdNgnMinorUnits ??
+              SimulationQuotes.usdNgnMinorUnits,
+        ).divide(ExactDecimal.from(100))
+      : ExactDecimal.parse('1463.08'),
+);

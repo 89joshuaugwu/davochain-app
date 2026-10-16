@@ -1,3 +1,5 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'transaction_controller.dart';
 import 'transaction_repository.dart';
 import 'package:flutter/widgets.dart';
 import 'receipt_record.dart';
@@ -19,10 +21,22 @@ abstract final class ReceiptActivity {
 
 /// Result, details and export pages observe the same transaction identity.
 mixin ReceiptActivityObserver<T extends StatefulWidget> on State<T> {
+  ProviderContainer? _container;
+  bool _ownsContainer = false;
+  ProviderSubscription<AsyncValue<List<ReceiptRecord>>>? _subscription;
   @override
   void initState() {
     super.initState();
-    ReceiptActivity.records.addListener(_refreshReceipt);
+    try {
+      _container = ProviderScope.containerOf(context, listen: false);
+    } on StateError {
+      _container = ProviderContainer();
+      _ownsContainer = true;
+    }
+    _subscription = _container!.listen(
+      receiptRecordsProvider,
+      (_, _) => _refreshReceipt(),
+    );
   }
 
   void _refreshReceipt() {
@@ -31,7 +45,8 @@ mixin ReceiptActivityObserver<T extends StatefulWidget> on State<T> {
 
   @override
   void dispose() {
-    ReceiptActivity.records.removeListener(_refreshReceipt);
+    _subscription?.close();
+    if (_ownsContainer) _container?.dispose();
     super.dispose();
   }
 }

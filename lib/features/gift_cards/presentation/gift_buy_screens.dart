@@ -621,7 +621,7 @@ class _GiftCardBuySuccessScreenState extends State<GiftCardBuySuccessScreen>
           draft: widget.draft,
         );
     if (widget.record == null) {
-      ReceiptActivity.submitPreview(record);
+      submitAccountTransaction(context, record);
     } else {
       ReceiptActivity.accept(record);
     }

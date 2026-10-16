@@ -1,3 +1,7 @@
+import 'features/wallets/local_account_persistence.dart';
+import 'features/wallets/local_ledger_store.dart';
+import 'shared/receipts/transaction_repository.dart';
+import 'core/preview/local_preview_profile.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker_android/image_picker_android.dart';
@@ -27,8 +31,21 @@ Future<void> main() async {
   if (imagePicker is ImagePickerAndroid) {
     imagePicker.useAndroidPhotoPicker = true;
   }
-  await SystemChrome.setPreferredOrientations(
-      const [DeviceOrientation.portraitUp]);
+  await SystemChrome.setPreferredOrientations(const [
+    DeviceOrientation.portraitUp,
+  ]);
   await AppearanceController.instance.restore();
+  try {
+    final persistence = LocalAccountPersistence(
+      await LocalLedgerStore.open(),
+      LocalTransactionRepository.instance,
+      LocalPreviewProfile.instance,
+    );
+    await persistence.initialize();
+    LocalAccountPersistence.instance = persistence;
+  } catch (_) {
+    debugPrint('Account storage could not be restored.');
+  }
+
   runApp(DavochainApp(firstFrameReady: binding.waitUntilFirstFrameRasterized));
 }

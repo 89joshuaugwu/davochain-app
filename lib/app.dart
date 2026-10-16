@@ -1,6 +1,8 @@
+import 'core/preview/local_preview_profile.dart';
+import 'features/auth/presentation/returning_unlock_screen.dart';
+import 'core/providers/account_services.dart';
 import 'core/providers/account_scope.dart';
 import 'core/providers/account_bootstrap.dart';
-import 'core/providers/reactive_builder.dart';
 import 'core/providers/app_providers.dart';
 import 'shared/widgets/davo_scroll_behavior.dart';
 import 'package:flutter/material.dart';
@@ -9,7 +11,6 @@ import 'package:flutter/services.dart';
 import 'core/navigation/app_page_route.dart';
 import 'core/navigation/app_routes.dart';
 import 'core/theme/app_theme.dart';
-import 'core/theme/appearance_controller.dart';
 import 'features/auth/presentation/create_password_screen.dart';
 import 'features/auth/presentation/login_flow.dart';
 import 'features/auth/presentation/signup_flow.dart';
@@ -28,14 +29,13 @@ class DavochainApp extends StatelessWidget {
   );
   Widget _buildApp(BuildContext context) {
     AppProviders.validateCurrentEntrypoint();
-    return DavoListenableBuilder(
-      listenable: AppearanceController.instance,
-      builder: (context, _) => MaterialApp(
+    return AccountConsumer(
+      builder: (context, ref) => MaterialApp(
         title: 'Davochain',
         debugShowCheckedModeBanner: false,
         theme: AppTheme.light,
         darkTheme: AppTheme.dark,
-        themeMode: AppearanceController.instance.mode,
+        themeMode: ref.watch(appearanceModeProvider),
         themeAnimationDuration: Duration.zero,
         // Let field and suffix controls win their tap gestures before
         // dismissing focus. Pointer-down dismissal closes the input
@@ -69,7 +69,12 @@ class DavochainApp extends StatelessWidget {
           ),
         ),
         scrollBehavior: const DavoScrollBehavior(),
-        home: BrandSplashScreen(firstFrameReady: firstFrameReady),
+        home: BrandSplashScreen(
+          firstFrameReady: firstFrameReady,
+          destinationBuilder: LocalPreviewProfile.instance.hasRestoredAccount
+              ? (_) => const ReturningUnlockScreen()
+              : null,
+        ),
         onGenerateRoute: (settings) {
           WidgetBuilder? builder;
           switch (settings.name) {

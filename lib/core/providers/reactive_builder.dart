@@ -1,3 +1,4 @@
+import 'package:flutter/scheduler.dart';
 import 'package:flutter/foundation.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
@@ -15,6 +16,11 @@ class ListenableRevision extends Notifier<int> {
   @override
   int build() {
     void changed() {
+      if (SchedulerBinding.instance.schedulerPhase !=
+          SchedulerPhase.persistentCallbacks) {
+        if (ref.mounted) state++;
+        return;
+      }
       if (queued) return;
       queued = true;
       scheduleMicrotask(() {

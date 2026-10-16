@@ -7,8 +7,9 @@ final transactionRepositoryProvider = Provider<LocalTransactionRepository>((
   ref,
 ) {
   final engine = ref.watch(walletEngineProvider);
-  if (identical(engine, LocalTransactionRepository.instance.ledger))
+  if (identical(engine, LocalTransactionRepository.instance.ledger)) {
     return LocalTransactionRepository.instance;
+  }
   final repo = LocalTransactionRepository(engine);
   ref.onDispose(repo.dispose);
   return repo;
@@ -23,11 +24,11 @@ final receiptRecordsProvider = StreamProvider<List<ReceiptRecord>>((ref) {
     sink.onCancel = () => repo.records.removeListener(changed);
   });
 });
-final currentReceiptsProvider = Provider<List<ReceiptRecord>>(
-  (ref) =>
-      ref.watch(receiptRecordsProvider).value ??
-      ref.watch(transactionRepositoryProvider).records.value,
-);
+final currentReceiptsProvider = Provider<List<ReceiptRecord>>((ref) {
+  ref.watch(accountSessionProvider);
+  ref.watch(receiptRecordsProvider);
+  return ref.watch(transactionRepositoryProvider).records.value;
+});
 
 enum SubmissionPhase { submitting, pending, completed, failed, unknown }
 
@@ -41,7 +42,15 @@ class TransactionController extends Notifier<Map<String, SubmissionPhase>> {
   @override
   Map<String, SubmissionPhase> build() {
     ref.watch(accountSessionProvider);
-    return const {};
+    final records = ref.watch(currentReceiptsProvider);
+    final repo = ref.watch(transactionRepositoryProvider);
+    return {
+      for (final id in repo.uncertainIds) id: SubmissionPhase.unknown,
+      for (final record in records)
+        record.id: repo.storageError != null
+            ? SubmissionPhase.unknown
+            : _phase(record.status),
+    };
   }
 
   Future<ReceiptRecord> submit(ReceiptRecord record) {
@@ -50,15 +59,18 @@ class TransactionController extends Notifier<Map<String, SubmissionPhase>> {
     final repo = ref.read(transactionRepositoryProvider);
     final session = ref.read(accountSessionProvider);
     state = {...state, record.id: SubmissionPhase.submitting};
-    final accepted = repo.submit(record);
+    var accepted = record;
     final future = () async {
       try {
-        await repo.flush();
-        if (ref.mounted && ref.read(accountSessionProvider) == session)
+        accepted = await repo.submitDurable(record);
+        if (repo.needsSave(record.id)) throw StateError('Save pending');
+        if (ref.mounted && ref.read(accountSessionProvider) == session) {
           state = {...state, record.id: _phase(repo.resolve(accepted).status)};
+        }
       } catch (_) {
-        if (ref.mounted && ref.read(accountSessionProvider) == session)
+        if (ref.mounted && ref.read(accountSessionProvider) == session) {
           state = {...state, record.id: SubmissionPhase.unknown};
+        }
       }
       return repo.resolve(accepted);
     }();
@@ -69,9 +81,10 @@ class TransactionController extends Notifier<Map<String, SubmissionPhase>> {
 
   Future<void> reconcile(String id) async {
     final repo = ref.read(transactionRepositoryProvider);
+    if (repo.needsSave(id)) await repo.retrySave(id);
     final record = repo.records.value.where((r) => r.id == id).firstOrNull;
     if (record == null) return;
-    // Reads only. A timeout never creates a second submission identity.
+    // Reconcile the same identity; never create a second payment submission.
     if (repo.storageError != null) return;
     state = {...state, id: _phase(record.status)};
   }

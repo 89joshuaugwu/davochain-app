@@ -33,131 +33,229 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
 
   void _open(InboxNotification item) {
     inbox.markRead(item.id);
-    final title = item.title, body = item.body, time = item.time;
-    final category = item.category;
     _push(
-        context,
-        DavoNotificationDetailScreen(
-          title: title,
-          message: body,
-          receivedAt: time,
-          category: category,
-          actionLabel: category == 2
-              ? 'Secure your account'
-              : category == 1
-                  ? 'View transaction history'
-                  : 'Open customer support',
-          onAction: () => _push(
-              context,
-              category == 2
-                  ? const ChangePasswordScreen()
-                  : category == 1
-                      ? const TransactionHistoryScreen()
-                      : const CustomerSupportScreen()),
-        ));
+      context,
+      DavoNotificationDetailScreen(
+        title: item.title,
+        message: item.body,
+        receivedAt: notificationTime(item),
+        category: item.category,
+        notification: item,
+        actionLabel: notificationActionLabel(item),
+        onAction: () => _push(context, notificationDestination(item)),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) => DavoRefreshRegion(
-      target: DavoRefreshTarget.notifications, builder: _buildNotifications);
+    target: DavoRefreshTarget.notifications,
+    builder: _buildNotifications,
+  );
   Widget _buildNotifications(BuildContext context) {
     final visible = widget.hasNotifications
         ? inbox.snapshot
-            .where((item) => tab == 0 || item.category == tab)
-            .toList()
+              .where((item) => tab == 0 || item.category == tab)
+              .toList()
         : <InboxNotification>[];
-    return _Shell(
-        title: 'Notification',
-        scroll: true,
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          const SizedBox(height: 12),
-          SingleChildScrollView(
+    final colors = DavoColors.of(context);
+    return Scaffold(
+      backgroundColor: colors.surface,
+      appBar: AppBar(
+        backgroundColor: colors.surface,
+        surfaceTintColor: colors.surface,
+        centerTitle: true,
+        title: Text('Notifications', style: _navSora20(context)),
+        actions: [
+          IconButton(
+            tooltip: 'Notification settings',
+            onPressed: () => _push(context, const NotificationSettingsScreen()),
+            icon: const Icon(Icons.settings_outlined),
+          ),
+          const SizedBox(width: 8),
+        ],
+      ),
+      body: SafeArea(
+        top: false,
+        child: ListView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
+          children: [
+            SingleChildScrollView(
               scrollDirection: Axis.horizontal,
-              child: Row(children: [
-                for (var i = 0; i < labels.length; i++)
-                  Padding(
-                      padding: const EdgeInsets.only(right: 12),
-                      child: _NotificationFilterPill(
-                          label: labels[i],
-                          width: [53.0, 102.0, 75.0, 77.0][i],
+              child: Row(
+                children: [
+                  for (var i = 0; i < labels.length; i++)
+                    Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: Semantics(
+                        label: '${labels[i]} notifications',
+                        button: true,
+                        selected: tab == i,
+                        excludeSemantics: true,
+                        onTap: () => setState(() => tab = i),
+                        child: ChoiceChip(
+                          label: Text(labels[i]),
                           selected: tab == i,
-                          onTap: () => setState(() => tab = i))),
-              ])),
-          const SizedBox(height: 24),
-          if (visible.isEmpty)
-            Center(
-                child: Column(children: [
-              const SizedBox(height: 32),
-              DavoEmptyBell(key: ValueKey(tab), asset: _notificationEmpty),
-              const SizedBox(height: 24),
-              Text(
-                  tab == 3
-                      ? 'No rewards notifications yet'
-                      : 'No notifications yet',
-                  textAlign: TextAlign.center,
-                  style: _t20sb(context)),
-              const SizedBox(height: 16),
-              Text(
-                  tab == 3
-                      ? 'Your reward updates will appear here.'
-                      : 'We will notify you about your orders and updates here.',
-                  textAlign: TextAlign.center,
-                  style: _t14(context)),
-            ])),
-          for (var i = 0; i < visible.length; i++) ...[
-            if (i == 0 || visible[i].day != visible[i - 1].day)
+                          showCheckmark: false,
+                          selectedColor: AppColors.primary,
+                          backgroundColor: colors.offWhite,
+                          side: BorderSide.none,
+                          labelStyle: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                            color: tab == i ? Colors.white : colors.body,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(24),
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 8,
+                          ),
+                          onSelected: (_) => setState(() => tab = i),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 22),
+            if (visible.isEmpty)
               Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 10),
-                  child: Text(visible[i].day, style: _sectionLabel14(context))),
-            Semantics(
+                padding: const EdgeInsets.symmetric(vertical: 48),
+                child: Column(
+                  children: [
+                    DavoEmptyBell(
+                      key: ValueKey(tab),
+                      asset: _notificationEmpty,
+                    ),
+                    const SizedBox(height: 24),
+                    Text(
+                      tab == 3
+                          ? 'No rewards notifications yet'
+                          : 'You are all caught up',
+                      textAlign: TextAlign.center,
+                      style: _t20sb(context),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      tab == 3
+                          ? 'Your reward updates will appear here.'
+                          : tab == 1
+                          ? 'Your transaction updates will appear here.'
+                          : tab == 2
+                          ? 'Your account security updates will appear here.'
+                          : 'Your account and transaction updates will appear here.',
+                      textAlign: TextAlign.center,
+                      style: _t14(context),
+                    ),
+                  ],
+                ),
+              ),
+            for (var i = 0; i < visible.length; i++) ...[
+              if (i == 0 ||
+                  notificationDay(visible[i]) !=
+                      notificationDay(visible[i - 1]))
+                Padding(
+                  padding: const EdgeInsets.only(top: 12, bottom: 12),
+                  child: Text(
+                    notificationDay(visible[i]),
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: colors.bodyMuted,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              Semantics(
                 label: visible[i].isRead
                     ? 'Read notification'
                     : 'Unread notification',
-                child: InkWell(
+                button: true,
+                child: Material(
+                  color: colors.surface,
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(12),
                     onTap: () => _open(visible[i]),
                     child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 9),
-                        child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Icon(
-                                  visible[i].category == 2
-                                      ? Icons.shield_outlined
-                                      : Icons.swap_horiz,
-                                  size: 24,
-                                  color: DavoColors.of(context).link),
-                              const SizedBox(width: 16),
-                              Expanded(
-                                  child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                    Text(visible[i].title,
-                                        style: visible[i].isRead
-                                            ? _t14(context)
-                                            : _t14b(context)),
-                                    const SizedBox(height: 3),
-                                    Text(visible[i].body,
-                                        maxLines: 2,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: _t12(context)),
-                                    const SizedBox(height: 4),
-                                    Text(visible[i].time,
-                                        style: _t12(context)
-                                            .copyWith(fontSize: 11)),
-                                  ])),
-                              if (!visible[i].isRead)
-                                Container(
-                                    width: 6,
-                                    height: 6,
-                                    decoration: const BoxDecoration(
-                                        color: AppColors.primary,
-                                        shape: BoxShape.circle)),
-                            ])))),
-            Divider(height: 1, color: DavoColors.of(context).divider),
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          NotificationLeading(item: visible[i]),
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        visible[i].title,
+                                        style: TextStyle(
+                                          fontSize: 13,
+                                          height: 1.5,
+                                          color: colors.ink,
+                                          fontWeight: visible[i].isRead
+                                              ? FontWeight.w500
+                                              : FontWeight.w600,
+                                        ),
+                                      ),
+                                    ),
+                                    if (!visible[i].isRead)
+                                      Padding(
+                                        padding: const EdgeInsets.only(
+                                          left: 10,
+                                          top: 7,
+                                        ),
+                                        child: Container(
+                                          width: 6,
+                                          height: 6,
+                                          decoration: const BoxDecoration(
+                                            color: AppColors.primary,
+                                            shape: BoxShape.circle,
+                                          ),
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  visible[i].body,
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    height: 1.6,
+                                    color: colors.bodyMuted,
+                                  ),
+                                ),
+                                const SizedBox(height: 7),
+                                Text(
+                                  notificationTime(visible[i]),
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    color: colors.bodyMuted,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              Divider(height: 1, color: colors.divider),
+            ],
           ],
-          const SizedBox(height: 24),
-        ]));
+        ),
+      ),
+    );
   }
 }
 
@@ -172,34 +270,37 @@ class NotificationSettingsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => _Shell(
-        title: 'Notification Settings',
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 17),
-            Text('Alert Preferences', style: _t16b(context)),
-            const SizedBox(height: 24),
-            _settingsAssetRow(
-                context,
-                '$_exactAssets/icon_transaction.png',
-                'Transaction Alerts',
-                '',
-                () => _push(context, const NotificationChannelScreen(type: 0))),
-            _settingsAssetRow(
-                context,
-                '$_exactAssets/icon_security.png',
-                'Security Alerts',
-                '',
-                () => _push(context, const NotificationChannelScreen(type: 1))),
-            _settingsAssetRow(
-                context,
-                '$_exactAssets/icon_campaign.png',
-                'Marketing & News',
-                '',
-                () => _push(context, const NotificationChannelScreen(type: 2))),
-          ],
+    title: 'Notification Settings',
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: 17),
+        Text('Alert Preferences', style: _t16b(context)),
+        const SizedBox(height: 24),
+        _settingsAssetRow(
+          context,
+          '$_exactAssets/icon_transaction.png',
+          'Transaction Alerts',
+          '',
+          () => _push(context, const NotificationChannelScreen(type: 0)),
         ),
-      );
+        _settingsAssetRow(
+          context,
+          '$_exactAssets/icon_security.png',
+          'Security Alerts',
+          '',
+          () => _push(context, const NotificationChannelScreen(type: 1)),
+        ),
+        _settingsAssetRow(
+          context,
+          '$_exactAssets/icon_campaign.png',
+          'Marketing & News',
+          '',
+          () => _push(context, const NotificationChannelScreen(type: 2)),
+        ),
+      ],
+    ),
+  );
 }
 
 class NotificationChannelScreen extends StatefulWidget {
@@ -225,18 +326,18 @@ class _NotificationChannelScreenState extends State<NotificationChannelScreen> {
     final title = [
       'Transaction Alerts',
       'Security Alerts',
-      'Marketing & News'
+      'Marketing & News',
     ][widget.type];
     final pushSub = widget.type == 0
         ? 'Real-Time  Alerts'
         : widget.type == 1
-            ? 'Login Alerts, Password Changes, New Device Sign-in'
-            : 'Promotions, New Features, Newsletter';
+        ? 'Login Alerts, Password Changes, New Device Sign-in'
+        : 'Promotions, New Features, Newsletter';
     final emailSub = widget.type == 0
         ? 'Detailed Statements'
         : widget.type == 1
-            ? 'Secondary Channel. Audit Trail, Detailed Logs'
-            : 'Promotions, New Features, Newsletter';
+        ? 'Secondary Channel. Audit Trail, Detailed Logs'
+        : 'Promotions, New Features, Newsletter';
     return _Shell(
       title: 'Notification Settings',
       child: Column(
@@ -245,13 +346,28 @@ class _NotificationChannelScreenState extends State<NotificationChannelScreen> {
           const SizedBox(height: 17),
           Text(title, style: _t16b(context)),
           const SizedBox(height: 26),
-          _toggleRow(context, 'Push Notification', pushSub, push,
-              (v) => setState(() => push = v)),
-          _toggleRow(context, 'Email', emailSub, email,
-              (v) => setState(() => email = v)),
+          _toggleRow(
+            context,
+            'Push Notification',
+            pushSub,
+            push,
+            (v) => setState(() => push = v),
+          ),
+          _toggleRow(
+            context,
+            'Email',
+            emailSub,
+            email,
+            (v) => setState(() => email = v),
+          ),
           if (widget.type == 0)
-            _toggleRow(context, 'SMS', 'Standard Rates Apply', sms,
-                (v) => setState(() => sms = v)),
+            _toggleRow(
+              context,
+              'SMS',
+              'Standard Rates Apply',
+              sms,
+              (v) => setState(() => sms = v),
+            ),
         ],
       ),
     );

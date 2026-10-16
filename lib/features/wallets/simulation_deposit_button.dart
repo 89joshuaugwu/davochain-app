@@ -45,7 +45,7 @@ class SimulationDepositButton extends StatelessWidget {
           occurredAt: DateTime.now(),
           preview: true,
         );
-        FundingActivity.submitPreview(record);
+        FundingActivity.submitPreview(record, context: context);
         if (context.mounted) {
           Navigator.of(context).push(
             AppPageRoute<void>(

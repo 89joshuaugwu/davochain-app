@@ -62,4 +62,29 @@ void main() {
       greaterThan(BigInt.zero),
     );
   });
+  test(
+    'synchronous switch never exposes retained wallet data from the old account',
+    () async {
+      final engine = WalletAccountState()..startSimulation(empty: false);
+      final c = ProviderContainer(
+        overrides: [walletEngineProvider.overrideWithValue(engine)],
+      );
+      addTearDown(c.dispose);
+      c.listen(currentWalletProvider, (_, _) {});
+      await c.read(walletSnapshotProvider.future);
+      expect(
+        c.read(currentWalletProvider).available('NGN').atomicUnits,
+        greaterThan(BigInt.zero),
+      );
+      engine.startSimulation(empty: true);
+      expect(
+        c.read(currentWalletProvider).accountId,
+        engine.snapshot.accountId,
+      );
+      expect(
+        c.read(currentWalletProvider).available('NGN').atomicUnits,
+        BigInt.zero,
+      );
+    },
+  );
 }

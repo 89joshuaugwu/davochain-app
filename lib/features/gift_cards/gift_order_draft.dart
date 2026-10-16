@@ -55,11 +55,10 @@ class GiftDelivery {
 class GiftOrderDraft {
   const GiftOrderDraft(
       {required this.product,
-      required Object denomination,
+      required this._denomination,
       this.quantity = 1,
       this.evidence,
-      this.delivery = const GiftDelivery()})
-      : _denomination = denomination;
+      this.delivery = const GiftDelivery()});
   final GiftCatalogProduct product;
   final Object _denomination;
   ExactDecimal get exactDenomination => ExactDecimal.from(_denomination);

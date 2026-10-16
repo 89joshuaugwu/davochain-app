@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'simulation_quotes.dart';
+import '../../core/providers/account_scope.dart';
 
 class QuoteSnapshot {
   QuoteSnapshot({
@@ -12,8 +13,9 @@ class QuoteSnapshot {
   }) : pricesMinorUnits = Map.unmodifiable(pricesMinorUnits) {
     if (id.isEmpty ||
         usdNgnMinorUnits <= 0 ||
-        pricesMinorUnits.values.any((v) => v <= 0))
+        pricesMinorUnits.values.any((v) => v <= 0)) {
       throw const FormatException('Invalid quote');
+    }
   }
   factory QuoteSnapshot.offline() => QuoteSnapshot(
     id: 'coingecko-${SimulationQuotes.observedAtSeconds}',
@@ -50,8 +52,9 @@ class MutableQuoteSource implements QuoteSource {
   @override
   QuoteSnapshot get current => _current;
   bool publish(QuoteSnapshot next) {
-    if (next.asOf.isBefore(_current.asOf) || next.id == _current.id)
+    if (next.asOf.isBefore(_current.asOf) || next.id == _current.id) {
       return false;
+    }
     _current = next;
     _updates.add(next);
     return true;
@@ -73,7 +76,7 @@ class QuoteRepository {
 }
 
 final quoteSourceProvider = Provider<QuoteSource>((ref) {
-  final source = MutableQuoteSource();
+  final source = MutableQuoteSource(ref.read(walletEngineProvider).activeQuote);
   ref.onDispose(source.dispose);
   return source;
 });

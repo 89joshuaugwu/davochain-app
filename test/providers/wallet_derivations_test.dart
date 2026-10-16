@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+import 'package:davochain/core/providers/account_bootstrap.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:davochain/core/providers/account_scope.dart';
@@ -60,6 +62,35 @@ void main() {
         isFalse,
       );
       expect(quotes.publish(locked), isFalse);
+    },
+  );
+  testWidgets(
+    'bootstrap applies an initially configured quote to a restored wallet',
+    (tester) async {
+      final engine = WalletAccountState()..startSimulation(empty: true);
+      final old = QuoteSnapshot.offline();
+      final source = MutableQuoteSource(
+        QuoteSnapshot(
+          id: 'initial-new-price',
+          asOf: DateTime.now(),
+          pricesMinorUnits: {...old.pricesMinorUnits, 'BTC': 20000},
+          usdNgnMinorUnits: old.usdNgnMinorUnits,
+        ),
+      );
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            walletEngineProvider.overrideWithValue(engine),
+            quoteSourceProvider.overrideWithValue(source),
+          ],
+          child: const AccountBootstrap(child: SizedBox()),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(engine.snapshot.priceMinorUnits('BTC'), 20000);
+      expect(engine.quoteId, 'initial-new-price');
+      await tester.pumpWidget(const SizedBox());
+      await source.dispose();
     },
   );
 }

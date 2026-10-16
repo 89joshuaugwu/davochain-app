@@ -48,6 +48,7 @@ void main() {
       final stale = record('stale', {}, {'NGN': '1000'});
       ledger.startSimulation(empty: true);
       expect((await command.submit(stale)).status, ReceiptStatus.failed);
+      expect(repo.records.value, isEmpty);
       expect(ledger.ngnAvailableMinorUnits, 0);
     },
   );
@@ -83,12 +84,85 @@ void main() {
         c.read(transactionControllerProvider)['uncertain'],
         SubmissionPhase.unknown,
       );
-      expect(repo.records.value.length, 1);
+      expect(repo.records.value, isEmpty);
       await c
           .read(transactionControllerProvider.notifier)
           .reconcile('uncertain');
-      expect(repo.records.value.length, 1);
+      expect(repo.records.value, isEmpty);
       expect(ledger.ngnAvailableMinorUnits, 0);
+    },
+  );
+  test('failed save cannot settle a deposit or report completion', () async {
+    final ledger = WalletAccountState()..startSimulation(empty: true);
+    final repo = LocalTransactionRepository(
+      ledger,
+      settlementDelay: const Duration(milliseconds: 5),
+      checkpoint: (_) => Future.error(StateError('disk full')),
+    );
+    addTearDown(repo.dispose);
+    final c = ProviderContainer(
+      overrides: [
+        walletEngineProvider.overrideWithValue(ledger),
+        transactionRepositoryProvider.overrideWithValue(repo),
+      ],
+    );
+    addTearDown(c.dispose);
+    final record = ReceiptRecord(
+      id: 'disk',
+      reference: 'disk',
+      type: 'Deposit',
+      status: ReceiptStatus.completed,
+      occurredAt: DateTime.now(),
+      amount: '100',
+      fields: const [],
+      walletEffect: ledger.effect(credits: {'NGN': '100'}),
+    );
+    final result = await c
+        .read(transactionControllerProvider.notifier)
+        .submit(record);
+    await Future<void>.delayed(const Duration(milliseconds: 30));
+    expect(ledger.ngnAvailableMinorUnits, 0);
+    expect(result.status, isNot(ReceiptStatus.completed));
+    expect(repo.resolve(result).status, isNot(ReceiptStatus.completed));
+  });
+  test(
+    'durable completion waits for storage and retry credits the same identity once',
+    () async {
+      final ledger = WalletAccountState()..startSimulation(empty: true);
+      var failCompletion = true;
+      var writes = 0;
+      final repo = LocalTransactionRepository(
+        ledger,
+        settlementDelay: const Duration(milliseconds: 5),
+        checkpoint: (data) async {
+          writes++;
+          if ((data['receipts'] as List).first['status'] == 'completed' &&
+              failCompletion)
+            throw StateError('disk full');
+        },
+      );
+      addTearDown(repo.dispose);
+      final record = ReceiptRecord(
+        id: 'retry',
+        reference: 'retry',
+        type: 'Deposit',
+        status: ReceiptStatus.pending,
+        occurredAt: DateTime.now(),
+        amount: '100',
+        fields: const [],
+        walletEffect: ledger.effect(credits: {'NGN': '100'}),
+      );
+      await repo.submitDurable(record);
+      await Future<void>.delayed(const Duration(milliseconds: 30));
+      expect(ledger.ngnAvailableMinorUnits, 0);
+      expect(repo.needsSave('retry'), isTrue);
+      failCompletion = false;
+      await repo.retrySave('retry');
+      expect(ledger.ngnAvailableMinorUnits, 10000);
+      expect(repo.records.value.single.status, ReceiptStatus.completed);
+      await repo.submitDurable(record);
+      expect(ledger.ngnAvailableMinorUnits, 10000);
+      expect(writes, 3);
     },
   );
 }

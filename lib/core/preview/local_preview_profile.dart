@@ -1,4 +1,5 @@
 import '../../features/wallets/wallet_repository.dart';
+import '../../features/notifications/notification_events.dart';
 import 'package:flutter/foundation.dart';
 import '../../features/profile_settings/presentation/verification/verification_state.dart';
 import '../../features/funding/funding_outcomes.dart';
@@ -38,17 +39,63 @@ class LocalPreviewProfile extends ChangeNotifier {
 
   String get firstName => fullName.split(' ').first;
   Map<String, String> get personalFields => {
-        'Full name': fullName,
-        'Email': email,
-        'Phone Number': phone,
-        'Country': country,
-        'Username': username,
-        'Date of Birth': dateOfBirth,
-        'Residential Address': address,
-      };
-  void register(
-      {required String name, required String email, required String phone}) {
+    'Full name': fullName,
+    'Email': email,
+    'Phone Number': phone,
+    'Country': country,
+    'Username': username,
+    'Date of Birth': dateOfBirth,
+    'Residential Address': address,
+  };
+  bool hasRestoredAccount = false;
+  Future<void> Function()? beforeSignOut;
+  Map<String, Object?> exportDisplay() => {
+    'fullName': fullName,
+    'email': email,
+    'phone': phone,
+    'country': country,
+    'username': username,
+    'dateOfBirth': dateOfBirth,
+    'address': address,
+    'sampleAvatar': sampleAvatar,
+  };
+  void restoreDisplay(Map<String, Object?> data) {
     generation++;
+    VerificationSession.instance.reset();
+    SettingsPreviewSession.instance.reset();
+    FundingActivity.reset();
+    fullName = data['fullName'] as String;
+    email = data['email'] as String;
+    phone = data['phone'] as String;
+    country = data['country'] as String;
+    username = data['username'] as String;
+    dateOfBirth = data['dateOfBirth'] as String;
+    address = data['address'] as String;
+    sampleAvatar = data['sampleAvatar'] as bool;
+    photo = null;
+    hasRestoredAccount = true;
+    PreviewAuthState.accountEmail = email;
+    PreviewAuthState.resetSession();
+    notifyListeners();
+  }
+
+  Future<void> signOut() async {
+    await beforeSignOut?.call();
+    generation++;
+    hasRestoredAccount = false;
+    _resetSession();
+    PreviewAuthState.accountEmail = null;
+    PreviewAuthState.resetSession();
+    notifyListeners();
+  }
+
+  void register({
+    required String name,
+    required String email,
+    required String phone,
+  }) {
+    generation++;
+    hasRestoredAccount = false;
     _resetSession();
     WalletAccountState.instance.startSimulation(empty: true);
     PreviewAuthState.resetSession();
@@ -65,14 +112,24 @@ class LocalPreviewProfile extends ChangeNotifier {
     VerificationSession.instance.saveProfile({
       'first': parts.first,
       'last': parts.length > 1 ? parts.skip(1).join(' ') : '',
-      'phone':
-          phone.replaceAll(RegExp(r'\D'), '').replaceFirst(RegExp(r'^234'), '')
+      'phone': phone
+          .replaceAll(RegExp(r'\D'), '')
+          .replaceFirst(RegExp(r'^234'), ''),
     });
+    final ledger = WalletAccountState.instance;
+    final notifications = NotificationEventCoordinator.instance;
+    notifications.activate(ledger.snapshot.accountId, ledger.generation);
+    notifications.welcome(
+      ledger.snapshot.accountId,
+      ledger.generation,
+      firstName: firstName,
+    );
     notifyListeners();
   }
 
   void loginSample() {
     generation++;
+    hasRestoredAccount = false;
     _resetSession();
     WalletAccountState.instance.startSimulation(empty: false);
     PreviewAuthState.resetSession(samplePin: true);

@@ -15,8 +15,8 @@ final walletSnapshotProvider = StreamProvider<WalletSnapshot>((ref) {
 });
 
 /// Synchronous initial data avoids a loading flash while the stream subscribes.
-final currentWalletProvider = Provider<WalletSnapshot>(
-  (ref) =>
-      ref.watch(walletSnapshotProvider).value ??
-      ref.watch(walletRepositoryProvider).current,
-);
+final currentWalletProvider = Provider<WalletSnapshot>((ref) {
+  ref.watch(accountSessionProvider);
+  ref.watch(walletSnapshotProvider);
+  return ref.watch(walletRepositoryProvider).current;
+});

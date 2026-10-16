@@ -484,7 +484,7 @@ class _GiftCardSellSubmittedScreenState
           draft: widget.draft,
         );
     if (widget.record == null) {
-      ReceiptActivity.submitPreview(record);
+      submitAccountTransaction(context, record);
     } else {
       ReceiptActivity.accept(record);
     }

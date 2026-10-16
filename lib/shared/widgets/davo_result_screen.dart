@@ -2,6 +2,8 @@ import '../../core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 
 import 'davo_success_mark.dart';
+import '../../core/providers/reactive_builder.dart';
+import '../receipts/transaction_repository.dart';
 import 'davo_refresh_region.dart';
 import '../motion/davo_outcome_sequence.dart';
 import '../motion/davo_motion_spec.dart';
@@ -39,120 +41,169 @@ class DavoResultScreen extends StatelessWidget {
   final VoidCallback? onExit;
 
   @override
-  Widget build(BuildContext context) => PopScope(
-      canPop: onExit == null,
-      onPopInvokedWithResult: (didPop, result) {
-        if (!didPop) onExit?.call();
-      },
-      child: refreshRecordId == null
-          ? _buildOutcome(context)
-          : DavoRefreshRegion(
-              target: DavoRefreshTarget.transaction,
-              recordId: refreshRecordId,
-              builder: _buildOutcome,
-            ));
+  Widget build(BuildContext context) => DavoListenableBuilder(
+    listenable: LocalTransactionRepository.instance.records,
+    builder: (context, _) {
+      final repo = LocalTransactionRepository.instance;
+      final saving =
+          refreshRecordId != null &&
+          repo.checkpoint != null &&
+          !repo.records.value.any((r) => r.id == refreshRecordId);
+      final uncertain =
+          refreshRecordId != null && repo.needsSave(refreshRecordId!);
+      if (saving || uncertain) {
+        return DavoResultScreen(
+          title: uncertain
+              ? 'Account update pending'
+              : 'Submitting transaction',
+          message: uncertain
+              ? 'We could not save this update. Check your transaction status before trying again.'
+              : 'Your transaction is being saved.',
+          kind: DavoOutcomeKind.submitted,
+          actions: uncertain
+              ? Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TextButton(
+                      onPressed: () => repo.retrySave(refreshRecordId!),
+                      child: const Text('Retry account update'),
+                    ),
+                    actions,
+                  ],
+                )
+              : actions,
+          appBar: appBar,
+          onExit: onExit,
+        );
+      }
+      return _buildScreen(context);
+    },
+  );
+
+  Widget _buildScreen(BuildContext context) => PopScope(
+    canPop: onExit == null,
+    onPopInvokedWithResult: (didPop, result) {
+      if (!didPop) onExit?.call();
+    },
+    child: refreshRecordId == null
+        ? _buildOutcome(context)
+        : DavoRefreshRegion(
+            target: DavoRefreshTarget.transaction,
+            recordId: refreshRecordId,
+            builder: _buildOutcome,
+          ),
+  );
 
   Widget _buildOutcome(BuildContext context) => DavoOutcomeSequence(
-      kind: kind,
-      tempo: tempo,
-      eventKey: eventKey,
-      sceneBuilder: (context, timeline) {
-        Widget reveal(Widget child, bool details, double travel) =>
-            AnimatedBuilder(
-                animation: timeline,
-                child: child,
-                builder: (context, child) {
-                  final frame = DavoOutcomeFrame(kind, timeline.value);
-                  final value = details ? frame.details : frame.heading;
-                  return Opacity(
-                      opacity: value,
-                      child: Transform.translate(
-                          offset: Offset(0, travel * (1 - value)),
-                          child: child));
-                });
-        return Scaffold(
-          backgroundColor: DavoColors.of(context).surface,
-          appBar: appBar,
-          body: SafeArea(
-            child: Column(
-              children: [
-                Expanded(
-                  child: LayoutBuilder(
-                    builder: (context, constraints) => SingleChildScrollView(
-                      physics: const AlwaysScrollableScrollPhysics(),
-                      padding: const EdgeInsets.fromLTRB(24, 36, 24, 24),
-                      child: ConstrainedBox(
-                        constraints: BoxConstraints(
-                          minHeight: (constraints.maxHeight - 60)
-                              .clamp(0, double.infinity),
+    kind: kind,
+    tempo: tempo,
+    eventKey: eventKey,
+    sceneBuilder: (context, timeline) {
+      Widget reveal(Widget child, bool details, double travel) =>
+          AnimatedBuilder(
+            animation: timeline,
+            child: child,
+            builder: (context, child) {
+              final frame = DavoOutcomeFrame(kind, timeline.value);
+              final value = details ? frame.details : frame.heading;
+              return Opacity(
+                opacity: value,
+                child: Transform.translate(
+                  offset: Offset(0, travel * (1 - value)),
+                  child: child,
+                ),
+              );
+            },
+          );
+      return Scaffold(
+        backgroundColor: DavoColors.of(context).surface,
+        appBar: appBar,
+        body: SafeArea(
+          child: Column(
+            children: [
+              Expanded(
+                child: LayoutBuilder(
+                  builder: (context, constraints) => SingleChildScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: const EdgeInsets.fromLTRB(24, 36, 24, 24),
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        minHeight: (constraints.maxHeight - 60).clamp(
+                          0,
+                          double.infinity,
                         ),
-                        child: Center(
-                          child: ConstrainedBox(
-                            constraints: const BoxConstraints(maxWidth: 440),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                mark ??
-                                    AnimatedBuilder(
-                                        animation: timeline,
-                                        builder: (context, child) =>
-                                            DavoSuccessMark(
-                                                kind: kind,
-                                                progress: timeline.value)),
-                                const SizedBox(height: 24),
-                                reveal(
-                                    Text(
-                                      title,
-                                      textAlign: TextAlign.center,
-                                      style: TextStyle(
-                                        fontFamily: 'Sora',
-                                        fontSize: 24,
-                                        height: 1.3,
-                                        fontWeight: FontWeight.w600,
-                                        color: DavoColors.of(context).ink,
-                                      ),
-                                    ),
-                                    false,
-                                    8),
-                                if (message.isNotEmpty) ...[
-                                  const SizedBox(height: 10),
-                                  reveal(
-                                      Text(
-                                        message,
-                                        textAlign: TextAlign.center,
-                                        style: TextStyle(
-                                          fontFamily: 'Sora',
-                                          fontSize: 14,
-                                          height: 1.6,
-                                          color:
-                                              DavoColors.of(context).bodyMuted,
+                      ),
+                      child: Center(
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 440),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              mark ??
+                                  AnimatedBuilder(
+                                    animation: timeline,
+                                    builder: (context, child) =>
+                                        DavoSuccessMark(
+                                          kind: kind,
+                                          progress: timeline.value,
                                         ),
-                                      ),
-                                      false,
-                                      8),
-                                ],
-                                if (details != null) ...[
-                                  const SizedBox(height: 24),
-                                  reveal(details!, true, 6),
-                                ],
+                                  ),
+                              const SizedBox(height: 24),
+                              reveal(
+                                Text(
+                                  title,
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontFamily: 'Sora',
+                                    fontSize: 24,
+                                    height: 1.3,
+                                    fontWeight: FontWeight.w600,
+                                    color: DavoColors.of(context).ink,
+                                  ),
+                                ),
+                                false,
+                                8,
+                              ),
+                              if (message.isNotEmpty) ...[
+                                const SizedBox(height: 10),
+                                reveal(
+                                  Text(
+                                    message,
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      fontFamily: 'Sora',
+                                      fontSize: 14,
+                                      height: 1.6,
+                                      color: DavoColors.of(context).bodyMuted,
+                                    ),
+                                  ),
+                                  false,
+                                  8,
+                                ),
                               ],
-                            ),
+                              if (details != null) ...[
+                                const SizedBox(height: 24),
+                                reveal(details!, true, 6),
+                              ],
+                            ],
                           ),
                         ),
                       ),
                     ),
                   ),
                 ),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 440),
-                    child: SizedBox(width: double.infinity, child: actions),
-                  ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 440),
+                  child: SizedBox(width: double.infinity, child: actions),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
-        );
-      });
+        ),
+      );
+    },
+  );
 }

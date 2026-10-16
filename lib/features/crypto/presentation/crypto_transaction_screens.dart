@@ -10,7 +10,9 @@ class TransactionProgressScreen extends StatefulWidget {
     this.network,
     this.fee,
     this.operation,
+    this.record,
   });
+  final ReceiptRecord? record;
   final TxKind kind;
   final String target;
   final Object amount;
@@ -33,11 +35,23 @@ class _TransactionProgressScreenState extends State<TransactionProgressScreen> {
   }
 
   Future<void> _process() async {
+    final draft =
+        widget.record ??
+        buildCryptoReceiptRecord(
+          kind: widget.kind,
+          target: widget.target,
+          amount: widget.amount,
+          asset: widget.asset,
+          network: widget.network,
+          fee: widget.fee,
+          status: ReceiptStatus.pending,
+        );
     try {
-      final accepted = await (widget.operation ??
-          PreviewTransactionOperation.transfer(
-            external: widget.kind == TxKind.external,
-          ));
+      final accepted =
+          await (widget.operation ??
+              PreviewTransactionOperation.transfer(
+                external: widget.kind == TxKind.external,
+              ));
       if (!mounted ||
           _accountGeneration != WalletAccountState.instance.generation ||
           ModalRoute.of(context)?.isCurrent == false) {
@@ -47,11 +61,14 @@ class _TransactionProgressScreenState extends State<TransactionProgressScreen> {
         setState(() => failed = true);
         return;
       }
+      final submitted = await submitAccountTransaction(context, draft);
+      if (!mounted) return;
       Navigator.pushReplacement(
         context,
         AppPageRoute<void>(
           builder: (_) => TransactionSuccessScreen(
             kind: widget.kind,
+            record: submitted,
             outcomeKind: accepted == PreviewTransactionOutcome.submitted
                 ? DavoOutcomeKind.submitted
                 : DavoOutcomeKind.completed,
@@ -79,8 +96,8 @@ class _TransactionProgressScreenState extends State<TransactionProgressScreen> {
     final title = transfer
         ? 'Sending ${formatGroupedAmount(formatCryptoQuantity(widget.amount))} ${widget.asset.symbol}'
         : widget.kind == TxKind.sell
-            ? 'Selling ${formatGroupedAmount(formatCryptoQuantity(widget.amount))} ${widget.asset.symbol}'
-            : 'Converting';
+        ? 'Selling ${formatGroupedAmount(formatCryptoQuantity(widget.amount))} ${widget.asset.symbol}'
+        : 'Converting';
     final sub = switch (widget.kind) {
       TxKind.internal => 'to ${widget.target}',
       TxKind.external => 'to ${_short(widget.target)}',
@@ -143,10 +160,10 @@ class _TransactionProgressScreenState extends State<TransactionProgressScreen> {
             failed
                 ? 'Could not complete this transaction. Go back to try again.'
                 : widget.kind == TxKind.conversion || widget.kind == TxKind.sell
-                    ? failed
-                        ? 'Could not complete this transaction. Go back to try again.'
-                        : 'Please wait while we process your transaction'
-                    : 'Please wait while we process your transaction',
+                ? failed
+                      ? 'Could not complete this transaction. Go back to try again.'
+                      : 'Please wait while we process your transaction'
+                : 'Please wait while we process your transaction',
             textAlign: TextAlign.center,
             style: TextStyle(
               fontFamily: 'Sora',
@@ -212,7 +229,7 @@ class _TransactionSuccessScreenState extends State<TransactionSuccessScreen>
   void initState() {
     super.initState();
     if (widget.record == null) {
-      ReceiptActivity.submitPreview(record);
+      submitAccountTransaction(context, record);
     } else {
       ReceiptActivity.accept(record);
     }
@@ -236,44 +253,45 @@ class _TransactionSuccessScreenState extends State<TransactionSuccessScreen>
       title: record.status == ReceiptStatus.failed
           ? '${record.type} failed'
           : outcomeKind == DavoOutcomeKind.submitted
-              ? '${record.type} submitted'
-              : transfer
-                  ? 'Transfer successful'
-                  : kind == TxKind.sell
-                      ? 'Sale successful'
-                      : 'Conversion successful',
+          ? '${record.type} submitted'
+          : transfer
+          ? 'Transfer successful'
+          : kind == TxKind.sell
+          ? 'Sale successful'
+          : 'Conversion successful',
       message:
           '${record.type} ${record.status.label.toLowerCase()}: ${record.amount}.',
       details: record.status == ReceiptStatus.failed || widget.record != null
           ? null
           : outcomeKind == DavoOutcomeKind.submitted
-              ? Text(
-                  transfer
-                      ? 'Your transfer has been submitted. Its status will update after confirmation.'
-                      : kind == TxKind.sell
-                          ? 'Your sale has been submitted. Its status will update after confirmation.'
-                          : 'Your conversion has been submitted. Its status will update after confirmation.',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontFamily: 'Sora',
-                    fontSize: 14,
-                    height: 1.35,
-                    color: DavoColors.of(context).body,
-                  ),
-                )
-              : _TransactionSuccessMessage(
-                  kind: kind,
-                  target: target,
-                  amount: amount,
-                  asset: asset,
-                ),
+          ? Text(
+              transfer
+                  ? 'Your transfer has been submitted. Its status will update after confirmation.'
+                  : kind == TxKind.sell
+                  ? 'Your sale has been submitted. Its status will update after confirmation.'
+                  : 'Your conversion has been submitted. Its status will update after confirmation.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontFamily: 'Sora',
+                fontSize: 14,
+                height: 1.35,
+                color: DavoColors.of(context).body,
+              ),
+            )
+          : _TransactionSuccessMessage(
+              kind: kind,
+              target: target,
+              amount: amount,
+              asset: asset,
+            ),
       appBar: AppBar(
         backgroundColor: DavoColors.of(context).surface,
         leading: IconButton(
-            tooltip: transfer ? 'Back to wallet' : 'Back to trade',
-            icon: const Icon(Icons.arrow_back),
-            onPressed: () =>
-                finishDavoTransaction(context, tab: transfer ? 0 : 1)),
+          tooltip: transfer ? 'Back to wallet' : 'Back to trade',
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () =>
+              finishDavoTransaction(context, tab: transfer ? 0 : 1),
+        ),
         title: transfer
             ? const Text(
                 'Crypto withdrawal',
@@ -305,17 +323,20 @@ class _TransactionSuccessScreenState extends State<TransactionSuccessScreen>
             label: transfer
                 ? 'Send another transfer'
                 : kind == TxKind.sell
-                    ? 'Sell more crypto'
-                    : 'Convert more crypto',
-            onTap: () => finishDavoTransaction(context,
-                tab: transfer ? 0 : 1,
-                start: transfer
-                    ? null
-                    : (_) => TradeAmountScreen(
-                        mode: kind == TxKind.sell
-                            ? TradeMode.sell
-                            : TradeMode.convert,
-                        asset: asset)),
+                ? 'Sell more crypto'
+                : 'Convert more crypto',
+            onTap: () => finishDavoTransaction(
+              context,
+              tab: transfer ? 0 : 1,
+              start: transfer
+                  ? null
+                  : (_) => TradeAmountScreen(
+                      mode: kind == TxKind.sell
+                          ? TradeMode.sell
+                          : TradeMode.convert,
+                      asset: asset,
+                    ),
+            ),
           ),
         ],
       ),
@@ -361,37 +382,37 @@ class _TransactionSuccessMessage extends StatelessWidget {
     final amountText = '${formatCryptoQuantity(amount)} ${asset.symbol}';
     final spans = switch (kind) {
       TxKind.internal => <InlineSpan>[
-          TextSpan(text: 'You have sent', style: base),
-          TextSpan(text: ' $amountText ', style: dark),
-          TextSpan(text: 'to', style: base),
-          TextSpan(text: ' $target', style: dark),
-        ],
+        TextSpan(text: 'You have sent', style: base),
+        TextSpan(text: ' $amountText ', style: dark),
+        TextSpan(text: 'to', style: base),
+        TextSpan(text: ' $target', style: dark),
+      ],
       TxKind.external => <InlineSpan>[
-          TextSpan(text: 'You have sent ', style: base),
-          TextSpan(text: amountText, style: strong),
-          TextSpan(text: ' to ', style: base),
-          TextSpan(text: _short(target), style: strong),
-        ],
+        TextSpan(text: 'You have sent ', style: base),
+        TextSpan(text: amountText, style: strong),
+        TextSpan(text: ' to ', style: base),
+        TextSpan(text: _short(target), style: strong),
+      ],
       TxKind.conversion => <InlineSpan>[
-          TextSpan(text: 'You have successfully converted  ', style: base),
-          TextSpan(text: amountText, style: strong),
-          TextSpan(text: ' to ', style: base),
-          TextSpan(
-            text:
-                '${formatCryptoQuantity((ExactDecimal.from(amount) * asset.ngnPrice).divide((BuyCryptoAsset.values.where((a) => a.symbol == target || a.name == target).firstOrNull ?? BuyCryptoAsset.tether).ngnPrice, rounding: DecimalRounding.floor))} $target',
-            style: strong,
-          ),
-        ],
+        TextSpan(text: 'You have successfully converted  ', style: base),
+        TextSpan(text: amountText, style: strong),
+        TextSpan(text: ' to ', style: base),
+        TextSpan(
+          text:
+              '${formatCryptoQuantity((ExactDecimal.from(amount) * asset.ngnPrice).divide((BuyCryptoAsset.values.where((a) => a.symbol == target || a.name == target).firstOrNull ?? BuyCryptoAsset.tether).ngnPrice, rounding: DecimalRounding.floor))} $target',
+          style: strong,
+        ),
+      ],
       TxKind.sell => <InlineSpan>[
-          TextSpan(text: 'You have successfully sold ', style: base),
-          TextSpan(text: '$amountText ', style: strong),
-          TextSpan(text: 'for ', style: base),
-          TextSpan(
-            text:
-                '₦${formatGroupedAmount((ExactDecimal.from(amount) * asset.ngnPrice).toFixed(2))}',
-            style: strong,
-          ),
-        ],
+        TextSpan(text: 'You have successfully sold ', style: base),
+        TextSpan(text: '$amountText ', style: strong),
+        TextSpan(text: 'for ', style: base),
+        TextSpan(
+          text:
+              '₦${formatGroupedAmount((ExactDecimal.from(amount) * asset.ngnPrice).toFixed(2))}',
+          style: strong,
+        ),
+      ],
     };
     return Text.rich(TextSpan(children: spans), textAlign: TextAlign.center);
   }
@@ -434,11 +455,12 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> {
       ? ReceiptScreen(record: record)
       : TransactionRecordDetailsScreen(
           record: record,
-          onDone: () => finishDavoTransaction(context,
-              tab:
-                  widget.kind == TxKind.sell || widget.kind == TxKind.conversion
-                      ? 1
-                      : 0),
+          onDone: () => finishDavoTransaction(
+            context,
+            tab: widget.kind == TxKind.sell || widget.kind == TxKind.conversion
+                ? 1
+                : 0,
+          ),
           receiptBuilder: (_) => TransactionDetailsScreen(
             kind: widget.kind,
             target: widget.target,

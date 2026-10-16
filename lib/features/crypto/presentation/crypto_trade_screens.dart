@@ -1,12 +1,13 @@
 part of 'crypto_full_flow.dart';
 
 class TradeAmountScreen extends StatefulWidget {
-  const TradeAmountScreen(
-      {super.key,
-      required this.mode,
-      required this.asset,
-      this.onBack,
-      this.onModeSelected});
+  const TradeAmountScreen({
+    super.key,
+    required this.mode,
+    required this.asset,
+    this.onBack,
+    this.onModeSelected,
+  });
   final VoidCallback? onBack;
   final void Function(int, BuyCryptoAsset)? onModeSelected;
   final TradeMode mode;
@@ -42,17 +43,20 @@ class _TradeAmountScreenState extends State<TradeAmountScreen> {
   Future<void> _selectAsset({required bool source}) async {
     FocusScope.of(context).unfocus();
     final picked = await showModalBottomSheet<BuyCryptoAsset>(
-        context: context,
-        sheetAnimationStyle: (MediaQuery.disableAnimationsOf(context) ||
-                MediaQuery.accessibleNavigationOf(context))
-            ? AnimationStyle.noAnimation
-            : const AnimationStyle(
-                duration: Duration(milliseconds: 280),
-                reverseDuration: Duration(milliseconds: 200)),
-        isScrollControlled: true,
-        useSafeArea: true,
-        backgroundColor: Colors.transparent,
-        builder: (_) => const BuyCryptoAssetSheet());
+      context: context,
+      sheetAnimationStyle:
+          (MediaQuery.disableAnimationsOf(context) ||
+              MediaQuery.accessibleNavigationOf(context))
+          ? AnimationStyle.noAnimation
+          : const AnimationStyle(
+              duration: Duration(milliseconds: 280),
+              reverseDuration: Duration(milliseconds: 200),
+            ),
+      isScrollControlled: true,
+      useSafeArea: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => const BuyCryptoAssetSheet(),
+    );
     if (!mounted || picked == null) return;
     setState(() {
       if (source) {
@@ -68,24 +72,28 @@ class _TradeAmountScreenState extends State<TradeAmountScreen> {
   void _swapAssets() {
     FocusScope.of(context).unfocus();
     final received = (enteredAmount * sourceAsset.ngnPrice).divide(
-        destinationAsset.ngnPrice,
-        scale: WalletAccountState.instance.snapshot
-            .available(destinationAsset.symbol)
-            .decimals,
-        rounding: DecimalRounding.floor);
+      destinationAsset.ngnPrice,
+      scale: WalletAccountState.instance.snapshot
+          .available(destinationAsset.symbol)
+          .decimals,
+      rounding: DecimalRounding.floor,
+    );
     setState(() {
       final previous = sourceAsset;
       sourceAsset = destinationAsset;
       destinationAsset = previous;
       if (amount.text.isNotEmpty) {
-        amount.text = formatGroupedAmount(received
-            .toFixed(
+        amount.text = formatGroupedAmount(
+          received
+              .toFixed(
                 WalletAccountState.instance.snapshot
                     .available(sourceAsset.symbol)
                     .decimals,
-                rounding: DecimalRounding.floor)
-            .replaceFirst(RegExp(r'0+$'), '')
-            .replaceFirst(RegExp(r'\.$'), ''));
+                rounding: DecimalRounding.floor,
+              )
+              .replaceFirst(RegExp(r'0+$'), '')
+              .replaceFirst(RegExp(r'\.$'), ''),
+        );
         amount.selection = TextSelection.collapsed(offset: amount.text.length);
       }
     });
@@ -99,10 +107,9 @@ class _TradeAmountScreenState extends State<TradeAmountScreen> {
   }
 
   bool get convert => widget.mode == TradeMode.convert;
-  ExactDecimal get balance =>
-      ExactDecimal.parse(WalletAccountState.instance.snapshot
-          .available(sourceAsset.symbol)
-          .decimal);
+  ExactDecimal get balance => ExactDecimal.parse(
+    WalletAccountState.instance.snapshot.available(sourceAsset.symbol).decimal,
+  );
   ExactDecimal get enteredAmount => _parseExactAmount(amount.text);
 
   void _switchMode(TradeMode mode) {
@@ -112,17 +119,21 @@ class _TradeAmountScreenState extends State<TradeAmountScreen> {
       return;
     }
     Navigator.pushReplacement(
-        context,
-        AppPageRoute<void>(
-            builder: (_) => TradeAmountScreen(mode: mode, asset: sourceAsset)));
+      context,
+      AppPageRoute<void>(
+        builder: (_) => TradeAmountScreen(mode: mode, asset: sourceAsset),
+      ),
+    );
   }
 
   void _pickPercent(String label) {
-    final available =
-        WalletAccountState.instance.snapshot.available(sourceAsset.symbol);
+    final available = WalletAccountState.instance.snapshot.available(
+      sourceAsset.symbol,
+    );
     final percent = label == 'Max' ? 100 : int.parse(label.replaceAll('%', ''));
     amount.text = formatGroupedAmount(
-        CryptoTradeAmounts.percentage(available, percent).toString());
+      CryptoTradeAmounts.percentage(available, percent).toString(),
+    );
     amount.selection = TextSelection.collapsed(offset: amount.text.length);
     setState(() {});
   }
@@ -131,139 +142,176 @@ class _TradeAmountScreenState extends State<TradeAmountScreen> {
   Widget build(BuildContext context) {
     final n = enteredAmount;
     final positiveProceeds = _positiveTradeProceeds(
-        n, sourceAsset, convert ? destinationAsset : null);
-    final active = positiveProceeds &&
+      n,
+      sourceAsset,
+      convert ? destinationAsset : null,
+    );
+    final active =
+        positiveProceeds &&
         _accountGeneration == WalletAccountState.instance.generation &&
         CryptoTradeAmounts.canSpend(
-            WalletAccountState.instance.snapshot.available(sourceAsset.symbol),
-            n);
+          WalletAccountState.instance.snapshot.available(sourceAsset.symbol),
+          n,
+        );
     final ngn = n * sourceAsset.ngnPrice;
     return TradeFormLayout(
       header: _ExactCryptoTradeHeader(
-          title: convert ? 'Swap' : 'Sell',
-          onBack: widget.onBack ?? () => Navigator.pop(context)),
+        title: convert ? 'Swap' : 'Sell',
+        onBack: widget.onBack ?? () => Navigator.pop(context),
+      ),
       tabs: _Tabs(
-          active: convert ? 2 : 1,
-          onBuy: () {
-            FocusScope.of(context).unfocus();
-            if (widget.onModeSelected != null) {
-              widget.onModeSelected!(0, sourceAsset);
-              return;
-            }
-            Navigator.pushReplacement(
-                context,
-                AppPageRoute<void>(
-                    builder: (_) => BuyAmountScreen(
-                        initialOrder: BuyCryptoOrder(
-                            asset: sourceAsset,
-                            wallet: BuyFundingWallet.ngd,
-                            ngnAmount: 0))));
-          },
-          onSell: () {
-            if (convert) _switchMode(TradeMode.sell);
-          },
-          onConvert: () {
-            if (!convert) _switchMode(TradeMode.convert);
-          }),
-      content: Column(children: [
-        if (convert) ...[
-          _ExactSwapPair(
-              source: _ExactSwapBox(
-                  from: true,
-                  onSelect: () => _selectAsset(source: true),
+        active: convert ? 2 : 1,
+        onBuy: () {
+          FocusScope.of(context).unfocus();
+          if (widget.onModeSelected != null) {
+            widget.onModeSelected!(0, sourceAsset);
+            return;
+          }
+          Navigator.pushReplacement(
+            context,
+            AppPageRoute<void>(
+              builder: (_) => BuyAmountScreen(
+                initialOrder: BuyCryptoOrder(
                   asset: sourceAsset,
-                  balance: balance,
-                  value: n,
-                  controller: amount,
-                  onChanged: () => setState(() {})),
-              destination: _ExactSwapBox(
-                  from: false,
-                  onSelect: () => _selectAsset(source: false),
-                  asset: destinationAsset,
-                  balance: WalletAccountState.instance.snapshot
-                      .available(destinationAsset.symbol)
-                      .decimal,
-                  value: ngn.divide(destinationAsset.ngnPrice,
-                      scale: WalletAccountState.instance.snapshot
-                          .available(destinationAsset.symbol)
-                          .decimals,
-                      rounding: DecimalRounding.floor)),
-              onSwap: _swapAssets),
-          const SizedBox(height: 20),
-          _ExactTradeSummary(conversion: true, rows: [
-            (
-              'Exchange Rate',
-              '1 ${sourceAsset.symbol} \u2248 ${formatGroupedAmount(sourceAsset.ngnPrice.divide(destinationAsset.ngnPrice, scale: 8, rounding: DecimalRounding.floor).toString())} ${destinationAsset.symbol}',
-              false
+                  wallet: BuyFundingWallet.ngd,
+                  ngnAmount: 0,
+                ),
+              ),
             ),
-            ('Estimated fee', 'Free', true),
-          ]),
-        ] else ...[
-          TradeAmountCard(
+          );
+        },
+        onSell: () {
+          if (convert) _switchMode(TradeMode.sell);
+        },
+        onConvert: () {
+          if (!convert) _switchMode(TradeMode.convert);
+        },
+      ),
+      content: Column(
+        children: [
+          if (convert) ...[
+            _ExactSwapPair(
+              source: _ExactSwapBox(
+                from: true,
+                onSelect: () => _selectAsset(source: true),
+                asset: sourceAsset,
+                balance: balance,
+                value: n,
+                controller: amount,
+                onChanged: () => setState(() {}),
+              ),
+              destination: _ExactSwapBox(
+                from: false,
+                onSelect: () => _selectAsset(source: false),
+                asset: destinationAsset,
+                balance: WalletAccountState.instance.snapshot
+                    .available(destinationAsset.symbol)
+                    .decimal,
+                value: ngn.divide(
+                  destinationAsset.ngnPrice,
+                  scale: WalletAccountState.instance.snapshot
+                      .available(destinationAsset.symbol)
+                      .decimals,
+                  rounding: DecimalRounding.floor,
+                ),
+              ),
+              onSwap: _swapAssets,
+            ),
+            const SizedBox(height: 20),
+            _ExactTradeSummary(
+              conversion: true,
+              rows: [
+                (
+                  'Exchange Rate',
+                  '1 ${sourceAsset.symbol} \u2248 ${formatGroupedAmount(sourceAsset.ngnPrice.divide(destinationAsset.ngnPrice, scale: 8, rounding: DecimalRounding.floor).toString())} ${destinationAsset.symbol}',
+                  false,
+                ),
+                ('Estimated fee', 'Free', true),
+              ],
+            ),
+          ] else ...[
+            TradeAmountCard(
               label: 'You sell',
               selector: TradeCurrencySelector(
-                  icon: BuyAssetIcon(asset: sourceAsset, size: 32),
-                  name: sourceAsset.name,
-                  symbol: sourceAsset.symbol,
-                  onTap: () => _selectAsset(source: true)),
+                icon: BuyAssetIcon(asset: sourceAsset, size: 32),
+                name: sourceAsset.name,
+                symbol: sourceAsset.symbol,
+                onTap: () => _selectAsset(source: true),
+              ),
               controller: amount,
               onChanged: () => setState(() {}),
               footer:
-                  'Available: ${formatGroupedAmount(balance.toString())} ${sourceAsset.symbol}'),
-          const SizedBox(height: 16),
-          TradeAmountCard(
+                  'Available: ${formatGroupedAmount(balance.toString())} ${sourceAsset.symbol}',
+            ),
+            const SizedBox(height: 16),
+            TradeAmountCard(
               label: 'You receive',
               selector: const TradeCurrencySelector(
-                  icon: NairaCoinMark(), name: 'Nigerian Naira', symbol: 'NGN'),
+                icon: NairaCoinMark(),
+                name: 'Nigerian Naira',
+                symbol: 'NGN',
+              ),
               value:
                   '\u2248 \u20a6${formatGroupedAmount(ngn.toFixed(2, rounding: DecimalRounding.floor))}',
               footer:
-                  '1 ${sourceAsset.symbol} \u2248 \u20a6${formatGroupedAmount(sourceAsset.ngnPrice.toFixed(2))}'),
+                  '1 ${sourceAsset.symbol} \u2248 \u20a6${formatGroupedAmount(sourceAsset.ngnPrice.toFixed(2))}',
+            ),
+          ],
+          const SizedBox(height: 20),
+          TradePercentageButtons(
+            key: ValueKey(sourceAsset),
+            controller: amount,
+            onPick: (percent) =>
+                _pickPercent(percent == 100 ? 'Max' : '$percent%'),
+          ),
+          if (!n.isZero && !positiveProceeds)
+            Padding(
+              padding: const EdgeInsets.only(top: 16),
+              child: Text(
+                'Enter a larger amount.',
+                style: TextStyle(color: DavoColors.of(context).danger),
+              ),
+            ),
+          if (n.compareTo(balance) > 0)
+            Padding(
+              padding: const EdgeInsets.only(top: 16),
+              child: Text(
+                'Amount exceeds your available balance.',
+                style: TextStyle(color: DavoColors.of(context).danger),
+              ),
+            ),
         ],
-        const SizedBox(height: 20),
-        Wrap(
-            spacing: 12,
-            runSpacing: 8,
-            alignment: WrapAlignment.center,
-            children: ['10%', '25%', '50%', '75%', 'Max']
-                .map((v) => _Percent(label: v, onTap: () => _pickPercent(v)))
-                .toList()),
-        if (!n.isZero && !positiveProceeds)
-          Padding(
-              padding: const EdgeInsets.only(top: 16),
-              child: Text('Enter a larger amount.',
-                  style: TextStyle(color: DavoColors.of(context).danger))),
-        if (n.compareTo(balance) > 0)
-          Padding(
-              padding: const EdgeInsets.only(top: 16),
-              child: Text('Amount exceeds your available balance.',
-                  style: TextStyle(color: DavoColors.of(context).danger))),
-      ]),
+      ),
       action: _Button(
-          label: convert ? 'Review' : 'Continue',
-          enabled: active,
-          onTap: () {
-            FocusScope.of(context).unfocus();
-            Navigator.push(
-                context,
-                AppPageRoute<void>(
-                    builder: (_) => TradeReviewScreen(
-                        kind: convert ? TxKind.conversion : TxKind.sell,
-                        amount: n,
-                        sourceAsset: sourceAsset,
-                        destinationAsset: destinationAsset)));
-          }),
+        label: convert ? 'Review' : 'Continue',
+        enabled: active,
+        onTap: () {
+          FocusScope.of(context).unfocus();
+          Navigator.push(
+            context,
+            AppPageRoute<void>(
+              builder: (_) => TradeReviewScreen(
+                kind: convert ? TxKind.conversion : TxKind.sell,
+                amount: n,
+                sourceAsset: sourceAsset,
+                destinationAsset: destinationAsset,
+              ),
+            ),
+          );
+        },
+      ),
     );
   }
 }
 
 class TradeReviewScreen extends StatefulWidget {
-  const TradeReviewScreen(
-      {super.key,
-      required this.kind,
-      required this.amount,
-      this.sourceAsset = BuyCryptoAsset.bitcoin,
-      this.destinationAsset = BuyCryptoAsset.tether});
+  const TradeReviewScreen({
+    super.key,
+    required this.kind,
+    required this.amount,
+    this.sourceAsset = BuyCryptoAsset.bitcoin,
+    this.destinationAsset = BuyCryptoAsset.tether,
+  });
   final TxKind kind;
   final Object amount;
   final BuyCryptoAsset sourceAsset, destinationAsset;
@@ -275,23 +323,40 @@ class TradeReviewScreen extends StatefulWidget {
 class _TradeReviewScreenState extends State<TradeReviewScreen> {
   final int _accountGeneration = WalletAccountState.instance.generation;
   bool _confirming = false;
+  late final String? _quoteId = WalletAccountState.instance.quoteId;
+  late final DateTime? _quoteExpiry =
+      WalletAccountState.instance.activeQuote?.expiresAt;
+  late final ExactDecimal _sourcePrice = sourceAsset.ngnPrice;
+  late final ExactDecimal _destinationPrice = destinationAsset.ngnPrice;
+  late final ExactDecimal _usdRate = usdEquivalentForNgn(ExactDecimal.from(1));
+  bool get _quoteCurrent =>
+      _quoteId == WalletAccountState.instance.quoteId &&
+      (_quoteExpiry == null || DateTime.now().isBefore(_quoteExpiry));
+
   TxKind get kind => widget.kind;
   Object get amount => widget.amount;
   BuyCryptoAsset get sourceAsset => widget.sourceAsset;
   BuyCryptoAsset get destinationAsset => widget.destinationAsset;
   bool get _ready =>
       _accountGeneration == WalletAccountState.instance.generation &&
-      _positiveTradeProceeds(ExactDecimal.from(amount), sourceAsset,
-          kind == TxKind.conversion ? destinationAsset : null) &&
+      _quoteCurrent &&
+      _positiveTradeProceeds(
+        ExactDecimal.from(amount),
+        sourceAsset,
+        kind == TxKind.conversion ? destinationAsset : null,
+      ) &&
       CryptoTradeAmounts.canSpend(
-          WalletAccountState.instance.snapshot.available(sourceAsset.symbol),
-          ExactDecimal.from(amount));
+        WalletAccountState.instance.snapshot.available(sourceAsset.symbol),
+        ExactDecimal.from(amount),
+      );
 
   Future<void> _confirm() async {
     if (_confirming || !_ready) return;
     setState(() => _confirming = true);
     final accepted = await Navigator.push<bool>(
-        context, AppPageRoute<bool>(builder: (_) => const CryptoPinScreen()));
+      context,
+      AppPageRoute<bool>(builder: (_) => const CryptoPinScreen()),
+    );
     if (!mounted) return;
     setState(() => _confirming = false);
     if (accepted != true ||
@@ -300,153 +365,226 @@ class _TradeReviewScreenState extends State<TradeReviewScreen> {
       return;
     }
     Navigator.pushReplacement(
-        context,
-        AppPageRoute<void>(
-            builder: (_) => TransactionProgressScreen(
-                kind: kind,
-                target:
-                    kind == TxKind.conversion ? destinationAsset.symbol : 'NGN',
-                amount: amount,
-                asset: sourceAsset)));
+      context,
+      AppPageRoute<void>(
+        builder: (_) => TransactionProgressScreen(
+          kind: kind,
+          target: kind == TxKind.conversion ? destinationAsset.symbol : 'NGN',
+          amount: amount,
+          asset: sourceAsset,
+          record: buildCryptoReceiptRecord(
+            kind: kind,
+            target: kind == TxKind.conversion ? destinationAsset.symbol : 'NGN',
+            amount: amount,
+            asset: sourceAsset,
+            status: ReceiptStatus.pending,
+          ),
+        ),
+      ),
+    );
   }
 
-  Widget _reviewAsset(BuildContext context, String label, BuyCryptoAsset asset,
-          String value, String secondary) =>
-      Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-            color: DavoColors.of(context).surface,
-            borderRadius: BorderRadius.circular(8)),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text(label,
-              style: TextStyle(
-                  fontSize: 12, color: DavoColors.of(context).bodyMuted)),
-          const SizedBox(height: 12),
-          Row(children: [
+  Widget _reviewAsset(
+    BuildContext context,
+    String label,
+    BuyCryptoAsset asset,
+    String value,
+    String secondary,
+  ) => Container(
+    padding: const EdgeInsets.all(16),
+    decoration: BoxDecoration(
+      color: DavoColors.of(context).surface,
+      borderRadius: BorderRadius.circular(8),
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 12,
+            color: DavoColors.of(context).bodyMuted,
+          ),
+        ),
+        const SizedBox(height: 12),
+        Row(
+          children: [
             BuyAssetIcon(asset: asset, size: 32),
             const SizedBox(width: 12),
             Expanded(
-                child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                  Text(value,
-                      style: const TextStyle(
-                          fontSize: 16, fontWeight: FontWeight.w600)),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    value,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                   const SizedBox(height: 4),
-                  Text(secondary,
-                      style: TextStyle(
-                          fontSize: 12,
-                          color: DavoColors.of(context).bodyMuted)),
-                ])),
-            Text(asset.symbol,
-                style:
-                    const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
-          ]),
-        ]),
-      );
+                  Text(
+                    secondary,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: DavoColors.of(context).bodyMuted,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Text(
+              asset.symbol,
+              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+            ),
+          ],
+        ),
+      ],
+    ),
+  );
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => DavoListenableBuilder(
+    listenable: WalletAccountState.instance,
+    builder: (context, _) => _buildReview(context),
+  );
+  Widget _buildReview(BuildContext context) {
     final conv = kind == TxKind.conversion;
-    final ngn = ExactDecimal.from(amount) * sourceAsset.ngnPrice;
-    final received = ngn.divide(destinationAsset.ngnPrice,
-        scale: WalletAccountState.instance.snapshot
-            .available(destinationAsset.symbol)
-            .decimals,
-        rounding: DecimalRounding.floor);
+    final ngn = ExactDecimal.from(amount) * _sourcePrice;
+    final received = ngn.divide(
+      _destinationPrice,
+      scale: WalletAccountState.instance.snapshot
+          .available(destinationAsset.symbol)
+          .decimals,
+      rounding: DecimalRounding.floor,
+    );
     final receivedText = formatGroupedAmount(formatCryptoQuantity(received));
-    final usdText = formatGroupedAmount(usdEquivalentForNgn(ngn).toFixed(2));
+    final usdText = formatGroupedAmount((ngn * _usdRate).toFixed(2));
     final rate =
-        '1 ${destinationAsset.symbol} \u2248 ${formatGroupedAmount((destinationAsset.ngnPrice.divide(sourceAsset.ngnPrice)).toFixed(8))} ${sourceAsset.symbol}';
+        '1 ${destinationAsset.symbol} \u2248 ${formatGroupedAmount((_destinationPrice.divide(_sourcePrice)).toFixed(8))} ${sourceAsset.symbol}';
     return Scaffold(
       backgroundColor: DavoColors.of(context).canvas,
       bottomNavigationBar: SafeArea(
-          top: false,
-          child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-              child: _Button(
-                  label: conv ? 'Confirm conversion' : 'Confirm',
-                  enabled: !_confirming && _ready,
-                  onTap: _confirm))),
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+          child: _Button(
+            label: conv ? 'Confirm conversion' : 'Confirm',
+            enabled: !_confirming && _ready,
+            onTap: _confirm,
+          ),
+        ),
+      ),
       body: SafeArea(
-          bottom: false,
-          child: SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
-              child: Column(children: [
-                SizedBox(
-                    height: 48,
-                    child: _ExactCryptoTradeHeader(
-                        title: conv ? 'Review Conversion' : 'Sell',
-                        onBack: () => Navigator.pop(context))),
-                const SizedBox(height: 24),
+        bottom: false,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+          child: Column(
+            children: [
+              SizedBox(
+                height: 48,
+                child: _ExactCryptoTradeHeader(
+                  title: conv ? 'Review Conversion' : 'Sell',
+                  onBack: () => Navigator.pop(context),
+                ),
+              ),
+              const SizedBox(height: 24),
+              _reviewAsset(
+                context,
+                conv ? 'You are converting' : 'You are Selling',
+                sourceAsset,
+                formatGroupedAmount(formatCryptoQuantity(amount)),
+                '\$$usdText',
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: DavoColors.of(context).primarySoft,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    conv
+                        ? Icons.swap_vert_rounded
+                        : Icons.arrow_downward_rounded,
+                    size: 22,
+                    color: AppColors.primary,
+                  ),
+                ),
+              ),
+              if (conv)
                 _reviewAsset(
-                    context,
-                    conv ? 'You are converting' : 'You are Selling',
-                    sourceAsset,
-                    formatGroupedAmount(formatCryptoQuantity(amount)),
-                    '\$$usdText'),
-                Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8),
-                    child: Container(
-                        width: 36,
-                        height: 36,
-                        decoration: BoxDecoration(
-                            color: DavoColors.of(context).primarySoft,
-                            shape: BoxShape.circle),
-                        child: Icon(
-                            conv
-                                ? Icons.swap_vert_rounded
-                                : Icons.arrow_downward_rounded,
-                            size: 22,
-                            color: AppColors.primary))),
-                if (conv)
-                  _reviewAsset(context, 'To (You will receive)',
-                      destinationAsset, receivedText, '\$$usdText')
-                else
-                  Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                          color: DavoColors.of(context).surface,
-                          borderRadius: BorderRadius.circular(8)),
-                      child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text('To (You will receive)',
-                                style: TextStyle(
+                  context,
+                  'To (You will receive)',
+                  destinationAsset,
+                  receivedText,
+                  '\$$usdText',
+                )
+              else
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: DavoColors.of(context).surface,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'To (You will receive)',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: DavoColors.of(context).bodyMuted,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          Image.asset(
+                            '$_f/buy_nigeria.png',
+                            width: 32,
+                            height: 32,
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  '\u20a6${formatGroupedAmount(ngn.toFixed(2, rounding: DecimalRounding.floor))}',
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Nigerian Naira',
+                                  style: TextStyle(
                                     fontSize: 12,
-                                    color: DavoColors.of(context).bodyMuted)),
-                            const SizedBox(height: 12),
-                            Row(children: [
-                              Image.asset('$_f/buy_nigeria.png',
-                                  width: 32, height: 32),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                  child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                    Text(
-                                        '\u20a6${formatGroupedAmount(ngn.toFixed(2, rounding: DecimalRounding.floor))}',
-                                        style: const TextStyle(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.w600)),
-                                    const SizedBox(height: 4),
-                                    Text('Nigerian Naira',
-                                        style: TextStyle(
-                                            fontSize: 12,
-                                            color: DavoColors.of(context)
-                                                .bodyMuted)),
-                                  ])),
-                            ]),
-                          ])),
-                const SizedBox(height: 24),
-                _ExactTradeSummary(conversion: conv, rows: [
+                                    color: DavoColors.of(context).bodyMuted,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              const SizedBox(height: 24),
+              _ExactTradeSummary(
+                conversion: conv,
+                rows: [
                   (
                     'Exchange Rate',
                     conv
                         ? rate
-                        : '1 ${sourceAsset.symbol} \u2248 \u20a6${formatGroupedAmount(sourceAsset.ngnPrice.toFixed(2))}',
-                    false
+                        : '1 ${sourceAsset.symbol} \u2248 \u20a6${formatGroupedAmount(_sourcePrice.toFixed(2))}',
+                    false,
                   ),
                   ('Network Fee', 'Free', true),
                   (
@@ -454,10 +592,14 @@ class _TradeReviewScreenState extends State<TradeReviewScreen> {
                     conv
                         ? '$receivedText ${destinationAsset.symbol}\n\$$usdText'
                         : '\u20a6${formatGroupedAmount(ngn.toFixed(2, rounding: DecimalRounding.floor))}',
-                    false
+                    false,
                   ),
-                ]),
-              ]))),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
@@ -467,59 +609,75 @@ class _ExactCryptoTradeHeader extends StatelessWidget {
   final String title;
   final VoidCallback onBack;
   @override
-  Widget build(BuildContext context) => Row(children: [
-        IconButton(
-            tooltip: 'Back',
-            onPressed: onBack,
-            icon: Icon(Icons.arrow_back_rounded,
-                color: DavoColors.of(context).ink)),
-        Expanded(
-            child: Text(title,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                    fontFamily: 'Sora',
-                    fontSize: 20,
-                    height: 1.35,
-                    color: DavoColors.of(context).ink))),
-        const SizedBox(width: 48),
-      ]);
+  Widget build(BuildContext context) => Row(
+    children: [
+      IconButton(
+        tooltip: 'Back',
+        onPressed: onBack,
+        icon: Icon(Icons.arrow_back_rounded, color: DavoColors.of(context).ink),
+      ),
+      Expanded(
+        child: Text(
+          title,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontFamily: 'Sora',
+            fontSize: 20,
+            height: 1.35,
+            color: DavoColors.of(context).ink,
+          ),
+        ),
+      ),
+      const SizedBox(width: 48),
+    ],
+  );
 }
 
 class _ExactSwapPair extends StatelessWidget {
-  const _ExactSwapPair(
-      {required this.source, required this.destination, required this.onSwap});
+  const _ExactSwapPair({
+    required this.source,
+    required this.destination,
+    required this.onSwap,
+  });
   final Widget source, destination;
   final VoidCallback onSwap;
 
   @override
-  Widget build(BuildContext context) =>
-      Stack(alignment: Alignment.center, children: [
-        Column(children: [source, const SizedBox(height: 16), destination]),
-        Container(
-          padding: const EdgeInsets.all(5),
-          decoration: BoxDecoration(
-              color: DavoColors.of(context).canvas, shape: BoxShape.circle),
-          child: IconButton(
-              onPressed: onSwap,
-              tooltip: 'Swap assets',
-              style: IconButton.styleFrom(
-                  minimumSize: const Size(46, 46),
-                  backgroundColor: AppColors.primary,
-                  foregroundColor: Colors.white),
-              icon: const Icon(Icons.swap_vert_rounded, size: 26)),
+  Widget build(BuildContext context) => Stack(
+    alignment: Alignment.center,
+    children: [
+      Column(children: [source, const SizedBox(height: 16), destination]),
+      Container(
+        padding: const EdgeInsets.all(5),
+        decoration: BoxDecoration(
+          color: DavoColors.of(context).canvas,
+          shape: BoxShape.circle,
         ),
-      ]);
+        child: IconButton(
+          onPressed: onSwap,
+          tooltip: 'Swap assets',
+          style: IconButton.styleFrom(
+            minimumSize: const Size(46, 46),
+            backgroundColor: AppColors.primary,
+            foregroundColor: Colors.white,
+          ),
+          icon: const Icon(Icons.swap_vert_rounded, size: 26),
+        ),
+      ),
+    ],
+  );
 }
 
 class _ExactSwapBox extends StatelessWidget {
-  const _ExactSwapBox(
-      {required this.from,
-      required this.asset,
-      required this.balance,
-      required this.value,
-      this.controller,
-      this.onChanged,
-      this.onSelect});
+  const _ExactSwapBox({
+    required this.from,
+    required this.asset,
+    required this.balance,
+    required this.value,
+    this.controller,
+    this.onChanged,
+    this.onSelect,
+  });
   final bool from;
   final BuyCryptoAsset asset;
   final Object balance, value;
@@ -529,112 +687,157 @@ class _ExactSwapBox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Focus(
-      child: Builder(
-          builder: (context) => Container(
-              key: ValueKey(from ? 'swap-from-card' : 'swap-to-card'),
-              padding: const EdgeInsets.all(18),
-              decoration: BoxDecoration(
-                  color: DavoColors.of(context).surface,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                      color: Focus.of(context).hasFocus
-                          ? AppColors.primary
-                          : DavoColors.of(context).border)),
-              child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(from ? 'From' : 'To',
-                        style: TextStyle(
-                            fontSize: 12,
-                            color: DavoColors.of(context).bodyMuted)),
-                    const SizedBox(height: 10),
-                    LayoutBuilder(builder: (context, constraints) {
-                      final expanded = constraints.maxWidth < 290 ||
-                          MediaQuery.textScalerOf(context).scale(14) > 19;
-                      final selector = Semantics(
-                          button: true,
-                          label:
-                              'Select ${from ? 'source' : 'destination'} asset, ${asset.name}',
-                          child: InkWell(
-                              onTap: onSelect,
-                              borderRadius: BorderRadius.circular(12),
-                              child: Container(
-                                  constraints:
-                                      const BoxConstraints(minHeight: 48),
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 10, vertical: 8),
-                                  decoration: BoxDecoration(
-                                      color: DavoColors.of(context).fieldFill,
-                                      borderRadius: BorderRadius.circular(12)),
-                                  child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        BuyAssetIcon(asset: asset, size: 28),
-                                        const SizedBox(width: 8),
-                                        Text(asset.symbol,
-                                            style: const TextStyle(
-                                                fontSize: 14,
-                                                fontWeight: FontWeight.w600)),
-                                        const SizedBox(width: 4),
-                                        Icon(Icons.keyboard_arrow_down_rounded,
-                                            color: DavoColors.of(context).link,
-                                            size: 20),
-                                      ]))));
-                      final quantity = ConstrainedBox(
-                          constraints: const BoxConstraints(minHeight: 48),
-                          child: Align(
-                              alignment: Alignment.centerRight,
-                              child: from
-                                  ? TextField(
-                                      controller: controller,
-                                      onChanged: (_) => onChanged?.call(),
-                                      keyboardType:
-                                          const TextInputType.numberWithOptions(
-                                              decimal: true),
-                                      inputFormatters: const [
-                                        GroupedAmountInputFormatter()
-                                      ],
-                                      textAlign: TextAlign.right,
-                                      decoration:
-                                          const DavoInlineInputDecoration(
-                                              hintText: '0.00'),
-                                      style: const TextStyle(
-                                          fontSize: 24,
-                                          fontWeight: FontWeight.w600))
-                                  : Text(
-                                      formatGroupedAmount(
-                                          formatCryptoQuantity(value)),
-                                      key: const ValueKey(
-                                          'swap-receive-quantity'),
-                                      textAlign: TextAlign.right,
-                                      style: const TextStyle(
-                                          fontSize: 24,
-                                          fontWeight: FontWeight.w600))));
-                      return expanded
-                          ? Column(
-                              crossAxisAlignment: CrossAxisAlignment.end,
-                              children: [
-                                  Align(
-                                      alignment: Alignment.centerLeft,
-                                      child: selector),
-                                  const SizedBox(height: 10),
-                                  SizedBox(
-                                      width: double.infinity, child: quantity),
-                                ])
-                          : Row(children: [
-                              selector,
-                              const SizedBox(width: 14),
-                              Expanded(child: quantity)
-                            ]);
-                    }),
-                    const SizedBox(height: 12),
-                    Text(
-                        'Available: ${formatGroupedAmount(balance.toString())} ${asset.symbol}',
-                        style: TextStyle(
-                            fontSize: 12,
-                            height: 1.5,
-                            color: DavoColors.of(context).bodyMuted)),
-                  ]))));
+    child: Builder(
+      builder: (context) => Container(
+        key: ValueKey(from ? 'swap-from-card' : 'swap-to-card'),
+        padding: const EdgeInsets.all(18),
+        decoration: BoxDecoration(
+          color: DavoColors.of(context).surface,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: Focus.of(context).hasFocus
+                ? AppColors.primary
+                : DavoColors.of(context).border,
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    from ? 'From' : 'To',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: DavoColors.of(context).bodyMuted,
+                    ),
+                  ),
+                ),
+                Text(
+                  'Amount',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: DavoColors.of(context).bodyMuted,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final expanded =
+                    constraints.maxWidth < 290 ||
+                    MediaQuery.textScalerOf(context).scale(14) > 19;
+                final selector = Semantics(
+                  button: true,
+                  label:
+                      'Select ${from ? 'source' : 'destination'} asset, ${asset.name}',
+                  child: InkWell(
+                    onTap: onSelect,
+                    borderRadius: BorderRadius.circular(12),
+                    child: Container(
+                      constraints: const BoxConstraints(minHeight: 48),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 8,
+                      ),
+                      decoration: BoxDecoration(
+                        color: DavoColors.of(context).fieldFill,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          BuyAssetIcon(asset: asset, size: 28),
+                          const SizedBox(width: 8),
+                          Text(
+                            asset.symbol,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          Icon(
+                            Icons.keyboard_arrow_down_rounded,
+                            color: DavoColors.of(context).link,
+                            size: 20,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+                final quantity = ConstrainedBox(
+                  constraints: const BoxConstraints(minHeight: 48),
+                  child: Align(
+                    alignment: Alignment.centerRight,
+                    child: from
+                        ? TextField(
+                            controller: controller,
+                            onChanged: (_) => onChanged?.call(),
+                            keyboardType: const TextInputType.numberWithOptions(
+                              decimal: true,
+                            ),
+                            inputFormatters: const [
+                              GroupedAmountInputFormatter(),
+                            ],
+                            textAlign: TextAlign.right,
+                            decoration: const DavoInlineInputDecoration(
+                              hintText: '0.00',
+                            ),
+                            style: const TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          )
+                        : Text(
+                            formatGroupedAmount(formatCryptoQuantity(value)),
+                            key: const ValueKey('swap-receive-quantity'),
+                            textAlign: TextAlign.right,
+                            style: const TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                  ),
+                );
+                return expanded
+                    ? Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Align(
+                            alignment: Alignment.centerLeft,
+                            child: selector,
+                          ),
+                          const SizedBox(height: 10),
+                          SizedBox(width: double.infinity, child: quantity),
+                        ],
+                      )
+                    : Row(
+                        children: [
+                          selector,
+                          const SizedBox(width: 14),
+                          Expanded(child: quantity),
+                        ],
+                      );
+              },
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'Available: ${formatGroupedAmount(balance.toString())} ${asset.symbol}',
+              style: TextStyle(
+                fontSize: 12,
+                height: 1.5,
+                color: DavoColors.of(context).bodyMuted,
+              ),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
 }
 
 class _ExactTradeSummary extends StatelessWidget {
@@ -643,59 +846,79 @@ class _ExactTradeSummary extends StatelessWidget {
   final bool conversion;
   @override
   Widget build(BuildContext context) => Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        decoration: BoxDecoration(
-            color: DavoColors.of(context).surface,
-            borderRadius: BorderRadius.circular(12)),
-        child: Column(children: [
-          for (var i = 0; i < rows.length; i++) ...[
-            if (i > 0)
-              Divider(
-                  height: 1,
-                  thickness: .5,
-                  color: DavoColors.of(context).divider),
-            Padding(
-                padding: const EdgeInsets.symmetric(vertical: 18),
-                child: LayoutBuilder(
-                    builder: (context, constraints) => Row(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              SizedBox(
-                                  width: constraints.maxWidth * .30,
-                                  child: Text(rows[i].$1,
-                                      style: TextStyle(
-                                          fontSize: 12,
-                                          color: DavoColors.of(context)
-                                              .bodyMuted))),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                  child: Text(rows[i].$2,
-                                      textAlign: TextAlign.right,
-                                      style: TextStyle(
-                                          fontSize: 12,
-                                          height: 1.5,
-                                          color: rows[i].$3
-                                              ? DavoColors.of(context).link
-                                              : DavoColors.of(context).ink,
-                                          fontWeight: FontWeight.w500))),
-                            ]))),
-          ]
-        ]),
-      );
+    padding: const EdgeInsets.symmetric(horizontal: 16),
+    decoration: BoxDecoration(
+      color: DavoColors.of(context).surface,
+      borderRadius: BorderRadius.circular(12),
+    ),
+    child: Column(
+      children: [
+        for (var i = 0; i < rows.length; i++) ...[
+          if (i > 0)
+            Divider(
+              height: 1,
+              thickness: .5,
+              color: DavoColors.of(context).divider,
+            ),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 18),
+            child: LayoutBuilder(
+              builder: (context, constraints) => Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  SizedBox(
+                    width: constraints.maxWidth * .30,
+                    child: Text(
+                      rows[i].$1,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: DavoColors.of(context).bodyMuted,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      rows[i].$2,
+                      textAlign: TextAlign.right,
+                      style: TextStyle(
+                        fontSize: 12,
+                        height: 1.5,
+                        color: rows[i].$3
+                            ? DavoColors.of(context).link
+                            : DavoColors.of(context).ink,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ],
+    ),
+  );
 }
 
 bool _positiveTradeProceeds(
-    ExactDecimal quantity, BuyCryptoAsset source, BuyCryptoAsset? destination) {
+  ExactDecimal quantity,
+  BuyCryptoAsset source,
+  BuyCryptoAsset? destination,
+) {
   if (quantity.isNegative || quantity.isZero) return false;
   final naira = quantity * source.ngnPrice;
   return destination == null
-      ? !ExactDecimal.parse(naira.toFixed(2, rounding: DecimalRounding.floor))
-          .isZero
+      ? !ExactDecimal.parse(
+          naira.toFixed(2, rounding: DecimalRounding.floor),
+        ).isZero
       : !naira
-          .divide(destination.ngnPrice,
+            .divide(
+              destination.ngnPrice,
               scale: WalletAccountState.instance.snapshot
                   .available(destination.symbol)
                   .decimals,
-              rounding: DecimalRounding.floor)
-          .isZero;
+              rounding: DecimalRounding.floor,
+            )
+            .isZero;
 }

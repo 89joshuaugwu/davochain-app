@@ -76,6 +76,7 @@ class WalletAccountState extends ChangeNotifier {
   static final instance = WalletAccountState();
   WalletSnapshot snapshot = WalletSnapshot.seeded();
   int generation = 0;
+  int _fundsRevision = 0;
   bool simulationEnabled = false;
   final Map<String, WalletEffect> _reserved = {};
   final Set<String> _settled = {}, _rejected = {};
@@ -85,7 +86,7 @@ class WalletAccountState extends ChangeNotifier {
     simulationEnabled = true;
     final previous = snapshot;
     snapshot = WalletSnapshot(
-      accountId: 'simulation-$generation',
+      accountId: 'account-${DateTime.now().microsecondsSinceEpoch}-$generation',
       version: 1,
       available: {
         for (final entry in SimulationQuotes.decimals.entries)
@@ -198,6 +199,7 @@ class WalletAccountState extends ChangeNotifier {
         _settled.add(id);
       }
     }
+    _fundsRevision++;
     snapshot = WalletSnapshot(
       accountId: snapshot.accountId,
       version: snapshot.version + 1,
@@ -209,13 +211,58 @@ class WalletAccountState extends ChangeNotifier {
     return true;
   }
 
+  /// Private working copy: mutations are published only after a durable write.
+  WalletAccountState fork() {
+    final copy = WalletAccountState();
+    copy.snapshot = snapshot;
+    copy.generation = generation;
+    copy.simulationEnabled = simulationEnabled;
+    copy._fundsRevision = _fundsRevision;
+    copy._reserved.addAll(_reserved);
+    copy._settled.addAll(_settled);
+    copy._rejected.addAll(_rejected);
+    copy.quoteId = quoteId;
+    copy.activeQuote = activeQuote;
+    return copy;
+  }
+
+  int get fundsRevision => _fundsRevision;
+  bool adoptFunds(WalletAccountState staged, {required int expectedRevision}) {
+    if (generation != staged.generation ||
+        snapshot.accountId != staged.snapshot.accountId ||
+        _fundsRevision != expectedRevision) {
+      return false;
+    }
+    _reserved
+      ..clear()
+      ..addAll(staged._reserved);
+    _settled
+      ..clear()
+      ..addAll(staged._settled);
+    _rejected
+      ..clear()
+      ..addAll(staged._rejected);
+    snapshot = WalletSnapshot(
+      accountId: snapshot.accountId,
+      version: snapshot.version + 1,
+      available: staged.snapshot._available,
+      pricesMinorUnits: snapshot._prices,
+      usdNgnMinorUnits: snapshot.usdNgnMinorUnits,
+    );
+    _fundsRevision++;
+    notifyListeners();
+    return true;
+  }
+
   String? quoteId;
+  QuoteSnapshot? activeQuote;
   void updateQuotes(QuoteSnapshot quote) {
     if (!simulationEnabled || quoteId == quote.id) return;
     if (snapshot.assets.any(
       (asset) => !quote.pricesMinorUnits.containsKey(asset),
-    ))
+    )) {
       return;
+    }
     snapshot = WalletSnapshot(
       accountId: snapshot.accountId,
       version: snapshot.version + 1,
@@ -224,7 +271,129 @@ class WalletAccountState extends ChangeNotifier {
       usdNgnMinorUnits: quote.usdNgnMinorUnits,
     );
     quoteId = quote.id;
+    activeQuote = quote;
     notifyListeners();
+  }
+
+  Map<String, Object?> exportState() => {
+    'schema': 1,
+    'accountId': snapshot.accountId,
+    'version': snapshot.version,
+    'enabled': simulationEnabled,
+    'quote': activeQuote == null
+        ? null
+        : {
+            'id': activeQuote!.id,
+            'asOf': activeQuote!.asOf.toIso8601String(),
+            'expiresAt': activeQuote!.expiresAt?.toIso8601String(),
+          },
+    'fx': snapshot.usdNgnMinorUnits,
+    'prices': snapshot._prices,
+    'amounts': {
+      for (final a in snapshot.assets)
+        a: {
+          'units': snapshot.available(a).atomicUnits.toString(),
+          'decimals': snapshot.available(a).decimals,
+        },
+    },
+    'reserved': {for (final e in _reserved.entries) e.key: e.value.toJson()},
+    'settled': _settled.toList(),
+    'rejected': _rejected.toList(),
+  };
+  void restoreState(Map<String, Object?> data) {
+    try {
+      if (data['schema'] != 1) {
+        throw const FormatException('Unknown wallet version');
+      }
+      final account = data['accountId'] as String;
+      final version = data['version'] as int;
+      final amounts = Map<String, Object?>.from(data['amounts'] as Map);
+      final prices = Map<String, int>.from(data['prices'] as Map);
+      final available = <String, AssetAmount>{};
+      for (final e in amounts.entries) {
+        final row = Map<String, Object?>.from(e.value as Map);
+        final units = BigInt.parse(row['units'] as String);
+        final precision = row['decimals'] as int;
+        if (units < BigInt.zero ||
+            precision < 0 ||
+            precision > 30 ||
+            !prices.containsKey(e.key) ||
+            prices[e.key]! <= 0) {
+          throw const FormatException('Invalid wallet amount');
+        }
+        available[e.key] = AssetAmount(e.key, units, precision);
+      }
+      if (account.isEmpty || version < 1 || !available.containsKey('NGN')) {
+        throw const FormatException('Invalid account');
+      }
+      final nextGeneration = generation + 1;
+      final reserved = <String, WalletEffect>{};
+      for (final entry in Map<String, Object?>.from(
+        data['reserved'] as Map,
+      ).entries) {
+        final effect = WalletEffect.fromJson(
+          Map<String, Object?>.from(entry.value as Map),
+          generation: nextGeneration,
+        );
+        if (effect.accountId != account) {
+          throw const FormatException('Wrong effect account');
+        }
+        for (final amount in [
+          ...effect.debits.values,
+          ...effect.credits.values,
+        ]) {
+          if (available[amount.assetId]?.decimals != amount.decimals) {
+            throw const FormatException('Invalid effect precision');
+          }
+        }
+        reserved[entry.key] = effect;
+      }
+      final settled = List<String>.from(data['settled'] as List);
+      final rejected = List<String>.from(data['rejected'] as List);
+      final fx = data['fx'] as int?;
+      if (fx != null && fx <= 0) throw const FormatException('Invalid FX');
+      final enabled = data['enabled'] as bool;
+      final quoteData = data['quote'] == null
+          ? null
+          : Map<String, Object?>.from(data['quote'] as Map);
+      final restoredQuote = quoteData == null
+          ? null
+          : QuoteSnapshot(
+              id: quoteData['id'] as String,
+              asOf: DateTime.parse(quoteData['asOf'] as String),
+              expiresAt: quoteData['expiresAt'] == null
+                  ? null
+                  : DateTime.parse(quoteData['expiresAt'] as String),
+              pricesMinorUnits: prices,
+              usdNgnMinorUnits: fx!,
+            );
+
+      snapshot = WalletSnapshot(
+        accountId: account,
+        version: version,
+        available: available,
+        pricesMinorUnits: prices,
+        usdNgnMinorUnits: fx,
+      );
+      generation = nextGeneration;
+      simulationEnabled = enabled;
+      _reserved
+        ..clear()
+        ..addAll(reserved);
+      _settled
+        ..clear()
+        ..addAll(settled);
+      _rejected
+        ..clear()
+        ..addAll(rejected);
+      quoteId = restoredQuote?.id;
+      activeQuote = restoredQuote;
+      _fundsRevision++;
+      notifyListeners();
+    } catch (e) {
+      if (e is FormatException) rethrow;
+      throw const FormatException('Invalid wallet checkpoint');
+    }
   }
 
   int get ngnAvailableMinorUnits =>
@@ -243,6 +412,7 @@ class WalletAccountState extends ChangeNotifier {
         next.version < snapshot.version) {
       return false;
     }
+    _fundsRevision++;
     snapshot = next;
     notifyListeners();
     return true;
@@ -251,10 +421,12 @@ class WalletAccountState extends ChangeNotifier {
   void reset() {
     simulationEnabled = false;
     quoteId = null;
+    activeQuote = null;
     _reserved.clear();
     _settled.clear();
     _rejected.clear();
     generation++;
+    _fundsRevision++;
     snapshot = WalletSnapshot.seeded();
     notifyListeners();
   }
