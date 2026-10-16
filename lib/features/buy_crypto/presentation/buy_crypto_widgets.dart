@@ -1,3 +1,4 @@
+import '../../../shared/widgets/davo_naira_amount.dart';
 import 'dart:math' as math;
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../../shared/widgets/davo_safe_selection_sheet.dart';
@@ -74,10 +75,11 @@ class BuyFundingWalletSheet extends StatelessWidget {
       title: 'Select wallet to buy from',
       children: BuyFundingWallet.values
           .map((wallet) => _SelectionRow(
-              icon: Image.asset(wallet.iconAsset, width: 32, height: 32),
+              icon: wallet.isDavochain ? DavoCurrencyMark(size: 32, color: DavoColors.of(context).link) : Image.asset(wallet.iconAsset, width: 32, height: 32),
               name: wallet.name,
               symbol: wallet.symbol,
               value: wallet.formattedBalance,
+              valueWidget: wallet.isDavochain ? DavoNairaAmount(minorUnits: WalletAccountState.instance.snapshot.available(wallet.symbol).atomicUnits.toInt(), style: TextStyle(fontSize: 14, color: DavoColors.of(context).body)) : null,
               quantity: wallet.symbol,
               onTap: () => Navigator.pop(context, wallet)))
           .toList());
@@ -140,8 +142,10 @@ class _SelectionRow extends StatelessWidget {
       required this.symbol,
       required this.value,
       required this.quantity,
+      this.valueWidget,
       required this.onTap});
   final Widget icon;
+  final Widget? valueWidget;
   final String name, symbol, value, quantity;
   final VoidCallback? onTap;
   @override
@@ -161,7 +165,7 @@ class _SelectionRow extends StatelessWidget {
         crossAxisAlignment:
             compact ? CrossAxisAlignment.start : CrossAxisAlignment.end,
         children: [
-          Text(value, style: TextStyle(fontSize: 14, color: colors.body)),
+          valueWidget ?? Text(value, style: TextStyle(fontSize: 14, color: colors.body)),
           const SizedBox(height: 4),
           Text(quantity,
               style: TextStyle(fontSize: 12, color: colors.bodyMuted)),

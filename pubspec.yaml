@@ -1,5 +1,5 @@
 name: davochain
-version: 0.19.1+53
+version: 0.19.1+54
 publish_to: 'none'
 description: Davochain Flutter mobile application.
 
@@ -52,6 +52,9 @@ flutter:
           weight: 600
         - asset: assets/fonts/sora/Sora-Variable.ttf
           weight: 700
+    - family: DavochainCurrency
+      fonts:
+        - asset: assets/fonts/davochain_currency/DavochainCurrency-Regular.ttf
     - family: DavoNotoSans
       fonts:
         - asset: assets/fonts/noto/NotoSans-Regular.ttf

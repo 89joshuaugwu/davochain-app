@@ -33,4 +33,8 @@ Explore uses generated transparent cobalt/ivory wallet-token-gift artwork, nativ
 
 ## Verification
 
-Pending final regression/native release evidence. See workspace review/evidence/system-notifications for screenshots and logs.
+Build53: full regression suite 727 passed, 16 intentionally skipped; capture suite 1 passed; static analysis clean. Independent review found and verified fixes for icon resource retention, immediate account-change invalidation, and current-date portfolio filtering.
+
+API34 emulator: installed over existing data, restored Joshua profile and readable light unlock, invitation -> real Android permission dialog -> deny, disabled settings/test state, Open phone settings -> enable -> resumed app effective state, actual expanded native diagnostic, warm tap, process killed from Home (PID absent), notification cold tap -> returning unlock -> correct notification settings after unlock. No account data cleared. Screenshots and logs are in workspace review/evidence/system-notifications. Real financial delivery/race/privacy cases have automated coverage; native acceptance used the harmless diagnostic, not a new bank transfer. API below13, physical manufacturer UI, sound/DND and production shrunk-signing build were not exercised.
+
+Build53 APK SHA256: `4D80FAE2031E74901F2A48FDD3DD307F96CDACE3EFEB9A830DB8FF97F6F81AF0`. Development signer SHA256: `d0de9b8311199a2eb6a238d106b45eaa9d30fe4ef0ef7b9b5808edc3988e2411`. Money-flow consolidation requested afterwards is a separate proposed plan; symbol approval proceeds independently.
