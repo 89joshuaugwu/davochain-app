@@ -53,5 +53,7 @@ Files: crypto_full_flow.dart and existing inline/form widgets where required; te
 ## Task 5: Final verification and main release
 
 - [x] Get one fresh independent review of the complete change and resolve important findings.
-- [ ] Run full regression and static analysis; build a new APK after build56 checkpoint.
-- [ ] Inspect native results where the shared emulator is available, preserve data, document backend/device limits and push verified main commits.
+- [x] Run full regression and static analysis; build a new APK after build56 checkpoint.
+- [x] Inspect native results where the shared emulator is available, preserve data, document backend/device limits and push verified main commits.
+
+Final acceptance:775passed/18capture skips,7confirmation checks passed,analyzer0issues,build57success,APKsignaturematches56,installed-r/API34/accountpreserved. Native authenticated layout check limited by returning password gate. Production callback/recipient/network integration and physical-device audio acceptance remain backend/device work. See docs/asset-catalog-and-transfer-ui.md.
