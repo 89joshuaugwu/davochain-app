@@ -1,3 +1,4 @@
+import '../../../core/providers/reactive_builder.dart';
 import '../../../core/preview/local_preview_profile.dart';
 import 'dart:async';
 import '../../../core/device/biometric_gateway.dart';
@@ -166,7 +167,7 @@ class _ReturningUnlockScreenState extends State<ReturningUnlockScreen> {
                                                       CrossAxisAlignment
                                                           .stretch,
                                                   children: [
-                                                    ValueListenableBuilder<
+                                                    DavoValueListenableBuilder<
                                                             bool>(
                                                         valueListenable:
                                                             PreviewAuthState

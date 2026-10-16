@@ -1,3 +1,7 @@
+import '../../../core/providers/account_scope.dart';
+import '../../wallets/wallet_providers.dart';
+import 'portfolio_view_state.dart';
+import '../../../core/providers/reactive_builder.dart';
 import '../../wallets/simulation_deposit_button.dart';
 import '../../buy_crypto/presentation/buy_crypto_widgets.dart'
     show BuyAssetIcon;
@@ -60,203 +64,234 @@ class DavoDashboardContent extends StatefulWidget {
 class _DavochainDashboardScreenState extends State<DavoDashboardContent> {
   bool _balanceVisible = true;
   @override
-  void initState() {
-    super.initState();
-    WalletAccountState.instance.addListener(_walletChanged);
-  }
-
-  void _walletChanged() {
-    if (mounted) setState(() {});
-  }
-
-  @override
-  void dispose() {
-    WalletAccountState.instance.removeListener(_walletChanged);
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => AccountConsumer(
+    builder: (context, ref) {
+      ref.watch(currentWalletProvider);
+      return _buildDashboard(context);
+    },
+  );
+  Widget _buildDashboard(BuildContext context) {
     final dark = Theme.of(context).brightness == Brightness.dark;
     return AnnotatedRegion<SystemUiOverlayStyle>(
-        value: SystemUiOverlayStyle(
-          statusBarColor: Colors.transparent,
-          statusBarIconBrightness: dark ? Brightness.light : Brightness.dark,
-          statusBarBrightness: dark ? Brightness.dark : Brightness.light,
-          systemNavigationBarColor: DavoColors.of(context).surface,
-          systemNavigationBarIconBrightness:
-              dark ? Brightness.light : Brightness.dark,
-        ),
-        child: Scaffold(
-          backgroundColor: DavoColors.of(context).canvas,
-          body: DavoFloatingRefresh(
-            onRefresh: () async {
-              await (widget.onRefresh?.call() ??
-                  DavoRefreshScope.refresh(
-                      context, DavoRefreshTarget.dashboard));
-              if (mounted) setState(() {});
-            },
-            child: SafeArea(
-              bottom: false,
-              child: ValueListenableBuilder<bool>(
-                valueListenable: PreviewAccountState.setupComplete,
-                builder: (context, setupComplete, _) => LayoutBuilder(
-                  builder: (context, constraints) {
-                    final compact = constraints.maxHeight < 760;
-                    final gap = compact
-                        ? 8.0
-                        : constraints.maxHeight < 790
-                            ? 12.0
-                            : 16.0;
-                    final header = Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const _Entrance(index: 0, child: _DashboardHeader()),
-                        SizedBox(height: gap),
+      value: SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: dark ? Brightness.light : Brightness.dark,
+        statusBarBrightness: dark ? Brightness.dark : Brightness.light,
+        systemNavigationBarColor: DavoColors.of(context).surface,
+        systemNavigationBarIconBrightness: dark
+            ? Brightness.light
+            : Brightness.dark,
+      ),
+      child: Scaffold(
+        backgroundColor: DavoColors.of(context).canvas,
+        body: DavoFloatingRefresh(
+          onRefresh: () async {
+            await (widget.onRefresh?.call() ??
+                DavoRefreshScope.refresh(context, DavoRefreshTarget.dashboard));
+            if (mounted) setState(() {});
+          },
+          child: SafeArea(
+            bottom: false,
+            child: DavoValueListenableBuilder<bool>(
+              valueListenable: PreviewAccountState.setupComplete,
+              builder: (context, setupComplete, _) => LayoutBuilder(
+                builder: (context, constraints) {
+                  final compact = constraints.maxHeight < 760;
+                  final gap = compact
+                      ? 8.0
+                      : constraints.maxHeight < 790
+                      ? 12.0
+                      : 16.0;
+                  final header = Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const _Entrance(index: 0, child: _DashboardHeader()),
+                      SizedBox(height: gap),
+                      _Entrance(
+                        index: 1,
+                        child: _BalanceCard(
+                          compact: compact,
+                          visible: _balanceVisible,
+                          onVisibilityToggle: () => setState(
+                            () => _balanceVisible = !_balanceVisible,
+                          ),
+                          onDeposit: _openWalletSelector,
+                          onWithdraw: () => startWithdrawFlow(context),
+                        ),
+                      ),
+                      SizedBox(height: gap),
+                      if (!setupComplete) ...[
                         _Entrance(
-                            index: 1,
-                            child: _BalanceCard(
-                              compact: compact,
-                              visible: _balanceVisible,
-                              onVisibilityToggle: () => setState(
-                                  () => _balanceVisible = !_balanceVisible),
-                              onDeposit: _openWalletSelector,
-                              onWithdraw: () => startWithdrawFlow(context),
-                            )),
+                          index: 2,
+                          child: InkWell(
+                            onTap: () => Navigator.of(context).push(
+                              AppPageRoute<void>(
+                                settings: const RouteSettings(
+                                  name: 'verification',
+                                ),
+                                builder: (_) =>
+                                    const VerificationOverviewScreen(),
+                              ),
+                            ),
+                            borderRadius: BorderRadius.circular(8),
+                            child: _SetupBanner(compact: compact),
+                          ),
+                        ),
                         SizedBox(height: gap),
-                        if (!setupComplete) ...[
-                          _Entrance(
-                              index: 2,
-                              child: InkWell(
-                                onTap: () => Navigator.of(context).push(
-                                    AppPageRoute<void>(
-                                        settings: const RouteSettings(
-                                            name: 'verification'),
-                                        builder: (_) =>
-                                            const VerificationOverviewScreen())),
-                                borderRadius: BorderRadius.circular(8),
-                                child: _SetupBanner(compact: compact),
-                              )),
-                          SizedBox(height: gap),
-                        ],
-                        _Entrance(
-                            index: 3,
-                            child: _QuickActions(
-                              compact: compact,
-                              onBuy: () => startBuyCryptoFlow(context),
-                              onSell: () => startSellCryptoFlow(context),
-                              onGift: () => startGiftCardFlow(context),
-                              onHistory: () => Navigator.of(context).push(
-                                  _davoRoute(const TransactionHistoryScreen())),
-                            )),
-                        SizedBox(height: gap),
-                        _Entrance(
-                            index: 4, child: _PromoBanner(compact: compact)),
-                        SizedBox(height: gap),
-                        _assetsHeading(compact: compact),
-                        SizedBox(height: compact ? 4 : 8),
                       ],
-                    );
-                    // Standard phones retain three complete assets below the compact carousel.
-                    // Short views and enlarged text keep every control reachable by scrolling.
-                    final needsFullScroll = constraints.maxHeight < 640 ||
-                        MediaQuery.textScalerOf(context).scale(14) > 18;
-                    if (needsFullScroll) {
-                      return SingleChildScrollView(
-                        padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
-                        child: Column(children: [
+                      _Entrance(
+                        index: 3,
+                        child: _QuickActions(
+                          compact: compact,
+                          onBuy: () => startBuyCryptoFlow(context),
+                          onSell: () => startSellCryptoFlow(context),
+                          onGift: () => startGiftCardFlow(context),
+                          onHistory: () => Navigator.of(
+                            context,
+                          ).push(_davoRoute(const TransactionHistoryScreen())),
+                        ),
+                      ),
+                      SizedBox(height: gap),
+                      _Entrance(
+                        index: 4,
+                        child: _PromoBanner(compact: compact),
+                      ),
+                      SizedBox(height: gap),
+                      _assetsHeading(compact: compact),
+                      SizedBox(height: compact ? 4 : 8),
+                    ],
+                  );
+                  // Standard phones retain three complete assets below the compact carousel.
+                  // Short views and enlarged text keep every control reachable by scrolling.
+                  final needsFullScroll =
+                      constraints.maxHeight < 640 ||
+                      MediaQuery.textScalerOf(context).scale(14) > 18;
+                  if (needsFullScroll) {
+                    return SingleChildScrollView(
+                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+                      child: Column(
+                        children: [
                           header,
                           SizedBox(
-                              height: setupComplete ? 320 : 240,
-                              child: _DashboardAssetCard(
-                                  rowHeight: MediaQuery.textScalerOf(context)
-                                              .scale(14) >
-                                          18
-                                      ? 112
-                                      : 72))
-                        ]),
-                      );
-                    }
-                    return Padding(
-                      padding:
-                          EdgeInsets.fromLTRB(16, compact ? 12 : 16, 16, 0),
-                      child: Column(children: [
+                            height: setupComplete ? 320 : 240,
+                            child: _DashboardAssetCard(
+                              rowHeight:
+                                  MediaQuery.textScalerOf(context).scale(14) >
+                                      18
+                                  ? 112
+                                  : 72,
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+                  return Padding(
+                    padding: EdgeInsets.fromLTRB(16, compact ? 12 : 16, 16, 0),
+                    child: Column(
+                      children: [
                         header,
                         Expanded(
-                            child: LayoutBuilder(builder: (context, space) {
-                          final visibleRows = setupComplete ? 4 : 3;
-                          final rowHeight =
-                              ((space.maxHeight - 4 - (visibleRows - 1)) /
-                                      visibleRows)
-                                  .clamp(52.0, 72.0);
-                          final windowHeight =
-                              (4 + rowHeight * visibleRows + visibleRows - 1)
-                                  .clamp(0.0, space.maxHeight);
-                          return Align(
-                              alignment: Alignment.topCenter,
-                              child: SizedBox(
+                          child: LayoutBuilder(
+                            builder: (context, space) {
+                              final visibleRows = setupComplete ? 4 : 3;
+                              final rowHeight =
+                                  ((space.maxHeight - 4 - (visibleRows - 1)) /
+                                          visibleRows)
+                                      .clamp(52.0, 72.0);
+                              final windowHeight =
+                                  (4 +
+                                          rowHeight * visibleRows +
+                                          visibleRows -
+                                          1)
+                                      .clamp(0.0, space.maxHeight);
+                              return Align(
+                                alignment: Alignment.topCenter,
+                                child: SizedBox(
                                   height: windowHeight,
                                   child: _DashboardAssetCard(
-                                      rowHeight: rowHeight)));
-                        }))
-                      ]),
-                    );
-                  },
-                ),
+                                    rowHeight: rowHeight,
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
               ),
             ),
           ),
-          bottomNavigationBar:
-              const Column(mainAxisSize: MainAxisSize.min, children: [
+        ),
+        bottomNavigationBar: const Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
             Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16),
-                child: DepositActivityBanner()),
-          ]),
-        ));
+              padding: EdgeInsets.symmetric(horizontal: 16),
+              child: DepositActivityBanner(),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   Widget _assetsHeading({bool compact = false}) => ConstrainedBox(
-        constraints: BoxConstraints(minHeight: compact ? 36 : 40),
-        child:
-            Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-          Flexible(
-              child: Text('Assets',
-                  style: TextStyle(
-                      fontFamily: 'Sora',
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: DavoColors.of(context).ink))),
-          Flexible(
-              flex: 2,
-              child: TextButton(
-                onPressed: () => Navigator.of(context)
-                    .push(_davoRoute(const PortfolioScreen())),
-                style: TextButton.styleFrom(
-                    foregroundColor: DavoColors.of(context).link,
-                    textStyle:
-                        const TextStyle(fontFamily: 'Sora', fontSize: 12),
-                    minimumSize: const Size(48, 48),
-                    padding: EdgeInsets.zero),
-                child: const Row(mainAxisSize: MainAxisSize.min, children: [
-                  Flexible(
-                      child:
-                          Text('View Portfolio', textAlign: TextAlign.right)),
-                  SizedBox(width: 4),
-                  Icon(Icons.arrow_forward, size: 14)
-                ]),
-              )),
-        ]),
-      );
+    constraints: BoxConstraints(minHeight: compact ? 36 : 40),
+    child: Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Flexible(
+          child: Text(
+            'Assets',
+            style: TextStyle(
+              fontFamily: 'Sora',
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: DavoColors.of(context).ink,
+            ),
+          ),
+        ),
+        Flexible(
+          flex: 2,
+          child: TextButton(
+            onPressed: () =>
+                Navigator.of(context).push(_davoRoute(const PortfolioScreen())),
+            style: TextButton.styleFrom(
+              foregroundColor: DavoColors.of(context).link,
+              textStyle: const TextStyle(fontFamily: 'Sora', fontSize: 12),
+              minimumSize: const Size(48, 48),
+              padding: EdgeInsets.zero,
+            ),
+            child: const Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Flexible(
+                  child: Text('View Portfolio', textAlign: TextAlign.right),
+                ),
+                SizedBox(width: 4),
+                Icon(Icons.arrow_forward, size: 14),
+              ],
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
 
   Future<void> _openWalletSelector() async {
     final selected = await showModalBottomSheet<_WalletOption>(
       context: context,
-      sheetAnimationStyle: (MediaQuery.disableAnimationsOf(context) ||
+      sheetAnimationStyle:
+          (MediaQuery.disableAnimationsOf(context) ||
               MediaQuery.accessibleNavigationOf(context))
           ? AnimationStyle.noAnimation
           : const AnimationStyle(
               duration: Duration(milliseconds: 280),
-              reverseDuration: Duration(milliseconds: 200)),
+              reverseDuration: Duration(milliseconds: 200),
+            ),
       isScrollControlled: true,
       useSafeArea: true,
       backgroundColor: Colors.transparent,
@@ -267,20 +302,23 @@ class _DavochainDashboardScreenState extends State<DavoDashboardContent> {
     if (selected.isFiat) {
       Navigator.of(context).push(_davoRoute(const NairaDepositScreen()));
     } else {
-      Navigator.of(context)
-          .push(_davoRoute(CryptoDepositScreen(asset: selected.asset!)));
+      Navigator.of(
+        context,
+      ).push(_davoRoute(CryptoDepositScreen(asset: selected.asset!)));
     }
   }
 
   Future<_WalletOption?> _openCurrencySelector() async {
     final asset = await showModalBottomSheet<CryptoAsset>(
       context: context,
-      sheetAnimationStyle: (MediaQuery.disableAnimationsOf(context) ||
+      sheetAnimationStyle:
+          (MediaQuery.disableAnimationsOf(context) ||
               MediaQuery.accessibleNavigationOf(context))
           ? AnimationStyle.noAnimation
           : const AnimationStyle(
               duration: Duration(milliseconds: 280),
-              reverseDuration: Duration(milliseconds: 200)),
+              reverseDuration: Duration(milliseconds: 200),
+            ),
       isScrollControlled: true,
       useSafeArea: true,
       backgroundColor: Colors.transparent,

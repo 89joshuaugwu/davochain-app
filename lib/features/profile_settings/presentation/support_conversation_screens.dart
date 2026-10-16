@@ -1,3 +1,4 @@
+import '../../../core/providers/reactive_builder.dart';
 import 'package:flutter/material.dart';
 import '../../../core/preview/settings_preview_session.dart';
 import '../../../core/theme/app_theme.dart';
@@ -17,7 +18,7 @@ class SupportMessagesScreen extends StatelessWidget {
   void _compose(BuildContext context) => Navigator.of(context)
       .push(MaterialPageRoute<void>(builder: (_) => const SupportChatScreen()));
   @override
-  Widget build(BuildContext context) => ListenableBuilder(
+  Widget build(BuildContext context) => DavoListenableBuilder(
       listenable: SettingsPreviewSession.instance,
       builder: (context, _) {
         final colors = DavoColors.of(context);

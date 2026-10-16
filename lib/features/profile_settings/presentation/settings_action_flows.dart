@@ -1,3 +1,4 @@
+import '../../../core/providers/reactive_builder.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../core/navigation/app_page_route.dart';
@@ -16,7 +17,7 @@ class LinkedAccountsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) => _BankPage(
       title: 'Linked Accounts',
-      child: ListenableBuilder(
+      child: DavoListenableBuilder(
           listenable: SettingsPreviewSession.instance,
           builder: (context, _) =>
               Column(crossAxisAlignment: CrossAxisAlignment.start, children: [

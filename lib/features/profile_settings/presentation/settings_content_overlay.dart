@@ -1,3 +1,4 @@
+import '../../../core/providers/reactive_builder.dart';
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/widgets/davo_sheet_header.dart';
@@ -33,7 +34,7 @@ Future<void> showSettingsContent(BuildContext context, String title) =>
                   DavoSheetHeader(title: title),
                   Divider(height: 24, color: DavoColors.of(context).divider),
                   Expanded(
-                      child: ValueListenableBuilder<Map<String, String>>(
+                      child: DavoValueListenableBuilder<Map<String, String>>(
                     valueListenable: SettingsContentStore.content,
                     builder: (context, content, _) {
                       final published = content[title];

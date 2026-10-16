@@ -20,7 +20,7 @@ class _DashboardHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListenableBuilder(
+    return DavoListenableBuilder(
         listenable: LocalPreviewProfile.instance,
         builder: (context, _) => Row(
               children: [

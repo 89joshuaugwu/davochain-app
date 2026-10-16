@@ -1,80 +1,20 @@
-import '../../features/wallets/wallet_repository.dart';
-import 'dart:async';
+import 'transaction_repository.dart';
 import 'package:flutter/widgets.dart';
 import 'receipt_record.dart';
 
 /// Session-only records. Provider storage and authenticated history come later.
+/// Compatibility API. Repository owns lifecycle, reservations and persistence.
 abstract final class ReceiptActivity {
-  static final records = ValueNotifier<List<ReceiptRecord>>(const []);
   static const previewDelay = Duration(seconds: 20);
-  static final Map<String, Timer> _timers = {};
-  static int _session = 0;
-
+  static ValueNotifier<List<ReceiptRecord>> get records =>
+      LocalTransactionRepository.instance.records;
   static ReceiptRecord resolve(ReceiptRecord fallback) =>
-      records.value.where((record) => record.id == fallback.id).firstOrNull ??
-      fallback;
-
-  /// Only explicit new local submissions enter the simulated lifecycle.
-  /// Accepting historical or provider facts never starts a completion timer.
-  static ReceiptRecord submitPreview(ReceiptRecord record) {
-    if (record.id.isEmpty) return record;
-    if (!record.preview || record.status == ReceiptStatus.failed) {
-      accept(record);
-      return resolve(record);
-    }
-    if (records.value.any((existing) => existing.id == record.id)) {
-      return resolve(record);
-    }
-    final pending = record.withStatus(ReceiptStatus.pending);
-    accept(pending);
-    final accepted = resolve(pending);
-    if (accepted.status != ReceiptStatus.pending) return accepted;
-    final session = _session;
-    _timers[record.id] = Timer(previewDelay, () {
-      if (session != _session) return;
-      _timers.remove(record.id);
-      final current = resolve(pending);
-      if (!records.value.any((r) => r.id == record.id) ||
-          !current.preview ||
-          current.status != ReceiptStatus.pending) {
-        return;
-      }
-      accept(current.withStatus(ReceiptStatus.completed));
-    });
-    return resolve(pending);
-  }
-
-  static void accept(ReceiptRecord record) {
-    if (record.id.isEmpty) return;
-    final prior = records.value.where((r) => r.id == record.id);
-    if (prior.isNotEmpty &&
-        prior.first.status == ReceiptStatus.completed &&
-        record.status != ReceiptStatus.completed) {
-      return;
-    }
-    final wallet = WalletAccountState.instance;
-    if (record.preview &&
-        record.walletEffect != null &&
-        wallet.simulationEnabled) {
-      final applied = wallet.applyEffect(record.id, record.walletEffect!,
-          completed: record.status == ReceiptStatus.completed,
-          failed: record.status == ReceiptStatus.failed);
-      if (!applied) record = record.withStatus(ReceiptStatus.failed);
-    }
-    records.value = List.unmodifiable([
-      record,
-      ...records.value.where((r) => r.id != record.id),
-    ]);
-  }
-
-  static void reset() {
-    _session++;
-    for (final timer in _timers.values) {
-      timer.cancel();
-    }
-    _timers.clear();
-    records.value = const [];
-  }
+      LocalTransactionRepository.instance.resolve(fallback);
+  static ReceiptRecord submitPreview(ReceiptRecord record) =>
+      LocalTransactionRepository.instance.submit(record);
+  static void accept(ReceiptRecord record) =>
+      LocalTransactionRepository.instance.accept(record);
+  static void reset() => LocalTransactionRepository.instance.reset();
 }
 
 /// Result, details and export pages observe the same transaction identity.

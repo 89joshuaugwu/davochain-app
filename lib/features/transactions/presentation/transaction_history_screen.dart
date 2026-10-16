@@ -1,3 +1,4 @@
+import '../../../core/providers/reactive_builder.dart';
 import '../../../shared/receipts/receipt_identity.dart';
 import '../../../shared/widgets/davo_refresh_region.dart';
 import '../../../shared/receipts/receipt_activity.dart';
@@ -37,10 +38,10 @@ class TransactionHistoryScreen extends StatelessWidget {
         builder: _buildHistory,
       );
 
-  Widget _buildHistory(BuildContext context) => ValueListenableBuilder<
+  Widget _buildHistory(BuildContext context) => DavoValueListenableBuilder<
           List<FundingRecord>>(
       valueListenable: FundingActivity.records,
-      builder: (context, records, _) => ValueListenableBuilder<
+      builder: (context, records, _) => DavoValueListenableBuilder<
               List<ReceiptRecord>>(
           valueListenable: ReceiptActivity.records,
           builder: (context, receipts, _) => Scaffold(

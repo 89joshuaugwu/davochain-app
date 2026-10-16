@@ -66,7 +66,7 @@ class _FingerprintSettingsScreenState extends State<FingerprintSettingsScreen> {
             'Use the fingerprint enrolled on your device. Use your password to sign in, or your payment PIN to confirm transactions.',
             style: _t14(context)),
         const SizedBox(height: 24),
-        ValueListenableBuilder<bool>(
+        DavoValueListenableBuilder<bool>(
             valueListenable: PreviewAuthState.biometricsEnabled,
             builder: (context, value, _) => SwitchListTile.adaptive(
                 contentPadding: EdgeInsets.zero,
@@ -75,7 +75,7 @@ class _FingerprintSettingsScreenState extends State<FingerprintSettingsScreen> {
                 value: value,
                 onChanged: _working ? null : (v) => _change(false, v))),
         const Divider(),
-        ValueListenableBuilder<bool>(
+        DavoValueListenableBuilder<bool>(
             valueListenable: PreviewAuthState.paymentBiometricsEnabled,
             builder: (context, value, _) => SwitchListTile.adaptive(
                 contentPadding: EdgeInsets.zero,

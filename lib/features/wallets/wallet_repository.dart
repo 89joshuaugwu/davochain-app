@@ -1,3 +1,4 @@
+import 'quote_repository.dart';
 import 'dart:async';
 import 'wallet_effect.dart';
 import 'simulation_quotes.dart';
@@ -6,14 +7,14 @@ import '../../core/money/money.dart';
 import '../../shared/formatters/grouped_amount_formatter.dart';
 
 class WalletSnapshot {
-  WalletSnapshot(
-      {required this.accountId,
-      required this.version,
-      required Map<String, AssetAmount> available,
-      required Map<String, int> pricesMinorUnits,
-      this.usdNgnMinorUnits})
-      : _available = Map.unmodifiable(available),
-        _prices = Map.unmodifiable(pricesMinorUnits);
+  WalletSnapshot({
+    required this.accountId,
+    required this.version,
+    required Map<String, AssetAmount> available,
+    required Map<String, int> pricesMinorUnits,
+    this.usdNgnMinorUnits,
+  }) : _available = Map.unmodifiable(available),
+       _prices = Map.unmodifiable(pricesMinorUnits);
   final String accountId;
   final int? usdNgnMinorUnits;
   final int version;
@@ -45,30 +46,34 @@ class WalletSnapshot {
     return '\u2248 \$$whole.${(cents % BigInt.from(100)).toString().padLeft(2, '0')} USD';
   }
 
-  static WalletSnapshot seeded() =>
-      WalletSnapshot(accountId: 'local-account', version: 1, available: {
-        'NGN': AssetAmount.parse('1284500.35', 'NGN', 2),
-        'NGD': AssetAmount.parse('135000', 'NGD', 2),
-        'BTC': AssetAmount.parse('0.0086', 'BTC', 8),
-        'ETH': AssetAmount.parse('0.102', 'ETH', 8),
-        'SOL': AssetAmount.parse('2', 'SOL', 9),
-        'USDT': AssetAmount.parse('250', 'USDT', 6),
-        'USDC': AssetAmount.parse('112.20', 'USDC', 6),
-      }, pricesMinorUnits: {
-        'NGN': 100,
-        'NGD': 100,
-        'BTC': 2400000000,
-        'ETH': 520000000,
-        'SOL': 26500000,
-        'USDT': 154000,
-        'USDC': 154000
-      });
+  static WalletSnapshot seeded() => WalletSnapshot(
+    accountId: 'local-account',
+    version: 1,
+    available: {
+      'NGN': AssetAmount.parse('1284500.35', 'NGN', 2),
+      'NGD': AssetAmount.parse('135000', 'NGD', 2),
+      'BTC': AssetAmount.parse('0.0086', 'BTC', 8),
+      'ETH': AssetAmount.parse('0.102', 'ETH', 8),
+      'SOL': AssetAmount.parse('2', 'SOL', 9),
+      'USDT': AssetAmount.parse('250', 'USDT', 6),
+      'USDC': AssetAmount.parse('112.20', 'USDC', 6),
+    },
+    pricesMinorUnits: {
+      'NGN': 100,
+      'NGD': 100,
+      'BTC': 2400000000,
+      'ETH': 520000000,
+      'SOL': 26500000,
+      'USDT': 154000,
+      'USDC': 154000,
+    },
+  );
 }
 
 /// Observable account facts; provider adapters publish snapshots after a read.
 class WalletAccountState extends ChangeNotifier {
-  WalletAccountState._();
-  static final instance = WalletAccountState._();
+  WalletAccountState();
+  static final instance = WalletAccountState();
   WalletSnapshot snapshot = WalletSnapshot.seeded();
   int generation = 0;
   bool simulationEnabled = false;
@@ -80,43 +85,56 @@ class WalletAccountState extends ChangeNotifier {
     simulationEnabled = true;
     final previous = snapshot;
     snapshot = WalletSnapshot(
-        accountId: 'simulation-$generation',
-        version: 1,
-        available: {
-          for (final entry in SimulationQuotes.decimals.entries)
-            entry.key: AssetAmount(
-                entry.key,
-                empty || !previous.assets.contains(entry.key)
-                    ? BigInt.zero
-                    : previous.available(entry.key).atomicUnits,
-                entry.value)
-        },
-        pricesMinorUnits: SimulationQuotes.pricesMinorUnits,
-        usdNgnMinorUnits: SimulationQuotes.usdNgnMinorUnits);
+      accountId: 'simulation-$generation',
+      version: 1,
+      available: {
+        for (final entry in SimulationQuotes.decimals.entries)
+          entry.key: AssetAmount(
+            entry.key,
+            empty || !previous.assets.contains(entry.key)
+                ? BigInt.zero
+                : previous.available(entry.key).atomicUnits,
+            entry.value,
+          ),
+      },
+      pricesMinorUnits: SimulationQuotes.pricesMinorUnits,
+      usdNgnMinorUnits: SimulationQuotes.usdNgnMinorUnits,
+    );
     notifyListeners();
   }
 
-  WalletEffect effect(
-          {Map<String, String> debits = const {},
-          Map<String, String> credits = const {}}) =>
-      WalletEffect(
-          accountId: snapshot.accountId,
-          generation: generation,
-          debits: {
-            for (final entry in debits.entries)
-              entry.key: AssetAmount.parse(entry.value, entry.key,
-                  snapshot.available(entry.key).decimals)
-          },
-          credits: {
-            for (final entry in credits.entries)
-              entry.key: AssetAmount.parse(entry.value, entry.key,
-                  snapshot.available(entry.key).decimals)
-          });
+  WalletEffect effect({
+    Map<String, String> debits = const {},
+    Map<String, String> credits = const {},
+  }) => WalletEffect(
+    accountId: snapshot.accountId,
+    generation: generation,
+    debits: {
+      for (final entry in debits.entries)
+        entry.key: AssetAmount.parse(
+          entry.value,
+          entry.key,
+          snapshot.available(entry.key).decimals,
+        ),
+    },
+    credits: {
+      for (final entry in credits.entries)
+        entry.key: AssetAmount.parse(
+          entry.value,
+          entry.key,
+          snapshot.available(entry.key).decimals,
+        ),
+    },
+  );
 
   /// Reserves pending debits, settles destination once, refunds failed requests.
   /// False means the local record must fail; no negative balance is published.
-  bool applyEffect(String id, WalletEffect effect,
-      {required bool completed, required bool failed}) {
+  bool applyEffect(
+    String id,
+    WalletEffect effect, {
+    required bool completed,
+    required bool failed,
+  }) {
     if (!simulationEnabled ||
         effect.generation != generation ||
         effect.accountId != snapshot.accountId) {
@@ -129,23 +147,26 @@ class WalletAccountState extends ChangeNotifier {
       return failed;
     }
     final values = {
-      for (final asset in snapshot.assets) asset: snapshot.available(asset)
+      for (final asset in snapshot.assets) asset: snapshot.available(asset),
     };
     bool valid(AssetAmount amount) =>
         values.containsKey(amount.assetId) &&
         amount.atomicUnits >= BigInt.zero &&
         amount.decimals == values[amount.assetId]!.decimals;
-    if ([...effect.debits.values, ...effect.credits.values]
-        .any((a) => !valid(a))) {
+    if ([
+      ...effect.debits.values,
+      ...effect.credits.values,
+    ].any((a) => !valid(a))) {
       return false;
     }
     void change(AssetAmount amount, bool subtract) {
       final current = values[amount.assetId]!;
       values[amount.assetId] = AssetAmount(
-          current.assetId,
-          current.atomicUnits +
-              (subtract ? -amount.atomicUnits : amount.atomicUnits),
-          current.decimals);
+        current.assetId,
+        current.atomicUnits +
+            (subtract ? -amount.atomicUnits : amount.atomicUnits),
+        current.decimals,
+      );
     }
 
     if (failed) {
@@ -178,13 +199,32 @@ class WalletAccountState extends ChangeNotifier {
       }
     }
     snapshot = WalletSnapshot(
-        accountId: snapshot.accountId,
-        version: snapshot.version + 1,
-        available: values,
-        pricesMinorUnits: snapshot._prices,
-        usdNgnMinorUnits: snapshot.usdNgnMinorUnits);
+      accountId: snapshot.accountId,
+      version: snapshot.version + 1,
+      available: values,
+      pricesMinorUnits: snapshot._prices,
+      usdNgnMinorUnits: snapshot.usdNgnMinorUnits,
+    );
     scheduleMicrotask(notifyListeners);
     return true;
+  }
+
+  String? quoteId;
+  void updateQuotes(QuoteSnapshot quote) {
+    if (!simulationEnabled || quoteId == quote.id) return;
+    if (snapshot.assets.any(
+      (asset) => !quote.pricesMinorUnits.containsKey(asset),
+    ))
+      return;
+    snapshot = WalletSnapshot(
+      accountId: snapshot.accountId,
+      version: snapshot.version + 1,
+      available: snapshot._available,
+      pricesMinorUnits: quote.pricesMinorUnits,
+      usdNgnMinorUnits: quote.usdNgnMinorUnits,
+    );
+    quoteId = quote.id;
+    notifyListeners();
   }
 
   int get ngnAvailableMinorUnits =>
@@ -210,6 +250,7 @@ class WalletAccountState extends ChangeNotifier {
 
   void reset() {
     simulationEnabled = false;
+    quoteId = null;
     _reserved.clear();
     _settled.clear();
     _rejected.clear();
@@ -220,6 +261,7 @@ class WalletAccountState extends ChangeNotifier {
 }
 
 abstract interface class WalletRepository {
+  WalletSnapshot get current;
   Stream<WalletSnapshot> watchSnapshot();
   Future<void> refresh();
 }

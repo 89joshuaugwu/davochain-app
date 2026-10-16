@@ -1,3 +1,4 @@
+import '../../core/providers/reactive_builder.dart';
 import 'package:flutter/material.dart';
 import '../../core/theme/app_theme.dart';
 import '../../features/notifications/notification_inbox.dart';
@@ -11,7 +12,7 @@ class DavoNotificationButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final source = inbox ?? NotificationInbox.instance;
-    return ListenableBuilder(
+    return DavoListenableBuilder(
         listenable: source,
         builder: (context, _) {
           final count = source.unreadCount;

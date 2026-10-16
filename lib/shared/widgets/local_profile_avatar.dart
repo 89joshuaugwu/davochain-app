@@ -1,3 +1,4 @@
+import '../../core/providers/reactive_builder.dart';
 import 'dart:ui' as ui;
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
@@ -87,7 +88,7 @@ class _LocalProfileAvatarState extends State<LocalProfileAvatar> {
   }
 
   @override
-  Widget build(BuildContext context) => ListenableBuilder(
+  Widget build(BuildContext context) => DavoListenableBuilder(
       listenable: LocalPreviewProfile.instance,
       builder: (context, _) {
         final profile = LocalPreviewProfile.instance;

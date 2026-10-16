@@ -14,13 +14,16 @@ class AppProviders {
   final AppEnvironment environment;
   final ProviderAuthority authority;
   static void validateCurrentEntrypoint() {
-    const environment =
-        String.fromEnvironment('DAVOCHAIN_ENV', defaultValue: 'development');
+    const environment = String.fromEnvironment(
+      'DAVOCHAIN_ENV',
+      defaultValue: 'development',
+    );
     if (environment == 'production') {
       // No live adapter has been delivered. Do not silently fall back to fixtures.
       AppProviders(
-          environment: AppEnvironment.production,
-          authority: ProviderAuthority.local);
+        environment: AppEnvironment.production,
+        authority: ProviderAuthority.local,
+      );
     }
   }
 }

@@ -2570,7 +2570,7 @@ class _LocalProfileGreeting extends StatelessWidget {
   final String prefix, suffix;
   final TextStyle style;
   @override
-  Widget build(BuildContext context) => ListenableBuilder(
+  Widget build(BuildContext context) => DavoListenableBuilder(
       listenable: LocalPreviewProfile.instance,
       builder: (context, _) => Text(
           '$prefix${LocalPreviewProfile.instance.firstName}$suffix',

@@ -1,3 +1,4 @@
+import '../../../core/providers/reactive_builder.dart';
 import '../../profile_settings/presentation/settings_content_overlay.dart';
 import '../../../core/navigation/transaction_navigation.dart';
 import '../../../shared/widgets/trade_amount_card.dart';
@@ -1530,7 +1531,7 @@ class _BalanceCard extends StatelessWidget {
   final bool visible;
   final VoidCallback onVisibilityToggle;
   @override
-  Widget build(BuildContext context) => ListenableBuilder(
+  Widget build(BuildContext context) => DavoListenableBuilder(
       listenable: WalletAccountState.instance,
       builder: (context, _) => DavoBlueBalanceCard(
           label: 'Available NGN balance',

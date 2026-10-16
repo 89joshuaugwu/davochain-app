@@ -1,3 +1,4 @@
+import '../../../../core/providers/reactive_builder.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../../core/navigation/app_page_route.dart';
@@ -13,7 +14,7 @@ export 'verification_components.dart' show VerificationPage, VerificationButton;
 class VerificationOverviewScreen extends StatelessWidget {
   const VerificationOverviewScreen({super.key});
   @override
-  Widget build(BuildContext context) => ListenableBuilder(
+  Widget build(BuildContext context) => DavoListenableBuilder(
       listenable: VerificationSession.instance,
       builder: (context, _) {
         final session = VerificationSession.instance;

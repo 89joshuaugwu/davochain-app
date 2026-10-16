@@ -1,3 +1,4 @@
+import '../../core/providers/reactive_builder.dart';
 import '../wallets/wallet_repository.dart';
 import '../../core/navigation/transaction_navigation.dart';
 import '../../core/money/exact_decimal.dart';
@@ -156,7 +157,7 @@ class DepositActivityBanner extends StatelessWidget {
   final String? currency;
   @override
   Widget build(BuildContext context) =>
-      ValueListenableBuilder<List<FundingRecord>>(
+      DavoValueListenableBuilder<List<FundingRecord>>(
           valueListenable: FundingActivity.records,
           builder: (context, records, _) {
             final matching = records.where((r) =>
@@ -330,7 +331,7 @@ class FundingOutcomeScreen extends StatelessWidget {
   final bool returnToWallet, animate;
   @override
   Widget build(BuildContext context) =>
-      ValueListenableBuilder<List<FundingRecord>>(
+      DavoValueListenableBuilder<List<FundingRecord>>(
           valueListenable: FundingActivity.records,
           builder: (context, records, _) {
             final current = records.where((r) => r.id == record.id);
@@ -400,7 +401,7 @@ class FundingDetailsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) =>
-      ValueListenableBuilder<List<FundingRecord>>(
+      DavoValueListenableBuilder<List<FundingRecord>>(
           valueListenable: FundingActivity.records,
           builder: (context, records, _) {
             final matches = records.where((r) => r.id == record.id);

@@ -29,6 +29,6 @@ abstract final class SimulationQuotes {
     'ADA': 6,
     'DOGE': 8,
     'LTC': 8,
-    'BNB': 8
+    'BNB': 8,
   };
 }

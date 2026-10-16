@@ -406,7 +406,7 @@ class _GiftCardPaymentScreenState extends State<GiftCardPaymentScreen> {
                       children: [
                         Text('NGN Wallet Balance', style: _section(context)),
                         const SizedBox(height: 4),
-                        ListenableBuilder(
+                        DavoListenableBuilder(
                             listenable: WalletAccountState.instance,
                             builder: (context, _) => Text(
                                 'Available balance: ${WalletAccountState.instance.ngnBalanceLabel}',
