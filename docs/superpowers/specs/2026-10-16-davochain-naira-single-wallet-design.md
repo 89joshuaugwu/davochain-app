@@ -1,6 +1,6 @@
 # Davochain Naira: one customer fiat wallet
 
-Status: proposed money-flow design, awaiting review. The user confirmed the 1:1 relationship and approved the new currency mark; this does not yet authorize the ledger consolidation described here.
+Status: approved for implementation by the user on 16 October 2026, including the 1:1 relationship, selected currency mark, single-wallet plan and direct work/push on main.
 
 ## Confirmed product meaning
 

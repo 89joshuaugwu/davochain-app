@@ -1,3 +1,5 @@
+import 'davochain_naira_migration.dart';
+import 'wallet_repository.dart';
 import 'dart:async';
 import '../notifications/notification_events.dart';
 import '../notifications/notification_inbox.dart';
@@ -108,8 +110,12 @@ class LocalAccountPersistence {
   }
 
   Future<bool> _restore(String account, {bool Function()? isCurrent}) async {
-    final data = await (readAccount?.call(account) ?? store.read(account));
-    if (data == null || !(isCurrent?.call() ?? true)) return false;
+    final stored = await (readAccount?.call(account) ?? store.read(account));
+    if (stored == null || !(isCurrent?.call() ?? true)) return false;
+    final data = migrateDavochainNairaCheckpoint(stored);
+    final migrating =
+        (stored['wallet'] as Map)['fiatWalletVersion'] !=
+        davochainFiatWalletVersion;
     final display = Map<String, Object?>.from(data['profile'] as Map);
     // Validate the display envelope before replacing active account state.
     for (final key in [
@@ -140,6 +146,22 @@ class LocalAccountPersistence {
       } finally {
         validationInbox.dispose();
       }
+    }
+    if (migrating) {
+      // Validate the entire migrated envelope before writing or publishing it.
+      final validationLedger = WalletAccountState();
+      final validation = LocalTransactionRepository(
+        validationLedger,
+        settlementDelay: const Duration(days: 36500),
+      );
+      try {
+        validation.restoreState(data);
+      } finally {
+        validation.dispose();
+        validationLedger.dispose();
+      }
+      await store.write(data);
+      if (!(isCurrent?.call() ?? true)) return false;
     }
     _suspended = true;
     try {

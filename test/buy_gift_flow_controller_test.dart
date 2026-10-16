@@ -14,9 +14,9 @@ void main() {
         wallet: BuyFundingWallet.ngn,
         ngnAmount: 0));
     flow.pickPercentage(25);
-    expect(flow.amount.toFixed(2), '321125.09');
+    expect(flow.amount.toFixed(2), '354875.09');
     flow.pickPercentage(100);
-    expect(flow.amount.toFixed(2), '1284500.35');
+    expect(flow.amount.toFixed(2), '1419500.35');
     expect(flow.canContinue, isTrue);
     WalletAccountState.instance.reset();
     expect(flow.canContinue, isFalse);

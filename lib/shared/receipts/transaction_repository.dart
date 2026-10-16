@@ -1,3 +1,4 @@
+import '../../features/wallets/davochain_naira_migration.dart';
 import 'receipt_codec.dart';
 import 'dart:async';
 import 'package:flutter/foundation.dart';
@@ -242,6 +243,7 @@ class LocalTransactionRepository {
     'receipts': [for (final record in records.value) encodeReceipt(record)],
   };
   void restoreState(Map<String, Object?> data) {
+    data = migrateDavochainNairaCheckpoint(data);
     try {
       if (data['schema'] != 1) {
         throw const FormatException('Unknown ledger version');

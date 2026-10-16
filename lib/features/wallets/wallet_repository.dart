@@ -1,3 +1,5 @@
+import 'davochain_naira_migration.dart';
+import 'davochain_naira_wallet.dart';
 import 'quote_repository.dart';
 import 'dart:async';
 import 'wallet_effect.dart';
@@ -13,16 +15,17 @@ class WalletSnapshot {
     required Map<String, AssetAmount> available,
     required Map<String, int> pricesMinorUnits,
     this.usdNgnMinorUnits,
-  }) : _available = Map.unmodifiable(available),
-       _prices = Map.unmodifiable(pricesMinorUnits);
+  }) : _available = Map.unmodifiable(_singleFiatAmounts(available)),
+       _prices = Map.unmodifiable(_singleFiatPrices(pricesMinorUnits));
   final String accountId;
   final int? usdNgnMinorUnits;
   final int version;
   final Map<String, AssetAmount> _available;
   final Map<String, int> _prices;
   AssetAmount available(String asset) =>
-      _available[asset] ?? (throw StateError('Unsupported wallet $asset'));
-  int? priceMinorUnits(String asset) => _prices[asset];
+      _available[canonicalWalletAsset(asset)] ??
+      (throw StateError('Unsupported wallet $asset'));
+  int? priceMinorUnits(String asset) => _prices[canonicalWalletAsset(asset)];
   Iterable<String> get assets => _available.keys;
   int get portfolioMinorUnits => assets
       .where((asset) => asset != 'NGN' && asset != 'NGD')
@@ -30,7 +33,7 @@ class WalletSnapshot {
   int valuationMinorUnits(String asset) {
     final amount = available(asset);
     return (amount.atomicUnits *
-            BigInt.from(_prices[asset]!) ~/
+            BigInt.from(_prices[canonicalWalletAsset(asset)]!) ~/
             BigInt.from(10).pow(amount.decimals))
         .toInt();
   }
@@ -107,26 +110,33 @@ class WalletAccountState extends ChangeNotifier {
   WalletEffect effect({
     Map<String, String> debits = const {},
     Map<String, String> credits = const {},
-  }) => WalletEffect(
-    accountId: snapshot.accountId,
-    generation: generation,
-    debits: {
-      for (final entry in debits.entries)
-        entry.key: AssetAmount.parse(
+  }) {
+    Map<String, AssetAmount> amounts(Map<String, String> values) {
+      final result = <String, AssetAmount>{};
+      for (final entry in values.entries) {
+        final asset = canonicalWalletAsset(entry.key);
+        final amount = AssetAmount.parse(
           entry.value,
-          entry.key,
-          snapshot.available(entry.key).decimals,
-        ),
-    },
-    credits: {
-      for (final entry in credits.entries)
-        entry.key: AssetAmount.parse(
-          entry.value,
-          entry.key,
-          snapshot.available(entry.key).decimals,
-        ),
-    },
-  );
+          asset,
+          snapshot.available(asset).decimals,
+        );
+        final previous = result[asset];
+        result[asset] = AssetAmount(
+          asset,
+          (previous?.atomicUnits ?? BigInt.zero) + amount.atomicUnits,
+          amount.decimals,
+        );
+      }
+      return result;
+    }
+
+    return WalletEffect(
+      accountId: snapshot.accountId,
+      generation: generation,
+      debits: amounts(debits),
+      credits: amounts(credits),
+    );
+  }
 
   /// Reserves pending debits, settles destination once, refunds failed requests.
   /// False means the local record must fail; no negative balance is published.
@@ -277,6 +287,7 @@ class WalletAccountState extends ChangeNotifier {
 
   Map<String, Object?> exportState() => {
     'schema': 1,
+    'fiatWalletVersion': davochainFiatWalletVersion,
     'accountId': snapshot.accountId,
     'version': snapshot.version,
     'enabled': simulationEnabled,
@@ -301,6 +312,7 @@ class WalletAccountState extends ChangeNotifier {
     'rejected': _rejected.toList(),
   };
   void restoreState(Map<String, Object?> data) {
+    data = migrateDavochainNairaWallet(data);
     try {
       if (data['schema'] != 1) {
         throw const FormatException('Unknown wallet version');
@@ -436,4 +448,35 @@ abstract interface class WalletRepository {
   WalletSnapshot get current;
   Stream<WalletSnapshot> watchSnapshot();
   Future<void> refresh();
+}
+
+Map<String, AssetAmount> _singleFiatAmounts(Map<String, AssetAmount> input) {
+  final result = Map<String, AssetAmount>.of(input);
+  final legacy = result.remove('NGD');
+  if (legacy != null) {
+    final existing = result['NGN'];
+    if (legacy.decimals != 2 || existing != null && existing.decimals != 2) {
+      throw const FormatException('Invalid naira precision');
+    }
+    result['NGN'] = AssetAmount(
+      'NGN',
+      legacy.atomicUnits + (existing?.atomicUnits ?? BigInt.zero),
+      2,
+    );
+  }
+  return result;
+}
+
+Map<String, int> _singleFiatPrices(Map<String, int> input) {
+  final result = Map<String, int>.of(input);
+  final legacy = result.remove('NGD');
+  if (legacy != null) {
+    if (legacy != 100 || result['NGN'] != null && result['NGN'] != 100) {
+      throw const FormatException(
+        'Fiat wallet must represent naira at one to one',
+      );
+    }
+    result['NGN'] = 100;
+  }
+  return result;
 }

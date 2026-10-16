@@ -79,7 +79,7 @@ void main() {
     expect(tester.getCenter(find.text('Continue')).dy, greaterThan(740));
     await tester.tap(find.byTooltip('Hide balance'));
     await tester.pump();
-    expect(find.textContaining('1,284,500'), findsNothing);
+    expect(find.textContaining('1,419,500'), findsNothing);
     expect(find.text('Balance hidden'), findsOneWidget);
   });
   testWidgets('featured banners rotate with dots and no playback buttons',
