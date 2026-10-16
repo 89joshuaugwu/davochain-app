@@ -23,4 +23,7 @@ plugins {
     id("org.jetbrains.kotlin.android") version "2.4.0" apply false
 }
 
+// Distinguish this checkout when several worktrees share one IDE workspace.
+rootProject.name = settingsDir.parentFile.name
+
 include(":app")
