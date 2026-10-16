@@ -5,7 +5,6 @@ import 'package:davochain/core/theme/app_theme.dart';
 import 'package:davochain/features/buy_crypto/presentation/buy_crypto_models.dart';
 import 'package:davochain/features/buy_crypto/presentation/buy_receipt_records.dart';
 import 'package:davochain/features/crypto/presentation/crypto_receipt_records.dart';
-import 'package:davochain/features/crypto/presentation/crypto_transaction_kind.dart';
 import 'package:davochain/features/funding/funding_outcomes.dart';
 import 'package:davochain/features/gift_cards/presentation/gift_card_receipt_records.dart';
 import 'package:davochain/core/preview/local_preview_profile.dart';

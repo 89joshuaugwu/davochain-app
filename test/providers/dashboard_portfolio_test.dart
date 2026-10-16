@@ -7,11 +7,20 @@ import 'package:davochain/features/wallets/wallet_repository.dart';
 import 'package:davochain/features/wallets/wallet_providers.dart';
 import 'package:davochain/features/dashboard/presentation/dashboard_screen.dart';
 
+class _ObservedWallet extends WalletAccountState {
+  bool get listening => hasListeners;
+}
+
+class _ObservedValue extends ValueNotifier<int> {
+  _ObservedValue() : super(0);
+  bool get listening => hasListeners;
+}
+
 void main() {
   testWidgets(
     'Riverpod consumers publish wallet changes and detach on disposal',
     (tester) async {
-      final engine = WalletAccountState()..startSimulation(empty: true);
+      final engine = _ObservedWallet()..startSimulation(empty: true);
       await tester.pumpWidget(
         ProviderScope(
           overrides: [walletEngineProvider.overrideWithValue(engine)],
@@ -36,13 +45,13 @@ void main() {
       expect(find.text('1000'), findsOneWidget);
       await tester.pumpWidget(const SizedBox());
       await tester.pumpAndSettle();
-      expect(engine.hasListeners, isFalse);
+      expect(engine.listening, isFalse);
     },
   );
   testWidgets(
     'device settings use Riverpod subscriptions without requiring a route-specific scope',
     (tester) async {
-      final value = ValueNotifier(0);
+      final value = _ObservedValue();
       await tester.pumpWidget(
         MaterialApp(
           home: DavoValueListenableBuilder<int>(
@@ -56,7 +65,7 @@ void main() {
       expect(find.text('1'), findsOneWidget);
       await tester.pumpWidget(const SizedBox());
       await tester.pumpAndSettle();
-      expect(value.hasListeners, isFalse);
+      expect(value.listening, isFalse);
     },
   );
   testWidgets('portfolio follows actual shared balance settlement', (

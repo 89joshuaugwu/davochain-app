@@ -25,7 +25,7 @@ void main() {
     final name = tester.getRect(find.text('Bitcoin'));
     final fiat = tester.getRect(find.text('0.00 USD').first);
     final symbol = tester.getRect(find.text('BTC'));
-    print('AUDIT selector name=$name fiat=$fiat symbol=$symbol horizontalCollision=${name.overlaps(fiat)} verticalCollision=${name.overlaps(symbol)}');
+    debugPrint('AUDIT selector name=$name fiat=$fiat symbol=$symbol horizontalCollision=${name.overlaps(fiat)} verticalCollision=${name.overlaps(symbol)}');
     expect(name.overlaps(fiat), isTrue, reason: 'Reproduce the current fixed-coordinate collision');
     await tester.runAsync(() async {
       final image = await (boundary.currentContext!.findRenderObject()! as RenderRepaintBoundary).toImage(pixelRatio: 2);
@@ -42,7 +42,7 @@ void main() {
     final errors = <String>[];
     Object? error;
     while ((error = tester.takeException()) != null) { errors.add(error.toString()); }
-    print('AUDIT OTP errors: $errors');
+    debugPrint('AUDIT OTP errors: $errors');
     await tester.pumpWidget(const SizedBox());
   });
 }

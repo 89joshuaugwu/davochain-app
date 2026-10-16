@@ -137,8 +137,9 @@ void main() {
         checkpoint: (data) async {
           writes++;
           if ((data['receipts'] as List).first['status'] == 'completed' &&
-              failCompletion)
+              failCompletion) {
             throw StateError('disk full');
+          }
         },
       );
       addTearDown(repo.dispose);
