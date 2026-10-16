@@ -1,3 +1,4 @@
+import 'package:davochain/features/buy_crypto/presentation/buy_crypto_widgets.dart';
 import 'package:davochain/features/wallets/presentation/wallet_picker_sheet.dart';
 import 'package:davochain/features/dashboard/presentation/dashboard_screen.dart';
 import 'package:davochain/features/wallets/wallet_repository.dart';
@@ -22,14 +23,14 @@ void main() {
   tearDown(() {
     session.reset();
   });
-  testWidgets('capture asset catalog 57', (tester) async {
+  testWidgets('capture currency layout58', (tester) async {
     tester.view.physicalSize = const Size(411, 914);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
     LocalPreviewProfile.instance.loginSample();
     final key = GlobalKey();
-    final directory = Directory('../review/evidence/asset-catalog-57/widgets')
+    final directory = Directory('../review/evidence/currency-layout-58/widgets')
       ..createSync(recursive: true);
     await tester.runAsync(() async {
       final emojiFont = File('C:/Windows/Fonts/seguiemj.ttf');
@@ -44,6 +45,9 @@ void main() {
               'assets/fonts/davochain_currency/DavochainCurrency-Regular.ttf',
             ),
           ))
+          .load();
+      await (FontLoader('Ahem')
+            ..addFont(rootBundle.load('assets/fonts/sora/Sora-Variable.ttf')))
           .load();
       await (FontLoader('Sora')
             ..addFont(rootBundle.load('assets/fonts/sora/Sora-Variable.ttf')))
@@ -117,6 +121,21 @@ void main() {
         await mount(entry.value, dark);
         expect(tester.takeException(), isNull, reason: '$theme-${entry.key}');
         await capture('$theme-${entry.key}');
+        if (entry.key == 'portfolio') {
+          await tester.drag(
+            find.byType(CustomScrollView),
+            const Offset(0, -1000),
+          );
+          await tester.pumpAndSettle();
+          await capture('$theme-portfolio-search-pinned');
+        }
+      }
+      for (final sheet in <String, Widget>{'crypto-modal': const BuyCryptoAssetSheet(), 'wallet-modal': const WalletPickerSheet()}.entries) {
+        await mount(Scaffold(body: Builder(builder: (context) => TextButton(onPressed: () => showModalBottomSheet<void>(context: context, isScrollControlled: true, useSafeArea: true, backgroundColor: Colors.transparent, builder: (_) => sheet.value), child: const Text('Open selector')))), dark);
+        await tester.tap(find.text('Open selector'));
+        await tester.pumpAndSettle();
+        expect(tester.takeException(), isNull);
+        await capture('$theme-${sheet.key}');
       }
       tester.view.physicalSize = const Size(320, 568);
       await mount(

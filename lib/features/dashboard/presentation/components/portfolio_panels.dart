@@ -22,217 +22,256 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
     },
   );
   Widget _buildPortfolio(BuildContext context) {
+    final searchHeight =
+        24 +
+        (MediaQuery.textScalerOf(context).scale(20) + 28).clamp(52.0, 120.0);
+    final minimumListHeight =
+        (MediaQuery.sizeOf(context).height -
+                MediaQuery.paddingOf(context).vertical -
+                MediaQuery.viewInsetsOf(context).bottom -
+                searchHeight)
+            .clamp(0.0, double.infinity);
     return Scaffold(
       backgroundColor: DavoColors.of(context).canvas,
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              LayoutBuilder(
-                builder: (context, constraints) {
-                  final heading = Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Portfolio',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
-                          color: DavoColors.of(context).ink,
-                        ),
-                      ),
-                      Text(
-                        'Your wallet holdings',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: DavoColors.of(context).body,
-                        ),
-                      ),
-                    ],
-                  );
-                  final separateHeading =
-                      constraints.maxWidth /
-                          (MediaQuery.textScalerOf(context).scale(18) / 18) <
-                      260;
-                  final controls = Row(
-                    children: [
-                      IconButton(
-                        onPressed: () => Navigator.pop(context),
-                        icon: const Icon(
-                          Icons.arrow_back_ios_new_rounded,
-                          size: 20,
-                        ),
-                      ),
-                      const SizedBox(width: 7),
-                      if (separateHeading)
-                        const Spacer()
-                      else
-                        Expanded(child: heading),
-                      _RoundIconButton(
-                        icon: _visible
-                            ? Icons.visibility_outlined
-                            : Icons.visibility_off_outlined,
-                        tooltip: _visible
-                            ? 'Hide portfolio balance'
-                            : 'Show portfolio balance',
-                        onTap: () => setState(() => _visible = !_visible),
-                      ),
-                      const SizedBox(width: 4),
-                      _RoundIconButton(
-                        tooltip: 'Portfolio performance',
-                        icon: Icons.show_chart_rounded,
-                        onTap: () => Navigator.of(context).push(
-                          _davoRoute<void>(
-                            PortfolioPerformanceScreen(
-                              initialValueVisible: _visible,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  );
-                  return separateHeading
-                      ? Column(
+        child: CustomScrollView(
+          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+          slivers: [
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    LayoutBuilder(
+                      builder: (context, constraints) {
+                        final heading = Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            controls,
-                            const SizedBox(height: 8),
-                            heading,
-                          ],
-                        )
-                      : controls;
-                },
-              ),
-              const SizedBox(height: 16),
-              _PortfolioValueCard(visible: _visible),
-              const SizedBox(height: 16),
-              Row(
-                children: List.generate(3, (index) {
-                  return Expanded(
-                    child: Padding(
-                      padding: EdgeInsets.only(right: index == 2 ? 0 : 16),
-                      child: Material(
-                        color: DavoColors.of(context).primarySoft,
-                        borderRadius: BorderRadius.circular(6),
-                        child: InkWell(
-                          onTap: () {
-                            Navigator.of(context).push(
-                              _davoRoute<void>(
-                                index == 0
-                                    ? const BuyAmountScreen(
-                                        initialOrder: BuyCryptoOrder(
-                                          asset: BuyCryptoAsset.bitcoin,
-                                          wallet: BuyFundingWallet.ngn,
-                                          ngnAmount: 0,
-                                        ),
-                                      )
-                                    : TradeAmountScreen(
-                                        mode: index == 1
-                                            ? TradeMode.sell
-                                            : TradeMode.convert,
-                                        asset: BuyCryptoAsset.bitcoin,
-                                      ),
+                            Text(
+                              'Portfolio',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
+                                color: DavoColors.of(context).ink,
                               ),
-                            );
-                          },
-                          borderRadius: BorderRadius.circular(6),
-                          child: SizedBox(
-                            height: 48,
-                            child: Center(
-                              child: Text(
-                                ['Buy', 'Sell', 'Swap'][index],
-                                style: TextStyle(
-                                  fontFamily: 'Sora',
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
-                                  color: DavoColors.of(context).body,
+                            ),
+                            Text(
+                              'Your wallet holdings',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: DavoColors.of(context).body,
+                              ),
+                            ),
+                          ],
+                        );
+                        final separateHeading =
+                            constraints.maxWidth /
+                                (MediaQuery.textScalerOf(context).scale(18) /
+                                    18) <
+                            260;
+                        final controls = Row(
+                          children: [
+                            IconButton(
+                              onPressed: () => Navigator.pop(context),
+                              icon: const Icon(
+                                Icons.arrow_back_ios_new_rounded,
+                                size: 20,
+                              ),
+                            ),
+                            const SizedBox(width: 7),
+                            if (separateHeading)
+                              const Spacer()
+                            else
+                              Expanded(child: heading),
+                            _RoundIconButton(
+                              icon: _visible
+                                  ? Icons.visibility_outlined
+                                  : Icons.visibility_off_outlined,
+                              tooltip: _visible
+                                  ? 'Hide portfolio balance'
+                                  : 'Show portfolio balance',
+                              onTap: () => setState(() => _visible = !_visible),
+                            ),
+                            const SizedBox(width: 4),
+                            _RoundIconButton(
+                              tooltip: 'Portfolio performance',
+                              icon: Icons.show_chart_rounded,
+                              onTap: () => Navigator.of(context).push(
+                                _davoRoute<void>(
+                                  PortfolioPerformanceScreen(
+                                    initialValueVisible: _visible,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        );
+                        return separateHeading
+                            ? Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  controls,
+                                  const SizedBox(height: 8),
+                                  heading,
+                                ],
+                              )
+                            : controls;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    _PortfolioValueCard(visible: _visible),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: List.generate(3, (index) {
+                        return Expanded(
+                          child: Padding(
+                            padding: EdgeInsets.only(
+                              right: index == 2 ? 0 : 16,
+                            ),
+                            child: Material(
+                              color: DavoColors.of(context).primarySoft,
+                              borderRadius: BorderRadius.circular(6),
+                              child: InkWell(
+                                onTap: () {
+                                  Navigator.of(context).push(
+                                    _davoRoute<void>(
+                                      index == 0
+                                          ? const BuyAmountScreen(
+                                              initialOrder: BuyCryptoOrder(
+                                                asset: BuyCryptoAsset.bitcoin,
+                                                wallet: BuyFundingWallet.ngn,
+                                                ngnAmount: 0,
+                                              ),
+                                            )
+                                          : TradeAmountScreen(
+                                              mode: index == 1
+                                                  ? TradeMode.sell
+                                                  : TradeMode.convert,
+                                              asset: BuyCryptoAsset.bitcoin,
+                                            ),
+                                    ),
+                                  );
+                                },
+                                borderRadius: BorderRadius.circular(6),
+                                child: SizedBox(
+                                  height: 48,
+                                  child: Center(
+                                    child: Text(
+                                      ['Buy', 'Sell', 'Swap'][index],
+                                      style: TextStyle(
+                                        fontFamily: 'Sora',
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w600,
+                                        color: DavoColors.of(context).body,
+                                      ),
+                                    ),
+                                  ),
                                 ),
                               ),
                             ),
                           ),
-                        ),
+                        );
+                      }),
+                    ),
+                    const SizedBox(height: 16),
+                    _visible
+                        ? const _AllocationCard()
+                        : const Padding(
+                            padding: EdgeInsets.all(16),
+                            child: Text('Allocation hidden'),
+                          ),
+                    const SizedBox(height: 24),
+                    Text(
+                      'Your Assets',
+                      style: TextStyle(
+                        fontFamily: 'Sora',
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: DavoColors.of(context).ink,
                       ),
                     ),
-                  );
-                }),
+                    const SizedBox(height: 8),
+                  ],
+                ),
               ),
-              const SizedBox(height: 16),
-              _visible
-                  ? const _AllocationCard()
-                  : const Padding(
-                      padding: EdgeInsets.all(16),
-                      child: Text('Allocation hidden'),
+            ),
+            SliverPersistentHeader(
+              pinned: true,
+              delegate: _PortfolioSearchHeader(
+                height: searchHeight,
+                child: Material(
+                  color: DavoColors.of(context).canvas,
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+                    child: TextField(
+                      key: const ValueKey('portfolio-asset-search'),
+                      decoration: const InputDecoration(
+                        hintText: 'Search assets',
+                        prefixIcon: Icon(Icons.search_rounded),
+                      ),
+                      onChanged: (value) => setState(() => _assetQuery = value),
                     ),
-              const SizedBox(height: 24),
-              Text(
-                'Your Assets',
-                style: TextStyle(
-                  fontFamily: 'Sora',
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: DavoColors.of(context).ink,
+                  ),
                 ),
               ),
-              const SizedBox(height: 12),
-              TextField(
-                decoration: const InputDecoration(
-                  hintText: 'Search assets',
-                  prefixIcon: Icon(Icons.search_rounded),
-                ),
-                onChanged: (value) => setState(() => _assetQuery = value),
-              ),
-              const SizedBox(height: 12),
-              Builder(
-                builder: (context) {
-                  final wallet = WalletAccountState.instance;
-                  final assets = orderedCryptoAssets(
-                    wallet.snapshot,
-                    query: _assetQuery,
-                  );
-                  if (assets.isEmpty) {
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 28),
-                      child: Column(
+            ),
+            SliverToBoxAdapter(
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minHeight: minimumListHeight),
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 32),
+                  child: Builder(
+                    builder: (context) {
+                      final wallet = WalletAccountState.instance;
+                      final assets = orderedCryptoAssets(
+                        wallet.snapshot,
+                        query: _assetQuery,
+                      );
+                      if (assets.isEmpty) {
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 28),
+                          child: Column(
+                            children: [
+                              Icon(
+                                Icons.search_off_rounded,
+                                size: 32,
+                                color: DavoColors.of(context).link,
+                              ),
+                              const SizedBox(height: 12),
+                              const Text(
+                                'No matching assets',
+                                style: TextStyle(fontWeight: FontWeight.w600),
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                'Try a different name or symbol.',
+                                style: TextStyle(
+                                  color: DavoColors.of(context).bodyMuted,
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      }
+                      return Column(
                         children: [
-                          Icon(
-                            Icons.search_off_rounded,
-                            size: 32,
-                            color: DavoColors.of(context).link,
-                          ),
-                          const SizedBox(height: 12),
-                          const Text(
-                            'No matching assets',
-                            style: TextStyle(fontWeight: FontWeight.w600),
-                          ),
-                          const SizedBox(height: 6),
-                          Text(
-                            'Try a different name or symbol.',
-                            style: TextStyle(
-                              color: DavoColors.of(context).bodyMuted,
+                          for (final asset in assets)
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 8),
+                              child: _PortfolioHoldingTile(
+                                asset: asset,
+                                visible: _visible,
+                              ),
                             ),
-                          ),
                         ],
-                      ),
-                    );
-                  }
-                  return Column(
-                    children: [
-                      for (final asset in assets)
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: 8),
-                          child: _PortfolioHoldingTile(
-                            asset: asset,
-                            visible: _visible,
-                          ),
-                        ),
-                    ],
-                  );
-                },
+                      );
+                    },
+                  ),
+                ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -331,30 +370,19 @@ class _PortfolioValueCardState extends State<_PortfolioValueCard> {
     return DavoBlueBalanceCard(
       label: 'Total Portfolio Value',
       artBottom: -21,
-      amount: widget.visible
-          ? valuation.available
-                ? davochainNairaText(valuation.nairaMinorUnits)
-                : 'Value unavailable'
-          : 'Balance hidden',
-      amountWidget: !valuation.available && widget.visible
-          ? const Text(
-              'Value unavailable',
-              style: TextStyle(fontSize: 22, color: Colors.white),
-            )
-          : DavoNairaAmount(
-              minorUnits: valuation.nairaMinorUnits,
-              visible: widget.visible,
-              style: const TextStyle(
-                fontSize: 28,
-                fontWeight: FontWeight.w700,
-                color: Colors.white,
-              ),
-            ),
+      amount: !widget.visible
+          ? '\u2022\u2022\u2022\u2022'
+          : !valuation.available
+          ? 'Value unavailable'
+          : valuation.usdLabel?.replaceFirst('\u2248 ', '') ??
+                valuation.nairaLabel,
       caption: !widget.visible
           ? 'Balance hidden'
           : !valuation.available
           ? 'A price is unavailable. Pull down to refresh.'
-          : '= ${valuation.nairaLabel}\n${valuation.usdLabel ?? 'USD estimate unavailable'}',
+          : valuation.usdLabel == null
+          ? 'USD estimate unavailable'
+          : '\u2248 ${valuation.nairaLabel}',
       trailing: WalletAccountState.instance.simulationEnabled
           ? null
           : canRefresh
@@ -551,15 +579,12 @@ class _AllocationCard extends StatelessWidget {
                   final percentage = total == 0
                       ? '0.0%'
                       : '${(value * 100 / total).toStringAsFixed(1)}%';
-                  final compactValue =
-                      '${(value / 100000).toStringAsFixed(1)}k';
                   return SizedBox(
                     width: large
                         ? constraints.maxWidth
                         : (constraints.maxWidth - 10) / 2,
                     child: Semantics(
-                      label:
-                          '${names[asset] ?? asset}, $percentage, ${state.balanceLabel(asset)}',
+                      label: '${names[asset] ?? asset}, $percentage',
                       excludeSemantics: true,
                       child: Container(
                         padding: const EdgeInsets.all(10),
@@ -597,28 +622,6 @@ class _AllocationCard extends StatelessWidget {
                               ),
                             ),
                             const SizedBox(width: 5),
-                            Semantics(
-                              label: davochainNairaText(value),
-                              excludeSemantics: true,
-                              child: Text.rich(
-                                TextSpan(
-                                  children: [
-                                    const TextSpan(
-                                      text: davochainCurrencyGlyph,
-                                      style: TextStyle(
-                                        fontFamily: 'DavochainCurrency',
-                                        fontWeight: FontWeight.normal,
-                                      ),
-                                    ),
-                                    TextSpan(text: compactValue),
-                                  ],
-                                ),
-                                style: const TextStyle(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ),
                           ],
                         ),
                       ),
@@ -760,7 +763,12 @@ class _PortfolioHoldingTile extends StatelessWidget {
                       children: [
                         Expanded(child: name),
                         const SizedBox(width: 10),
-                        Flexible(child: values),
+                        Flexible(
+                          child: Align(
+                            alignment: Alignment.centerRight,
+                            child: values,
+                          ),
+                        ),
                         const SizedBox(width: 4),
                         const Icon(Icons.chevron_right, size: 18),
                       ],
@@ -836,7 +844,7 @@ class _CatalogAssetScreen extends StatelessWidget {
   );
 }
 
-/// All monetary values share the branded denomination and explicit equivalents.
+/// One USD valuation beside the crypto quantity; cash branding stays on cash.
 class _AssetValue extends StatelessWidget {
   const _AssetValue({
     required this.asset,
@@ -859,32 +867,30 @@ class _AssetValue extends StatelessWidget {
             quote: wallet.activeQuote,
           )
         : null;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.end,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        if (value != null)
-          DavoNairaAmount(
-            minorUnits: value.nairaMinorUnits,
-            visible: visible,
-            style: TextStyle(
-              fontSize: compact ? 12 : 14,
-              fontWeight: FontWeight.w600,
-            ),
-          )
-        else
-          Text(visible ? 'Value unavailable' : 'Hidden'),
-        if (visible && value != null)
-          Text(
-            '= ${value.nairaLabel}\n${value.usdLabel ?? 'USD unavailable'}',
-            textAlign: TextAlign.right,
-            style: TextStyle(
-              fontSize: compact ? 9 : 10,
-              height: compact ? 1.2 : 1.4,
-              color: DavoColors.of(context).bodyMuted,
-            ),
-          ),
-      ],
+    final usd = value?.usdLabel?.replaceFirst('\u2248 ', '');
+    return Text(
+      !visible ? 'Hidden' : usd ?? 'Value unavailable',
+      textAlign: TextAlign.right,
+      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
     );
   }
+}
+
+class _PortfolioSearchHeader extends SliverPersistentHeaderDelegate {
+  _PortfolioSearchHeader({required this.height, required this.child});
+  final double height;
+  final Widget child;
+  @override
+  double get minExtent => height;
+  @override
+  double get maxExtent => height;
+  @override
+  Widget build(
+    BuildContext context,
+    double shrinkOffset,
+    bool overlapsContent,
+  ) => SizedBox(height: height, child: child);
+  @override
+  bool shouldRebuild(covariant _PortfolioSearchHeader oldDelegate) =>
+      oldDelegate.height != height || oldDelegate.child != child;
 }

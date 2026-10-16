@@ -112,18 +112,32 @@ class _BuyAmountScreenState extends State<BuyAmountScreen> {
                 color: DavoColors.of(context).link,
               ),
               name: _order.wallet.name,
-              symbol: _order.wallet.symbol,
-            ),
-            amountPrefix: Padding(
-              padding: const EdgeInsets.only(right: 8),
-              child: DavoCurrencyMark(
-                size: 22,
-                color: DavoColors.of(context).ink,
-              ),
+              symbol: 'Cash wallet',
             ),
             controller: _amountController,
             onChanged: () => setState(() {}),
-            footer: 'Available: ${_order.wallet.formattedBalance}',
+            footer: 'Available Davochain Naira',
+            footerWidget: Wrap(
+              spacing: 4,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              children: [
+                Text(
+                  'Available:',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: DavoColors.of(context).body,
+                  ),
+                ),
+                DavoNairaAmount(
+                  minorUnits:
+                      WalletAccountState.instance.ngnAvailableMinorUnits,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: DavoColors.of(context).body,
+                  ),
+                ),
+              ],
+            ),
           ),
           const SizedBox(height: 16),
           TradeAmountCard(

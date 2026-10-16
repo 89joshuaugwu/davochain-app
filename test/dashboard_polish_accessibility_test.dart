@@ -15,7 +15,7 @@ void main() {
     expect(tester.getSize(hide).height, greaterThanOrEqualTo(48));
     await tester.tap(hide);
     await tester.pumpAndSettle();
-    expect(find.text('\u2022\u2022\u2022\u2022'), findsWidgets);
+    expect(find.text('\u2022\u2022\u2022\u2022'), findsOneWidget);
     expect(find.byTooltip('Show portfolio balance'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });

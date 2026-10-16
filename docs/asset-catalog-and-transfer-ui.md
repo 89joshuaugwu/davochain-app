@@ -1,5 +1,6 @@
 # Asset catalog and transfers
 
+Currency presentation correction: see [currency-layout-correction.md](currency-layout-correction.md). Cash branding is restricted to cash balances; crypto selectors use quantities, holdings use one USD value, and Portfolio search pins. This supersedes the earlier repeated per-row cash/naira/USD presentation.
 Home shows at most five crypto assets. Funded holdings come first, sorted by their exact value under a common FX quote; zero balances follow in the curated USDT, BTC, ETH, USDC, SOL order, then remaining assets alphabetically. Portfolio shows all ten catalog assets at zero, with search by name or ticker. This popular shortlist is a product choice, not a live market ranking.
 
 Davochain Naira is the primary displayed value, followed by `= naira` and approximate USD. Crypto quantities retain their own ticker. Hiding portfolio values also hides allocation values, percentages and monetary accessibility labels. Portfolio totals validate constituent quotes without requiring a cash holding; missing constituent prices show unavailable. Historical performance retains recorded naira valuations and does not invent historical USD FX.

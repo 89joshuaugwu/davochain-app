@@ -1,5 +1,4 @@
 import '../../wallets/asset_catalog_projection.dart';
-import '../../wallets/wallet_valuation.dart';
 import '../../../shared/widgets/davo_naira_amount.dart';
 import 'dart:math' as math;
 import 'package:flutter_svg/flutter_svg.dart';
@@ -69,31 +68,9 @@ class _BuyCryptoAssetSheetState extends State<BuyCryptoAssetSheet> {
                 WalletAccountState.instance.snapshot.assets.contains(
                   asset.symbol,
                 )
-                ? WalletAccountState.instance.balanceLabel(asset.symbol)
-                : '\u20a60.00',
-            valueWidget:
-                WalletAccountState.instance.snapshot.assets.contains(
-                      asset.symbol,
-                    ) &&
-                    WalletAccountState.instance.snapshot.priceMinorUnits(
-                          asset.symbol,
-                        ) !=
-                        null
-                ? DavoNairaAmount(
-                    minorUnits: WalletAccountState.instance.snapshot
-                        .valuationMinorUnits(asset.symbol),
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  )
-                : null,
-            quantity:
-                WalletAccountState.instance.snapshot.assets.contains(
-                  asset.symbol,
-                )
-                ? '${WalletAccountState.instance.snapshot.available(asset.symbol).decimal} ${asset.symbol}\n= ${WalletAccountState.instance.balanceLabel(asset.symbol)}\n${WalletValuation.forAsset(WalletAccountState.instance.snapshot, asset.symbol, quote: WalletAccountState.instance.activeQuote).usdLabel ?? 'USD estimate unavailable'}'
+                ? '${WalletAccountState.instance.snapshot.available(asset.symbol).decimal} ${asset.symbol}'
                 : '0 ${asset.symbol}',
+            quantity: '',
             onTap:
                 !asset.hasQuote ||
                     !WalletAccountState.instance.snapshot.assets.contains(
@@ -243,16 +220,22 @@ class _SelectionRow extends StatelessWidget {
       children: [
         valueWidget ??
             Text(value, style: TextStyle(fontSize: 14, color: colors.body)),
-        const SizedBox(height: 4),
-        Text(quantity, style: TextStyle(fontSize: 12, color: colors.bodyMuted)),
+        if (quantity.isNotEmpty) ...[
+          const SizedBox(height: 4),
+          Text(
+            quantity,
+            style: TextStyle(fontSize: 12, color: colors.bodyMuted),
+          ),
+        ],
       ],
     );
     return InkWell(
+      key: ValueKey('crypto-option-$symbol'),
       onTap: onTap,
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 12),
         child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             icon,
             const SizedBox(width: 12),

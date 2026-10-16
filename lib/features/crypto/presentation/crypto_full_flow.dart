@@ -570,8 +570,11 @@ class _CryptoWithdrawEntryScreenState extends State<CryptoWithdrawEntryScreen> {
       isScrollControlled: true,
       useSafeArea: true,
       backgroundColor: Colors.transparent,
-      builder: (_) =>
-          WalletPickerSheet(includeCash: false, networkOnly: widget.external, unavailableLabel: 'External withdrawals unavailable'),
+      builder: (_) => WalletPickerSheet(
+        includeCash: false,
+        networkOnly: widget.external,
+        unavailableLabel: 'External withdrawals unavailable',
+      ),
     );
     if (!mounted || selected == null || selected == asset.symbol) return;
     setState(() {
@@ -1635,6 +1638,7 @@ class _CryptoBalance extends StatelessWidget {
                 onPressed: onChange,
                 style: TextButton.styleFrom(
                   textStyle: const TextStyle(
+                    fontFamily: 'Sora',
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
                   ),
@@ -1678,7 +1682,7 @@ class _CryptoBalance extends StatelessWidget {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          '${known ? wallet.snapshot.available(asset.symbol).decimal : 'Unavailable'} ${asset.symbol}',
+                          asset.symbol,
                           style: TextStyle(
                             fontSize: 12,
                             color: DavoColors.of(context).bodyMuted,
@@ -1693,23 +1697,20 @@ class _CryptoBalance extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  if (valuation != null)
-                    DavoNairaAmount(
-                      minorUnits: valuation.nairaMinorUnits,
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    )
-                  else
-                    const Text('Value unavailable'),
-                  if (valuation != null)
+                  Text(
+                    '${wallet.snapshot.assets.contains(asset.symbol) ? wallet.snapshot.available(asset.symbol).decimal : 'Unavailable'} ${asset.symbol}',
+                    textAlign: TextAlign.right,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  if (valuation?.usdLabel != null)
                     Text(
-                      '= ${valuation.nairaLabel}\n${valuation.usdLabel ?? 'USD unavailable'}',
+                      valuation!.usdLabel!,
                       textAlign: TextAlign.right,
                       style: TextStyle(
-                        fontSize: 11,
-                        height: 1.5,
+                        fontSize: 12,
                         color: DavoColors.of(context).bodyMuted,
                       ),
                     ),

@@ -140,7 +140,7 @@ class _BalanceCard extends StatelessWidget {
     return Container(
       height: largeText
           ? null
-          : (compact ? 156.0 : 168.0) +
+          : (compact ? 168.0 : 180.0) +
                 (MediaQuery.textScalerOf(context).scale(14) / 14 - 1).clamp(
                       0,
                       3,
@@ -231,7 +231,7 @@ class _BalanceCard extends StatelessWidget {
                               const SizedBox(height: 2),
                               Text(
                                 visible
-                                    ? '= ${WalletAccountState.instance.ngnBalanceLabel} \u00b7 ${WalletValuation.forAsset(WalletAccountState.instance.snapshot, 'NGN', quote: WalletAccountState.instance.activeQuote).usdLabel ?? 'USD estimate unavailable'}'
+                                    ? '= ${WalletAccountState.instance.ngnBalanceLabel}\n${WalletValuation.forAsset(WalletAccountState.instance.snapshot, 'NGN', quote: WalletAccountState.instance.activeQuote).usdLabel ?? 'USD estimate unavailable'}'
                                     : 'Balance hidden',
                                 style: const TextStyle(
                                   fontFamily: 'Sora',

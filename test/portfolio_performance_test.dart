@@ -75,7 +75,7 @@ void main() {
   testWidgets('initial snapshot has current point and neutral history state',
       (tester) async {
     await show(tester);
-    expect(find.text('₦1,824,588.00'), findsOneWidget);
+    expect(find.text('₦1,824,588.00'), findsNWidgets(2));
     expect(find.text('Your first valuation'), findsOneWidget);
     expect(find.textContaining('%'), findsNothing);
     expect(find.byKey(const ValueKey('portfolio-chart')), findsNothing);
@@ -105,7 +105,7 @@ void main() {
     await tester.dragFrom(tester.getTopLeft(chart) + const Offset(14, 60),
         Offset(tester.getSize(chart).width - 28, 0));
     await tester.pump();
-    expect(find.text('₦1,284,500.35'), findsOneWidget);
+    expect(find.text('₦1,284,500.35'), findsNWidgets(2));
   });
 
   testWidgets('incoming snapshots update screen and reset selected point',
@@ -119,7 +119,7 @@ void main() {
     controller.value = PortfolioPerformanceSnapshot(
         current: PortfolioValuePoint(timestamp: now, valueKobo: 500));
     await tester.pump();
-    expect(find.text('₦5.00'), findsOneWidget);
+    expect(find.text('₦5.00'), findsNWidgets(2));
     expect(find.text('Latest valuation'), findsOneWidget);
     await tester.pumpWidget(const SizedBox());
     // Supplied controllers remain owned by their account/repository.
@@ -145,7 +145,7 @@ void main() {
     await tester.pump();
     expect(request!.target, DavoRefreshTarget.portfolioPerformance);
     expect(request!.period, '1W');
-    expect(find.text('₦9.99'), findsOneWidget);
+    expect(find.text('₦9.99'), findsNWidgets(2));
   });
 
   testWidgets(
@@ -175,7 +175,7 @@ void main() {
     expect(find.byType(Slider), findsNothing);
     await tester.tap(find.byTooltip('Show portfolio values'));
     await tester.pump();
-    expect(find.text('₦1,284,500.35'), findsOneWidget);
+    expect(find.text('₦1,284,500.35'), findsNWidgets(2));
     semantics.dispose();
   });
   testWidgets('compact large text and dark theme scroll without overflow',

@@ -1,5 +1,6 @@
 # Davochain Naira single wallet
 
+Currency presentation correction: see [currency-layout-correction.md](currency-layout-correction.md). Cash branding is restricted to cash balances; crypto selectors use quantities, holdings use one USD value, and Portfolio search pins. This supersedes the earlier repeated per-row cash/naira/USD presentation.
 Implemented 16 October 2026 for local development builds 55 and 56.
 
 ## Product behavior

@@ -7,7 +7,6 @@ import '../../buy_crypto/presentation/buy_crypto_widgets.dart'
     show BuyAssetIcon;
 import '../asset_catalog_projection.dart';
 import '../wallet_repository.dart';
-import '../wallet_valuation.dart';
 
 const networkWalletSymbols = {'BTC', 'ETH', 'SOL', 'USDT', 'USDC'};
 
@@ -42,8 +41,8 @@ class _WalletPickerSheetState extends State<WalletPickerSheet> {
         'davochain naira ngn'.contains(query.trim().toLowerCase());
     return Padding(
       padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
-      child: FractionallySizedBox(
-        heightFactor: .82,
+      child: SizedBox(
+        height: 540,
         child: Material(
           color: DavoColors.of(context).sheetSurface,
           borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
@@ -110,16 +109,9 @@ class _WalletPickerSheetState extends State<WalletPickerSheet> {
         !widget.networkOnly ||
         asset == null ||
         networkWalletSymbols.contains(symbol);
-    final known =
-        wallet.snapshot.assets.contains(symbol) &&
-        wallet.snapshot.priceMinorUnits(symbol) != null;
-    final value = known
-        ? WalletValuation.forAsset(
-            wallet.snapshot,
-            symbol,
-            quote: wallet.activeQuote,
-          )
-        : null;
+    final quantity = wallet.snapshot.assets.contains(symbol)
+        ? wallet.snapshot.available(symbol).decimal
+        : '0';
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -145,6 +137,7 @@ class _WalletPickerSheetState extends State<WalletPickerSheet> {
                       : BuyAssetIcon(asset: asset, size: 36),
                   const SizedBox(width: 12),
                   Expanded(
+                    flex: 5,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -152,61 +145,62 @@ class _WalletPickerSheetState extends State<WalletPickerSheet> {
                           name,
                           style: const TextStyle(
                             fontSize: 14,
-                            fontWeight: FontWeight.w600,
+                            fontWeight: FontWeight.w500,
                           ),
                         ),
-                        const SizedBox(height: 3),
+                        const SizedBox(height: 4),
                         Text(
-                          asset == null
-                              ? 'Cash wallet'
-                              : '${wallet.snapshot.assets.contains(symbol) ? wallet.snapshot.available(symbol).decimal : '0'} $symbol',
+                          asset == null ? 'Cash wallet' : symbol,
                           style: TextStyle(
-                            fontSize: 11,
+                            fontSize: 12,
                             color: DavoColors.of(context).bodyMuted,
                           ),
                         ),
                       ],
                     ),
                   ),
-                  const Icon(Icons.chevron_right_rounded, size: 20),
-                ],
-              ),
-              const SizedBox(height: 8),
-              if (!supported)
-                Text(
-                  widget.unavailableLabel,
-                  style: TextStyle(
-                    fontSize: 12,
+                  const SizedBox(width: 12),
+                  Flexible(
+                    flex: 4,
+                    child: Align(
+                      alignment: Alignment.centerRight,
+                      child: asset == null
+                          ? DavoNairaAmount(
+                              minorUnits: wallet.ngnAvailableMinorUnits,
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            )
+                          : Text(
+                              '$quantity $symbol',
+                              textAlign: TextAlign.right,
+                              style: const TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  Icon(
+                    Icons.chevron_right_rounded,
+                    size: 18,
                     color: DavoColors.of(context).bodyMuted,
                   ),
-                )
-              else if (value != null)
-                Wrap(
-                  alignment: WrapAlignment.end,
-                  spacing: 8,
-                  runSpacing: 4,
-                  children: [
-                    DavoNairaAmount(
-                      minorUnits: value.nairaMinorUnits,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                      ),
+                ],
+              ),
+              if (!supported)
+                Padding(
+                  padding: const EdgeInsets.only(left: 48, top: 8),
+                  child: Text(
+                    widget.unavailableLabel,
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: DavoColors.of(context).bodyMuted,
                     ),
-                    Text(
-                      '= ${value.nairaLabel}',
-                      style: const TextStyle(fontSize: 11),
-                    ),
-                    Text(
-                      value.usdLabel ?? 'USD unavailable',
-                      style: const TextStyle(fontSize: 11),
-                    ),
-                  ],
-                )
-              else
-                const Text('Value unavailable'),
-              const SizedBox(height: 10),
-              Divider(height: 1, color: DavoColors.of(context).divider),
+                  ),
+                ),
             ],
           ),
         ),

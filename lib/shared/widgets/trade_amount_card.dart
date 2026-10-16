@@ -13,13 +13,14 @@ class TradeAmountCard extends StatelessWidget {
     this.value,
     this.valueWidget,
     this.amountPrefix,
+    this.footerWidget,
     this.onChanged,
   });
   final String label, footer;
   final Widget selector;
   final TextEditingController? controller;
   final String? value;
-  final Widget? valueWidget, amountPrefix;
+  final Widget? valueWidget, amountPrefix, footerWidget;
   final VoidCallback? onChanged;
 
   @override
@@ -128,10 +129,15 @@ class TradeAmountCard extends StatelessWidget {
                 },
               ),
               const SizedBox(height: 10),
-              Text(
-                footer,
-                style: TextStyle(fontSize: 12, height: 1.5, color: colors.body),
-              ),
+              footerWidget ??
+                  Text(
+                    footer,
+                    style: TextStyle(
+                      fontSize: 12,
+                      height: 1.5,
+                      color: colors.body,
+                    ),
+                  ),
             ],
           ),
         ),
@@ -301,6 +307,7 @@ class _TradePercentageButtonsState extends State<TradePercentageButtons> {
                       borderRadius: BorderRadius.circular(8),
                     ),
                     textStyle: const TextStyle(
+                      fontFamily: 'Sora',
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
                     ),

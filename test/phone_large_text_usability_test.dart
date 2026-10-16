@@ -1,4 +1,4 @@
-import 'package:davochain/shared/widgets/davo_naira_amount.dart';
+import 'package:davochain/shared/widgets/davo_blue_balance_card.dart';
 import 'package:davochain/core/theme/app_theme.dart';
 import 'package:davochain/features/dashboard/presentation/dashboard_screen.dart';
 import 'package:flutter/material.dart';
@@ -47,7 +47,7 @@ void main() {
       (tester) async {
     await mount(tester, const PortfolioScreen());
     expect(tester.getRect(find.text('Portfolio')).height, lessThan(60));
-    final amount = find.byType(DavoNairaAmount).first;
+    final amount = find.descendant(of: find.byType(DavoBlueBalanceCard), matching: find.byType(FittedBox)).first;
     expect(tester.getRect(amount).height, lessThan(70));
     expect(tester.getRect(amount).right, lessThanOrEqualTo(300));
     expect(tester.takeException(), isNull);

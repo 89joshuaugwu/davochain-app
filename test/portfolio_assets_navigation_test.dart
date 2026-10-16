@@ -14,7 +14,8 @@ void main() {
       expect(find.byType(TextField), findsOneWidget);
       expect(find.text('Bitcoin'), findsOneWidget);
       expect(find.text('Cardano'), findsOneWidget);
-      await tester.ensureVisible(find.text('Bitcoin'));
+      await Scrollable.ensureVisible(tester.element(find.text('Bitcoin')), alignment: .25);
+      await tester.pumpAndSettle();
       await tester.tap(find.text('Bitcoin'));
       await tester.pumpAndSettle();
       expect(find.byType(CryptoDepositScreen), findsOneWidget);

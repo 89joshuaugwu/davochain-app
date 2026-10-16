@@ -69,7 +69,7 @@ void main() {
     await tester.enterText(find.byType(TextField), 'bitcoin');
     await tester.pumpAndSettle();
     expect(find.text('2 BTC'), findsOneWidget);
-    expect(find.text('Value unavailable'), findsOneWidget);
+    expect(find.text('Value unavailable'), findsNothing);
     expect(tester.takeException(), isNull);
   });
 }

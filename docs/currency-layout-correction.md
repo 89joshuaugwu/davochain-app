@@ -1,0 +1,13 @@
+# Currency layout correction
+
+The previous change repeated cash denominations and both equivalents in crypto asset rows and pickers. The correction keeps Davochain Naira on actual cash wallet displays. Crypto selectors show name/ticker and available crypto quantity only. Home and Portfolio holdings show crypto quantity and one aligned USD value; missing quotes show unavailable rather than a fabricated amount. Portfolio total shows USD with one naira estimate; allocation chips show percentages. Historical performance retains its recorded naira value.
+
+Buy keeps the cash mark with the wallet identity and available cash amount; the amount input no longer contains a detached prefix mark or NGN selector label. Crypto withdrawal balance keeps crypto quantity and one USD estimate. No ledger, fee, routing, notification or account state behavior changes.
+
+Portfolio uses a pinned search header: overview scrolls away, search remains at the top, and all assets continue scrolling below. Asset catalog ordering, search, five-item Home cap, zero balances and detail routes remain unchanged. Wallet and crypto pickers retain a bounded540px height, scrollable items, readable left/right alignment and existing network availability restrictions. Dashboard cash equivalents now occupy separate naira and USD lines.
+
+Verification includes failing-before/fixed-after currency-density and sticky-search tests, existing narrow/large-text flows and a bounded light/dark capture review. Full-suite and release evidence follow.
+
+Sticky-header regression: the first capture exposed insufficient trailing extent when ten compact rows were shorter than the viewport. A test asserting the search reaches the actual top failed first, then passed after the asset section received a viewport minimum height. Confirmed by the final pinned screenshot. The asset-navigation test now scrolls the target below the pinned header before tapping. Focused confirmation5passed, including actual bottom-sheet light/dark captures and asset navigation. Independent review found no Critical/Important issues; a stale comment was corrected. Final full suite/build running.
+
+Final regression:778passed,18optional captures skipped; static analysis0issues. Focused confirmation5passed (currency rows, top-position sticky search, asset navigation and final light/dark captures). Source review has no Critical/Important findings. Build58 packaging/device result follows.
