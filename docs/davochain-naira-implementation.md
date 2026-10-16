@@ -1,6 +1,6 @@
 # Davochain Naira single wallet
 
-Implemented 16 October 2026 for local development build 55.
+Implemented 16 October 2026 for local development builds 55 and 56.
 
 ## Product behavior
 
@@ -30,4 +30,6 @@ Independent read-only review found one P2 issue: matching expired quotes still d
 
 Visual evidence: workspace `review/evidence/single-wallet-55/widgets/` contains light/dark Home, receiving, Buy, withdrawal, portfolio and 320-pixel/200-percent portfolio captures. Widget capture uses test font loading; native device evidence is authoritative for platform font rendering.
 
-Final full regression: `flutter test --no-pub --reporter expanded` passed **751 tests**, with **17 optional capture tests skipped**. The new journey/presentation/discoverability focused run passed **15 tests**. User-requested `=` parity prefixes were added after the initial widget captures; final native captures document that update. APK and emulator results follow after execution.
+Final full regression: `flutter test --no-pub --reporter expanded` passed **751 tests**, with **17 optional capture tests skipped**. The new journey/presentation/discoverability focused run passed **15 tests**. User-requested `=` parity prefixes were added after the initial widget captures; final native captures document that update. APK55 built successfully and was installed with data preserved on Android API34. Returning unlock restored Joshua's account; the custom mark and = naira parity rendered correctly, receiving details belonged to that account, and the unread count stayed1 across migration. A local100000deposit moved pending to completed, produced a real Android shade notification, and tapping it opened the matching receipt. Final funding receipt wallet/destination labels were then corrected to Davochain Naira; old receipt facts remain unchanged. Build56 adds the separately approved deposit voice setting; see deposit-voice-alerts.md.
+
+Final extended regression:759passed/17optionalcapture skips, including the integrated receiving/Buy/Swap/Sell/withdrawal journey. Native build56 results follow after execution.

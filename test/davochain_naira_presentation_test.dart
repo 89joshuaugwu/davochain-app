@@ -1,3 +1,4 @@
+import 'package:davochain/features/funding/funding_outcomes.dart';
 import 'package:davochain/features/crypto/presentation/crypto_full_flow.dart';
 import 'package:davochain/features/dashboard/presentation/dashboard_screen.dart';
 import 'package:davochain/features/wallets/wallet_repository.dart';
@@ -52,6 +53,29 @@ void main() {
       expect(find.textContaining('test account reference'), findsOneWidget);
       await tester.pumpWidget(const SizedBox());
       wallet.reset();
+    },
+  );
+  testWidgets(
+    'new fiat funding receipts identify the customer wallet by name',
+    (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: FundingDetailsScreen(
+            record: FundingRecord(
+              id: 'cash-name',
+              direction: FundingDirection.deposit,
+              status: FundingStatus.completed,
+              amount: '100',
+              currency: 'NGN',
+              destination: 'Davochain Naira wallet',
+              occurredAt: DateTime(2026),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('Davochain Naira'), findsOneWidget);
+      expect(find.text('Davochain Naira wallet'), findsOneWidget);
     },
   );
 }

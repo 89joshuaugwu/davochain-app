@@ -1,5 +1,5 @@
+import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart' show Color;
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'device_notification_gateway.dart';
 
@@ -131,5 +131,26 @@ class AndroidNotificationGateway extends DeviceNotificationGateway {
   @override
   Future<void> cancelAll() async {
     if (android != null) await plugin.cancelAll();
+  }
+
+  static const _voice = MethodChannel('davochain/deposit_voice');
+  @override
+  Future<bool> speakDeposit() async {
+    if (!supported) return false;
+    try {
+      return await _voice.invokeMethod<bool>('speak') ?? false;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  @override
+  Future<void> stopSpeaking() async {
+    if (!supported) return;
+    try {
+      await _voice.invokeMethod<void>('stop');
+    } catch (_) {
+      /* Optional native engine. */
+    }
   }
 }

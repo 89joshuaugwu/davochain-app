@@ -18,12 +18,22 @@ import java.util.concurrent.Executors
 import io.flutter.embedding.android.FlutterFragmentActivity
 
 class MainActivity : FlutterFragmentActivity() {
+    private var depositVoice: DepositVoiceAnnouncer? = null
     private val receiptWorker = Executors.newSingleThreadExecutor()
     private var pendingSave: PendingReceiptSave? = null
     private data class PendingReceiptSave(val file: File, val result: MethodChannel.Result)
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+        depositVoice = DepositVoiceAnnouncer(applicationContext)
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "davochain/deposit_voice")
+            .setMethodCallHandler { call, result ->
+                when (call.method) {
+                    "speak" -> depositVoice?.speak(result) ?: result.success(false)
+                    "stop" -> { depositVoice?.stop(); result.success(null) }
+                    else -> result.notImplemented()
+                }
+            }
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "davochain/verification_media")
             .setMethodCallHandler { call, result ->
                 if (call.method != "renderPdf") { result.notImplemented(); return@setMethodCallHandler }
@@ -199,6 +209,8 @@ class MainActivity : FlutterFragmentActivity() {
     }
 
     override fun onDestroy() {
+        depositVoice?.close()
+        depositVoice = null
         pendingSave?.result?.error("download_cancelled", "Save dialog closed", null)
         pendingSave = null
         receiptWorker.shutdown()

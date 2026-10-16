@@ -562,7 +562,7 @@ class FundingDetailsScreen extends StatelessWidget {
             )
           : null,
       fields: [
-        ReceiptField(label: 'Wallet', value: value.currency),
+        ReceiptField(label: 'Wallet', value: fiat ? 'Davochain Naira' : value.currency),
         ReceiptField(
           label: 'Destination',
           value: value.destination,

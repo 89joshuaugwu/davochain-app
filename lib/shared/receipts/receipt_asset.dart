@@ -22,7 +22,7 @@ enum ReceiptAsset {
     for (final asset in values.where((a) => a != giftCard)) {
       if (RegExp('\\b${asset.label}\\b').hasMatch(upper)) return asset;
     }
-    if (upper.contains('DAVOCHAIN NAIRA')) return ngd;
+    if (upper.contains('DAVOCHAIN NAIRA')) return ngn;
     if (upper.contains('NAIRA') || text.contains('₦')) return ngn;
     if (upper.contains('BITCOIN')) return btc;
     if (upper.contains('ETHEREUM')) return eth;

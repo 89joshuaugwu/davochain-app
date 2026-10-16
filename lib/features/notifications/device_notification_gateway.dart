@@ -53,5 +53,7 @@ abstract class DeviceNotificationGateway {
   Future<Set<int>> activeIds() async => {};
   Future<void> cancel(int id) async {}
   Future<void> cancelAll() async {}
+  Future<bool> speakDeposit() async => false;
+  Future<void> stopSpeaking() async {}
   Future<NotificationTapIntent?> launchIntent() async => null;
 }

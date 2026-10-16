@@ -9,10 +9,12 @@ class NotificationDeliveryController {
     required this.phone,
     required this.save,
     this.preferencesAllow,
+    this.voiceEnabled,
     this.flushFacts,
     this.onError,
   });
   final DeviceNotificationGateway phone;
+  final bool Function()? voiceEnabled;
   final Future<void> Function(Map<String, Object?>) save;
   final bool Function(InboxNotification)? preferencesAllow;
   final Future<void> Function()? flushFacts;
@@ -45,10 +47,16 @@ class NotificationDeliveryController {
     Map<String, Object?>? restored,
   }) {
     final changedAccount = _account != null && _account != account;
+    final changedSession =
+        _account != null && (_account != account || _generation != generation);
+    final stopped = changedSession
+        ? phone.stopSpeaking()
+        : Future<void>.value();
     final epoch = ++_epoch;
     _account = account;
     _generation = generation;
     return _serial(() async {
+      await stopped;
       if (changedAccount) await phone.cancelAll();
       if (!_valid(account, generation, epoch)) return;
       final raw = restored;
@@ -138,6 +146,17 @@ class NotificationDeliveryController {
           onError?.call(error);
         }
         await _checkpoint();
+        if (_valid(account, generation, epoch) &&
+            entry['state'] == 'posted' &&
+            voiceEnabled?.call() == true &&
+            item.kind == NotificationKind.deposit &&
+            item.status?.toLowerCase() == 'completed') {
+          // The posted checkpoint is durable first: speech is never replayed.
+          // Optional speech must never hold the serial notification queue.
+          unawaited(
+            phone.speakDeposit().then<void>((_) {}).catchError((Object _) {}),
+          );
+        }
       }
     });
   }
@@ -151,9 +170,13 @@ class NotificationDeliveryController {
   });
   Future<void> deactivate() {
     ++_epoch;
+    final stopped = phone.stopSpeaking();
     _account = null;
     _generation = -1;
-    return _serial(() => phone.cancelAll());
+    return _serial(() async {
+      await stopped;
+      await phone.cancelAll();
+    });
   }
 
   Future<void> flush() => _tail;

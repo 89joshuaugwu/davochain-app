@@ -15,6 +15,7 @@ int notificationTopic(InboxNotification item) {
 
 class NotificationPreferences {
   bool showDetails = false;
+  bool depositVoiceAlerts = false;
   bool allows(InboxNotification item) {
     final category = item.category == 1
         ? 0
@@ -30,6 +31,7 @@ class NotificationPreferences {
   Map<String, Object?> exportState() => {
     'version': 1,
     'details': showDetails,
+    'depositVoice': depositVoiceAlerts,
     'topics': [...PreviewAccountState.notificationPreferences],
     'channels': PreviewAccountState.notificationChannels
         .map((c) => [...c])
@@ -37,6 +39,7 @@ class NotificationPreferences {
   };
   void restore(Map<String, Object?>? raw) {
     showDetails = raw?['details'] == true;
+    depositVoiceAlerts = raw?['depositVoice'] == true;
     final topics = raw?['topics'];
     final channels = raw?['channels'];
     for (var i = 0; i < 11; i++) {

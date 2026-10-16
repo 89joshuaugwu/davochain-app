@@ -27,6 +27,7 @@ class NotificationRuntime extends ChangeNotifier with WidgetsBindingObserver {
       permissionRequested = false,
       busy = false;
   bool foreground = true;
+  bool voiceBusy = false, _disposed = false;
   bool get supported => phone.supported;
   final Map<String, bool> channelEnabled = {};
   bool channelAllowed(int type) =>
@@ -68,6 +69,7 @@ class NotificationRuntime extends ChangeNotifier with WidgetsBindingObserver {
       phone: phone,
       flushFacts: flushFacts,
       preferencesAllow: preferences.allows,
+      voiceEnabled: () => preferences.depositVoiceAlerts,
       save: (raw) async {
         final account = raw['accountId'] as String?;
         if (account != null) {
@@ -240,6 +242,27 @@ class NotificationRuntime extends ChangeNotifier with WidgetsBindingObserver {
     notifyListeners();
   }
 
+  void setDepositVoice(bool enabled) {
+    preferences.depositVoiceAlerts = enabled;
+    if (!enabled) unawaited(phone.stopSpeaking());
+    saveSettings();
+    notifyListeners();
+  }
+
+  Future<bool> testDepositVoice() async {
+    if (!initialized || voiceBusy || !channelAllowed(0)) return false;
+    voiceBusy = true;
+    notifyListeners();
+    try {
+      return await phone.speakDeposit();
+    } catch (_) {
+      return false;
+    } finally {
+      voiceBusy = false;
+      if (!_disposed) notifyListeners();
+    }
+  }
+
   Future<void> openSettings() => phone.openSettings();
   Future<bool> sendTest() async {
     if (!initialized || !await phone.enabled(channel: 'davo_diagnostics_v1')) {
@@ -264,6 +287,8 @@ class NotificationRuntime extends ChangeNotifier with WidgetsBindingObserver {
 
   @override
   void dispose() {
+    _disposed = true;
+    unawaited(phone.stopSpeaking());
     WidgetsBinding.instance.removeObserver(this);
     _wallet.removeListener(_accountChanged);
     _inbox.removeListener(_inboxChanged);

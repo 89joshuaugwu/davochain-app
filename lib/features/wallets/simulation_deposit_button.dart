@@ -41,7 +41,9 @@ class SimulationDepositButton extends StatelessWidget {
           status: FundingStatus.pending,
           amount: result.$2,
           currency: result.$1,
-          destination: '${result.$1} wallet',
+          destination: result.$1 == 'NGN'
+              ? 'Davochain Naira wallet'
+              : '${result.$1} wallet',
           occurredAt: DateTime.now(),
           preview: true,
         );
@@ -88,7 +90,8 @@ class _DepositDialogState extends State<_DepositDialog> {
         children: [
           const Text('Choose a wallet and enter your deposit amount.'),
           const SizedBox(height: 16),
-          if (['NGN', 'NGD'].contains(widget.currency)) const Text('Davochain Naira'),
+          if (['NGN', 'NGD'].contains(widget.currency))
+            const Text('Davochain Naira'),
           const SizedBox(height: 12),
           TextField(
             key: const ValueKey('simulation-deposit-amount'),
