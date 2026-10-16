@@ -64,7 +64,9 @@ class TransactionHistoryScreen extends StatelessWidget {
                               fontWeight: FontWeight.w600,
                               color: DavoColors.of(context).ink)),
                       const SizedBox(height: 12),
-                      for (final receipt in receipts.where((receipt) => !records
+                      for (final receipt in receipts.where((receipt) =>
+                          !(receipt.type.toLowerCase().contains('deposit') &&
+                              receipt.status == ReceiptStatus.pending) && !records
                           .any((funding) => funding.id == receipt.id))) ...[
                         _ActivityRow(
                           title: ReceiptIdentity(receipt).headline,
@@ -81,7 +83,8 @@ class TransactionHistoryScreen extends StatelessWidget {
                         Divider(
                             height: 1, color: DavoColors.of(context).divider),
                       ],
-                      for (final record in records) ...[
+                      for (final record in records.where((r) =>
+                          !r.deposit || r.status != FundingStatus.pending)) ...[
                         _ActivityRow(
                           title: record.title,
                           amount: record.amountLabel,

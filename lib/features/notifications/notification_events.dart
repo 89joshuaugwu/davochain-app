@@ -82,7 +82,10 @@ class NotificationEventCoordinator {
   }) {
     final key = 'receipt:${receipt.id}:${receipt.status.name}';
     if (!_accept(accountId, generation, key)) return false;
-    if (!enabled) {
+    // Starting a deposit is not evidence that money has arrived.
+    if (!enabled ||
+        (receipt.type.toLowerCase().contains('deposit') &&
+            receipt.status == ReceiptStatus.pending)) {
       inbox.checkpointChanged();
       return false;
     }

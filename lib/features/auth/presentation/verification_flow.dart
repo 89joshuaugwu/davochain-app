@@ -1,3 +1,4 @@
+import '../../../shared/motion/davo_verification_mark.dart';
 import '../../../core/preview/local_preview_profile.dart';
 import '../../../core/preview/preview_auth_state.dart';
 import 'account_welcome_screen.dart';
@@ -341,6 +342,7 @@ class VerificationSuccessScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => DavoResultScreen(
+        mark: const DavoVerificationMark(),
         title: kind == VerificationKind.email
             ? 'Email verified!'
             : 'Phone number verified!',

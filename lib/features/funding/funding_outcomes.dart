@@ -78,6 +78,14 @@ class FundingRecord {
 abstract final class FundingActivity {
   static final records = ValueNotifier<List<FundingRecord>>(const []);
   static final Set<String> _presented = {};
+  static final Set<String> _dismissed = {};
+  static bool isDismissed(FundingRecord record) =>
+      _dismissed.contains('${record.id}-${record.status.name}');
+  static void dismiss(FundingRecord record) {
+    _dismissed.add('${record.id}-${record.status.name}');
+    records.value = List.unmodifiable(records.value);
+  }
+
   static bool claimPresentation(FundingRecord record) =>
       _presented.add('${record.id}-${record.status.name}');
   static bool _observing = false;
@@ -147,6 +155,7 @@ abstract final class FundingActivity {
 
   static void reset() {
     _presented.clear();
+    _dismissed.clear();
     records.value = const [];
   }
 
@@ -183,64 +192,78 @@ class DepositActivityBanner extends StatelessWidget {
         valueListenable: FundingActivity.records,
         builder: (context, records, _) {
           final matching = records.where(
-            (r) => r.deposit && (currency == null || r.currency == currency),
+            (r) =>
+                r.deposit &&
+                r.status != FundingStatus.pending &&
+                !FundingActivity.isDismissed(r) &&
+                (currency == null || r.currency == currency),
           );
           if (matching.isEmpty) return const SizedBox.shrink();
           final record = matching.first;
           final colors = DavoColors.of(context);
-          return Container(
-            margin: const EdgeInsets.only(top: 12),
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: colors.primarySoft,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Row(
-              children: [
-                Icon(
-                  record.status == FundingStatus.completed
-                      ? Icons.check_circle_outline
-                      : record.status == FundingStatus.failed
-                      ? Icons.error_outline
-                      : Icons.schedule,
-                  color: colors.link,
-                  size: 22,
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        record.title,
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          color: colors.ink,
-                        ),
-                      ),
-                      Text(
-                        record.amountLabel,
-                        style: TextStyle(fontSize: 12, color: colors.body),
-                      ),
-                    ],
+          return Dismissible(
+            key: ValueKey('deposit-alert-${record.id}-${record.status.name}'),
+            direction: DismissDirection.horizontal,
+            onDismissed: (_) => FundingActivity.dismiss(record),
+            child: Container(
+              margin: const EdgeInsets.only(top: 12),
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: colors.primarySoft,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    record.status == FundingStatus.completed
+                        ? Icons.check_circle_outline
+                        : record.status == FundingStatus.failed
+                        ? Icons.error_outline
+                        : Icons.schedule,
+                    color: colors.link,
+                    size: 22,
                   ),
-                ),
-                TextButton(
-                  onPressed: () {
-                    final animate = FundingActivity.claimPresentation(record);
-                    Navigator.of(context).push(
-                      AppPageRoute<void>(
-                        builder: (_) => FundingOutcomeScreen(
-                          record: record,
-                          animate: animate,
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          record.title,
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: colors.ink,
+                          ),
                         ),
-                      ),
-                    );
-                  },
-                  child: const Text('View details'),
-                ),
-              ],
+                        Text(
+                          record.amountLabel,
+                          style: TextStyle(fontSize: 12, color: colors.body),
+                        ),
+                      ],
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      final animate = FundingActivity.claimPresentation(record);
+                      Navigator.of(context).push(
+                        AppPageRoute<void>(
+                          builder: (_) => FundingOutcomeScreen(
+                            record: record,
+                            animate: animate,
+                          ),
+                        ),
+                      );
+                    },
+                    child: const Text('View details'),
+                  ),
+                  IconButton(
+                    tooltip: 'Dismiss deposit alert',
+                    icon: const Icon(Icons.close, size: 18),
+                    onPressed: () => FundingActivity.dismiss(record),
+                  ),
+                ],
+              ),
             ),
           );
         },

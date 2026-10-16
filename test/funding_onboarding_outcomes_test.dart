@@ -212,7 +212,7 @@ void main() {
     expect(find.text('Deposit received'), findsNothing);
     FundingActivity.accept(deposit(FundingStatus.pending));
     await tester.pump();
-    expect(find.text('Deposit pending'), findsOneWidget);
+    expect(find.text('Deposit pending'), findsNothing);
     FundingActivity.accept(deposit(FundingStatus.completed));
     await tester.pump();
     expect(find.text('Deposit received'), findsOneWidget);

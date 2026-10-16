@@ -28,6 +28,17 @@ void main() {
     events = NotificationEventCoordinator(inbox: inbox, clock: () => now);
     events.activate('account-a', 1);
   });
+
+  test('restoring an older inbox removes deposit initiation and its unread badge', () {
+    const pending = InboxNotification(id: 'account-a:old-deposit', title: 'Deposit in progress',
+      body: 'Pending', time: '', day: 'Today', category: 1,
+      kind: NotificationKind.deposit, status: 'Pending');
+    final old = NotificationInbox(records: const [pending]);
+    inbox.restoreState(old.exportState());
+    expect(inbox.snapshot, isEmpty);
+    expect(inbox.unreadCount, 0);
+    old.dispose();
+  });
   tearDown(() => inbox.dispose());
 
   test(
@@ -70,22 +81,18 @@ void main() {
   }
 
   test(
-    'pending, completion and failure each deduplicate by operation and status',
+    'deposit outcomes deduplicate while initiation stays quiet',
     () {
       for (final status in ReceiptStatus.values) {
         events.receipt('account-a', 1, receipt('one', status: status));
         events.receipt('account-a', 1, receipt('one', status: status));
       }
-      expect(inbox.snapshot.length, 3);
+      expect(inbox.snapshot.length, 2);
       expect(inbox.snapshot.map((n) => n.status).toSet(), {
-        'Pending',
         'Completed',
         'Failed',
       });
-      expect(
-        inbox.snapshot.where((n) => n.status == 'Pending').single.title,
-        'Deposit in progress',
-      );
+      expect(inbox.snapshot.where((n) => n.status == 'Pending'), isEmpty);
     },
   );
 
@@ -148,11 +155,11 @@ void main() {
   test(
     'restored checkpoint replays a committed status missing at checkpoint time',
     () {
-      final pending = receipt('recover', status: ReceiptStatus.pending);
+      final pending = receipt('recover', type: 'Withdrawal', status: ReceiptStatus.pending);
       events.receipt('account-a', 1, pending);
       final saved = events.exportState();
       events.restoreState('account-a', 2, saved);
-      final completed = receipt('recover');
+      final completed = receipt('recover', type: 'Withdrawal');
       events.activate('account-a', 2, baseline: [completed]);
       expect(events.receipt('account-a', 2, completed), isTrue);
       expect(events.receipt('account-a', 2, completed), isFalse);

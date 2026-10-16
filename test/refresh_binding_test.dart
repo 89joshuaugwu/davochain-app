@@ -22,6 +22,7 @@ void main() {
       (const PortfolioScreen(), DavoRefreshTarget.portfolio),
       (const TransactionHistoryScreen(), DavoRefreshTarget.transactionHistory),
       (const NotificationCenterScreen(), DavoRefreshTarget.notifications),
+      (const ProfileSettingsScreen(), DavoRefreshTarget.settings),
       (const GiftCardHomeScreen(), DavoRefreshTarget.giftCardCatalogue),
     ]) {
       await tester.pumpWidget(
@@ -44,7 +45,7 @@ void main() {
       expect(requests.last.recordId, isNull);
       expect(tester.takeException(), isNull);
     }
-    expect(requests, hasLength(4));
+    expect(requests, hasLength(5));
   });
 
   testWidgets(

@@ -2,8 +2,6 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/motion/davo_motion_policy.dart';
-import '../../../shared/motion/davo_motion_spec.dart';
-import '../../../shared/motion/davo_outcome_artwork.dart';
 import '../../../shared/widgets/auth_widgets.dart';
 
 /// A single, finite finale for first account setup. It never authorizes an
@@ -26,10 +24,13 @@ class _AccountWelcomeScreenState extends State<AccountWelcomeScreen>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _foreground = WidgetsBinding.instance.lifecycleState == null ||
+    _foreground =
+        WidgetsBinding.instance.lifecycleState == null ||
         WidgetsBinding.instance.lifecycleState == AppLifecycleState.resumed;
     _scene = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 2400));
+      vsync: this,
+      duration: const Duration(milliseconds: 2400),
+    );
   }
 
   @override
@@ -70,178 +71,245 @@ class _AccountWelcomeScreenState extends State<AccountWelcomeScreen>
   Widget build(BuildContext context) {
     final colors = DavoColors.of(context);
     return PopScope(
-        canPop: false,
-        child: Scaffold(
-          backgroundColor: colors.surface,
-          body: SafeArea(
-              child: Column(children: [
-            Padding(
+      canPop: false,
+      child: Scaffold(
+        backgroundColor: colors.surface,
+        body: SafeArea(
+          child: Column(
+            children: [
+              Padding(
                 padding: const EdgeInsets.only(top: 24),
-                child: Text('Davochain',
-                    style: TextStyle(
-                        fontFamily: 'Sora',
-                        fontSize: 20,
-                        fontWeight: FontWeight.w700,
-                        color: colors.ink))),
-            Expanded(
+                child: Text(
+                  'Davochain',
+                  style: TextStyle(
+                    fontFamily: 'Sora',
+                    fontSize: 20,
+                    fontWeight: FontWeight.w700,
+                    color: colors.ink,
+                  ),
+                ),
+              ),
+              Expanded(
                 child: LayoutBuilder(
-                    builder: (context, constraints) => SingleChildScrollView(
-                        padding: const EdgeInsets.all(24),
-                        child: ConstrainedBox(
-                            constraints: BoxConstraints(
-                                minHeight:
-                                    math.max(0, constraints.maxHeight - 48)),
-                            child: Center(
-                                child: AnimatedBuilder(
-                                    animation: _scene,
-                                    builder: (context, _) {
-                                      final ms = _scene.value * 2400;
-                                      double phase(double start, double end) =>
-                                          DavoMotionSpec.phase(ms, start, end,
-                                              DavoMotionSpec.settle);
-                                      // Let the supplied brand pieces gather for 720 ms, then
-                                      // resolve through the exact established completion artwork.
-                                      final mark = ms < 720
-                                          ? ms / 720 * (240 / 1120)
-                                          : 240 / 1120 +
-                                              (1 - 240 / 1120) *
-                                                  phase(720, 1700);
-                                      Widget reveal(Widget child, double start,
-                                              double end) =>
-                                          Opacity(
-                                              opacity: phase(start, end),
-                                              child: Transform.translate(
-                                                  offset: Offset(
-                                                      0,
-                                                      12 *
-                                                          (1 -
-                                                              phase(
-                                                                  start, end))),
-                                                  child: child));
-                                      return Column(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            Semantics(
-                                                label: 'Account setup complete',
-                                                image: true,
-                                                child: ExcludeSemantics(
-                                                    child: SizedBox.square(
-                                                        dimension: 240,
-                                                        child: Stack(
-                                                            alignment: Alignment
-                                                                .center,
-                                                            children: [
-                                                              Positioned.fill(
-                                                                  child: CustomPaint(
-                                                                      painter: _WelcomeRipple(
-                                                                          _scene
-                                                                              .value,
-                                                                          colors
-                                                                              .primarySoft))),
-                                                              DavoOutcomeArtwork(
-                                                                  kind: DavoOutcomeKind
-                                                                      .completed,
-                                                                  progress: mark
-                                                                      .clamp(
-                                                                          0, 1),
-                                                                  size: 180),
-                                                            ])))),
-                                            const SizedBox(height: 16),
-                                            reveal(
-                                                Text('Welcome to Davochain',
-                                                    textAlign: TextAlign.center,
-                                                    style: TextStyle(
-                                                        fontFamily: 'Sora',
-                                                        fontSize: 28,
-                                                        height: 1.25,
-                                                        fontWeight:
-                                                            FontWeight.w700,
-                                                        color: colors.ink)),
-                                                1150,
-                                                1750),
-                                            const SizedBox(height: 14),
-                                            reveal(
-                                                Text(
-                                                    'Your next chapter starts here.',
-                                                    textAlign: TextAlign.center,
-                                                    style: TextStyle(
-                                                        fontFamily: 'Sora',
-                                                        fontSize: 14,
-                                                        height: 1.5,
-                                                        color: colors.body)),
-                                                1400,
-                                                1950),
-                                            const SizedBox(height: 24),
-                                            reveal(
-                                                Container(
-                                                    padding: const EdgeInsets
-                                                        .symmetric(
-                                                        horizontal: 16,
-                                                        vertical: 12),
-                                                    decoration: BoxDecoration(
-                                                        color:
-                                                            colors.primarySoft,
-                                                        borderRadius:
-                                                            BorderRadius
-                                                                .circular(24)),
-                                                    child: Row(
-                                                        mainAxisSize:
-                                                            MainAxisSize.min,
-                                                        children: [
-                                                          Icon(
-                                                              Icons
-                                                                  .lock_outline_rounded,
-                                                              size: 16,
-                                                              color:
-                                                                  colors.link),
-                                                          const SizedBox(
-                                                              width: 8),
-                                                          Flexible(
-                                                              child: Text(
-                                                                  'Transaction PIN created',
-                                                                  style: TextStyle(
-                                                                      fontFamily:
-                                                                          'Sora',
-                                                                      fontSize:
-                                                                          12,
-                                                                      color: colors
-                                                                          .link))),
-                                                        ])),
-                                                1650,
-                                                2200),
-                                          ]);
-                                    })))))),
-            Padding(
+                  builder: (context, constraints) => SingleChildScrollView(
+                    padding: const EdgeInsets.all(24),
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        minHeight: math.max(0, constraints.maxHeight - 48),
+                      ),
+                      child: Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            AnimatedBuilder(
+                              animation: _scene,
+                              builder: (context, _) => Transform.translate(
+                                offset: Offset(
+                                  0,
+                                  8 *
+                                      (1 -
+                                          Curves.easeOutCubic.transform(
+                                            _scene.value,
+                                          )),
+                                ),
+                                child: const _WelcomeIllustration(),
+                              ),
+                            ),
+                            const SizedBox(height: 28),
+                            Text(
+                              'Welcome to Davochain',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontFamily: 'Sora',
+                                fontSize: 28,
+                                height: 1.25,
+                                fontWeight: FontWeight.w700,
+                                color: colors.ink,
+                              ),
+                            ),
+                            const SizedBox(height: 14),
+                            Text(
+                              'One place for your wallets, crypto and gift cards.',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontFamily: 'Sora',
+                                fontSize: 14,
+                                height: 1.6,
+                                color: colors.body,
+                              ),
+                            ),
+                            const SizedBox(height: 28),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                for (final item in const <(IconData, String)>[
+                                  (
+                                    Icons.account_balance_wallet_outlined,
+                                    'Wallets',
+                                  ),
+                                  (Icons.swap_horiz_rounded, 'Crypto'),
+                                  (Icons.card_giftcard_rounded, 'Gift cards'),
+                                ])
+                                  Expanded(
+                                    child: Column(
+                                      children: [
+                                        Icon(
+                                          item.$1,
+                                          color: colors.link,
+                                          size: 24,
+                                        ),
+                                        const SizedBox(height: 8),
+                                        Text(
+                                          item.$2,
+                                          textAlign: TextAlign.center,
+                                          style: TextStyle(
+                                            fontFamily: 'Sora',
+                                            fontSize: 12,
+                                            color: colors.body,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                              ],
+                            ),
+                            const SizedBox(height: 28),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.lock_outline_rounded,
+                                  size: 16,
+                                  color: colors.bodyMuted,
+                                ),
+                                const SizedBox(width: 8),
+                                Flexible(
+                                  child: Text(
+                                    'Transaction PIN created',
+                                    style: TextStyle(
+                                      fontFamily: 'Sora',
+                                      fontSize: 12,
+                                      color: colors.bodyMuted,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              Padding(
                 padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
                 child: DavoPrimaryButton(
-                    label: 'Explore Davochain', onPressed: _explore)),
-          ])),
-        ));
+                  label: 'Explore Davochain',
+                  onPressed: _explore,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
 
-/// Two quiet expansion waves carry the seal's reveal, then disappear entirely.
-/// No blur, looping particles, shadows, or transformed text rasterization.
-class _WelcomeRipple extends CustomPainter {
-  const _WelcomeRipple(this.progress, this.color);
-  final double progress;
-  final Color color;
+/// A wallet-shaped brand composition, without invented balances or account data.
+class _WelcomeIllustration extends StatelessWidget {
+  const _WelcomeIllustration();
   @override
-  void paint(Canvas canvas, Size size) {
-    for (final delay in [0.0, .12]) {
-      final p = ((progress - .26 - delay) / .55).clamp(0.0, 1.0);
-      if (p <= 0 || p >= 1) continue;
-      canvas.drawCircle(
-          size.center(Offset.zero),
-          54 + 64 * DavoMotionSpec.settle.transform(p),
-          Paint()
-            ..color = color.withValues(alpha: math.sin(p * math.pi) * .9)
-            ..style = PaintingStyle.stroke
-            ..strokeWidth = 2);
-    }
+  Widget build(BuildContext context) {
+    final colors = DavoColors.of(context);
+    return ExcludeSemantics(
+      child: SizedBox(
+        width: 280,
+        height: 220,
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            Container(
+              width: 210,
+              height: 210,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: colors.primarySoft,
+              ),
+            ),
+            Transform.rotate(
+              angle: -.09,
+              child: Container(
+                width: 208,
+                height: 140,
+                decoration: BoxDecoration(
+                  color: colors.link.withValues(alpha: .18),
+                  borderRadius: BorderRadius.circular(24),
+                ),
+              ),
+            ),
+            Container(
+              width: 208,
+              height: 140,
+              decoration: BoxDecoration(
+                color: AppColors.primary,
+                borderRadius: BorderRadius.circular(24),
+              ),
+              child: Center(
+                child: ColorFiltered(
+                  colorFilter: const ColorFilter.mode(
+                    Colors.white,
+                    BlendMode.srcIn,
+                  ),
+                  child: Image.asset(
+                    'assets/images/brand/davochain_logo.png',
+                    width: 92,
+                    height: 80,
+                  ),
+                ),
+              ),
+            ),
+            Positioned(
+              right: 14,
+              top: 8,
+              child: _tile(context, Icons.swap_horiz_rounded),
+            ),
+            Positioned(
+              left: 14,
+              bottom: 6,
+              child: _tile(context, Icons.card_giftcard_rounded),
+            ),
+            Positioned(
+              right: 30,
+              bottom: 18,
+              child: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: colors.surface,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: colors.divider),
+                ),
+                child: Icon(Icons.check_rounded, color: colors.link, size: 22),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
-  @override
-  bool shouldRepaint(_WelcomeRipple oldDelegate) =>
-      oldDelegate.progress != progress || oldDelegate.color != color;
+  Widget _tile(BuildContext context, IconData icon) {
+    final colors = DavoColors.of(context);
+    return Container(
+      width: 58,
+      height: 58,
+      decoration: BoxDecoration(
+        color: colors.surface,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: colors.divider),
+      ),
+      child: Icon(icon, color: colors.link, size: 28),
+    );
+  }
 }

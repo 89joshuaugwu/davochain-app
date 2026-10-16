@@ -178,7 +178,7 @@ class ReceiptPresentation {
           copyable: field.copyable && (!field.sensitive || showSensitive))));
   List<ReceiptField> get allDisplayFields => [
         ReceiptField(label: 'Transaction ID', value: record.id, copyable: true),
-        ReceiptField(
+        if (record.reference != record.id) ReceiptField(
             label: 'Reference', value: record.reference, copyable: true),
         ReceiptField(
             label: 'Date', value: formatReceiptDate(record.occurredAt)),

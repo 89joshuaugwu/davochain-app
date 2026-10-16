@@ -58,3 +58,7 @@ Native checks on emulator-5554: created Release Fifty account; dashboard and cry
 Phone CI49FIXKM7BUOVA6 was not listed by ADB at final check; phone installation remains outstanding until connected. Only emulator installation is claimed. No app data was cleared. Emulator initially had system launcher/UiAutomation timeouts; cold boot with existing data resolved them.
 
 Evidence: workspace review/evidence/riverpod-migration-49, including full-suite/analyzer/build logs and emulator screenshots/XML. APK copied to both worktree and main project build/app/outputs/flutter-apk/app-release.apk with matching hash.
+
+## Subsequent build 51
+
+The later [reference refinements](ui-refinements-51.md) supersede build 50's pending-deposit notification presentation: initiation now stays internal, and only outcomes enter public deposit feeds. Historical build-50 evidence above is retained. Build 51 also refines Settings refresh, alert dismissal, share receipts and signup acknowledgement/Welcome.

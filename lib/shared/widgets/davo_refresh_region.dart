@@ -8,6 +8,7 @@ enum DavoRefreshTarget {
   portfolioPerformance,
   walletBalances,
   notifications,
+  settings,
   giftCardCatalogue,
   transaction,
 }

@@ -28,7 +28,7 @@ class _ReceiptScreenState extends State<ReceiptScreen>
         note: _note,
         showSensitive: _showSensitive);
     return DavoReceiptExportFrame(
-        title: '',
+        title: 'Share receipt',
         receiptType: ReceiptActivity.resolve(widget.record).type,
         presentation: view,
         controls:
@@ -75,7 +75,7 @@ class ReceiptPaper extends StatelessWidget {
     return Container(
         color: Colors.white,
         width: double.infinity,
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(24),
         child: DefaultTextStyle(
             style: const TextStyle(
                 fontFamily: 'Sora',
@@ -159,7 +159,6 @@ class ReceiptPaper extends StatelessWidget {
                     style: const TextStyle(
                         fontSize: 23, fontWeight: FontWeight.w600)),
                 const SizedBox(height: 8),
-                Text(record.type),
                 const SizedBox(height: 10),
                 Container(
                     padding:
@@ -182,11 +181,45 @@ class ReceiptPaper extends StatelessWidget {
                                     : AppColors.primary))),
                 const SizedBox(height: 20),
                 for (final field in presentation.allDisplayFields) ...[
-                  Text(field.label,
-                      style: const TextStyle(
-                          fontSize: 10, color: AppColors.bodyMuted)),
-                  const SizedBox(height: 4),
-                  Text(field.value, style: const TextStyle(fontSize: 12)),
+                  LayoutBuilder(
+                    builder: (context, constraints) {
+                      final stacked =
+                          constraints.maxWidth < 240 ||
+                          MediaQuery.textScalerOf(context).scale(12) > 18;
+                      final label = Text(
+                        field.label,
+                        style: const TextStyle(
+                          fontSize: 11,
+                          color: AppColors.bodyMuted,
+                        ),
+                      );
+                      final value = Text(
+                        field.value,
+                        textAlign: stacked ? TextAlign.start : TextAlign.end,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      );
+                      return stacked
+                          ? Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                label,
+                                const SizedBox(height: 4),
+                                value,
+                              ],
+                            )
+                          : Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Expanded(flex: 4, child: label),
+                                const SizedBox(width: 16),
+                                Expanded(flex: 6, child: value),
+                              ],
+                            );
+                    },
+                  ),
                   const Padding(
                       padding: EdgeInsets.symmetric(vertical: 10),
                       child: Divider(height: 1, color: AppColors.mutedSoft)),

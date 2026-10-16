@@ -1059,7 +1059,12 @@ class _Shell extends StatelessWidget {
       ),
       body: SafeArea(
         top: false,
-        child: scroll ? SingleChildScrollView(child: body) : body,
+        child: scroll
+            ? SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                child: body,
+              )
+            : body,
       ),
     );
   }

@@ -83,7 +83,10 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
       ref.watch(profileProvider);
       ref.watch(authViewProvider);
       ref.watch(verificationViewProvider);
-      return _buildProfile(context);
+      return DavoRefreshRegion(
+        target: DavoRefreshTarget.settings,
+        builder: _buildProfile,
+      );
     },
   );
   Widget _buildProfile(BuildContext context) {

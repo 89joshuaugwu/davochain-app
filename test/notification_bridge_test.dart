@@ -91,22 +91,22 @@ void main() {
   );
 
   test(
-    'restored read receipt is preserved and missing later status is delivered',
+    'restored deposit initiation stays quiet and later completion is delivered',
     () async {
       final id = ledger.snapshot.accountId;
       final generation = ledger.generation;
       events.activate(id, generation);
       final record = deposit('restored');
       events.receipt(id, generation, record.withStatus(ReceiptStatus.pending));
-      inbox.markRead(inbox.snapshot.single.id);
+      expect(inbox.snapshot, isEmpty);
       final saved = events.exportState();
       repo.accept(record);
       events.restoreState(id, generation, saved);
       container.listen(notificationEventBridgeProvider, (_, _) {});
       await flush();
-      expect(inbox.snapshot.length, 2);
+      expect(inbox.snapshot.length, 1);
       expect(inbox.snapshot.first.status, 'Completed');
-      expect(inbox.snapshot.last.isRead, isTrue);
+      expect(inbox.snapshot.single.isRead, isFalse);
       expect(inbox.unreadCount, 1);
     },
   );

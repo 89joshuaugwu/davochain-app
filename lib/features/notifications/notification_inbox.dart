@@ -282,11 +282,18 @@ class NotificationInbox extends ChangeNotifier {
         records.map((r) => r.id).toSet().length != records.length) {
       throw ArgumentError('Inbox needs unique IDs');
     }
+    // Migrate initiation alerts saved by earlier releases. The event coordinator
+    // retains their consumed IDs, so receipt replay cannot recreate them.
+    final removedUnread = records.where((r) =>
+        r.kind == NotificationKind.deposit && r.status == 'Pending' && !r.isRead).length;
+    records.removeWhere((r) =>
+        r.kind == NotificationKind.deposit && r.status == 'Pending');
+    final remainingUnread = unread == null ? null : unread - removedUnread;
     _generation++;
     _snapshot = List.unmodifiable(records);
     _totalUnread =
-        unread != null && unread >= records.where((r) => !r.isRead).length
-        ? unread
+        remainingUnread != null && remainingUnread >= records.where((r) => !r.isRead).length
+        ? remainingUnread
         : null;
     _changed();
   }
