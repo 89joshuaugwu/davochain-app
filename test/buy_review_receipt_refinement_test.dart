@@ -51,7 +51,7 @@ void main() {
     expect(find.byType(BuyReceiptScreen), findsOneWidget);
     expect(find.text('Purchase Receipt'), findsNothing);
     expect(find.text('Amount paid'), findsOneWidget);
-    expect(find.text('731,540.00 NGN'), findsOneWidget);
+    expect(find.text('731,540.00 Davochain Naira'), findsOneWidget);
     expect(find.text('Paid from'), findsOneWidget);
     expect(find.text('Receipt ready to share'), findsNothing);
     expect(

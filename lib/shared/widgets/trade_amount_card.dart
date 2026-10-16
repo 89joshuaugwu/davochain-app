@@ -11,12 +11,15 @@ class TradeAmountCard extends StatelessWidget {
     required this.footer,
     this.controller,
     this.value,
+    this.valueWidget,
+    this.amountPrefix,
     this.onChanged,
   });
   final String label, footer;
   final Widget selector;
   final TextEditingController? controller;
   final String? value;
+  final Widget? valueWidget, amountPrefix;
   final VoidCallback? onChanged;
 
   @override
@@ -42,7 +45,8 @@ class TradeAmountCard extends StatelessWidget {
                     fontWeight: FontWeight.w600,
                     color: colors.ink,
                   ),
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
+                    prefixIcon: amountPrefix,
                     hintText: '0.00',
                     filled: false,
                     border: InputBorder.none,
@@ -52,15 +56,16 @@ class TradeAmountCard extends StatelessWidget {
                   ),
                 ),
               )
-            : Text(
-                value ?? '0.00',
-                textAlign: TextAlign.right,
-                style: TextStyle(
-                  fontSize: 26,
-                  fontWeight: FontWeight.w600,
-                  color: colors.ink,
-                ),
-              ),
+            : valueWidget ??
+                  Text(
+                    value ?? '0.00',
+                    textAlign: TextAlign.right,
+                    style: TextStyle(
+                      fontSize: 26,
+                      fontWeight: FontWeight.w600,
+                      color: colors.ink,
+                    ),
+                  ),
       ),
     );
     return Focus(

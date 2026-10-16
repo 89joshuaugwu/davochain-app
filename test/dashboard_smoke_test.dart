@@ -8,7 +8,7 @@ void main() {
     await tester.pumpWidget(const MaterialApp(home: DavochainDashboardScreen()));
     await tester.pump(const Duration(milliseconds: 900));
 
-    expect(find.text('Available Balance'), findsOneWidget);
+    expect(find.text('Davochain Naira balance'), findsOneWidget);
     expect(find.text('Deposit'), findsOneWidget);
     expect(find.text('View Portfolio'), findsOneWidget);
     expect(find.text('Assets'), findsOneWidget);

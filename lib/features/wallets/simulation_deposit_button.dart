@@ -67,7 +67,7 @@ class _DepositDialog extends StatefulWidget {
 }
 
 class _DepositDialogState extends State<_DepositDialog> {
-  late String currency = widget.currency;
+  late String currency = widget.currency == 'NGD' ? 'NGN' : widget.currency;
   late final controller = TextEditingController(
     text: ['NGN', 'NGD'].contains(currency) ? '100000' : '0.01',
   );
@@ -88,23 +88,7 @@ class _DepositDialogState extends State<_DepositDialog> {
         children: [
           const Text('Choose a wallet and enter your deposit amount.'),
           const SizedBox(height: 16),
-          if (['NGN', 'NGD'].contains(widget.currency))
-            DropdownButtonFormField<String>(
-              isExpanded: true,
-              initialValue: currency,
-              items: const [
-                DropdownMenuItem(value: 'NGN', child: Text('Naira (NGN)')),
-                DropdownMenuItem(
-                  value: 'NGD',
-                  child: Text(
-                    'Davochain (NGD)',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ],
-              onChanged: (value) => setState(() => currency = value!),
-            ),
+          if (['NGN', 'NGD'].contains(widget.currency)) const Text('Davochain Naira'),
           const SizedBox(height: 12),
           TextField(
             key: const ValueKey('simulation-deposit-amount'),

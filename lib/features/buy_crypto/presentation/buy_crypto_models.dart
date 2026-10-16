@@ -51,24 +51,20 @@ enum BuyCryptoAsset {
 }
 
 enum BuyFundingWallet {
-  ngn('Nigerian Naira', 'NGN', false),
-  ngd('Davochain Naira', 'NGD', true);
+  ngn,
+  ngd;
 
-  const BuyFundingWallet(this.name, this.symbol, this.isDavochain);
-
-  final String name;
-  final String symbol;
+  // Both legacy values resolve to the one customer wallet. New UI offers ngn only.
+  String get name => 'Davochain Naira';
+  String get symbol => 'NGN';
+  bool get isDavochain => true;
   String get formattedBalance =>
       WalletAccountState.instance.balanceLabel(symbol);
   ExactDecimal get exactBalance => ExactDecimal.parse(
     WalletAccountState.instance.snapshot.available(symbol).decimal,
   );
   double get balance => exactBalance.toDouble();
-  final bool isDavochain;
-
-  String get iconAsset => isDavochain
-      ? 'assets/images/brand/naira_coin.png'
-      : 'assets/figma_exact/buy_nigeria.png';
+  String get iconAsset => 'assets/images/brand/davochain_currency_mark.svg';
 }
 
 class BuyCryptoOrder {

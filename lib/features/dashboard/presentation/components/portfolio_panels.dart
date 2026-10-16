@@ -357,10 +357,20 @@ class _PortfolioValueCardState extends State<_PortfolioValueCard> {
           ? WalletAccountState.instance.portfolioBalanceLabel
           : '\u20a6\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022',
       caption: widget.visible
-          ? WalletAccountState.instance.snapshot.usdEquivalentLabel(
-                  WalletAccountState.instance.snapshot.portfolioMinorUnits,
-                ) ??
-                'Portfolio valuation'
+          ? WalletValuation.forAsset(
+                      WalletAccountState.instance.snapshot,
+                      'NGN',
+                      quote: WalletAccountState.instance.activeQuote,
+                    ).usdMinorUnits ==
+                    null
+                ? 'USD estimate unavailable'
+                : WalletAccountState.instance.snapshot.usdEquivalentLabel(
+                        WalletAccountState
+                            .instance
+                            .snapshot
+                            .portfolioMinorUnits,
+                      ) ??
+                      'Portfolio valuation'
           : 'Balance hidden',
       trailing: WalletAccountState.instance.simulationEnabled
           ? null
@@ -679,36 +689,91 @@ class _PortfolioHoldingTile extends StatelessWidget {
     return Material(
       color: DavoColors.of(context).surface,
       borderRadius: BorderRadius.circular(10),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-        leading: BuyAssetIcon(asset: asset, size: 37),
-        title: Text(
-          asset.name,
-          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
-        ),
-        subtitle: Text(
-          visible
-              ? '${wallet.snapshot.assets.contains(asset.symbol) ? wallet.snapshot.available(asset.symbol).decimal : '0'} ${asset.symbol}'
-              : '???? ${asset.symbol}',
-          style: TextStyle(
-            fontSize: 12,
-            color: DavoColors.of(context).bodyMuted,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(10),
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final stacked =
+                  constraints.maxWidth < 300 ||
+                  MediaQuery.textScalerOf(context).scale(14) > 19;
+              final name = Row(
+                children: [
+                  BuyAssetIcon(asset: asset, size: 37),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          asset.name,
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        Text(
+                          visible
+                              ? '${wallet.snapshot.assets.contains(asset.symbol) ? wallet.snapshot.available(asset.symbol).decimal : '0'} ${asset.symbol}'
+                              : 'Hidden',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: DavoColors.of(context).bodyMuted,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              );
+              final values = Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    visible
+                        ? wallet.snapshot.assets.contains(asset.symbol)
+                              ? wallet.balanceLabel(asset.symbol)
+                              : '\u20a60.00'
+                        : 'Hidden',
+                    style: const TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                  if (visible && wallet.snapshot.assets.contains(asset.symbol))
+                    Text(
+                      WalletValuation.forAsset(
+                            wallet.snapshot,
+                            asset.symbol,
+                            quote: wallet.activeQuote,
+                          ).usdLabel ??
+                          'USD unavailable',
+                      style: TextStyle(
+                        fontSize: 10,
+                        color: DavoColors.of(context).bodyMuted,
+                      ),
+                    ),
+                ],
+              );
+              return stacked
+                  ? Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        name,
+                        const SizedBox(height: 10),
+                        Align(alignment: Alignment.centerRight, child: values),
+                      ],
+                    )
+                  : Row(
+                      children: [
+                        Expanded(child: name),
+                        const SizedBox(width: 10),
+                        Flexible(child: values),
+                        const SizedBox(width: 4),
+                        const Icon(Icons.chevron_right, size: 18),
+                      ],
+                    );
+            },
           ),
-        ),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              visible
-                  ? wallet.snapshot.assets.contains(asset.symbol)
-                        ? wallet.balanceLabel(asset.symbol)
-                        : '\u20a60.00'
-                  : '????',
-              style: const TextStyle(fontWeight: FontWeight.w600),
-            ),
-            const SizedBox(width: 8),
-            const Icon(Icons.chevron_right, size: 18),
-          ],
         ),
         onTap: () {
           final receiving = CryptoAsset.values

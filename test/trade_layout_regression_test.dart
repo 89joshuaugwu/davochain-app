@@ -1,3 +1,4 @@
+import 'package:davochain/shared/widgets/davo_naira_amount.dart';
 import 'package:davochain/shared/widgets/davo_receipt_export_frame.dart';
 import 'package:flutter/services.dart';
 import 'package:davochain/features/buy_crypto/presentation/buy_crypto_models.dart';
@@ -334,12 +335,18 @@ void main() {
         tester.getTopRight(find.byType(TextField)).dx,
         closeTo(tester.getTopRight(find.text('Amount').first).dx, .01),
       );
-      expect(find.text('\u2248 \u20a60.00'), findsOneWidget);
+      expect(
+        tester.widget<DavoNairaAmount>(find.byType(DavoNairaAmount)).minorUnits,
+        0,
+      );
       expect(find.text('Available: 0.0086 BTC'), findsOneWidget);
       expect(find.text('1 BTC \u2248 \u20a624,000,000.00'), findsOneWidget);
       await tester.enterText(find.byType(TextField), '0.03045');
       await tester.pump();
-      expect(find.text('\u2248 \u20a6730,800.00'), findsOneWidget);
+      expect(
+        tester.widget<DavoNairaAmount>(find.byType(DavoNairaAmount)).minorUnits,
+        73080000,
+      );
       expect(tester.takeException(), isNull);
     },
   );
@@ -354,7 +361,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('You are Selling'), findsOneWidget);
       expect(find.text('To (You will receive)'), findsOneWidget);
-      expect(find.text('Nigerian Naira'), findsOneWidget);
+      expect(find.text('Davochain Naira'), findsOneWidget);
       expect(find.text('\u20a6730,800.00'), findsNWidgets(2));
       expect(find.byIcon(Icons.arrow_downward_rounded), findsOneWidget);
       final rate = find.text('1 BTC \u2248 \u20a624,000,000.00');

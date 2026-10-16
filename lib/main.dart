@@ -1,3 +1,4 @@
+import 'features/funding/receiving_account_runtime.dart';
 import 'features/dashboard/portfolio_valuation_history.dart';
 import 'features/notifications/notification_runtime.dart';
 import 'features/wallets/local_account_persistence.dart';
@@ -45,6 +46,7 @@ Future<void> main() async {
     );
     await persistence.initialize();
     LocalAccountPersistence.instance = persistence;
+    await ReceivingAccountRuntime.initialize(persistence.store);
     await PortfolioValuationHistory.instance.initialize(persistence.store);
     try {
       await NotificationRuntime.instance.initialize(persistence.store, persistence.flush);

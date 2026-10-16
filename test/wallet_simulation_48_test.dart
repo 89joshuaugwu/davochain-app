@@ -35,7 +35,7 @@ void main() {
           walletEffect: effect,
           fields: const []);
   test('new simulation account has zero funds in every wallet', () {
-    expect(wallet.snapshot.assets.length, 12);
+    expect(wallet.snapshot.assets.length, 11);
     for (final asset in wallet.snapshot.assets) {
       expect(wallet.snapshot.available(asset).atomicUnits, BigInt.zero);
     }

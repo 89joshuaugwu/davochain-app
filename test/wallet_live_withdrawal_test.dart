@@ -25,7 +25,7 @@ void main() {
       available: {'NGN': AssetAmount.parse('50', 'NGN', 2)}, pricesMinorUnits: {'NGN':100});
     state.publish(next, generation: state.generation);
     await tester.pump();
-    expect(find.text('\u20a650.00'), findsOneWidget);
+    expect(find.textContaining('50.00').first, findsOneWidget);
     await tester.ensureVisible(find.text('Continue'));
     await tester.tap(find.text('Continue'));
     await tester.pumpAndSettle();

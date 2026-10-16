@@ -34,7 +34,17 @@ class _TradeAmountScreenState extends State<TradeAmountScreen> {
     super.initState();
     _accountGeneration = WalletAccountState.instance.generation;
     WalletAccountState.instance.addListener(_walletChanged);
-    sourceAsset = widget.asset;
+    final funded = BuyCryptoAsset.values.where(
+      (asset) =>
+          WalletAccountState.instance.snapshot.assets.contains(asset.symbol) &&
+          WalletAccountState.instance.snapshot
+                  .available(asset.symbol)
+                  .atomicUnits >
+              BigInt.zero,
+    );
+    sourceAsset = funded.contains(widget.asset)
+        ? widget.asset
+        : funded.firstOrNull ?? widget.asset;
     destinationAsset = sourceAsset == BuyCryptoAsset.tether
         ? BuyCryptoAsset.bitcoin
         : BuyCryptoAsset.tether;
@@ -55,7 +65,10 @@ class _TradeAmountScreenState extends State<TradeAmountScreen> {
       isScrollControlled: true,
       useSafeArea: true,
       backgroundColor: Colors.transparent,
-      builder: (_) => const BuyCryptoAssetSheet(),
+      builder: (_) => BuyCryptoAssetSheet(
+        fundedOnly: source,
+        excluded: source ? null : sourceAsset,
+      ),
     );
     if (!mounted || picked == null) return;
     setState(() {
@@ -70,6 +83,17 @@ class _TradeAmountScreenState extends State<TradeAmountScreen> {
   }
 
   void _swapAssets() {
+    if (WalletAccountState.instance.snapshot
+            .available(destinationAsset.symbol)
+            .atomicUnits <=
+        BigInt.zero) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Buy this crypto first to use it as a Swap source.'),
+        ),
+      );
+      return;
+    }
     FocusScope.of(context).unfocus();
     final received = (enteredAmount * sourceAsset.ngnPrice).divide(
       destinationAsset.ngnPrice,
@@ -248,11 +272,22 @@ class _TradeAmountScreenState extends State<TradeAmountScreen> {
               label: 'You receive',
               selector: const TradeCurrencySelector(
                 icon: NairaCoinMark(),
-                name: 'Nigerian Naira',
+                name: 'Davochain Naira',
                 symbol: 'NGN',
               ),
-              value:
-                  '\u2248 \u20a6${formatGroupedAmount(ngn.toFixed(2, rounding: DecimalRounding.floor))}',
+              valueWidget: DavoNairaAmount(
+                minorUnits: AssetAmount.parse(
+                  ngn.toFixed(2, rounding: DecimalRounding.floor),
+                  'NGN',
+                  2,
+                ).atomicUnits.toInt(),
+                textAlign: TextAlign.right,
+                style: TextStyle(
+                  fontSize: 26,
+                  fontWeight: FontWeight.w600,
+                  color: DavoColors.of(context).ink,
+                ),
+              ),
               footer:
                   '1 ${sourceAsset.symbol} \u2248 \u20a6${formatGroupedAmount(sourceAsset.ngnPrice.toFixed(2))}',
             ),
@@ -561,7 +596,7 @@ class _TradeReviewScreenState extends State<TradeReviewScreen> {
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
-                                  'Nigerian Naira',
+                                  'Davochain Naira',
                                   style: TextStyle(
                                     fontSize: 12,
                                     color: DavoColors.of(context).bodyMuted,

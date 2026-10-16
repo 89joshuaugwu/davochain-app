@@ -1,3 +1,7 @@
+import '../../wallets/wallet_valuation.dart';
+import '../../../shared/widgets/davo_naira_amount.dart';
+import '../../funding/receiving_account_runtime.dart';
+import '../../funding/receiving_account.dart';
 import '../../../core/providers/account_scope.dart';
 import '../../wallets/wallet_providers.dart';
 import 'portfolio_view_state.dart';
@@ -164,7 +168,8 @@ class _DavochainDashboardScreenState extends State<DavoDashboardContent> {
                   // Standard phones retain three complete assets below the compact carousel.
                   // Short views and enlarged text keep every control reachable by scrolling.
                   final needsFullScroll =
-                      constraints.maxHeight < 640 ||
+                      constraints.maxHeight < 660 ||
+                      constraints.maxWidth < 350 ||
                       MediaQuery.textScalerOf(context).scale(14) > 18;
                   if (needsFullScroll) {
                     return SingleChildScrollView(

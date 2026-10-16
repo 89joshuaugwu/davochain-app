@@ -11,15 +11,15 @@ void main() {
     await tester.pumpWidget(MaterialApp(
         theme: AppTheme.light, home: const DavochainDashboardScreen()));
     await tester.pumpAndSettle();
-    expect(find.text('\u20a61,419,500.35'), findsOneWidget);
-    await tester.tap(find.text('Available Balance'));
+    expect(find.textContaining('1,419,500.35'), findsNWidgets(2));
+    await tester.tap(find.text('Davochain Naira balance'));
     await tester.pump();
-    expect(find.text('\u20a61,419,500.35'), findsNothing);
+    expect(find.textContaining('1,419,500.35'), findsNothing);
     for (final opacity in tester.widgetList<Opacity>(find.byType(Opacity))) {
       expect(opacity.opacity, greaterThan(0));
     }
     await tester.pump(const Duration(milliseconds: 400));
-    expect(find.text('\u20a61,419,500.35'), findsNothing);
+    expect(find.textContaining('1,419,500.35'), findsNothing);
   });
   testWidgets(
       'both auth methods keep large text within a stable readable region',

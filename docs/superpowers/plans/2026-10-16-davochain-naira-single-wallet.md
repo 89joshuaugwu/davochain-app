@@ -10,7 +10,7 @@
 
 **Spec:** docs/superpowers/specs/2026-10-16-davochain-naira-single-wallet-design.md
 
-**Status:** User approved execution of this whole plan on 16 October 2026 and requested direct work/push on main. Symbol implementation is already complete. Task1 foundation: 19 focused tests passed and static analysis clean; remaining tasks in progress.
+**Status:** User approved execution of this whole plan on 16 October 2026 and requested direct work/push on main. Symbol implementation is already complete. Migration is committed in b42d69d. Tasks 2-6 are implemented; 751 full-suite tests passed (17 optional captures skipped). Release acceptance is in progress.
 
 ## Global constraints
 
@@ -39,10 +39,10 @@
 
 **Interfaces:** `DavochainNairaWallet` exposes wallet identity, NGN currency ID, available/reserved minor units and display name from WalletSnapshot. `migrateDavochainNairaCheckpoint(Map<String,Object?>)` returns a validated versioned checkpoint without mutating its input; explicitly handle unsupported/provenance-ambiguous input.
 
-- [ ] Write failing fixtures for NGN-only, NGD-only, both independent, ambiguous mirrored, zero, reserved, pending buy/withdrawal, failed release, duplicate migration and two accounts.
-- [ ] Run the focused test to RED and establish the exact reconciliation policy from stored operation provenance; resolve ambiguous input before shipping.
-- [ ] Implement one canonical wallet accessor and atomic idempotent account migration, including pending effects and schema compatibility. Preserve total funds, operation identities and history.
-- [ ] Run focused money/ledger/restart tests to GREEN; assert no new receipts, notifications or synthetic performance gains. Commit the independently validated migration.
+- [x] Write failing fixtures for NGN-only, NGD-only, both independent, ambiguous mirrored, zero, reserved, pending buy/withdrawal, failed release, duplicate migration and two accounts.
+- [x] Run the focused test to RED and establish the exact reconciliation policy from stored operation provenance; resolve ambiguous input before shipping.
+- [x] Implement one canonical wallet accessor and atomic idempotent account migration, including pending effects and schema compatibility. Preserve total funds, operation identities and history.
+- [x] Run focused money/ledger/restart tests to GREEN; assert no new receipts, notifications or synthetic performance gains. Commit the independently validated migration.
 
 ### Task 2: Model receiving details per account
 
@@ -50,10 +50,10 @@
 
 **Interfaces:** account-scoped `ReceivingAccount` with creating/ready/failed/unavailable status and provider-issued details only when ready; injectable `ReceivingAccountGateway.provision(accountId, idempotencyKey)`; controller validates account/generation around awaited responses.
 
-- [ ] Write RED tests for delayed provisioning, retry, duplicate signup request, account switch, copy/share while pending, third-party accepted deposit, duplicate credit and failed transfer.
-- [ ] Implement deterministic clearly preview-only local fixtures, persistent per-account status, and a later production-adapter boundary. Replace the global BankDepositDetails.preview dependency in customer flows.
-- [ ] Correct the non-withdrawable/same-name-only product copy. Ready receiving account maps accepted transfers to the single wallet; display/copy/share never manufactures credit.
-- [ ] Run to GREEN with funding/receipt/notification bridge tests. Verify details are never reused across customers. Commit.
+- [x] Write RED tests for delayed provisioning, retry, duplicate signup request, account switch, copy/share while pending, third-party accepted deposit, duplicate credit and failed transfer.
+- [x] Implement deterministic clearly preview-only local fixtures, persistent per-account status, and a later production-adapter boundary. Replace the global BankDepositDetails.preview dependency in customer flows.
+- [x] Correct the non-withdrawable/same-name-only product copy. Ready receiving account maps accepted transfers to the single wallet; display/copy/share never manufactures credit.
+- [x] Run to GREEN with funding/receipt/notification bridge tests. Verify details are never reused across customers. Commit.
 
 ### Task 3: Make Buy use Davochain Naira by default
 
@@ -61,10 +61,10 @@
 
 **Interfaces:** new orders always use the named canonical fiat wallet; legacy funding enum values deserialize through compatibility mapping. A visible source selector is unnecessary when there is one source.
 
-- [ ] Write RED tests entering from Home, Trade, portfolio and asset overview: no NGN/NGD choice, correct default and exact balance, empty Add money state, insufficient funds, stale quote and account switch.
-- [ ] Remove the extra funding sheet from new Buy journeys, use the wallet projection in validation and review, and retain legacy order restoration safely.
-- [ ] Confirm one debit from Davochain Naira and one credit to selected crypto; failed/cancelled submission preserves or releases funds once.
-- [ ] Run buy, amount-precision, receipt and notification tests to GREEN. Commit.
+- [x] Write RED tests entering from Home, Trade, portfolio and asset overview: no NGN/NGD choice, correct default and exact balance, empty Add money state, insufficient funds, stale quote and account switch.
+- [x] Remove the extra funding sheet from new Buy journeys, use the wallet projection in validation and review, and retain legacy order restoration safely.
+- [x] Confirm one debit from Davochain Naira and one credit to selected crypto; failed/cancelled submission preserves or releases funds once.
+- [x] Run buy, amount-precision, receipt and notification tests to GREEN. Commit.
 
 ### Task 4: Align Sell, Swap and gift cards
 
@@ -72,19 +72,19 @@
 
 **Interfaces:** fiat proceeds/spends target the canonical wallet accessor; Swap source projection uses available funded crypto holdings; destination catalog excludes source and unsupported/unquoted destinations.
 
-- [ ] Write RED tests for sell proceeds then re-buy/withdraw, gift-card purchase/sale/refund, funded swap selection, zero-source state, same-asset swap, fees, quote expiry and pending restoration.
-- [ ] Replace separate fiat targets with the one wallet and label; keep crypto-to-crypto exchange on actual holdings with exact quantities and fee validation.
-- [ ] Run trade/gift/ledger outcome suites to GREEN; verify receipt-driven notifications use the same wallet name without duplicates. Commit.
+- [x] Write RED tests for sell proceeds then re-buy/withdraw, gift-card purchase/sale/refund, funded swap selection, zero-source state, same-asset swap, fees, quote expiry and pending restoration.
+- [x] Replace separate fiat targets with the one wallet and label; keep crypto-to-crypto exchange on actual holdings with exact quantities and fee validation.
+- [x] Run trade/gift/ledger outcome suites to GREEN; verify receipt-driven notifications use the same wallet name without duplicates. Commit.
 
 ### Task 5: Route bank withdrawals from the same wallet
 
-**Files:** modify `crypto_full_flow.dart`, `crypto_naira_screens.dart`, `funding_outcomes.dart`, linked-bank settings adapters and relevant receipt presentation; test `test/davochain_naira_withdrawal_test.dart`.
+**Files:** modify `crypto_full_flow.dart`, `crypto_naira_screens.dart`, `funding_outcomes.dart`, linked-bank settings adapters and relevant receipt presentation; tests `test/completion_review_regressions_test.dart`, `test/wallet_live_withdrawal_test.dart` and existing saved-bank/funding suites.
 
 **Interfaces:** withdrawal request identifies canonical source wallet and existing saved-bank destination ID, amount/fee/total in minor units, account generation and operation ID.
 
-- [ ] Write RED tests for branded source instead of flag/NGN option, matching displayed available balance, fee-inclusive limit, linked-bank selection/add/remove, double-submit, pending success/failure/restart and account switch.
-- [ ] Reuse linked-bank settings as destinations, validate them again before acceptance, debit/reserve the same displayed wallet, and preserve pending versus completed status.
-- [ ] Run withdrawal, saved-bank, funding/receipt and security-gate tests to GREEN. Commit.
+- [x] Write RED tests for branded source instead of flag/NGN option, matching displayed available balance, fee-inclusive limit, linked-bank selection/add/remove, double-submit, pending success/failure/restart and account switch.
+- [x] Reuse linked-bank settings as destinations, validate them again before acceptance, debit/reserve the same displayed wallet, and preserve pending versus completed status.
+- [x] Run withdrawal, saved-bank, funding/receipt and security-gate tests to GREEN. Commit.
 
 ### Task 6: Apply mark, naming and both valuations consistently
 
@@ -92,10 +92,10 @@
 
 **Interfaces:** valuation projection returns naira minor units, optional USD minor units, quote ID/as-of and availability; amount widget renders the approved glyph with semantic/plain-text fallbacks. Customer labels do not expose a second funding balance.
 
-- [ ] Write RED tests for one cash wallet across surfaces; crypto quantity/naira/USD hierarchy; 1:1 cash parity; missing/stale quote; exact rounding; both hidden; large text, light/dark and receipt exports.
-- [ ] Use one quote snapshot for both estimates. Replace static USD examples and direct customer-facing NGN-wallet strings. Keep underlying currency facts on external banking/FX records and old receipts accurate.
-- [ ] Apply the selected currency mark to branded balances/spend/proceeds; preserve readable text when copied/shared outside the app. Crypto portfolio excludes cash unless explicitly labelled total-account value.
-- [ ] Run presentation, accessibility, export and snapshot tests to GREEN. Capture phone/narrow/large-text and both themes in one batch, fix meaningful defects once, confirm. Commit.
+- [x] Write RED tests for one cash wallet across surfaces; crypto quantity/naira/USD hierarchy; 1:1 cash parity; missing/stale quote; exact rounding; both hidden; large text, light/dark and receipt exports.
+- [x] Use one quote snapshot for both estimates. Replace static USD examples and direct customer-facing NGN-wallet strings. Keep underlying currency facts on external banking/FX records and old receipts accurate.
+- [x] Apply the selected currency mark to branded balances/spend/proceeds; preserve readable text when copied/shared outside the app. Crypto portfolio excludes cash unless explicitly labelled total-account value.
+- [x] Run presentation, accessibility, export and snapshot tests to GREEN. Capture phone/narrow/large-text and both themes in one batch, fix meaningful defects once, confirm. Commit.
 
 ### Task 7: End-to-end acceptance and main release
 

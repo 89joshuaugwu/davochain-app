@@ -47,7 +47,7 @@ void main() {
     expect(r.occurredAt, date);
     expect(r.id, 'ACCEPTED-ORDER');
     expect(r.fields.firstWhere((f) => f.label == 'Amount paid').value,
-        '731,540.00 NGN');
+        '731,540.00 Davochain Naira');
   });
   test('activity replaces updates without downgrading completed records', () {
     final done = buildCryptoReceiptRecord(

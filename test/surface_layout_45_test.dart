@@ -39,7 +39,7 @@ void main() {
   testWidgets('withdrawal eye follows balance label and still hides its value',
       (tester) async {
     await phone(tester, const NairaWithdrawScreen());
-    final label = tester.getRect(find.text('Available NGN balance'));
+    final label = tester.getRect(find.text('Davochain Naira balance'));
     final eye = tester.getCenter(find.byIcon(Icons.visibility_outlined));
     expect(eye.dx, greaterThan(label.right));
     expect(eye.dx - label.right, lessThan(24));

@@ -1,3 +1,6 @@
+import '../../../shared/widgets/davo_naira_amount.dart';
+import '../../dashboard/presentation/dashboard_screen.dart'
+    show NairaDepositScreen;
 import '../../../core/providers/reactive_builder.dart';
 import '../../../shared/receipts/transaction_commands.dart';
 import '../../../core/navigation/transaction_navigation.dart';
@@ -88,26 +91,6 @@ class _BuyAmountScreenState extends State<BuyAmountScreen> {
     _flow.selectAsset(asset);
   }
 
-  Future<void> _changeWallet() async {
-    final wallet = await showModalBottomSheet<BuyFundingWallet>(
-      context: context,
-      sheetAnimationStyle:
-          (MediaQuery.disableAnimationsOf(context) ||
-              MediaQuery.accessibleNavigationOf(context))
-          ? AnimationStyle.noAnimation
-          : const AnimationStyle(
-              duration: Duration(milliseconds: 280),
-              reverseDuration: Duration(milliseconds: 200),
-            ),
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      barrierColor: Colors.black.withValues(alpha: .32),
-      builder: (_) => const BuyFundingWalletSheet(),
-    );
-    if (!mounted || wallet == null) return;
-    _flow.selectWallet(wallet);
-  }
-
   @override
   Widget build(BuildContext context) {
     return TradeFormLayout(
@@ -124,10 +107,19 @@ class _BuyAmountScreenState extends State<BuyAmountScreen> {
           TradeAmountCard(
             label: 'You pay',
             selector: TradeCurrencySelector(
-              icon: Image.asset(_order.wallet.iconAsset, width: 32, height: 32),
+              icon: DavoCurrencyMark(
+                size: 32,
+                color: DavoColors.of(context).link,
+              ),
               name: _order.wallet.name,
               symbol: _order.wallet.symbol,
-              onTap: _changeWallet,
+            ),
+            amountPrefix: Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: DavoCurrencyMark(
+                size: 22,
+                color: DavoColors.of(context).ink,
+              ),
             ),
             controller: _amountController,
             onChanged: () => setState(() {}),
@@ -152,6 +144,18 @@ class _BuyAmountScreenState extends State<BuyAmountScreen> {
             controller: _amountController,
             onPick: _flow.pickPercentage,
           ),
+          if (_order.wallet.exactBalance.isZero) ...[
+            const SizedBox(height: 16),
+            const Text(
+              'Add money to your Davochain Naira wallet to buy crypto.',
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).push(
+                AppPageRoute<void>(builder: (_) => const NairaDepositScreen()),
+              ),
+              child: const Text('Add money'),
+            ),
+          ],
           if (_amount.compareTo(_order.wallet.exactBalance) > 0) ...[
             const SizedBox(height: 16),
             Text(
@@ -652,13 +656,7 @@ class _WalletBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Image.asset(
-      wallet.iconAsset,
-      width: 32,
-      height: 32,
-      fit: BoxFit.contain,
-      filterQuality: FilterQuality.high,
-    );
+    return DavoCurrencyMark(size: 32, color: DavoColors.of(context).link);
   }
 }
 

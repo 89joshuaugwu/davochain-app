@@ -404,7 +404,7 @@ class _GiftCardPaymentScreenState extends State<GiftCardPaymentScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('NGN Wallet Balance', style: _section(context)),
+                        Text('Davochain Naira balance', style: _section(context)),
                         const SizedBox(height: 4),
                         DavoListenableBuilder(
                             listenable: WalletAccountState.instance,

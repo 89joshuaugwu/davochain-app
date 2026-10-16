@@ -1,3 +1,5 @@
+import '../../wallets/wallet_valuation.dart';
+import '../../../shared/widgets/davo_naira_amount.dart';
 import '../../../shared/receipts/transaction_commands.dart';
 import '../../../core/providers/reactive_builder.dart';
 import '../../profile_settings/presentation/settings_content_overlay.dart';
@@ -105,26 +107,9 @@ Future<void> startSellCryptoFlow(BuildContext context) async {
     useSafeArea: true,
     backgroundColor: Colors.transparent,
     barrierColor: Colors.black.withValues(alpha: .32),
-    builder: (_) => const BuyCryptoAssetSheet(),
+    builder: (_) => const BuyCryptoAssetSheet(fundedOnly: true),
   );
   if (!context.mounted || asset == null) return;
-  final wallet = await showModalBottomSheet<bool>(
-    context: context,
-    sheetAnimationStyle:
-        (MediaQuery.disableAnimationsOf(context) ||
-            MediaQuery.accessibleNavigationOf(context))
-        ? AnimationStyle.noAnimation
-        : const AnimationStyle(
-            duration: Duration(milliseconds: 280),
-            reverseDuration: Duration(milliseconds: 200),
-          ),
-    isScrollControlled: true,
-    useSafeArea: true,
-    backgroundColor: Colors.transparent,
-    barrierColor: Colors.black.withValues(alpha: .32),
-    builder: (_) => const _SellWalletSheet(),
-  );
-  if (!context.mounted || wallet != true) return;
   await Navigator.of(context).push<void>(
     AppPageRoute<void>(
       builder: (_) => TradeAmountScreen(mode: TradeMode.sell, asset: asset),
@@ -233,8 +218,8 @@ class _WithdrawWalletSheet extends StatelessWidget {
             right: 16,
             top: 125,
             child: _WalletSelectRow(
-              asset: '$_f/buy_nigeria.png',
-              title: 'Nigeria Naira',
+              asset: 'davochain-currency',
+              title: 'Davochain Naira',
               symbol: 'NGN',
               iconSize: 40,
               onTap: () => Navigator.pop(context, _WithdrawWallet.naira),
@@ -315,7 +300,12 @@ class _WalletSelectRow extends StatelessWidget {
             width: 40,
             height: 40,
             child: Center(
-              child: asset.endsWith('/sol.png')
+              child: asset == 'davochain-currency'
+                  ? DavoCurrencyMark(
+                      size: iconSize,
+                      color: DavoColors.of(context).link,
+                    )
+                  : asset.endsWith('/sol.png')
                   ? SolanaIcon(size: iconSize)
                   : Image.asset(
                       asset,
@@ -348,146 +338,6 @@ class _WalletSelectRow extends StatelessWidget {
                 fontSize: 12,
                 height: 1.25,
                 color: DavoColors.of(context).body,
-              ),
-            ),
-          ),
-        ],
-      ),
-    ),
-  );
-}
-
-class _SellWalletSheet extends StatelessWidget {
-  const _SellWalletSheet();
-  @override
-  Widget build(BuildContext context) => DavoSafeSelectionSheet(
-    child: Container(
-      height: 242,
-      decoration: BoxDecoration(
-        color: DavoColors.of(context).sheetSurface,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      child: Stack(
-        children: [
-          Positioned(
-            left: 0,
-            right: 0,
-            top: 6,
-            child: Center(
-              child: Container(
-                width: 85,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: DavoColors.of(context).bodyMuted,
-                  borderRadius: BorderRadius.circular(100),
-                ),
-              ),
-            ),
-          ),
-          Positioned(
-            left: 0,
-            right: 0,
-            top: 32,
-            child: Text(
-              'Select wallet to sell into',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontFamily: 'Sora',
-                fontSize: 14,
-                height: 1.35,
-                color: DavoColors.of(context).ink,
-              ),
-            ),
-          ),
-          Positioned(
-            right: 16,
-            top: 20,
-            width: 24,
-            height: 24,
-            child: InkResponse(
-              onTap: () => Navigator.pop(context),
-              child: Image.asset(
-                '$_f/buy_close.png',
-                color: DavoColors.of(context).ink,
-                width: 24,
-                height: 24,
-              ),
-            ),
-          ),
-          Positioned(
-            left: 16,
-            right: 16,
-            top: 67,
-            height: 55,
-            child: InkWell(
-              onTap: () => Navigator.pop(context, true),
-              child: Stack(
-                children: [
-                  Positioned(
-                    left: 0,
-                    top: 9,
-                    width: 32,
-                    height: 32,
-                    child: Image.asset(
-                      '$_f/buy_nigeria.png',
-                      width: 32,
-                      height: 32,
-                      fit: BoxFit.contain,
-                    ),
-                  ),
-                  Positioned(
-                    left: 44,
-                    top: 7,
-                    child: Text(
-                      'Nigerian Naira',
-                      style: TextStyle(
-                        fontFamily: 'Sora',
-                        fontSize: 14,
-                        height: 1.35,
-                        color: DavoColors.of(context).ink,
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    left: 44,
-                    top: 28,
-                    child: Text(
-                      'NGN',
-                      style: TextStyle(
-                        fontFamily: 'Sora',
-                        fontSize: 12,
-                        height: 1.25,
-                        color: DavoColors.of(context).body,
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    right: 0,
-                    top: 8,
-                    child: Text(
-                      '0.00 USD',
-                      style: TextStyle(
-                        fontFamily: 'Sora',
-                        fontSize: 14,
-                        height: 1.35,
-                        color: DavoColors.of(context).body,
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    right: 0,
-                    top: 29,
-                    child: Text(
-                      '0.00₦',
-                      style: TextStyle(
-                        fontFamily: 'Sora',
-                        fontSize: 10,
-                        height: 1.3,
-                        color: DavoColors.of(context).bodyMuted,
-                      ),
-                    ),
-                  ),
-                ],
               ),
             ),
           ),
@@ -1872,7 +1722,7 @@ class _BalanceCard extends StatelessWidget {
   Widget build(BuildContext context) => DavoListenableBuilder(
     listenable: WalletAccountState.instance,
     builder: (context, _) => DavoBlueBalanceCard(
-      label: 'Available NGN balance',
+      label: 'Davochain Naira balance',
       artBottom: -21,
       labelAction: IconButton(
         tooltip: visible ? 'Hide balance' : 'Show balance',
@@ -1884,14 +1734,20 @@ class _BalanceCard extends StatelessWidget {
           color: Colors.white,
         ),
       ),
+      amountWidget: DavoNairaAmount(
+        minorUnits: WalletAccountState.instance.ngnAvailableMinorUnits,
+        visible: visible,
+        style: const TextStyle(
+          fontSize: 28,
+          fontWeight: FontWeight.w700,
+          color: Colors.white,
+        ),
+      ),
       amount: visible
           ? WalletAccountState.instance.ngnBalanceLabel
           : '\u20a6\u2022\u2022\u2022\u2022\u2022\u2022',
       caption: visible
-          ? WalletAccountState.instance.snapshot.usdEquivalentLabel(
-                  WalletAccountState.instance.ngnAvailableMinorUnits,
-                ) ??
-                'NGN wallet'
+          ? '= ${WalletAccountState.instance.ngnBalanceLabel} naira value\n${WalletValuation.forAsset(WalletAccountState.instance.snapshot, 'NGN', quote: WalletAccountState.instance.activeQuote).usdLabel ?? 'USD estimate unavailable'}'
           : 'Balance hidden',
     ),
   );
@@ -1979,7 +1835,7 @@ class _CryptoBalance extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    r'$842.31 USD',
+                    '${WalletAccountState.instance.balanceLabel(asset.symbol)} naira value\n${WalletValuation.forAsset(WalletAccountState.instance.snapshot, asset.symbol, quote: WalletAccountState.instance.activeQuote).usdLabel ?? 'USD estimate unavailable'}',
                     textAlign: TextAlign.right,
                     style: TextStyle(
                       fontSize: 12,

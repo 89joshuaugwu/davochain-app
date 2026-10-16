@@ -23,7 +23,7 @@ void main() {
       expect(engine.publish(old, generation: generation), isFalse);
       final current = await container.read(walletSnapshotProvider.future);
       expect(current.accountId, isNot(old.accountId));
-      expect(current.assets.length, 12);
+      expect(current.assets.length, 11);
       expect(
         current.assets.every(
           (a) => current.available(a).atomicUnits == BigInt.zero,
