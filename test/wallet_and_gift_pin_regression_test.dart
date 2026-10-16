@@ -25,7 +25,7 @@ void main() {
   await tester.pump();
   expect(find.text('Confirm'), findsNothing);
  });
- testWidgets('withdraw wallet add action fits narrow sheet', (tester) async {
+ testWidgets('withdraw wallet search replaces add action on narrow sheet', (tester) async {
   tester.view.physicalSize = const Size(320, 740);
   tester.view.devicePixelRatio = 1;
   addTearDown(tester.view.resetPhysicalSize);
@@ -33,7 +33,8 @@ void main() {
   await tester.pumpWidget(MaterialApp(theme: AppTheme.light, home: Builder(builder: (context) => Scaffold(body: TextButton(onPressed: () => startWithdrawFlow(context), child: const Text('Open'))))));
   await tester.tap(find.text('Open'));
   await tester.pumpAndSettle();
-  expect(find.text('Add crypto asset'), findsOneWidget);
+  expect(find.text('Add crypto asset'), findsNothing);
+    expect(find.byKey(const ValueKey('wallet-search')), findsOneWidget);
   expect(tester.takeException(), isNull);
  });
 }

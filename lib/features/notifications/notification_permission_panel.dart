@@ -147,7 +147,7 @@ class NotificationPermissionPanel extends StatelessWidget {
                   style: TextStyle(fontSize: 12),
                 ),
                 subtitle: const Text(
-                  'Says ?Payment received in Davochain? after a completed deposit notification. No amounts or names.',
+                  'Says "Payment received in Davochain" after a completed deposit notification. No amounts or names.',
                   style: TextStyle(fontSize: 11, height: 1.5),
                 ),
                 value: phone.preferences.depositVoiceAlerts,
@@ -160,7 +160,7 @@ class NotificationPermissionPanel extends StatelessWidget {
               TextButton.icon(
                 icon: const Icon(Icons.volume_up_outlined, size: 18),
                 label: Text(
-                  phone.voiceBusy ? 'Preparing voice?' : 'Test voice',
+                  phone.voiceBusy ? 'Preparing voice...' : 'Test voice',
                 ),
                 onPressed:
                     !phone.initialized ||

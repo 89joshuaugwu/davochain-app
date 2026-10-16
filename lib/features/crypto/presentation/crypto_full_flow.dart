@@ -1,3 +1,4 @@
+import '../../wallets/presentation/wallet_picker_sheet.dart';
 import '../../wallets/wallet_valuation.dart';
 import '../../../shared/widgets/davo_naira_amount.dart';
 import '../../../shared/receipts/transaction_commands.dart';
@@ -26,9 +27,7 @@ import '../../funding/funding_outcomes.dart';
 import '../../../core/preview/preview_transaction_operation.dart';
 import '../../../shared/motion/davo_working_indicator.dart';
 import '../../../shared/motion/davo_motion_spec.dart';
-import '../../../shared/widgets/davo_sheet_header.dart';
 import '../../../shared/widgets/davo_bank_logo.dart';
-import '../../../shared/widgets/solana_icon.dart';
 import '../../../shared/formatters/grouped_amount_formatter.dart';
 import '../../../shared/widgets/davo_success_mark.dart';
 import '../../../shared/widgets/davo_result_screen.dart';
@@ -56,17 +55,8 @@ const _exact = 'assets/figma_exact';
 
 enum TradeMode { sell, convert }
 
-enum _WithdrawWallet { naira, bitcoin, ethereum, solana, tether }
-
-BuyCryptoAsset _withdrawAsset(_WithdrawWallet wallet) => switch (wallet) {
-  _WithdrawWallet.ethereum => BuyCryptoAsset.ethereum,
-  _WithdrawWallet.solana => BuyCryptoAsset.solana,
-  _WithdrawWallet.tether => BuyCryptoAsset.tether,
-  _ => BuyCryptoAsset.bitcoin,
-};
-
 Future<void> startWithdrawFlow(BuildContext context) async {
-  final selected = await showModalBottomSheet<_WithdrawWallet>(
+  final selected = await showModalBottomSheet<String>(
     context: context,
     sheetAnimationStyle:
         (MediaQuery.disableAnimationsOf(context) ||
@@ -80,14 +70,18 @@ Future<void> startWithdrawFlow(BuildContext context) async {
     useSafeArea: true,
     backgroundColor: Colors.transparent,
     barrierColor: Colors.black.withValues(alpha: .32),
-    builder: (_) => const _WithdrawWalletSheet(),
+    builder: (_) => const WalletPickerSheet(),
   );
   if (!context.mounted || selected == null) return;
   await Navigator.of(context).push<void>(
     AppPageRoute<void>(
-      builder: (_) => selected == _WithdrawWallet.naira
+      builder: (_) => selected == 'NGN'
           ? const NairaWithdrawScreen()
-          : CryptoWithdrawModeScreen(asset: _withdrawAsset(selected)),
+          : CryptoWithdrawModeScreen(
+              asset: BuyCryptoAsset.values.firstWhere(
+                (asset) => asset.symbol == selected,
+              ),
+            ),
     ),
   );
 }
@@ -137,216 +131,6 @@ Future<void> openDepositStatus(
   );
 }
 
-class _WithdrawWalletSheet extends StatelessWidget {
-  const _WithdrawWalletSheet();
-
-  @override
-  Widget build(BuildContext context) => DavoSafeSelectionSheet(
-    child: Container(
-      height: 472,
-      decoration: BoxDecoration(
-        color: DavoColors.of(context).sheetSurface,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-      ),
-      child: Stack(
-        children: [
-          Positioned(
-            left: 0,
-            right: 0,
-            top: 6,
-            child: Center(
-              child: Container(
-                width: 85,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: DavoColors.of(context).bodyMuted,
-                  borderRadius: BorderRadius.circular(100),
-                ),
-              ),
-            ),
-          ),
-          const Positioned(
-            left: 0,
-            right: 0,
-            top: 16,
-            child: DavoSheetHeader(title: 'Select Wallet'),
-          ),
-          Positioned(
-            left: 16,
-            top: 67,
-            right: 16,
-            child: InkWell(
-              onTap: () => Navigator.pop(context, _WithdrawWallet.bitcoin),
-              child: SizedBox(
-                height: 48,
-                child: Row(
-                  children: [
-                    Container(
-                      width: 34,
-                      height: 34,
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        color: DavoColors.of(context).primarySoft,
-                        shape: BoxShape.circle,
-                      ),
-                      child: Image.asset(
-                        '$_exact/crypto_plus_circle_exact.png',
-                        width: 24,
-                        height: 24,
-                      ),
-                    ),
-                    const SizedBox(width: 18),
-                    Expanded(
-                      child: Text(
-                        'Add crypto asset',
-                        style: TextStyle(
-                          fontFamily: 'Sora',
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          height: 1.35,
-                          color: DavoColors.of(context).ink,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-          Positioned(
-            left: 16,
-            right: 16,
-            top: 125,
-            child: _WalletSelectRow(
-              asset: 'davochain-currency',
-              title: 'Davochain Naira',
-              symbol: 'NGN',
-              iconSize: 40,
-              onTap: () => Navigator.pop(context, _WithdrawWallet.naira),
-            ),
-          ),
-          Positioned(
-            left: 16,
-            right: 16,
-            top: 188,
-            child: _WalletSelectRow(
-              asset: '$_f/btc.png',
-              title: 'Bitcoin',
-              symbol: 'BTC',
-              onTap: () => Navigator.pop(context, _WithdrawWallet.bitcoin),
-            ),
-          ),
-          Positioned(
-            left: 16,
-            right: 16,
-            top: 251,
-            child: _WalletSelectRow(
-              asset: '$_f/eth.png',
-              title: 'Ethereum',
-              symbol: 'ETH',
-              onTap: () => Navigator.pop(context, _WithdrawWallet.ethereum),
-            ),
-          ),
-          Positioned(
-            left: 16,
-            right: 16,
-            top: 314,
-            child: _WalletSelectRow(
-              asset: '$_f/sol.png',
-              title: 'Solana',
-              symbol: 'SOL',
-              onTap: () => Navigator.pop(context, _WithdrawWallet.solana),
-            ),
-          ),
-          Positioned(
-            left: 16,
-            right: 16,
-            top: 377,
-            child: _WalletSelectRow(
-              asset: '$_f/usdt.png',
-              title: 'Tether',
-              symbol: 'USDT',
-              onTap: () => Navigator.pop(context, _WithdrawWallet.tether),
-            ),
-          ),
-        ],
-      ),
-    ),
-  );
-}
-
-class _WalletSelectRow extends StatelessWidget {
-  const _WalletSelectRow({
-    required this.asset,
-    required this.title,
-    required this.symbol,
-    required this.onTap,
-    this.iconSize = 32,
-  });
-  final String asset, title, symbol;
-  final VoidCallback onTap;
-  final double iconSize;
-
-  @override
-  Widget build(BuildContext context) => InkWell(
-    onTap: onTap,
-    child: SizedBox(
-      height: 55,
-      child: Stack(
-        children: [
-          Positioned(
-            left: 0,
-            top: 7,
-            width: 40,
-            height: 40,
-            child: Center(
-              child: asset == 'davochain-currency'
-                  ? DavoCurrencyMark(
-                      size: iconSize,
-                      color: DavoColors.of(context).link,
-                    )
-                  : asset.endsWith('/sol.png')
-                  ? SolanaIcon(size: iconSize)
-                  : Image.asset(
-                      asset,
-                      width: iconSize,
-                      height: iconSize,
-                      fit: BoxFit.contain,
-                    ),
-            ),
-          ),
-          Positioned(
-            left: 52,
-            top: 9,
-            child: Text(
-              title,
-              style: TextStyle(
-                fontFamily: 'Sora',
-                fontSize: 14,
-                height: 1.35,
-                color: DavoColors.of(context).ink,
-              ),
-            ),
-          ),
-          Positioned(
-            left: 52,
-            top: 30,
-            child: Text(
-              symbol,
-              style: TextStyle(
-                fontFamily: 'Sora',
-                fontSize: 12,
-                height: 1.25,
-                color: DavoColors.of(context).body,
-              ),
-            ),
-          ),
-        ],
-      ),
-    ),
-  );
-}
-
 class CryptoWithdrawModeScreen extends StatelessWidget {
   const CryptoWithdrawModeScreen({
     super.key,
@@ -385,16 +169,34 @@ class CryptoWithdrawModeScreen extends StatelessWidget {
         _Choice(
           asset: '$_cf/qr_wallet.png',
           title: 'Wallet Address',
-          subtitle: 'Send crypto to an external wallet,\nnetwork fee applies',
-          onTap: () => Navigator.push(
-            context,
-            AppPageRoute<void>(
-              builder: (_) => CryptoWithdrawEntryScreen(
-                external: true,
-                initialAsset: asset,
-              ),
-            ),
-          ),
+          subtitle: networkWalletSymbols.contains(asset.symbol)
+              ? 'Send crypto to an external wallet,\nnetwork fee applies'
+              : 'External withdrawals are not available yet',
+          onTap: () => networkWalletSymbols.contains(asset.symbol)
+              ? Navigator.push(
+                  context,
+                  AppPageRoute<void>(
+                    builder: (_) => CryptoWithdrawEntryScreen(
+                      external: true,
+                      initialAsset: asset,
+                    ),
+                  ),
+                )
+              : showDialog<void>(
+                  context: context,
+                  builder: (_) => AlertDialog(
+                    title: Text('Withdraw ${asset.symbol}'),
+                    content: const Text(
+                      'External withdrawals are not available for this asset yet. You can send to a Davochain user.',
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text('Got it'),
+                      ),
+                    ],
+                  ),
+                ),
         ),
       ],
     ),
@@ -417,23 +219,43 @@ class CryptoWithdrawEntryScreen extends StatefulWidget {
 class _CryptoWithdrawEntryScreenState extends State<CryptoWithdrawEntryScreen> {
   final target = TextEditingController();
   final amount = TextEditingController();
+  final amountFocus = FocusNode();
+  late final int _formGeneration;
+  @override
+  void initState() {
+    super.initState();
+    _formGeneration = WalletAccountState.instance.generation;
+    WalletAccountState.instance.addListener(_walletChanged);
+  }
+
+  void _walletChanged() {
+    if (mounted) setState(() {});
+  }
+
   String? network;
   late BuyCryptoAsset asset = widget.initialAsset;
 
   @override
   void dispose() {
+    WalletAccountState.instance.removeListener(_walletChanged);
+    amountFocus.dispose();
     target.dispose();
     amount.dispose();
     super.dispose();
   }
 
   bool get _ready =>
+      _formGeneration == WalletAccountState.instance.generation &&
+      (!widget.external || networkWalletSymbols.contains(asset.symbol)) &&
       target.text.trim().isNotEmpty &&
       _hasAvailableFunds &&
       (!widget.external || (network != null && _addressMatchesNetwork));
 
   bool get _hasAvailableFunds {
     try {
+      if (!WalletAccountState.instance.snapshot.assets.contains(asset.symbol)) {
+        return false;
+      }
       final available = WalletAccountState.instance.snapshot.available(
         asset.symbol,
       );
@@ -532,27 +354,50 @@ class _CryptoWithdrawEntryScreenState extends State<CryptoWithdrawEntryScreen> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             _TopBar(
-              title: 'Withdraw',
+              title: widget.external ? 'Withdraw' : 'Send crypto',
               onBack: _cancel,
-              height: 32,
-              fontSize: 14,
+              height: 48,
+              fontSize: 18,
               fontWeight: FontWeight.w600,
             ),
             const SizedBox(height: 16),
             _CryptoBalance(asset: asset, onChange: _changeAsset),
+            if (!widget.external) ...[
+              const SizedBox(height: 24),
+              const Text(
+                'Send to a Davochain user',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                'Enter their username, then choose how much to send. Review the recipient before confirming.',
+                style: TextStyle(
+                  fontSize: 13,
+                  height: 1.5,
+                  color: DavoColors.of(context).bodyMuted,
+                ),
+              ),
+            ],
             const SizedBox(height: 24),
             _entryField(
-              widget.external ? 'Address' : 'Transfer To',
+              widget.external ? 'Address' : 'Recipient username',
               Row(
                 children: [
                   Expanded(
                     child: TextField(
                       controller: target,
+                      autocorrect: false,
+                      enableSuggestions: false,
+                      textInputAction: TextInputAction.next,
+                      onSubmitted: (_) => amountFocus.requestFocus(),
                       onChanged: (_) => setState(() {}),
                       decoration: DavoInlineInputDecoration(
                         hintText: widget.external
                             ? 'Paste the wallet address'
                             : 'Enter Davochain username',
+                        contentPadding: const EdgeInsets.symmetric(
+                          vertical: 16,
+                        ),
                       ),
                       style: const TextStyle(fontSize: 14),
                     ),
@@ -606,6 +451,8 @@ class _CryptoWithdrawEntryScreenState extends State<CryptoWithdrawEntryScreen> {
                   Expanded(
                     child: TextField(
                       controller: amount,
+                      focusNode: amountFocus,
+                      textInputAction: TextInputAction.done,
                       keyboardType: const TextInputType.numberWithOptions(
                         decimal: true,
                       ),
@@ -613,6 +460,7 @@ class _CryptoWithdrawEntryScreenState extends State<CryptoWithdrawEntryScreen> {
                       onChanged: (_) => setState(() {}),
                       decoration: const DavoInlineInputDecoration(
                         hintText: 'Enter amount',
+                        contentPadding: EdgeInsets.symmetric(vertical: 16),
                       ),
                       style: const TextStyle(fontSize: 14),
                     ),
@@ -644,7 +492,7 @@ class _CryptoWithdrawEntryScreenState extends State<CryptoWithdrawEntryScreen> {
                   ),
                 ),
                 Text(
-                  '${WalletAccountState.instance.snapshot.available(asset.symbol).decimal} ${asset.symbol}',
+                  '${WalletAccountState.instance.snapshot.assets.contains(asset.symbol) ? WalletAccountState.instance.snapshot.available(asset.symbol).decimal : 'Unavailable'} ${asset.symbol}',
                   style: TextStyle(
                     fontSize: 14,
                     color: DavoColors.of(context).bodyMuted,
@@ -698,10 +546,11 @@ class _CryptoWithdrawEntryScreenState extends State<CryptoWithdrawEntryScreen> {
       Focus(
         child: Builder(
           builder: (context) => Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12),
+            constraints: const BoxConstraints(minHeight: 56),
+            padding: const EdgeInsets.symmetric(horizontal: 14),
             decoration: BoxDecoration(
               color: DavoColors.of(context).surface,
-              borderRadius: BorderRadius.circular(6),
+              borderRadius: BorderRadius.circular(12),
               border: Border.all(
                 color: Focus.of(context).hasFocus
                     ? AppColors.primary
@@ -716,24 +565,17 @@ class _CryptoWithdrawEntryScreenState extends State<CryptoWithdrawEntryScreen> {
   );
 
   Future<void> _changeAsset() async {
-    final selected = await showModalBottomSheet<BuyCryptoAsset>(
+    final selected = await showModalBottomSheet<String>(
       context: context,
-      sheetAnimationStyle:
-          (MediaQuery.disableAnimationsOf(context) ||
-              MediaQuery.accessibleNavigationOf(context))
-          ? AnimationStyle.noAnimation
-          : const AnimationStyle(
-              duration: Duration(milliseconds: 280),
-              reverseDuration: Duration(milliseconds: 200),
-            ),
       isScrollControlled: true,
       useSafeArea: true,
       backgroundColor: Colors.transparent,
-      builder: (_) => const BuyCryptoAssetSheet(),
+      builder: (_) =>
+          WalletPickerSheet(includeCash: false, networkOnly: widget.external, unavailableLabel: 'External withdrawals unavailable'),
     );
-    if (!mounted || selected == null || selected == asset) return;
+    if (!mounted || selected == null || selected == asset.symbol) return;
     setState(() {
-      asset = selected;
+      asset = BuyCryptoAsset.values.firstWhere((a) => a.symbol == selected);
       network = null;
     });
   }
@@ -1758,98 +1600,144 @@ class _CryptoBalance extends StatelessWidget {
   final BuyCryptoAsset asset;
   final VoidCallback? onChange;
   @override
-  Widget build(BuildContext context) => Container(
-    width: double.infinity,
-    padding: const EdgeInsets.all(16),
-    decoration: BoxDecoration(
-      color: DavoColors.of(context).surface,
-      borderRadius: BorderRadius.circular(8),
-    ),
-    child: Column(
-      children: [
-        Row(
-          children: [
-            Expanded(
-              child: Text(
+  Widget build(BuildContext context) {
+    final wallet = WalletAccountState.instance;
+    final known =
+        wallet.snapshot.assets.contains(asset.symbol) &&
+        wallet.snapshot.priceMinorUnits(asset.symbol) != null;
+    final valuation = known
+        ? WalletValuation.forAsset(
+            wallet.snapshot,
+            asset.symbol,
+            quote: wallet.activeQuote,
+          )
+        : null;
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: DavoColors.of(context).surface,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final label = Text(
                 'Wallet Balance',
                 style: TextStyle(
-                  fontSize: 10,
+                  fontSize: 12,
                   color: DavoColors.of(context).bodyMuted,
                 ),
-              ),
-            ),
-            InkWell(
-              onTap: onChange,
-              child: Row(
+              );
+              final change = TextButton(
+                onPressed: onChange,
+                style: TextButton.styleFrom(
+                  textStyle: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                child: const Text('Change Asset'),
+              );
+              return constraints.maxWidth < 300 ||
+                      MediaQuery.textScalerOf(context).scale(14) > 18
+                  ? Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        label,
+                        Align(alignment: Alignment.centerRight, child: change),
+                      ],
+                    )
+                  : Row(
+                      children: [
+                        Expanded(child: label),
+                        change,
+                      ],
+                    );
+            },
+          ),
+          const SizedBox(height: 8),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final name = Row(
+                children: [
+                  BuyAssetIcon(asset: asset, size: 36),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          asset.name,
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          '${known ? wallet.snapshot.available(asset.symbol).decimal : 'Unavailable'} ${asset.symbol}',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: DavoColors.of(context).bodyMuted,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              );
+              final values = Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(
-                    'Change Asset',
-                    style: TextStyle(
-                      fontSize: 10,
-                      color: DavoColors.of(context).link,
+                  if (valuation != null)
+                    DavoNairaAmount(
+                      minorUnits: valuation.nairaMinorUnits,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    )
+                  else
+                    const Text('Value unavailable'),
+                  if (valuation != null)
+                    Text(
+                      '= ${valuation.nairaLabel}\n${valuation.usdLabel ?? 'USD unavailable'}',
+                      textAlign: TextAlign.right,
+                      style: TextStyle(
+                        fontSize: 11,
+                        height: 1.5,
+                        color: DavoColors.of(context).bodyMuted,
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 4),
-                  const Icon(
-                    Icons.keyboard_arrow_down_rounded,
-                    size: 16,
-                    color: AppColors.primary,
-                  ),
                 ],
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            BuyAssetIcon(asset: asset, size: 28),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(asset.name, style: const TextStyle(fontSize: 14)),
-                  Text(
-                    asset.symbol,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: DavoColors.of(context).bodyMuted,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(width: 8),
-            Flexible(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                    '${WalletAccountState.instance.snapshot.available(asset.symbol).decimal} ${asset.symbol}',
-                    textAlign: TextAlign.right,
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  Text(
-                    '${WalletAccountState.instance.balanceLabel(asset.symbol)} naira value\n${WalletValuation.forAsset(WalletAccountState.instance.snapshot, asset.symbol, quote: WalletAccountState.instance.activeQuote).usdLabel ?? 'USD estimate unavailable'}',
-                    textAlign: TextAlign.right,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: DavoColors.of(context).bodyMuted,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ],
-    ),
-  );
+              );
+              return constraints.maxWidth < 300 ||
+                      MediaQuery.textScalerOf(context).scale(14) > 18
+                  ? Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        name,
+                        const SizedBox(height: 16),
+                        Align(alignment: Alignment.centerRight, child: values),
+                      ],
+                    )
+                  : Row(
+                      children: [
+                        Expanded(child: name),
+                        const SizedBox(width: 12),
+                        Flexible(child: values),
+                      ],
+                    );
+            },
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class _Tabs extends StatelessWidget {

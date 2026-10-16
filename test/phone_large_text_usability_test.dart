@@ -1,6 +1,6 @@
+import 'package:davochain/shared/widgets/davo_naira_amount.dart';
 import 'package:davochain/core/theme/app_theme.dart';
 import 'package:davochain/features/dashboard/presentation/dashboard_screen.dart';
-import 'package:davochain/features/wallets/wallet_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
@@ -47,7 +47,7 @@ void main() {
       (tester) async {
     await mount(tester, const PortfolioScreen());
     expect(tester.getRect(find.text('Portfolio')).height, lessThan(60));
-    final amount = find.text(WalletAccountState.instance.portfolioBalanceLabel);
+    final amount = find.byType(DavoNairaAmount).first;
     expect(tester.getRect(amount).height, lessThan(70));
     expect(tester.getRect(amount).right, lessThanOrEqualTo(300));
     expect(tester.takeException(), isNull);

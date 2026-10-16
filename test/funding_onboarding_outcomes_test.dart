@@ -82,6 +82,8 @@ void main() {
         isTrue);
     await tester.tap(find.text('Back to wallet'));
     await tester.pumpAndSettle();
+    await tester.pumpWidget(MaterialApp(theme: AppTheme.dark, home: const Scaffold(body: DepositActivityBanner(currency: 'NGD'))));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('View details'));
     await tester.pumpAndSettle();
     expect(
@@ -90,7 +92,7 @@ void main() {
             .animate,
         isFalse);
   });
-  testWidgets('Home shows an accepted deposit without navigating away',
+  testWidgets('Home retains accepted deposit facts without a bottom banner',
       (tester) async {
     tester.view.physicalSize = const Size(390, 844);
     tester.view.devicePixelRatio = 1;
@@ -101,7 +103,8 @@ void main() {
     await tester.pumpAndSettle();
     FundingActivity.accept(deposit(FundingStatus.completed));
     await tester.pumpAndSettle();
-    expect(find.text('Deposit received'), findsOneWidget);
+    expect(find.text('Deposit received'), findsNothing);
+    expect(FundingActivity.records.value.single.status, FundingStatus.completed);
     expect(find.byType(DavochainDashboardScreen), findsOneWidget);
     expect(tester.takeException(), isNull);
   });

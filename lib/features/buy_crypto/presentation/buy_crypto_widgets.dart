@@ -1,3 +1,4 @@
+import '../../wallets/asset_catalog_projection.dart';
 import '../../wallets/wallet_valuation.dart';
 import '../../../shared/widgets/davo_naira_amount.dart';
 import 'dart:math' as math;
@@ -26,25 +27,12 @@ class _BuyCryptoAssetSheetState extends State<BuyCryptoAssetSheet> {
   String _query = '';
   @override
   Widget build(BuildContext context) {
-    final assets = BuyCryptoAsset.values
-        .where(
-          (asset) =>
-              asset != widget.excluded &&
-              (!widget.fundedOnly ||
-                  (WalletAccountState.instance.snapshot.assets.contains(
-                        asset.symbol,
-                      ) &&
-                      WalletAccountState.instance.snapshot
-                              .available(asset.symbol)
-                              .atomicUnits >
-                          BigInt.zero)),
-        )
-        .where(
-          (asset) =>
-              asset.name.toLowerCase().contains(_query) ||
-              asset.symbol.toLowerCase().contains(_query),
-        )
-        .toList();
+    final assets = orderedCryptoAssets(
+      WalletAccountState.instance.snapshot,
+      query: _query,
+      fundedOnly: widget.fundedOnly,
+      excluded: widget.excluded,
+    );
     return _SelectionBody(
       title: 'Select Cryptocurrency',
       stableHeight: true,
@@ -83,11 +71,28 @@ class _BuyCryptoAssetSheetState extends State<BuyCryptoAssetSheet> {
                 )
                 ? WalletAccountState.instance.balanceLabel(asset.symbol)
                 : '\u20a60.00',
+            valueWidget:
+                WalletAccountState.instance.snapshot.assets.contains(
+                      asset.symbol,
+                    ) &&
+                    WalletAccountState.instance.snapshot.priceMinorUnits(
+                          asset.symbol,
+                        ) !=
+                        null
+                ? DavoNairaAmount(
+                    minorUnits: WalletAccountState.instance.snapshot
+                        .valuationMinorUnits(asset.symbol),
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  )
+                : null,
             quantity:
                 WalletAccountState.instance.snapshot.assets.contains(
                   asset.symbol,
                 )
-                ? '${WalletAccountState.instance.snapshot.available(asset.symbol).decimal} ${asset.symbol}\n${WalletValuation.forAsset(WalletAccountState.instance.snapshot, asset.symbol, quote: WalletAccountState.instance.activeQuote).usdLabel ?? 'USD estimate unavailable'}'
+                ? '${WalletAccountState.instance.snapshot.available(asset.symbol).decimal} ${asset.symbol}\n= ${WalletAccountState.instance.balanceLabel(asset.symbol)}\n${WalletValuation.forAsset(WalletAccountState.instance.snapshot, asset.symbol, quote: WalletAccountState.instance.activeQuote).usdLabel ?? 'USD estimate unavailable'}'
                 : '0 ${asset.symbol}',
             onTap:
                 !asset.hasQuote ||

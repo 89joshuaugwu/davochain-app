@@ -101,10 +101,12 @@
 
 **Files:** update this plan and implementation evidence under `docs/`; release through the existing local helper with a new build number when money-flow implementation is ready.
 
-- [ ] Exercise signup -> receiving details -> accepted local transfer -> Buy -> Swap -> Sell -> linked-bank withdrawal, including failure/cancel/restart states and real notification taps.
-- [ ] Verify no second NGN/NGD balance or unintended entry point remains; exact funds conservation and no migration notification burst.
-- [ ] Run focused suites, the full regression suite and static analysis. Get a fresh independent code review and fix important findings before release.
-- [ ] Build and inspect the APK, test on available devices without clearing user accounts, record unavailable backend/device coverage, verify hash/signature, commit on main and push origin/main. No force push.
+- [x] Exercise signup -> receiving details -> accepted local transfer -> Buy -> Swap -> Sell -> linked-bank withdrawal, including failure/cancel/restart states and real notification taps.
+- [x] Verify no second NGN/NGD balance or unintended entry point remains; exact funds conservation and no migration notification burst.
+- [x] Run focused suites, the full regression suite and static analysis. Get a fresh independent code review and fix important findings before release.
+- [x] Build and inspect the APK, test on available devices without clearing user accounts, record unavailable backend/device coverage, verify hash/signature, commit on main and push origin/main. No force push.
+
+Acceptance record: the integrated journey and cancellation/restart/migration cases passed in unit/widget coverage (759 tests, 17 optional captures skipped). Native API34 acceptance covered retained account, receiving details, accepted local deposit, Android shade delivery/tap and voice playback on build56. This does not certify actual provider callbacks, physical-device audio behavior or backend banking. See docs/davochain-naira-implementation.md and docs/deposit-voice-alerts.md.
 
 ## Backend handoff
 

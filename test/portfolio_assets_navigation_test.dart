@@ -5,17 +5,15 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   testWidgets(
-    'holdings stay separate from the full catalog and asset taps open receiving details',
+    'full zero-balance catalog is searchable and asset taps open receiving details',
     (tester) async {
       final wallet = WalletAccountState.instance..startSimulation(empty: true);
       addTearDown(wallet.reset);
       await tester.pumpWidget(const MaterialApp(home: PortfolioScreen()));
       await tester.pumpAndSettle();
-      expect(find.text('No crypto holdings yet'), findsOneWidget);
-      expect(find.text('Bitcoin'), findsNothing);
-      await tester.ensureVisible(find.text('All assets'));
-      await tester.tap(find.text('All assets'));
-      await tester.pumpAndSettle();
+      expect(find.byType(TextField), findsOneWidget);
+      expect(find.text('Bitcoin'), findsOneWidget);
+      expect(find.text('Cardano'), findsOneWidget);
       await tester.ensureVisible(find.text('Bitcoin'));
       await tester.tap(find.text('Bitcoin'));
       await tester.pumpAndSettle();

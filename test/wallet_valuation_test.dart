@@ -1,3 +1,4 @@
+import 'package:davochain/core/money/money.dart';
 import 'package:davochain/features/wallets/quote_repository.dart';
 import 'package:davochain/features/wallets/wallet_valuation.dart';
 import 'package:davochain/features/wallets/wallet_repository.dart';
@@ -65,4 +66,38 @@ void main() {
     );
     state.dispose();
   });
+  test(
+    'portfolio estimate checks every crypto quote without requiring cash',
+    () {
+      final base = QuoteSnapshot.offline();
+      final wallet = WalletSnapshot(
+        accountId: 'crypto-only',
+        version: 1,
+        available: {'BTC': AssetAmount.parse('1', 'BTC', 8)},
+        pricesMinorUnits: {'BTC': base.pricesMinorUnits['BTC']!},
+        usdNgnMinorUnits: base.usdNgnMinorUnits,
+      );
+      expect(
+        WalletValuation.forPortfolio(wallet, quote: base).usdMinorUnits,
+        isNotNull,
+      );
+      final mismatch = QuoteSnapshot(
+        id: 'mismatch',
+        asOf: base.asOf,
+        pricesMinorUnits: {...base.pricesMinorUnits, 'BTC': 1},
+        usdNgnMinorUnits: base.usdNgnMinorUnits,
+      );
+      expect(
+        WalletValuation.forPortfolio(wallet, quote: mismatch).usdMinorUnits,
+        isNull,
+      );
+      final unpriced = WalletSnapshot(
+        accountId: 'unpriced',
+        version: 1,
+        available: {'BTC': AssetAmount.parse('2', 'BTC', 8)},
+        pricesMinorUnits: {},
+      );
+      expect(WalletValuation.forPortfolio(unpriced).available, isFalse);
+    },
+  );
 }

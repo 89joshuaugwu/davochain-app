@@ -9,7 +9,9 @@ class WalletValuation {
     this.usdMinorUnits,
     this.asOf,
     this.quoteId,
+    this.available = true,
   });
+  final bool available;
   final int nairaMinorUnits;
   final int? usdMinorUnits;
   final DateTime? asOf;
@@ -29,6 +31,41 @@ class WalletValuation {
     return WalletValuation(
       nairaMinorUnits: naira,
       usdMinorUnits: fx == null || fx <= 0 || !sameQuote
+          ? null
+          : (BigInt.from(naira) * BigInt.from(100) ~/ BigInt.from(fx)).toInt(),
+      asOf: sameQuote ? quote?.asOf : null,
+      quoteId: sameQuote ? quote?.id : null,
+    );
+  }
+  factory WalletValuation.forPortfolio(
+    WalletSnapshot wallet, {
+    QuoteSnapshot? quote,
+  }) {
+    final assets = wallet.assets
+        .where(
+          (a) =>
+              a != 'NGN' &&
+              a != 'NGD' &&
+              wallet.available(a).atomicUnits > BigInt.zero,
+        )
+        .toList();
+    final complete = assets.every((a) => wallet.priceMinorUnits(a) != null);
+    final naira = complete
+        ? assets.fold<int>(0, (sum, a) => sum + wallet.valuationMinorUnits(a))
+        : 0;
+    final fx = wallet.usdNgnMinorUnits;
+    final sameQuote =
+        complete &&
+        (quote == null ||
+            !quote.isExpired(DateTime.now().toUtc()) &&
+                quote.usdNgnMinorUnits == fx &&
+                assets.every(
+                  (a) => quote.pricesMinorUnits[a] == wallet.priceMinorUnits(a),
+                ));
+    return WalletValuation(
+      available: complete,
+      nairaMinorUnits: naira,
+      usdMinorUnits: !sameQuote || fx == null || fx <= 0
           ? null
           : (BigInt.from(naira) * BigInt.from(100) ~/ BigInt.from(fx)).toInt(),
       asOf: sameQuote ? quote?.asOf : null,

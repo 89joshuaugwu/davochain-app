@@ -1,10 +1,11 @@
+import '../../wallets/presentation/wallet_picker_sheet.dart';
+import '../../wallets/asset_catalog_projection.dart';
 import '../../wallets/wallet_valuation.dart';
 import '../../../shared/widgets/davo_naira_amount.dart';
 import '../../funding/receiving_account_runtime.dart';
 import '../../funding/receiving_account.dart';
 import '../../../core/providers/account_scope.dart';
 import '../../wallets/wallet_providers.dart';
-import 'portfolio_view_state.dart';
 import '../../../core/providers/reactive_builder.dart';
 import '../../wallets/simulation_deposit_button.dart';
 import '../../buy_crypto/presentation/buy_crypto_widgets.dart'
@@ -23,7 +24,6 @@ import 'portfolio_performance_screen.dart';
 import '../../../shared/widgets/davo_refresh_region.dart';
 import '../../../shared/widgets/davo_scroll_behavior.dart';
 import '../../funding/funding_outcomes.dart';
-import '../../../shared/widgets/davo_sheet_header.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../shared/widgets/davo_main_shell.dart';
@@ -230,15 +230,6 @@ class _DavochainDashboardScreenState extends State<DavoDashboardContent> {
             ),
           ),
         ),
-        bottomNavigationBar: const Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16),
-              child: DepositActivityBanner(),
-            ),
-          ],
-        ),
       ),
     );
   }
@@ -287,7 +278,7 @@ class _DavochainDashboardScreenState extends State<DavoDashboardContent> {
   );
 
   Future<void> _openWalletSelector() async {
-    final selected = await showModalBottomSheet<_WalletOption>(
+    final selected = await showModalBottomSheet<String>(
       context: context,
       sheetAnimationStyle:
           (MediaQuery.disableAnimationsOf(context) ||
@@ -301,38 +292,22 @@ class _DavochainDashboardScreenState extends State<DavoDashboardContent> {
       useSafeArea: true,
       backgroundColor: Colors.transparent,
       barrierColor: Colors.black.withValues(alpha: .32),
-      builder: (_) => _WalletSelectorSheet(onAddCrypto: _openCurrencySelector),
+      builder: (_) => const WalletPickerSheet(networkOnly: true),
     );
     if (!mounted || selected == null) return;
-    if (selected.isFiat) {
+    if (selected == 'NGN') {
       Navigator.of(context).push(_davoRoute(const NairaDepositScreen()));
     } else {
-      Navigator.of(
-        context,
-      ).push(_davoRoute(CryptoDepositScreen(asset: selected.asset!)));
-    }
-  }
-
-  Future<_WalletOption?> _openCurrencySelector() async {
-    final asset = await showModalBottomSheet<CryptoAsset>(
-      context: context,
-      sheetAnimationStyle:
-          (MediaQuery.disableAnimationsOf(context) ||
-              MediaQuery.accessibleNavigationOf(context))
-          ? AnimationStyle.noAnimation
-          : const AnimationStyle(
-              duration: Duration(milliseconds: 280),
-              reverseDuration: Duration(milliseconds: 200),
+      Navigator.of(context).push(
+        _davoRoute(
+          CryptoDepositScreen(
+            asset: CryptoAsset.values.firstWhere(
+              (asset) => asset.symbol == selected,
             ),
-      isScrollControlled: true,
-      useSafeArea: true,
-      backgroundColor: Colors.transparent,
-      barrierColor: Colors.black.withValues(alpha: .32),
-      builder: (_) => const _CurrencySelectorSheet(),
-    );
-    if (!mounted || asset == null) return null;
-    Navigator.of(context).push(_davoRoute(CryptoDepositScreen(asset: asset)));
-    return null;
+          ),
+        ),
+      );
+    }
   }
 }
 

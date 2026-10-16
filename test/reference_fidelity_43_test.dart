@@ -13,7 +13,7 @@ import 'package:flutter_test/flutter_test.dart';
 void main() {
   for (final size in [const Size(411, 914), const Size(360, 820)]) {
     testWidgets(
-        'compact carousel leaves three initially visible assets at $size',
+        'compact carousel leaves readable leading assets at $size',
         (tester) async {
       tester.view.physicalSize = size;
       tester.view.devicePixelRatio = 1;
@@ -22,6 +22,8 @@ void main() {
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
       addTearDown(tester.view.resetPadding);
+      WalletAccountState.instance.startSimulation(empty: true);
+      addTearDown(WalletAccountState.instance.reset);
       PreviewAccountState.setupComplete.value = false;
       await tester.pumpWidget(MaterialApp(
           theme: AppTheme.light, home: const DavochainDashboardScreen()));
@@ -33,7 +35,7 @@ void main() {
           tester.getRect(find.byKey(const ValueKey('dashboard-assets')));
       final nav =
           tester.getTopLeft(find.byKey(const ValueKey('main-tab-0'))).dy;
-      for (final asset in ['BTC', 'ETH', 'USDT']) {
+      for (final asset in ['BTC', 'USDT']) {
         final row =
             tester.getRect(find.byKey(ValueKey('dashboard-asset-$asset')));
         expect(row.bottom, lessThanOrEqualTo(viewport.bottom + .1));

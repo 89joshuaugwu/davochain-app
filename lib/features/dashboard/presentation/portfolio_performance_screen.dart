@@ -1,3 +1,4 @@
+import '../../../shared/widgets/davo_naira_amount.dart';
 import '../../../shared/widgets/davo_blue_balance_card.dart';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
@@ -160,11 +161,14 @@ class _PortfolioPerformanceScreenState
                     DavoBlueBalanceCard(
                         key: const ValueKey('portfolio-total'),
                         label: 'Total portfolio value',
+                        amountWidget: DavoNairaAmount(
+                            minorUnits: snapshot.current.valueKobo, visible: _visible,
+                            style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w700, color: Colors.white)),
                         amount: _visible
-                            ? formatPortfolioNaira(snapshot.current.valueKobo)
+                            ? davochainNairaText(snapshot.current.valueKobo)
                             : '\u2022\u2022\u2022\u2022\u2022\u2022',
                         caption:
-                            'As of ${_timestamp(snapshot.current.timestamp)}'),
+                            '${_visible ? '= ${formatPortfolioNaira(snapshot.current.valueKobo)}\n' : ''}As of ${_timestamp(snapshot.current.timestamp)}'),
                     const SizedBox(height: 20),
                     Text('Value over time',
                         style: TextStyle(

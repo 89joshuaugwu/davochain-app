@@ -15,6 +15,8 @@ void main() {
       child: Scaffold(body: BuyCryptoAssetSheet()))));
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
+    await tester.enterText(find.byType(TextField), 'bitcoin');
+    await tester.pumpAndSettle();
     final name = tester.getRect(find.text('Bitcoin'));
     final symbol = tester.getRect(find.text('BTC'));
     expect(name.overlaps(symbol), isFalse);
