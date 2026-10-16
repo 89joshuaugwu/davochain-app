@@ -1,3 +1,4 @@
+import 'portfolio_valuation_history.dart';
 import '../wallets/wallet_repository.dart';
 import 'package:flutter/foundation.dart';
 
@@ -36,25 +37,26 @@ class PortfolioPerformanceSnapshot {
     Iterable<PortfolioValuePoint> history = const [],
     Map<PortfolioPerformancePeriod, PortfolioAdjustedPerformance> performance =
         const {},
-  })  : history = List.unmodifiable(history),
-        performance = Map.unmodifiable(performance);
+  }) : history = List.unmodifiable(history),
+       performance = Map.unmodifiable(performance);
 
   factory PortfolioPerformanceSnapshot.currentBalance({DateTime? timestamp}) =>
       PortfolioPerformanceSnapshot(
-          current: PortfolioValuePoint(
-              timestamp: timestamp ?? DateTime.now(),
-              valueKobo:
-                  WalletAccountState.instance.snapshot.portfolioMinorUnits));
+        current: PortfolioValuePoint(
+          timestamp: timestamp ?? DateTime.now(),
+          valueKobo: WalletAccountState.instance.snapshot.portfolioMinorUnits,
+        ),
+      );
 
   final PortfolioValuePoint current;
   final List<PortfolioValuePoint> history;
   final Map<PortfolioPerformancePeriod, PortfolioAdjustedPerformance>
-      performance;
+  performance;
 
   // A snapshot is immutable. Reuse period projections while inspecting the chart
   // instead of rebuilding and sorting the same history on every pointer move.
   final Map<PortfolioPerformancePeriod, List<PortfolioValuePoint>>
-      _periodPoints = {};
+  _periodPoints = {};
 
   List<PortfolioValuePoint> pointsFor(PortfolioPerformancePeriod period) =>
       _periodPoints.putIfAbsent(period, () => _projectPoints(period));
@@ -71,25 +73,65 @@ class PortfolioPerformanceSnapshot {
         byTime[point.timestamp] = point;
       }
     }
+    // Repeated observations of one unchanged value do not invent a trend.
+    if (byTime.values.every((point) => point.valueKobo == current.valueKobo)) {
+      return List.unmodifiable([current]);
+    }
     byTime[current.timestamp] = current;
-    return List.unmodifiable(byTime.values.toList()
-      ..sort((a, b) => a.timestamp.compareTo(b.timestamp)));
+    return List.unmodifiable(
+      byTime.values.toList()
+        ..sort((a, b) => a.timestamp.compareTo(b.timestamp)),
+    );
   }
 }
 
 class PortfolioPerformanceController
     extends ValueNotifier<PortfolioPerformanceSnapshot> {
   PortfolioPerformanceController([PortfolioPerformanceSnapshot? snapshot])
-      : super(snapshot ?? PortfolioPerformanceSnapshot.currentBalance());
+    : super(snapshot ?? PortfolioPerformanceSnapshot.currentBalance()) {
+    _observesWallet = snapshot == null;
+    if (_observesWallet) {
+      WalletAccountState.instance.addListener(_refresh);
+      PortfolioValuationHistory.instance.addListener(_refresh);
+      _refresh();
+    }
+  }
+  bool _observesWallet = false;
+  void _refresh() {
+    final wallet = WalletAccountState.instance;
+    final history = PortfolioValuationHistory.instance.points(
+      wallet.snapshot.accountId,
+    );
+    final balance = wallet.snapshot.portfolioMinorUnits;
+    value = PortfolioPerformanceSnapshot(
+      current: PortfolioValuePoint(
+        timestamp: DateTime.now().toUtc(),
+        valueKobo: balance,
+      ),
+      history: history,
+    );
+  }
+
+  @override
+  void dispose() {
+    if (_observesWallet) {
+      WalletAccountState.instance.removeListener(_refresh);
+      PortfolioValuationHistory.instance.removeListener(_refresh);
+    }
+    super.dispose();
+  }
 }
 
-typedef PortfolioPerformanceLoader = Future<PortfolioPerformanceSnapshot>
-    Function(PortfolioPerformancePeriod period);
+typedef PortfolioPerformanceLoader =
+    Future<PortfolioPerformanceSnapshot> Function(
+      PortfolioPerformancePeriod period,
+    );
 
 String formatPortfolioNaira(int kobo) {
   final absolute = kobo.abs();
-  final whole = (absolute ~/ 100)
-      .toString()
-      .replaceAllMapped(RegExp(r'\B(?=(\d{3})+(?!\d))'), (_) => ',');
+  final whole = (absolute ~/ 100).toString().replaceAllMapped(
+    RegExp(r'\B(?=(\d{3})+(?!\d))'),
+    (_) => ',',
+  );
   return '${kobo < 0 ? '−' : ''}₦$whole.${(absolute % 100).toString().padLeft(2, '0')}';
 }

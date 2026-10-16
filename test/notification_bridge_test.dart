@@ -57,6 +57,17 @@ void main() {
   });
 
   test(
+    'phone channel off does not erase committed in-app inbox events',
+    () async {
+      PreviewAccountState.notificationChannels[0][0] = false;
+      container.listen(notificationEventBridgeProvider, (_, _) {});
+      await flush();
+      repo.accept(deposit('inbox-only'));
+      await flush();
+      expect(inbox.snapshot.single.receiptId, 'inbox-only');
+    },
+  );
+  test(
     'mounted bridge publishes committed receipts once and respects deposit preference',
     () async {
       container.listen(notificationEventBridgeProvider, (_, _) {});

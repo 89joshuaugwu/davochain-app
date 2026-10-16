@@ -78,7 +78,7 @@ class _AccountWelcomeScreenState extends State<AccountWelcomeScreen>
           child: Column(
             children: [
               Padding(
-                padding: const EdgeInsets.only(top: 24),
+                padding: const EdgeInsets.only(top: 24, bottom: 8),
                 child: Text(
                   'Davochain',
                   style: TextStyle(
@@ -100,6 +100,7 @@ class _AccountWelcomeScreenState extends State<AccountWelcomeScreen>
                       child: Center(
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
                             AnimatedBuilder(
                               animation: _scene,
@@ -118,10 +119,10 @@ class _AccountWelcomeScreenState extends State<AccountWelcomeScreen>
                             const SizedBox(height: 28),
                             Text(
                               'Welcome to Davochain',
-                              textAlign: TextAlign.center,
+                              textAlign: TextAlign.start,
                               style: TextStyle(
                                 fontFamily: 'Sora',
-                                fontSize: 28,
+                                fontSize: 32,
                                 height: 1.25,
                                 fontWeight: FontWeight.w700,
                                 color: colors.ink,
@@ -129,8 +130,8 @@ class _AccountWelcomeScreenState extends State<AccountWelcomeScreen>
                             ),
                             const SizedBox(height: 14),
                             Text(
-                              'One place for your wallets, crypto and gift cards.',
-                              textAlign: TextAlign.center,
+                              'Move between wallets, crypto and gift cards.\nMake Davochain yours.',
+                              textAlign: TextAlign.start,
                               style: TextStyle(
                                 fontFamily: 'Sora',
                                 fontSize: 14,
@@ -139,36 +140,22 @@ class _AccountWelcomeScreenState extends State<AccountWelcomeScreen>
                               ),
                             ),
                             const SizedBox(height: 28),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
+                            Wrap(
+                              spacing: 12,
+                              runSpacing: 8,
                               children: [
-                                for (final item in const <(IconData, String)>[
-                                  (
-                                    Icons.account_balance_wallet_outlined,
-                                    'Wallets',
-                                  ),
-                                  (Icons.swap_horiz_rounded, 'Crypto'),
-                                  (Icons.card_giftcard_rounded, 'Gift cards'),
+                                for (final label in [
+                                  'Wallets',
+                                  'Crypto',
+                                  'Gift cards',
                                 ])
-                                  Expanded(
-                                    child: Column(
-                                      children: [
-                                        Icon(
-                                          item.$1,
-                                          color: colors.link,
-                                          size: 24,
-                                        ),
-                                        const SizedBox(height: 8),
-                                        Text(
-                                          item.$2,
-                                          textAlign: TextAlign.center,
-                                          style: TextStyle(
-                                            fontFamily: 'Sora',
-                                            fontSize: 12,
-                                            color: colors.body,
-                                          ),
-                                        ),
-                                      ],
+                                  Text(
+                                    label,
+                                    style: TextStyle(
+                                      fontFamily: 'Sora',
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
+                                      color: colors.link,
                                     ),
                                   ),
                               ],
@@ -217,99 +204,20 @@ class _AccountWelcomeScreenState extends State<AccountWelcomeScreen>
   }
 }
 
-/// A wallet-shaped brand composition, without invented balances or account data.
+/// Generated studio artwork; native copy and controls remain accessible.
 class _WelcomeIllustration extends StatelessWidget {
   const _WelcomeIllustration();
   @override
-  Widget build(BuildContext context) {
-    final colors = DavoColors.of(context);
-    return ExcludeSemantics(
-      child: SizedBox(
-        width: 280,
-        height: 220,
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            Container(
-              width: 210,
-              height: 210,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: colors.primarySoft,
-              ),
-            ),
-            Transform.rotate(
-              angle: -.09,
-              child: Container(
-                width: 208,
-                height: 140,
-                decoration: BoxDecoration(
-                  color: colors.link.withValues(alpha: .18),
-                  borderRadius: BorderRadius.circular(24),
-                ),
-              ),
-            ),
-            Container(
-              width: 208,
-              height: 140,
-              decoration: BoxDecoration(
-                color: AppColors.primary,
-                borderRadius: BorderRadius.circular(24),
-              ),
-              child: Center(
-                child: ColorFiltered(
-                  colorFilter: const ColorFilter.mode(
-                    Colors.white,
-                    BlendMode.srcIn,
-                  ),
-                  child: Image.asset(
-                    'assets/images/brand/davochain_logo.png',
-                    width: 92,
-                    height: 80,
-                  ),
-                ),
-              ),
-            ),
-            Positioned(
-              right: 14,
-              top: 8,
-              child: _tile(context, Icons.swap_horiz_rounded),
-            ),
-            Positioned(
-              left: 14,
-              bottom: 6,
-              child: _tile(context, Icons.card_giftcard_rounded),
-            ),
-            Positioned(
-              right: 30,
-              bottom: 18,
-              child: Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: colors.surface,
-                  shape: BoxShape.circle,
-                  border: Border.all(color: colors.divider),
-                ),
-                child: Icon(Icons.check_rounded, color: colors.link, size: 22),
-              ),
-            ),
-          ],
-        ),
+  Widget build(BuildContext context) => ExcludeSemantics(
+    child: SizedBox(
+      width: 320,
+      height: 300,
+      child: Image.asset(
+        'assets/images/brand/value_portal_53.png',
+        fit: BoxFit.contain,
+        filterQuality: FilterQuality.high,
+        cacheWidth: 960,
       ),
-    );
-  }
-
-  Widget _tile(BuildContext context, IconData icon) {
-    final colors = DavoColors.of(context);
-    return Container(
-      width: 58,
-      height: 58,
-      decoration: BoxDecoration(
-        color: colors.surface,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: colors.divider),
-      ),
-      child: Icon(icon, color: colors.link, size: 28),
-    );
-  }
+    ),
+  );
 }

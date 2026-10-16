@@ -1,3 +1,4 @@
+import '../../features/notifications/notification_account_events.dart';
 import 'package:flutter/foundation.dart';
 
 /// Session-only preview gate. Production PIN checks and retry limits must be
@@ -27,7 +28,9 @@ class PreviewAuthState {
   static void setTransactionPin(String pin) {
     if (!RegExp(r'^\d{4}$').hasMatch(pin)) return;
     final locked = paymentsLocked();
+    final changed = _transactionPin != null && _transactionPin != pin;
     _transactionPin = pin;
+    if (changed) { NotificationAccountEvents.accepted('Transaction PIN changed', 'Your transaction PIN was changed. If this was not you, review your account security.'); }
     if (!locked) {
       paymentPinFailures = 0;
       _paymentLockUntil = null;
@@ -51,7 +54,8 @@ class PreviewAuthState {
     }
     if (payment && RegExp(r'^\d{4}$').hasMatch(pin)) {
       paymentPinFailures++;
-      if (paymentPinFailures >= 5) {
+      if (paymentPinFailures == 5) {
+        NotificationAccountEvents.accepted('Transaction PIN temporarily locked', 'Too many incorrect attempts. Open Davochain to review your account security.');
         _paymentLockUntil =
             (now ?? DateTime.now()).add(const Duration(hours: 1));
       }

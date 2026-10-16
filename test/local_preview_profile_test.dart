@@ -151,7 +151,7 @@ void main() {
       final push = find.byWidgetPredicate(
         (widget) =>
             widget is Semantics &&
-            widget.properties.label == 'Push Notification',
+            widget.properties.label == 'Phone notifications',
       );
       await tester.tap(push);
       await tester.pump();

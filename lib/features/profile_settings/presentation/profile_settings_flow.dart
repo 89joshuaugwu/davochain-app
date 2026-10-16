@@ -1,3 +1,6 @@
+import '../../notifications/notification_account_events.dart';
+import '../../notifications/notification_permission_panel.dart';
+import '../../notifications/notification_runtime.dart';
 import '../../../core/providers/account_scope.dart';
 import '../../../core/providers/account_services.dart';
 import '../../../core/providers/reactive_builder.dart';
@@ -808,7 +811,7 @@ class _NotificationsPreferencesScreenState
               title: items[i].title,
               subtitle: items[i].sub,
               value: vals[i],
-              onChanged: (v) => setState(() => vals[i] = v),
+              onChanged: (v) { setState(() => vals[i] = v); NotificationRuntime.instance.saveSettings(); },
             ),
         ],
       ),

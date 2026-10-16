@@ -271,10 +271,13 @@ class NotificationSettingsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) => _Shell(
     title: 'Notification Settings',
+    scroll: true,
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const SizedBox(height: 17),
+        const NotificationPermissionPanel(),
+        const SizedBox(height: 24),
         Text('Alert Preferences', style: _t16b(context)),
         const SizedBox(height: 24),
         _settingsAssetRow(
@@ -312,9 +315,28 @@ class NotificationChannelScreen extends StatefulWidget {
 }
 
 class _NotificationChannelScreenState extends State<NotificationChannelScreen> {
+  @override
+  void initState() {
+    super.initState();
+    NotificationRuntime.instance.addListener(_phoneChanged);
+  }
+
+  void _phoneChanged() {
+    if (mounted) setState(() {});
+  }
+
+  @override
+  void dispose() {
+    NotificationRuntime.instance.removeListener(_phoneChanged);
+    super.dispose();
+  }
+
   List<bool> get channels =>
       PreviewAccountState.notificationChannels[widget.type];
-  bool get push => channels[0];
+  bool get push =>
+      channels[0] &&
+      (!NotificationRuntime.instance.initialized ||
+          NotificationRuntime.instance.channelAllowed(widget.type));
   set push(bool value) => channels[0] = value;
   bool get email => channels[1];
   set email(bool value) => channels[1] = value;
@@ -346,28 +368,36 @@ class _NotificationChannelScreenState extends State<NotificationChannelScreen> {
           const SizedBox(height: 17),
           Text(title, style: _t16b(context)),
           const SizedBox(height: 26),
-          _toggleRow(
-            context,
-            'Push Notification',
-            pushSub,
-            push,
-            (v) => setState(() => push = v),
-          ),
-          _toggleRow(
-            context,
-            'Email',
-            emailSub,
-            email,
-            (v) => setState(() => email = v),
-          ),
+          const Text('Email and SMS delivery are not available yet.', style: TextStyle(fontSize: 12)),
+          const SizedBox(height: 12),
+          _toggleRow(context, 'Phone notifications', pushSub, push, (v) async {
+            if (v &&
+                NotificationRuntime.instance.initialized &&
+                !NotificationRuntime.instance.channelAllowed(widget.type)) {
+              if (NotificationRuntime.instance.allowed || NotificationRuntime.instance.permissionRequested) {
+                await NotificationRuntime.instance.openSettings();
+              } else {
+                await NotificationRuntime.instance.enable();
+              }
+            }
+            if (!mounted) return;
+            setState(
+              () => push =
+                  v &&
+                  (!NotificationRuntime.instance.initialized ||
+                      NotificationRuntime.instance.allowed),
+            );
+            NotificationRuntime.instance.saveSettings();
+          }),
+          _toggleRow(context, 'Email', emailSub, email, (v) {
+            setState(() => email = v);
+            NotificationRuntime.instance.saveSettings();
+          }),
           if (widget.type == 0)
-            _toggleRow(
-              context,
-              'SMS',
-              'Standard Rates Apply',
-              sms,
-              (v) => setState(() => sms = v),
-            ),
+            _toggleRow(context, 'SMS', 'Standard Rates Apply', sms, (v) {
+              setState(() => sms = v);
+              NotificationRuntime.instance.saveSettings();
+            }),
         ],
       ),
     );

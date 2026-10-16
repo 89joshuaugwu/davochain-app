@@ -18,6 +18,7 @@ class _FingerprintSettingsScreenState extends State<FingerprintSettingsScreen> {
         : PreviewAuthState.biometricsEnabled;
     if (!enabled) {
       setState(() => preference.value = false);
+      NotificationAccountEvents.accepted('Fingerprint setting changed', payments ? 'Fingerprint payment confirmation was turned off.' : 'Fingerprint app unlock was turned off.');
       return;
     }
     setState(() => _working = true);
@@ -38,6 +39,7 @@ class _FingerprintSettingsScreenState extends State<FingerprintSettingsScreen> {
     }
     if (accepted) {
       setState(() => preference.value = true);
+      NotificationAccountEvents.accepted('Fingerprint setting changed', payments ? 'Fingerprint payment confirmation was turned on.' : 'Fingerprint app unlock was turned on.');
     } else {
       showDavoToast(
           context, 'Fingerprint not confirmed. Your setting has not changed.');

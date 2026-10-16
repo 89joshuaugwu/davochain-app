@@ -1,3 +1,4 @@
+import '../../features/notifications/notification_account_events.dart';
 import 'package:flutter/foundation.dart';
 
 @immutable
@@ -155,6 +156,8 @@ class SettingsPreviewSession extends ChangeNotifier {
       return false;
     }
     _banks.add(bank);
+    NotificationAccountEvents.accepted('Bank account linked',
+        'A bank account was linked to your profile. Review your account security if this was not you.');
     notifyListeners();
     return true;
   }
@@ -179,6 +182,8 @@ class SettingsPreviewSession extends ChangeNotifier {
 
   void markPasswordChanged() {
     passwordChanged = true;
+    NotificationAccountEvents.accepted('Password changed',
+        'Your account password was changed. If this was not you, review your account security.');
     notifyListeners();
   }
 

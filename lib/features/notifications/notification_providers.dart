@@ -56,9 +56,7 @@ final notificationEventBridgeProvider = Provider<void>((ref) {
             session.accountId,
             session.generation,
             receipt,
-            enabled:
-                PreviewAccountState.notificationPreferences[index] &&
-                PreviewAccountState.notificationChannels[0][0],
+            enabled: PreviewAccountState.notificationPreferences[index],
           );
         }
       }
@@ -73,9 +71,7 @@ final notificationEventBridgeProvider = Provider<void>((ref) {
       final publishBasic = !basic && nextBasic;
       final publishAdvanced = !advanced && nextAdvanced;
       enqueue(() {
-        final enabled =
-            PreviewAccountState.notificationPreferences[6] &&
-            PreviewAccountState.notificationChannels[1][0];
+        final enabled = PreviewAccountState.notificationPreferences[6];
         if (publishBasic) {
           coordinator.verification(
             session.accountId,

@@ -9,6 +9,8 @@ class PortfolioScreen extends StatefulWidget {
 
 class _PortfolioScreenState extends State<PortfolioScreen> {
   bool _visible = true;
+  bool _allAssets = false;
+  String _assetQuery = '';
 
   @override
   Widget build(BuildContext context) => AccountConsumer(
@@ -160,69 +162,101 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
               const SizedBox(height: 16),
               const _AllocationCard(),
               const SizedBox(height: 24),
-              Text(
-                'Your Assets',
-                style: TextStyle(
-                  fontFamily: 'Sora',
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: DavoColors.of(context).ink,
-                ),
-              ),
-              const SizedBox(height: 9),
-              Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Column(
-                  children: [
-                    _PortfolioAssetTile(
-                      asset: CryptoAsset.bitcoin,
-                      amount:
-                          '${WalletAccountState.instance.snapshot.available('BTC').decimal} BTC',
-                      value: WalletAccountState.instance.balanceLabel('BTC'),
-                      change: '+4.21%',
-                    ),
-                    const SizedBox(height: 8),
-                    _PortfolioAssetTile(
-                      asset: CryptoAsset.ethereum,
-                      amount:
-                          '${WalletAccountState.instance.snapshot.available('ETH').decimal} ETH',
-                      value: WalletAccountState.instance.balanceLabel('ETH'),
-                      change: '+2.18%',
-                    ),
-                    const SizedBox(height: 8),
-                    _PortfolioAssetTile(
-                      asset: CryptoAsset.solana,
-                      amount:
-                          '${WalletAccountState.instance.snapshot.available('SOL').decimal} SOL',
-                      value: WalletAccountState.instance.balanceLabel('SOL'),
-                      change: '+4.21%',
-                    ),
-                    const SizedBox(height: 8),
-                    _PortfolioAssetTile(
-                      asset: CryptoAsset.tether,
-                      amount:
-                          '${WalletAccountState.instance.snapshot.available('USDT').decimal} USDT',
-                      value: WalletAccountState.instance.balanceLabel('USDT'),
-                      change: '+2.18%',
-                    ),
-                    const SizedBox(height: 8),
-                    _PortfolioAssetTile(
-                      asset: CryptoAsset.usdCoin,
-                      amount:
-                          '${WalletAccountState.instance.snapshot.available('USDC').decimal} USDC',
-                      value: WalletAccountState.instance.balanceLabel('USDC'),
-                      change: '\u2014',
-                    ),
-                    ..._additionalHoldings.map(
-                      (asset) => Padding(
-                        padding: const EdgeInsets.only(top: 8),
-                        child: _AdditionalHoldingRow(asset: asset),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      _allAssets ? 'All Assets' : 'Your Assets',
+                      style: TextStyle(
+                        fontFamily: 'Sora',
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: DavoColors.of(context).ink,
                       ),
                     ),
-                  ],
+                  ),
+                  TextButton(
+                    onPressed: () => setState(() {
+                      _allAssets = !_allAssets;
+                      _assetQuery = '';
+                    }),
+                    child: Text(_allAssets ? 'Your assets' : 'All assets'),
+                  ),
+                ],
+              ),
+              if (_allAssets) ...[
+                TextField(
+                  decoration: const InputDecoration(
+                    hintText: 'Search assets',
+                    prefixIcon: Icon(Icons.search_rounded),
+                  ),
+                  onChanged: (value) =>
+                      setState(() => _assetQuery = value.trim().toLowerCase()),
                 ),
+                const SizedBox(height: 12),
+              ],
+              Builder(
+                builder: (context) {
+                  final wallet = WalletAccountState.instance;
+                  final assets = BuyCryptoAsset.values
+                      .where(
+                        (asset) =>
+                            (_allAssets ||
+                                wallet.snapshot.assets.contains(asset.symbol) &&
+                                    wallet.snapshot
+                                            .available(asset.symbol)
+                                            .atomicUnits >
+                                        BigInt.zero) &&
+                            ('${asset.name} ${asset.symbol}'
+                                .toLowerCase()
+                                .contains(_assetQuery)),
+                      )
+                      .toList();
+                  if (assets.isEmpty) {
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 28),
+                      child: Column(
+                        children: [
+                          Icon(
+                            _allAssets
+                                ? Icons.search_off_rounded
+                                : Icons.account_balance_wallet_outlined,
+                            size: 32,
+                            color: DavoColors.of(context).link,
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            _allAssets
+                                ? 'No matching assets'
+                                : 'No crypto holdings yet',
+                            style: const TextStyle(fontWeight: FontWeight.w600),
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            _allAssets
+                                ? 'Try a different name or symbol.'
+                                : 'Your funded assets will appear here.',
+                            style: TextStyle(
+                              color: DavoColors.of(context).bodyMuted,
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+                  return Column(
+                    children: [
+                      for (final asset in assets)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 8),
+                          child: _PortfolioHoldingTile(
+                            asset: asset,
+                            visible: _visible,
+                          ),
+                        ),
+                    ],
+                  );
+                },
               ),
             ],
           ),
@@ -582,38 +616,6 @@ class _AllocationCard extends StatelessWidget {
   );
 }
 
-class _PortfolioAssetTile extends StatelessWidget {
-  const _PortfolioAssetTile({
-    required this.asset,
-    required this.amount,
-    required this.value,
-    required this.change,
-  });
-
-  final CryptoAsset asset;
-  final String amount;
-  final String value;
-  final String change;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12),
-      decoration: BoxDecoration(
-        color: DavoColors.of(context).surface,
-        borderRadius: BorderRadius.circular(6),
-      ),
-      child: _AssetRow(
-        asset: asset,
-        amount: amount,
-        value: value,
-        change: change,
-        chevron: true,
-      ),
-    );
-  }
-}
-
 // --- Deposit flow --------------------------------------------------------------
 
 enum CryptoAsset {
@@ -667,50 +669,117 @@ class _CryptoIcon extends StatelessWidget {
   }
 }
 
-Iterable<BuyCryptoAsset> get _additionalHoldings => BuyCryptoAsset.values.where(
-  (asset) =>
-      !const {'BTC', 'ETH', 'SOL', 'USDT', 'USDC'}.contains(asset.symbol) &&
-      WalletAccountState.instance.snapshot.assets.contains(asset.symbol) &&
-      WalletAccountState.instance.snapshot.available(asset.symbol).atomicUnits >
-          BigInt.zero,
-);
+class _PortfolioHoldingTile extends StatelessWidget {
+  const _PortfolioHoldingTile({required this.asset, required this.visible});
+  final BuyCryptoAsset asset;
+  final bool visible;
+  @override
+  Widget build(BuildContext context) {
+    final wallet = WalletAccountState.instance;
+    return Material(
+      color: DavoColors.of(context).surface,
+      borderRadius: BorderRadius.circular(10),
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+        leading: BuyAssetIcon(asset: asset, size: 37),
+        title: Text(
+          asset.name,
+          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+        ),
+        subtitle: Text(
+          visible
+              ? '${wallet.snapshot.assets.contains(asset.symbol) ? wallet.snapshot.available(asset.symbol).decimal : '0'} ${asset.symbol}'
+              : '???? ${asset.symbol}',
+          style: TextStyle(
+            fontSize: 12,
+            color: DavoColors.of(context).bodyMuted,
+          ),
+        ),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              visible
+                  ? wallet.snapshot.assets.contains(asset.symbol)
+                        ? wallet.balanceLabel(asset.symbol)
+                        : '\u20a60.00'
+                  : '????',
+              style: const TextStyle(fontWeight: FontWeight.w600),
+            ),
+            const SizedBox(width: 8),
+            const Icon(Icons.chevron_right, size: 18),
+          ],
+        ),
+        onTap: () {
+          final receiving = CryptoAsset.values
+              .where((a) => a.symbol == asset.symbol)
+              .firstOrNull;
+          Navigator.of(context).push(
+            AppPageRoute<void>(
+              builder: (_) => receiving != null
+                  ? CryptoDepositScreen(asset: receiving)
+                  : _CatalogAssetScreen(asset: asset),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
 
-class _AdditionalHoldingRow extends StatelessWidget {
-  const _AdditionalHoldingRow({required this.asset});
+class _CatalogAssetScreen extends StatelessWidget {
+  const _CatalogAssetScreen({required this.asset});
   final BuyCryptoAsset asset;
   @override
-  Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
-    decoration: BoxDecoration(
-      color: DavoColors.of(context).surface,
-      borderRadius: BorderRadius.circular(6),
-    ),
-    child: Row(
-      children: [
-        BuyAssetIcon(asset: asset, size: 37),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                asset.name,
-                style: const TextStyle(fontWeight: FontWeight.w600),
-              ),
-              Text(
-                '${WalletAccountState.instance.snapshot.available(asset.symbol).decimal} ${asset.symbol}',
-                style: const TextStyle(fontSize: 12),
-              ),
-            ],
+  Widget build(BuildContext context) => Scaffold(
+    appBar: AppBar(title: Text(asset.name)),
+    body: SafeArea(
+      child: ListView(
+        padding: const EdgeInsets.all(24),
+        children: [
+          Center(child: BuyAssetIcon(asset: asset, size: 64)),
+          const SizedBox(height: 20),
+          Text(
+            WalletAccountState.instance.snapshot.assets.contains(asset.symbol)
+                ? WalletAccountState.instance.balanceLabel(asset.symbol)
+                : '\u20a60.00',
+            textAlign: TextAlign.center,
+            style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w600),
           ),
-        ),
-        Flexible(
-          child: Text(
-            WalletAccountState.instance.balanceLabel(asset.symbol),
-            textAlign: TextAlign.end,
+          const SizedBox(height: 8),
+          Text(
+            '${WalletAccountState.instance.snapshot.assets.contains(asset.symbol) ? WalletAccountState.instance.snapshot.available(asset.symbol).decimal : '0'} ${asset.symbol}',
+            textAlign: TextAlign.center,
           ),
-        ),
-      ],
+          const SizedBox(height: 32),
+          Text(
+            'Receiving ${asset.symbol}',
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+          ),
+          const SizedBox(height: 10),
+          const Text(
+            'A receiving address is not available for this asset yet.',
+            style: TextStyle(height: 1.6),
+          ),
+          const SizedBox(height: 24),
+          FilledButton(
+            onPressed: asset.hasQuote
+                ? () => Navigator.of(context).push(
+                    AppPageRoute<void>(
+                      builder: (_) => BuyAmountScreen(
+                        initialOrder: BuyCryptoOrder(
+                          asset: asset,
+                          wallet: BuyFundingWallet.ngn,
+                          ngnAmount: 0,
+                        ),
+                      ),
+                    ),
+                  )
+                : null,
+            child: Text('Buy ${asset.symbol}'),
+          ),
+        ],
+      ),
     ),
   );
 }

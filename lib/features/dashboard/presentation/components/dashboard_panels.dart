@@ -871,8 +871,11 @@ class _DashboardAssetCard extends StatelessWidget {
                         '${WalletAccountState.instance.snapshot.available('SOL').decimal} SOL',
                     value: WalletAccountState.instance.balanceLabel('SOL'),
                     change: '+4.21%'),
-                ..._additionalHoldings
-                    .map((asset) => _AdditionalHoldingRow(asset: asset)),
+                ...BuyCryptoAsset.values.where((asset) =>
+                    !['BTC', 'ETH', 'SOL', 'USDT', 'USDC'].contains(asset.symbol) &&
+                    WalletAccountState.instance.snapshot.assets.contains(asset.symbol) &&
+                    WalletAccountState.instance.snapshot.available(asset.symbol).atomicUnits > BigInt.zero)
+                    .map((asset) => _PortfolioHoldingTile(asset: asset, visible: true)),
               ],
             ),
           ),
@@ -887,15 +890,14 @@ class _AssetRow extends StatelessWidget {
       required this.asset,
       required this.amount,
       required this.value,
-      required this.change,
-      this.chevron = false});
+      required this.change});
 
   final double rowHeight;
   final CryptoAsset asset;
   final String amount;
   final String value;
   final String change;
-  final bool chevron;
+  bool get chevron => false;
 
   @override
   Widget build(BuildContext context) {

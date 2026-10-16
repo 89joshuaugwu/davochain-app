@@ -1,3 +1,4 @@
+import 'features/notifications/notification_tap_router.dart';
 import 'core/preview/local_preview_profile.dart';
 import 'features/auth/presentation/returning_unlock_screen.dart';
 import 'core/providers/account_services.dart';
@@ -31,6 +32,7 @@ class DavochainApp extends StatelessWidget {
     AppProviders.validateCurrentEntrypoint();
     return AccountConsumer(
       builder: (context, ref) => MaterialApp(
+        navigatorKey: notificationNavigatorKey,
         title: 'Davochain',
         debugShowCheckedModeBanner: false,
         theme: AppTheme.light,
@@ -58,14 +60,16 @@ class DavochainApp extends StatelessWidget {
                   ? Brightness.light
                   : Brightness.dark,
             ),
-            child: MediaQuery.disableAnimationsOf(context)
-                ? Theme(
-                    data: Theme.of(
-                      context,
-                    ).copyWith(splashFactory: NoSplash.splashFactory),
-                    child: child!,
-                  )
-                : child!,
+            child: NotificationTapHost(
+              child: MediaQuery.disableAnimationsOf(context)
+                  ? Theme(
+                      data: Theme.of(
+                        context,
+                      ).copyWith(splashFactory: NoSplash.splashFactory),
+                      child: child!,
+                    )
+                  : child!,
+            ),
           ),
         ),
         scrollBehavior: const DavoScrollBehavior(),

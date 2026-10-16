@@ -1,3 +1,4 @@
+import '../notifications/notification_account_events.dart';
 import 'dart:convert';
 import 'dart:math';
 
@@ -248,7 +249,9 @@ class SecurityQuestionsService extends ChangeNotifier {
   }
 
   void _activate(List<_StoredAnswer> answers) {
+    final replaced = _answers.isNotEmpty;
     _answers = answers;
+    if (replaced) { NotificationAccountEvents.accepted('Security questions changed', 'Your security questions were changed. If this was not you, review your account security.'); }
     _generation++;
     _loginChallenge = null;
     _reset = null;

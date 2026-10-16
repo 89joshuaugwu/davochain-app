@@ -203,6 +203,26 @@ class NotificationEventCoordinator {
     );
   }
 
+  bool security(
+    String accountId,
+    int generation, {
+    required String operationId,
+    required String title,
+    required String detail,
+  }) {
+    final key = 'security:$operationId';
+    if (!_accept(accountId, generation, key)) return false;
+    return _add(
+      key,
+      title: title,
+      body: detail,
+      category: 2,
+      kind: NotificationKind.security,
+      action: NotificationAction.security,
+      facts: {'Update': detail},
+    );
+  }
+
   bool _add(
     String key, {
     required String title,

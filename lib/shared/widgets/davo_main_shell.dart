@@ -1,3 +1,4 @@
+import '../../features/notifications/notification_permission_panel.dart';
 import 'package:flutter/material.dart';
 import 'davo_action_icon.dart';
 import '../../core/navigation/app_page_route.dart';
@@ -56,6 +57,11 @@ class _DavoMainShellState extends State<DavoMainShell>
   void initState() {
     super.initState();
     _index = widget.initialIndex;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && widget.initialIndex == 0) {
+        NotificationInvitation.maybeShow(context);
+      }
+    });
   }
 
   void _select(int index) {

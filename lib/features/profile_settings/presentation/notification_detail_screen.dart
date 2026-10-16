@@ -137,6 +137,9 @@ class DavoNotificationDetailScreen extends StatelessWidget {
             day: '',
             category: category,
           );
+      final welcome = item.kind == NotificationKind.welcome;
+      final security = item.kind == NotificationKind.security;
+      final financial = item.category == 1;
       final facts = <String, String>{
         if (item.status != null) 'Status': item.status!,
         ...item.facts,
@@ -145,10 +148,10 @@ class DavoNotificationDetailScreen extends StatelessWidget {
             : formatReceiptDate(item.createdAt!.toLocal()),
       };
       return Scaffold(
-        backgroundColor: colors.surface,
+        backgroundColor: colors.canvas,
         appBar: AppBar(
-          backgroundColor: colors.surface,
-          surfaceTintColor: colors.surface,
+          backgroundColor: colors.canvas,
+          surfaceTintColor: colors.canvas,
           title: const Text(
             'Notification',
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
@@ -158,66 +161,141 @@ class DavoNotificationDetailScreen extends StatelessWidget {
         body: SafeArea(
           top: false,
           child: ListView(
-            padding: const EdgeInsets.fromLTRB(24, 24, 24, 32),
             physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
             children: [
-              Row(
-                children: [
-                  NotificationLeading(item: item, size: 56),
-                  const Spacer(),
-                  Icon(Icons.done_rounded, size: 16, color: colors.bodyMuted),
-                  const SizedBox(width: 4),
-                  Text(
-                    'Read',
-                    style: TextStyle(fontSize: 12, color: colors.bodyMuted),
-                  ),
-                ],
+              Container(
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: financial ? AppColors.primary : colors.surface,
+                  borderRadius: BorderRadius.circular(22),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        if (!welcome)
+                          NotificationLeading(item: item, size: 48)
+                        else
+                          Text(
+                            'Davochain',
+                            style: TextStyle(
+                              fontSize: 17,
+                              color: colors.link,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        const Spacer(),
+                        Icon(
+                          Icons.done_rounded,
+                          size: 16,
+                          color: financial ? Colors.white70 : colors.bodyMuted,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Read',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: financial
+                                ? Colors.white70
+                                : colors.bodyMuted,
+                          ),
+                        ),
+                      ],
+                    ),
+                    if (welcome)
+                      Center(
+                        child: ExcludeSemantics(
+                          child: Image.asset(
+                            'assets/images/brand/value_portal_53.png',
+                            height: 190,
+                            fit: BoxFit.contain,
+                            cacheWidth: 640,
+                          ),
+                        ),
+                      )
+                    else
+                      const SizedBox(height: 28),
+                    Text(
+                      title,
+                      style: TextStyle(
+                        fontSize: welcome ? 28 : 22,
+                        fontWeight: FontWeight.w600,
+                        height: 1.25,
+                        color: financial ? Colors.white : colors.ink,
+                      ),
+                    ),
+                    if (item.amount != null) ...[
+                      const SizedBox(height: 18),
+                      Text(
+                        item.amount!,
+                        style: TextStyle(
+                          fontSize: 32,
+                          height: 1.2,
+                          fontWeight: FontWeight.w700,
+                          color: financial ? Colors.white : colors.ink,
+                        ),
+                      ),
+                    ],
+                    if (financial || security) ...[
+                      const SizedBox(height: 20),
+                      Row(
+                        children: [
+                          Icon(
+                            security
+                                ? Icons.shield_outlined
+                                : Icons.receipt_long_outlined,
+                            size: 16,
+                            color: financial ? Colors.white70 : colors.link,
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              security
+                                  ? 'Account security'
+                                  : 'Transaction update',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: financial
+                                    ? Colors.white70
+                                    : colors.bodyMuted,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ],
+                ),
               ),
               const SizedBox(height: 24),
-              Text(
-                title,
-                style: TextStyle(
-                  fontSize: 25,
-                  fontWeight: FontWeight.w600,
-                  height: 1.3,
-                  color: colors.ink,
-                ),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                message,
-                style: TextStyle(
-                  fontSize: 15,
-                  height: 1.65,
-                  color: colors.body,
-                ),
-              ),
-              if (item.amount != null) ...[
-                const SizedBox(height: 28),
-                Text(
-                  item.amount!,
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 4),
+                child: Text(
+                  message,
                   style: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.w600,
-                    color: colors.ink,
+                    fontSize: 14,
+                    height: 1.7,
+                    color: colors.body,
                   ),
                 ),
-              ],
-              const SizedBox(height: 28),
+              ),
+              const SizedBox(height: 24),
               Container(
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 18,
-                  vertical: 4,
+                  horizontal: 20,
+                  vertical: 6,
                 ),
                 decoration: BoxDecoration(
-                  color: colors.offWhite,
-                  borderRadius: BorderRadius.circular(14),
+                  color: colors.surface,
+                  borderRadius: BorderRadius.circular(16),
                 ),
                 child: Column(
                   children: [
                     for (final entry in facts.entries)
                       Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 13),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
                         child: LayoutBuilder(
                           builder: (context, constraints) {
                             final label = Text(
@@ -237,37 +315,39 @@ class DavoNotificationDetailScreen extends StatelessWidget {
                                 color: colors.ink,
                               ),
                             );
-                            if (MediaQuery.textScalerOf(context).scale(1) >
-                                1.4) {
-                              return Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  label,
-                                  const SizedBox(height: 6),
-                                  value,
-                                ],
-                              );
-                            }
-                            return Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Expanded(flex: 2, child: label),
-                                const SizedBox(width: 16),
-                                Expanded(flex: 3, child: value),
-                              ],
-                            );
+                            return MediaQuery.textScalerOf(context).scale(1) >
+                                        1.4 ||
+                                    constraints.maxWidth < 250
+                                ? Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      label,
+                                      const SizedBox(height: 6),
+                                      value,
+                                    ],
+                                  )
+                                : Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Expanded(flex: 2, child: label),
+                                      const SizedBox(width: 16),
+                                      Expanded(flex: 3, child: value),
+                                    ],
+                                  );
                           },
                         ),
                       ),
                   ],
                 ),
               ),
-              if (item.kind == NotificationKind.welcome) ...[
+              if (welcome) ...[
                 const SizedBox(height: 24),
                 Text(
                   'A good place to begin',
                   style: TextStyle(
-                    fontSize: 15,
+                    fontSize: 16,
                     fontWeight: FontWeight.w600,
                     color: colors.ink,
                   ),
@@ -282,15 +362,12 @@ class DavoNotificationDetailScreen extends StatelessWidget {
                   ),
                 ),
               ],
-              const SizedBox(height: 32),
+              const SizedBox(height: 28),
               FilledButton(
                 onPressed: onAction,
                 style: FilledButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 18,
-                    vertical: 17,
-                  ),
-                  minimumSize: const Size.fromHeight(52),
+                  minimumSize: const Size.fromHeight(54),
+                  padding: const EdgeInsets.all(18),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
