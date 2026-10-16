@@ -33,3 +33,5 @@ AccountBootstrap mounts the Riverpod event bridge. Registration emits a welcome 
 The requested parallel implementers completed their source changes. A fresh review agent could not run because its service usage allowance was exhausted; the primary agent reviewed integration, account isolation, restart deduplication, disabled-event persistence and CTA routing directly. No review success is claimed from the failed agent.
 
 Combined build-50 verification: 700 tests passed, 16 existing platform skips; source analyzer reported no issues. Focused UI regressions passed for gear navigation, read state, large-text light/dark welcome CTA and transaction-history navigation.
+
+Native build-50 checks passed: welcome/read state and Basic Get started; gear to Notification Settings; deposit pending/completion across force-stop/restart; exact deposit receipt CTA. Screenshots and UI-tree evidence are in workspace review/evidence/riverpod-migration-49/emulator.

@@ -48,3 +48,13 @@ Final automated verification: 673 passed, 16 existing platform skips, zero faile
 No deferred minor review findings. Native release results follow below.
 
 Build 50 includes the subsequently requested notification event/UI and trade-card refinements. The combined suite passed 700 tests, with 16 existing platform skips; source analyzer reported no issues. The initial build-49 release was built and installed successfully before this added scope.
+
+## Final release evidence, 16 October 2026
+
+Version 0.19.1+50, package com.example.davochain. Release APK built successfully and installed using adb install -r, preserving emulator data. APK SHA-256: DDDEC57BBDC0187C5BA423F433EC93F35B90E0A16A0C86F3126120CD806889C6. Certificate SHA-256: d0de9b8311199a2eb6a238d106b45eaa9d30fe4ef0ef7b9b5808edc3988e2411. Development signing is unchanged.
+
+Native checks on emulator-5554: created Release Fifty account; dashboard and crypto assets zero; one welcome notification; read state updates; Get started opens Basic Verification; gear opens Notification Settings. Added NGN100000, force-stopped while pending, reopened through returning unlock: same account restored, NGN100000 credited once, pending and completed notices present, welcome remains read. Deposit notice opens the matching receipt. Buy/Sell/Swap card alignment and percentage widths inspected and captured. Cash deposit leaves crypto-only Portfolio zero. Automated suites cover completed buy/sell/swap/gift/withdrawal effects, quote invalidation, insufficient balances, save failures and stale callbacks; those complete financial flows were not all repeated manually on this release.
+
+Phone CI49FIXKM7BUOVA6 was not listed by ADB at final check; phone installation remains outstanding until connected. Only emulator installation is claimed. No app data was cleared. Emulator initially had system launcher/UiAutomation timeouts; cold boot with existing data resolved them.
+
+Evidence: workspace review/evidence/riverpod-migration-49, including full-suite/analyzer/build logs and emulator screenshots/XML. APK copied to both worktree and main project build/app/outputs/flutter-apk/app-release.apk with matching hash.

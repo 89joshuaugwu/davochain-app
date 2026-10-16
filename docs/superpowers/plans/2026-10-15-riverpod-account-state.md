@@ -1,3 +1,5 @@
+> Execution update, 16 October 2026: implemented in commits 9b3d143 and 9b7f482, released locally as 0.19.1+50 after additional notification/trade-card scope. Canonical completion, compatibility decisions and exact validation coverage: [implementation record](../../riverpod-49-implementation.md). 700 tests passed, 16 existing skips; source analyzer clean; release built and installed/tested on emulator. Phone absent, so phone installation remains pending. Original step checkboxes below describe the planning sequence; the execution record documents the approved compatibility and offline-price deviations.
+
 # Riverpod Account State Implementation Plan
 
 > **For agentic workers:** Use superpowers:executing-plans to implement this plan task by task. This document is a future migration plan, not authorization to begin the migration in build 48.
