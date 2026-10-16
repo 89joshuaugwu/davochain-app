@@ -158,7 +158,7 @@ class _ReturningUnlockScreenState extends State<ReturningUnlockScreen> {
                                           child: Container(
                                               padding: const EdgeInsets.all(24),
                                               decoration: BoxDecoration(
-                                                  color: Colors.white,
+                                                  color: DavoColors.of(context).surface,
                                                   borderRadius:
                                                       BorderRadius.circular(
                                                           28)),
@@ -226,14 +226,14 @@ class _ReturningUnlockScreenState extends State<ReturningUnlockScreen> {
                                                                         context)
                                                                     .ink)),
                                                     const SizedBox(height: 12),
-                                                    const Text(
+                                                    Text(
                                                         'Enter your password to unlock your account.',
                                                         textAlign:
                                                             TextAlign.center,
                                                         style: TextStyle(
                                                             fontSize: 13,
                                                             height: 1.5,
-                                                            color: AppColors
+                                                            color: DavoColors.of(context)
                                                                 .bodyMuted)),
                                                     const SizedBox(height: 24),
                                                     DavoTextField(
