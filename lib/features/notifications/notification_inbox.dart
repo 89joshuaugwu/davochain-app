@@ -231,6 +231,23 @@ class NotificationInbox extends ChangeNotifier {
     return true;
   }
 
+  int get generation => _generation;
+
+  void markAllRead() {
+    if (unreadCount == 0) return;
+    _snapshot = List.unmodifiable(_snapshot.map((item) => item.withRead(true)));
+    _totalUnread = 0;
+    _changed();
+  }
+
+  /// Clearing the visible inbox keeps the coordinator's consumed event IDs.
+  void clearAll() {
+    if (_snapshot.isEmpty && unreadCount == 0) return;
+    _snapshot = const [];
+    _totalUnread = 0;
+    _changed();
+  }
+
   void clearRead() {
     if (!_snapshot.any((item) => item.isRead)) return;
     final readCount = _snapshot.where((item) => item.isRead).length;
@@ -284,15 +301,23 @@ class NotificationInbox extends ChangeNotifier {
     }
     // Migrate initiation alerts saved by earlier releases. The event coordinator
     // retains their consumed IDs, so receipt replay cannot recreate them.
-    final removedUnread = records.where((r) =>
-        r.kind == NotificationKind.deposit && r.status == 'Pending' && !r.isRead).length;
-    records.removeWhere((r) =>
-        r.kind == NotificationKind.deposit && r.status == 'Pending');
+    final removedUnread = records
+        .where(
+          (r) =>
+              r.kind == NotificationKind.deposit &&
+              r.status == 'Pending' &&
+              !r.isRead,
+        )
+        .length;
+    records.removeWhere(
+      (r) => r.kind == NotificationKind.deposit && r.status == 'Pending',
+    );
     final remainingUnread = unread == null ? null : unread - removedUnread;
     _generation++;
     _snapshot = List.unmodifiable(records);
     _totalUnread =
-        remainingUnread != null && remainingUnread >= records.where((r) => !r.isRead).length
+        remainingUnread != null &&
+            remainingUnread >= records.where((r) => !r.isRead).length
         ? remainingUnread
         : null;
     _changed();

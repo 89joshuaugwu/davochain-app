@@ -158,57 +158,74 @@ class TradeCurrencySelector extends StatelessWidget {
   final String name, symbol;
   final VoidCallback? onTap;
   @override
-  Widget build(BuildContext context) => Semantics(
-    button: onTap != null,
-    label: onTap == null ? name : 'Change currency, $name',
-    child: InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(10),
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(minHeight: 48),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 6),
-          child: Row(
+  Widget build(BuildContext context) {
+    final colors = DavoColors.of(context);
+    final content = Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        icon,
+        const SizedBox(width: 8),
+        Flexible(
+          child: Column(
             mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              icon,
-              const SizedBox(width: 8),
-              Flexible(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      name,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    Text(
-                      symbol,
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: DavoColors.of(context).body,
-                      ),
-                    ),
-                  ],
+              Text(
+                name,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
-              if (onTap != null) ...[
-                const SizedBox(width: 4),
-                Icon(
-                  Icons.keyboard_arrow_down_rounded,
-                  size: 20,
-                  color: DavoColors.of(context).link,
-                ),
-              ],
+              Text(symbol, style: TextStyle(fontSize: 12, color: colors.body)),
             ],
           ),
         ),
-      ),
-    ),
-  );
+        if (onTap != null) ...[
+          const SizedBox(width: 4),
+          Icon(Icons.keyboard_arrow_down_rounded, size: 20, color: colors.link),
+        ],
+      ],
+    );
+    return Semantics(
+      button: onTap != null,
+      label: onTap == null ? name : 'Change currency, $name',
+      child: onTap == null
+          ? ConstrainedBox(
+              constraints: const BoxConstraints(minHeight: 48),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 6),
+                child: content,
+              ),
+            )
+          : OutlinedButton(
+              onPressed: onTap,
+              style: ButtonStyle(
+                minimumSize: const WidgetStatePropertyAll(Size(48, 48)),
+                padding: const WidgetStatePropertyAll(
+                  EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                ),
+                alignment: Alignment.centerLeft,
+                foregroundColor: WidgetStatePropertyAll(colors.ink),
+                backgroundColor: WidgetStatePropertyAll(colors.surface),
+                side: WidgetStateProperty.resolveWith(
+                  (states) => BorderSide(
+                    color: states.contains(WidgetState.focused)
+                        ? colors.link
+                        : colors.border,
+                    width: states.contains(WidgetState.focused) ? 1.5 : 1,
+                  ),
+                ),
+                shape: WidgetStatePropertyAll(
+                  RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+              ),
+              child: content,
+            ),
+    );
+  }
 }
 
 /// Full-width shortcuts, with selection cleared when the amount is edited.

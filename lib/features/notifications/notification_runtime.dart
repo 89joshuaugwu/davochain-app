@@ -1,3 +1,4 @@
+import 'deposit_voice.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
@@ -141,6 +142,10 @@ class NotificationRuntime extends ChangeNotifier with WidgetsBindingObserver {
     if (lastAccount != null && lastAccount != account) await phone.cancelAll();
     if (epoch != _epoch) return;
     preferences.restore(_decode(rawPrefs));
+    phone.setDepositVoiceOptions(
+      voiceId: preferences.depositVoiceId,
+      style: preferences.depositVoiceStyle,
+    );
     final baseline = NotificationEventCoordinator.instance.accountId == account
         ? _inbox.snapshot
         : <InboxNotification>[];
@@ -249,6 +254,15 @@ class NotificationRuntime extends ChangeNotifier with WidgetsBindingObserver {
     notifyListeners();
   }
 
+  void chooseDepositVoice(String? voiceId, DepositVoiceStyle style) {
+    preferences.depositVoiceId = voiceId;
+    preferences.depositVoiceStyle = style;
+    phone.setDepositVoiceOptions(voiceId: voiceId, style: style);
+    unawaited(phone.stopDepositPlayback());
+    saveSettings();
+    notifyListeners();
+  }
+
   Future<bool> testDepositVoice() async {
     if (!initialized || voiceBusy || !channelAllowed(0)) return false;
     voiceBusy = true;
@@ -279,6 +293,20 @@ class NotificationRuntime extends ChangeNotifier with WidgetsBindingObserver {
       ),
     );
     return true;
+  }
+
+  void markAllInboxRead() {
+    final ids = _inbox.snapshot.map((item) => item.id).toList();
+    _inbox.markAllRead();
+    _guard(_delivery?.acknowledgeMany(ids) ?? Future<void>.value());
+    unawaited(phone.stopDepositPlayback());
+  }
+
+  void clearInbox() {
+    final ids = _inbox.snapshot.map((item) => item.id).toList();
+    _inbox.clearAll();
+    _guard(_delivery?.acknowledgeMany(ids) ?? Future<void>.value());
+    unawaited(phone.stopDepositPlayback());
   }
 
   Future<void> acknowledge(String id) async {

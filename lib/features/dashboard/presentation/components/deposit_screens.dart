@@ -15,15 +15,9 @@ class _CryptoDepositScreenState extends State<CryptoDepositScreen> {
 
   CryptoAsset get asset => widget.asset;
 
-  String get _address => switch (asset) {
-    CryptoAsset.bitcoin => '1HGJSYUXGfgy2tdoE4rVQEqouRpBQaAA6zLZ',
-    CryptoAsset.ethereum => '0x5C9f7Bf9C8e7A66C31E0D4d9bA2769D3431A92F2',
-    CryptoAsset.solana => '5fCqVJmSc9M9Vh2eYw9rN3XX7oVA5EeMdwL7jDqkGzLQ',
-    CryptoAsset.usdCoin => '0xE1A9bA33f04C4A12925D4207D0A19cC3B4c84021',
-    CryptoAsset.tether => '0x4C55D181b91A6d5fE8B54B925C61D9dC06cE28B4',
-  };
-
-  String get _qrAsset => _depositQrAsset(asset);
+  SimulationCryptoAddress get _destination =>
+      SimulationCryptoAddress.bySymbol[asset.symbol]!;
+  String get _address => _destination.address;
 
   @override
   Widget build(BuildContext context) {
@@ -94,6 +88,16 @@ class _CryptoDepositScreenState extends State<CryptoDepositScreen> {
                           color: DavoColors.of(context).body,
                         ),
                       ),
+                      const SizedBox(height: 12),
+                      Text(
+                        'Test address only. Do not send real funds.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: DavoColors.of(context).body,
+                        ),
+                      ),
                       const SizedBox(height: 20),
                       SizedBox(
                         width: 257,
@@ -112,11 +116,7 @@ class _CryptoDepositScreenState extends State<CryptoDepositScreen> {
                                     width: 1,
                                   ),
                                 ),
-                                child: Image.asset(
-                                  _qrAsset,
-                                  fit: BoxFit.fill,
-                                  filterQuality: FilterQuality.none,
-                                ),
+                                child: DavoAddressQr(data: _address),
                               ),
                             ),
                             Positioned(
@@ -214,26 +214,41 @@ class _CryptoDepositScreenState extends State<CryptoDepositScreen> {
                         ),
                       ),
                       const SizedBox(height: 24),
-                      _DepositMetaRow(
-                        label: 'Minimum Deposit Amount',
-                        value: asset == CryptoAsset.bitcoin
-                            ? '0.00001 BTC'
-                            : '0.001 ${asset.symbol}',
-                      ),
-                      const SizedBox(height: 12),
+                      if (_destination.destinationTag != null) ...[
+                        ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          title: const Text(
+                            'Destination tag (required)',
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          subtitle: Text(
+                            _destination.destinationTag!,
+                            key: const ValueKey('deposit-destination-tag'),
+                          ),
+                          trailing: IconButton(
+                            tooltip: 'Copy destination tag',
+                            icon: const Icon(Icons.copy_outlined),
+                            onPressed: () =>
+                                _copy(context, _destination.destinationTag!),
+                          ),
+                        ),
+                        const Text(
+                          'Include this tag with the XRP test address. The address QR does not include the tag.',
+                          style: TextStyle(fontSize: 12, height: 1.5),
+                        ),
+                        const SizedBox(height: 16),
+                      ],
                       const _DepositMetaRow(
                         label: 'Route Deposits To',
                         value: 'Crypto wallet',
                       ),
                       const SizedBox(height: 12),
                       const _DepositMetaRow(
-                        label: 'Deposit Arrival',
-                        value: '1 confirmations',
-                      ),
-                      const SizedBox(height: 12),
-                      const _DepositMetaRow(
-                        label: 'Withdrawal Unlocked',
-                        value: '2 confirmations',
+                        label: 'Receiving mode',
+                        value: 'Local testing only',
                       ),
                       const SizedBox(height: 22),
                       InkWell(
@@ -482,7 +497,7 @@ class _SharePreview extends StatelessWidget {
                 left: 9.6,
                 top: 8.2,
                 child: Text(
-                  'Deposit ${asset.symbol}',
+                  'TEST ${asset.symbol}',
                   style: const TextStyle(
                     fontFamily: 'Sora',
                     fontSize: 3.21,
@@ -497,11 +512,7 @@ class _SharePreview extends StatelessWidget {
                 top: 17.4,
                 width: 49.5,
                 height: 54.7,
-                child: Image.asset(
-                  _depositQrAsset(asset),
-                  fit: BoxFit.contain,
-                  filterQuality: FilterQuality.none,
-                ),
+                child: DavoAddressQr(data: address),
               ),
               Positioned(
                 left: 37.6,
@@ -567,7 +578,7 @@ class _SharePreview extends StatelessWidget {
                 width: 65.3,
                 height: 8,
                 child: Text(
-                  address,
+                  '$address${SimulationCryptoAddress.bySymbol[asset.symbol]!.destinationTag == null ? '' : ' / Tag: ${SimulationCryptoAddress.bySymbol[asset.symbol]!.destinationTag}'}',
                   maxLines: 2,
                   overflow: TextOverflow.clip,
                   style: const TextStyle(
@@ -978,9 +989,5 @@ class _BankDetailRow extends StatelessWidget {
   }
 }
 
-String _depositNetwork(CryptoAsset asset) => switch (asset) {
-  CryptoAsset.bitcoin => 'Bitcoin (BTC)',
-  CryptoAsset.ethereum => 'Ethereum (ETH)',
-  CryptoAsset.solana => 'Solana (SOL)',
-  CryptoAsset.usdCoin || CryptoAsset.tether => 'Ethereum (ERC20)',
-};
+String _depositNetwork(CryptoAsset asset) =>
+    SimulationCryptoAddress.bySymbol[asset.symbol]!.network;

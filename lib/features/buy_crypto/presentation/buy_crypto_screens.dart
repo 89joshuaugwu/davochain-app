@@ -151,6 +151,15 @@ class _BuyAmountScreenState extends State<BuyAmountScreen> {
             value:
                 '${_order.copyWith(ngnAmount: _amount).formattedCryptoAmount} ${_order.asset.symbol}',
             footer: _order.formattedExchangeRate,
+            footerWidget: DefaultTextStyle.merge(
+              style: TextStyle(color: DavoColors.of(context).body),
+              child: DavoCashExchangeRate(
+                assetSymbol: _order.asset.symbol,
+                minorUnits: int.parse(
+                  _order.assetNgnPrice.toFixed(2).replaceAll('.', ''),
+                ),
+              ),
+            ),
           ),
           const SizedBox(height: 20),
           TradePercentageButtons(

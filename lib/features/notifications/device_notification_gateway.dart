@@ -1,3 +1,4 @@
+import 'deposit_voice.dart';
 import 'dart:convert';
 
 class NotificationTapIntent {
@@ -53,7 +54,13 @@ abstract class DeviceNotificationGateway {
   Future<Set<int>> activeIds() async => {};
   Future<void> cancel(int id) async {}
   Future<void> cancelAll() async {}
+  Future<List<DepositVoiceOption>> depositVoices() async => [];
+  void setDepositVoiceOptions({
+    String? voiceId,
+    DepositVoiceStyle style = DepositVoiceStyle.natural,
+  }) {}
   Future<bool> speakDeposit() async => false;
+  Future<void> stopDepositPlayback() => stopSpeaking();
   Future<void> stopSpeaking() async {}
   Future<NotificationTapIntent?> launchIntent() async => null;
 }

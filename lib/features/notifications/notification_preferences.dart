@@ -1,3 +1,4 @@
+import 'deposit_voice.dart';
 import '../../core/preview/preview_account_state.dart';
 import 'notification_inbox.dart';
 
@@ -16,6 +17,8 @@ int notificationTopic(InboxNotification item) {
 class NotificationPreferences {
   bool showDetails = false;
   bool depositVoiceAlerts = false;
+  String? depositVoiceId;
+  DepositVoiceStyle depositVoiceStyle = DepositVoiceStyle.natural;
   bool allows(InboxNotification item) {
     final category = item.category == 1
         ? 0
@@ -32,6 +35,8 @@ class NotificationPreferences {
     'version': 1,
     'details': showDetails,
     'depositVoice': depositVoiceAlerts,
+    'depositVoiceId': depositVoiceId,
+    'depositVoiceStyle': depositVoiceStyle.name,
     'topics': [...PreviewAccountState.notificationPreferences],
     'channels': PreviewAccountState.notificationChannels
         .map((c) => [...c])
@@ -40,6 +45,12 @@ class NotificationPreferences {
   void restore(Map<String, Object?>? raw) {
     showDetails = raw?['details'] == true;
     depositVoiceAlerts = raw?['depositVoice'] == true;
+    final voiceId = raw?['depositVoiceId'];
+    depositVoiceId =
+        voiceId is String && voiceId.isNotEmpty && voiceId.length <= 256
+        ? voiceId
+        : null;
+    depositVoiceStyle = DepositVoiceStyle.parse(raw?['depositVoiceStyle']);
     final topics = raw?['topics'];
     final channels = raw?['channels'];
     for (var i = 0; i < 11; i++) {

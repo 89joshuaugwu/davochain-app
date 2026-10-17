@@ -1,3 +1,4 @@
+import 'deposit_voice.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -134,14 +135,70 @@ class AndroidNotificationGateway extends DeviceNotificationGateway {
   }
 
   static const _voice = MethodChannel('davochain/deposit_voice');
+  String? _depositVoiceId;
+  DepositVoiceStyle _depositVoiceStyle = DepositVoiceStyle.natural;
+  @override
+  void setDepositVoiceOptions({
+    String? voiceId,
+    DepositVoiceStyle style = DepositVoiceStyle.natural,
+  }) {
+    _depositVoiceId = voiceId;
+    _depositVoiceStyle = style;
+  }
+
+  @override
+  Future<List<DepositVoiceOption>> depositVoices() async {
+    if (!supported) return [];
+    try {
+      final raw = await _voice.invokeListMethod<Object?>('voices') ?? [];
+      return raw
+          .whereType<Map>()
+          .where(
+            (v) =>
+                v['id'] is String &&
+                v['label'] is String &&
+                v['locale'] is String,
+          )
+          .map(
+            (v) => DepositVoiceOption(
+              id: v['id'] as String,
+              label: v['label'] as String,
+              locale: v['locale'] as String,
+              offline: v['offline'] == true,
+            ),
+          )
+          .toList();
+    } catch (_) {
+      return [];
+    }
+  }
+
   @override
   Future<bool> speakDeposit() async {
     if (!supported) return false;
     try {
-      return await _voice.invokeMethod<bool>('speak') ?? false;
+      return await _voice.invokeMethod<bool>(
+            'speak',
+            _depositVoiceId == null &&
+                    _depositVoiceStyle == DepositVoiceStyle.natural
+                ? null
+                : {
+                    'voiceId': _depositVoiceId,
+                    'style': _depositVoiceStyle.name,
+                  },
+          ) ??
+          false;
     } catch (_) {
       return false;
     }
+  }
+
+  @override
+  Future<void> stopDepositPlayback() async {
+    if (!supported) return;
+    try {
+      await _voice.invokeMethod<void>('cancelSpeech');
+    } catch (_) {}
   }
 
   @override

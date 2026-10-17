@@ -64,7 +64,7 @@ void main() {
         } else {
           expect(
             tester
-                .widget<DavoNairaAmount>(find.byType(DavoNairaAmount))
+                .widget<DavoNairaAmount>(find.byType(DavoNairaAmount).first)
                 .minorUnits,
             5200000,
           );

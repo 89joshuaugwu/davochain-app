@@ -1,3 +1,6 @@
+import 'package:davochain/features/notifications/deposit_voice_picker.dart';
+import 'package:davochain/features/notifications/notification_runtime.dart';
+import 'package:davochain/features/profile_settings/presentation/profile_settings_flow.dart';
 import 'package:davochain/features/buy_crypto/presentation/buy_crypto_widgets.dart';
 import 'package:davochain/features/wallets/presentation/wallet_picker_sheet.dart';
 import 'package:davochain/features/dashboard/presentation/dashboard_screen.dart';
@@ -23,15 +26,45 @@ void main() {
   tearDown(() {
     session.reset();
   });
-  testWidgets('capture currency layout58', (tester) async {
+  const dashboardOnly = bool.fromEnvironment('CAPTURE_DASHBOARD_ONLY');
+  testWidgets('capture currency layout', (tester) async {
     tester.view.physicalSize = const Size(411, 914);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
+    const voiceChannel = MethodChannel('davochain/deposit_voice');
+    tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+      voiceChannel,
+      (call) async => call.method == 'voices'
+          ? [
+              {
+                'id': 'capture-voice-1',
+                'label': 'English (United States) - Voice 1',
+                'locale': 'en-US',
+                'offline': true,
+              },
+              {
+                'id': 'capture-voice-2',
+                'label': 'English (United Kingdom) - Voice 1',
+                'locale': 'en-GB',
+                'offline': false,
+              },
+            ]
+          : false,
+    );
+    addTearDown(
+      () => tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+        voiceChannel,
+        null,
+      ),
+    );
     LocalPreviewProfile.instance.loginSample();
     final key = GlobalKey();
-    final directory = Directory('../review/evidence/currency-layout-58/widgets')
-      ..createSync(recursive: true);
+    final directory = Directory(
+      dashboardOnly
+          ? '../review/evidence/dashboard-card-59/widgets'
+          : '../review/evidence/currency-layout-58/widgets',
+    )..createSync(recursive: true);
     await tester.runAsync(() async {
       final emojiFont = File('C:/Windows/Fonts/seguiemj.ttf');
       if (emojiFont.existsSync()) {
@@ -102,25 +135,71 @@ void main() {
     for (final dark in [false, true]) {
       final theme = dark ? 'dark' : 'light';
       WalletAccountState.instance.startSimulation(empty: false);
-      for (final entry in <String, Widget>{
-        'dashboard': const DavochainDashboardScreen(),
-        'receiving': const NairaDepositScreen(),
-        'withdraw': const NairaWithdrawScreen(),
-        'buy': const BuyAmountScreen(
-          initialOrder: BuyCryptoOrder(
-            asset: BuyCryptoAsset.bitcoin,
-            wallet: BuyFundingWallet.ngn,
-            ngnAmount: '1000',
-          ),
-        ),
-        'portfolio': const PortfolioScreen(),
-        'internal-transfer': const CryptoWithdrawEntryScreen(external: false),
-        'external-transfer': const CryptoWithdrawEntryScreen(external: true),
-        'wallet-picker': const Scaffold(body: WalletPickerSheet()),
-      }.entries) {
+      for (final entry
+          in <String, Widget>{
+            'dashboard': const DavochainDashboardScreen(),
+            'receiving': const NairaDepositScreen(),
+            'withdraw': const NairaWithdrawScreen(),
+            'buy': const BuyAmountScreen(
+              initialOrder: BuyCryptoOrder(
+                asset: BuyCryptoAsset.bitcoin,
+                wallet: BuyFundingWallet.ngn,
+                ngnAmount: '1000',
+              ),
+            ),
+            'sell': const TradeAmountScreen(
+              mode: TradeMode.sell,
+              asset: BuyCryptoAsset.bitcoin,
+            ),
+            'xrp-receiving': const CryptoDepositScreen(asset: CryptoAsset.xrp),
+            'notifications': const NotificationCenterScreen(),
+            'voice-picker': Scaffold(
+              body: Builder(
+                builder: (context) => TextButton(
+                  onPressed: () => showModalBottomSheet<void>(
+                    context: context,
+                    isScrollControlled: true,
+                    showDragHandle: true,
+                    builder: (_) => DepositVoicePicker(
+                      runtime: NotificationRuntime.instance,
+                    ),
+                  ),
+                  child: const Text('Choose voice'),
+                ),
+              ),
+            ),
+            'portfolio': const PortfolioScreen(),
+            'internal-transfer': const CryptoWithdrawEntryScreen(
+              external: false,
+            ),
+            'external-transfer': const CryptoWithdrawEntryScreen(
+              external: true,
+            ),
+            'wallet-picker': const Scaffold(body: WalletPickerSheet()),
+          }.entries.where(
+            (entry) =>
+                !dashboardOnly ||
+                const [
+                  'dashboard',
+                  'buy',
+                  'sell',
+                  'xrp-receiving',
+                  'notifications',
+                  'voice-picker',
+                ].contains(entry.key),
+          )) {
         await mount(entry.value, dark);
         expect(tester.takeException(), isNull, reason: '$theme-${entry.key}');
+        if (entry.key == 'voice-picker') {
+          await tester.tap(find.text('Choose voice'));
+          await tester.pumpAndSettle();
+        }
         await capture('$theme-${entry.key}');
+        if (entry.key == 'notifications') {
+          await tester.tap(find.byTooltip('Notification actions'));
+          await tester.pumpAndSettle();
+          await capture('$theme-notification-actions');
+        }
         if (entry.key == 'portfolio') {
           await tester.drag(
             find.byType(CustomScrollView),
@@ -130,8 +209,28 @@ void main() {
           await capture('$theme-portfolio-search-pinned');
         }
       }
-      for (final sheet in <String, Widget>{'crypto-modal': const BuyCryptoAssetSheet(), 'wallet-modal': const WalletPickerSheet()}.entries) {
-        await mount(Scaffold(body: Builder(builder: (context) => TextButton(onPressed: () => showModalBottomSheet<void>(context: context, isScrollControlled: true, useSafeArea: true, backgroundColor: Colors.transparent, builder: (_) => sheet.value), child: const Text('Open selector')))), dark);
+      if (dashboardOnly) continue;
+      for (final sheet in <String, Widget>{
+        'crypto-modal': const BuyCryptoAssetSheet(),
+        'wallet-modal': const WalletPickerSheet(),
+      }.entries) {
+        await mount(
+          Scaffold(
+            body: Builder(
+              builder: (context) => TextButton(
+                onPressed: () => showModalBottomSheet<void>(
+                  context: context,
+                  isScrollControlled: true,
+                  useSafeArea: true,
+                  backgroundColor: Colors.transparent,
+                  builder: (_) => sheet.value,
+                ),
+                child: const Text('Open selector'),
+              ),
+            ),
+          ),
+          dark,
+        );
         await tester.tap(find.text('Open selector'));
         await tester.pumpAndSettle();
         expect(tester.takeException(), isNull);

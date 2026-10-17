@@ -140,7 +140,7 @@ class _BalanceCard extends StatelessWidget {
     return Container(
       height: largeText
           ? null
-          : (compact ? 168.0 : 180.0) +
+          : (compact ? 152.0 : 164.0) +
                 (MediaQuery.textScalerOf(context).scale(14) / 14 - 1).clamp(
                       0,
                       3,
@@ -155,7 +155,7 @@ class _BalanceCard extends StatelessWidget {
         children: [
           Positioned(
             right: 0,
-            bottom: 18,
+            bottom: 22,
             width: 268,
             height: 104,
             child: Image.asset(
@@ -166,8 +166,8 @@ class _BalanceCard extends StatelessWidget {
           ),
           Padding(
             padding: compact
-                ? const EdgeInsets.fromLTRB(18, 12, 18, 12)
-                : const EdgeInsets.fromLTRB(24, 16, 24, 14),
+                ? const EdgeInsets.fromLTRB(18, 10, 18, 10)
+                : const EdgeInsets.fromLTRB(24, 14, 24, 12),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -236,6 +236,7 @@ class _BalanceCard extends StatelessWidget {
                                 style: const TextStyle(
                                   fontFamily: 'Sora',
                                   fontSize: 11,
+                                  height: 1.2,
                                   color: Colors.white,
                                 ),
                               ),

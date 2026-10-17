@@ -29,7 +29,9 @@ class MainActivity : FlutterFragmentActivity() {
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "davochain/deposit_voice")
             .setMethodCallHandler { call, result ->
                 when (call.method) {
-                    "speak" -> depositVoice?.speak(result) ?: result.success(false)
+                    "speak" -> depositVoice?.speak(result, call.argument<String>("voiceId"), call.argument<String>("style")) ?: result.success(false)
+                    "voices" -> depositVoice?.voices(result) ?: result.success(emptyList<Any>())
+                    "cancelSpeech" -> { depositVoice?.cancelSpeech(); result.success(null) }
                     "stop" -> { depositVoice?.stop(); result.success(null) }
                     else -> result.notImplemented()
                 }

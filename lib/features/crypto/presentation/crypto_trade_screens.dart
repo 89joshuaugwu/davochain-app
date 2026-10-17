@@ -273,7 +273,7 @@ class _TradeAmountScreenState extends State<TradeAmountScreen> {
               selector: const TradeCurrencySelector(
                 icon: NairaCoinMark(),
                 name: 'Davochain Naira',
-                symbol: 'NGN',
+                symbol: 'Cash wallet',
               ),
               valueWidget: DavoNairaAmount(
                 minorUnits: AssetAmount.parse(
@@ -290,6 +290,15 @@ class _TradeAmountScreenState extends State<TradeAmountScreen> {
               ),
               footer:
                   '1 ${sourceAsset.symbol} \u2248 \u20a6${formatGroupedAmount(sourceAsset.ngnPrice.toFixed(2))}',
+              footerWidget: DefaultTextStyle.merge(
+                style: TextStyle(color: DavoColors.of(context).body),
+                child: DavoCashExchangeRate(
+                  assetSymbol: sourceAsset.symbol,
+                  minorUnits: int.parse(
+                    sourceAsset.ngnPrice.toFixed(2).replaceAll('.', ''),
+                  ),
+                ),
+              ),
             ),
           ],
           const SizedBox(height: 20),

@@ -86,3 +86,31 @@ class DavoCurrencyMark extends StatelessWidget {
     ),
   );
 }
+
+/// A trading quote denominated in the Davochain cash wallet.
+class DavoCashExchangeRate extends StatelessWidget {
+  const DavoCashExchangeRate({
+    super.key,
+    required this.assetSymbol,
+    required this.minorUnits,
+  });
+  final String assetSymbol;
+  final int minorUnits;
+  @override
+  Widget build(BuildContext context) {
+    final style = DefaultTextStyle.of(
+      context,
+    ).style.copyWith(fontSize: 12, height: 1.5);
+    return Semantics(
+      label: '1 $assetSymbol approximately ${davochainNairaText(minorUnits)}',
+      excludeSemantics: true,
+      child: Wrap(
+        crossAxisAlignment: WrapCrossAlignment.center,
+        children: [
+          Text('1 $assetSymbol \u2248 ', style: style),
+          DavoNairaAmount(minorUnits: minorUnits, style: style),
+        ],
+      ),
+    );
+  }
+}

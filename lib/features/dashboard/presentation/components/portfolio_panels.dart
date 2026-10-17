@@ -644,7 +644,12 @@ enum CryptoAsset {
   ethereum('Ethereum', 'ETH', '◆', Color(0xFF627EEA)),
   solana('Solana', 'SOL', '≋', AppColors.ink),
   usdCoin('USD Coin', 'USDC', r'$', Color(0xFF2775CA)),
-  tether('Tether', 'USDT', '₮', Color(0xFF009393));
+  tether('Tether', 'USDT', '₮', Color(0xFF009393)),
+  xrp('XRP', 'XRP', '', Color(0xFF23292F)),
+  cardano('Cardano', 'ADA', '', Color(0xFF0033AD)),
+  dogecoin('Dogecoin', 'DOGE', '', Color(0xFFC2A633)),
+  litecoin('Litecoin', 'LTC', '', Color(0xFF345D9D)),
+  bnb('BNB', 'BNB', '', Color(0xFFF3BA2F));
 
   const CryptoAsset(this.name, this.symbol, this.glyph, this.color);
   final String name;
@@ -653,41 +658,15 @@ enum CryptoAsset {
   final Color color;
 }
 
-String _depositQrAsset(CryptoAsset asset) => switch (asset) {
-  CryptoAsset.bitcoin => '$_dashboardAssetRoot/btc_qr.png',
-  CryptoAsset.ethereum => '$_dashboardAssetRoot/eth_qr.png',
-  CryptoAsset.solana => '$_dashboardAssetRoot/sol_qr.png',
-  CryptoAsset.usdCoin => '$_dashboardAssetRoot/usdc_qr.png',
-  CryptoAsset.tether => '$_dashboardAssetRoot/usdt_qr.png',
-};
-
 class _CryptoIcon extends StatelessWidget {
   const _CryptoIcon({required this.asset, this.size = 37});
-
   final CryptoAsset asset;
   final double size;
-
-  String get _assetPath => switch (asset) {
-    CryptoAsset.bitcoin => 'assets/figma_exact/btc.png',
-    CryptoAsset.ethereum => 'assets/figma_exact/eth.png',
-    CryptoAsset.solana => 'assets/figma_exact/sol.png',
-    CryptoAsset.tether => 'assets/figma_exact/usdt.png',
-    CryptoAsset.usdCoin => 'assets/figma_exact/usdc.png',
-  };
-
   @override
-  Widget build(BuildContext context) {
-    if (asset == CryptoAsset.solana) return SolanaIcon(size: size);
-    return SizedBox(
-      width: size,
-      height: size,
-      child: Image.asset(
-        _assetPath,
-        fit: BoxFit.contain,
-        filterQuality: FilterQuality.high,
-      ),
-    );
-  }
+  Widget build(BuildContext context) => BuyAssetIcon(
+    asset: BuyCryptoAsset.values.firstWhere((a) => a.symbol == asset.symbol),
+    size: size,
+  );
 }
 
 class _PortfolioHoldingTile extends StatelessWidget {
@@ -726,6 +705,10 @@ class _PortfolioHoldingTile extends StatelessWidget {
                       children: [
                         Text(
                           asset.name,
+                          maxLines: compact && !stacked ? 1 : null,
+                          overflow: compact && !stacked
+                              ? TextOverflow.ellipsis
+                              : null,
                           style: const TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
@@ -777,71 +760,19 @@ class _PortfolioHoldingTile extends StatelessWidget {
           ),
         ),
         onTap: () {
-          final receiving = CryptoAsset.values
-              .where((a) => a.symbol == asset.symbol)
-              .firstOrNull;
           Navigator.of(context).push(
             AppPageRoute<void>(
-              builder: (_) => receiving != null
-                  ? CryptoDepositScreen(asset: receiving)
-                  : _CatalogAssetScreen(asset: asset),
+              builder: (_) => CryptoDepositScreen(
+                asset: CryptoAsset.values.firstWhere(
+                  (a) => a.symbol == asset.symbol,
+                ),
+              ),
             ),
           );
         },
       ),
     );
   }
-}
-
-class _CatalogAssetScreen extends StatelessWidget {
-  const _CatalogAssetScreen({required this.asset});
-  final BuyCryptoAsset asset;
-  @override
-  Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: Text(asset.name)),
-    body: SafeArea(
-      child: ListView(
-        padding: const EdgeInsets.all(24),
-        children: [
-          Center(child: BuyAssetIcon(asset: asset, size: 64)),
-          const SizedBox(height: 20),
-          Center(child: _AssetValue(asset: asset, visible: true)),
-          const SizedBox(height: 8),
-          Text(
-            '${WalletAccountState.instance.snapshot.assets.contains(asset.symbol) ? WalletAccountState.instance.snapshot.available(asset.symbol).decimal : '0'} ${asset.symbol}',
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 32),
-          Text(
-            'Receiving ${asset.symbol}',
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-          ),
-          const SizedBox(height: 10),
-          const Text(
-            'A receiving address is not available for this asset yet.',
-            style: TextStyle(height: 1.6),
-          ),
-          const SizedBox(height: 24),
-          FilledButton(
-            onPressed: asset.hasQuote
-                ? () => Navigator.of(context).push(
-                    AppPageRoute<void>(
-                      builder: (_) => BuyAmountScreen(
-                        initialOrder: BuyCryptoOrder(
-                          asset: asset,
-                          wallet: BuyFundingWallet.ngn,
-                          ngnAmount: 0,
-                        ),
-                      ),
-                    ),
-                  )
-                : null,
-            child: Text('Buy ${asset.symbol}'),
-          ),
-        ],
-      ),
-    ),
-  );
 }
 
 /// One USD valuation beside the crypto quantity; cash branding stays on cash.

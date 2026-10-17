@@ -1,3 +1,4 @@
+import 'deposit_voice_picker.dart';
 import 'package:flutter/material.dart';
 import '../../core/theme/app_theme.dart';
 import 'notification_runtime.dart';
@@ -156,6 +157,27 @@ class NotificationPermissionPanel extends StatelessWidget {
               Text(
                 'Requires phone notifications and deposit alerts. Respects silent mode, Do Not Disturb and notification volume.',
                 style: TextStyle(fontSize: 11, height: 1.5, color: colors.body),
+              ),
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                title: const Text(
+                  'Voice & style',
+                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                ),
+                subtitle: Text(
+                  '${phone.preferences.depositVoiceStyle.label} style \u00b7 ${phone.preferences.depositVoiceId == null ? 'Phone default' : 'Custom voice'}',
+                  style: const TextStyle(fontSize: 12),
+                ),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: !phone.initialized
+                    ? null
+                    : () => showModalBottomSheet<void>(
+                        context: context,
+                        isScrollControlled: true,
+                        showDragHandle: true,
+                        backgroundColor: colors.surface,
+                        builder: (_) => DepositVoicePicker(runtime: phone),
+                      ),
               ),
               TextButton.icon(
                 icon: const Icon(Icons.volume_up_outlined, size: 18),

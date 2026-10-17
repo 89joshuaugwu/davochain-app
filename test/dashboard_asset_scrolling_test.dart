@@ -16,58 +16,57 @@ void main() {
     WalletAccountState.instance.reset();
   });
   for (final size in [const Size(411, 914), const Size(360, 820)]) {
-    testWidgets(
-      'leading assets remain complete and only assets scroll at $size',
-      (tester) async {
-        tester.view.physicalSize = size;
-        tester.view.devicePixelRatio = 1;
-        tester.view.padding = FakeViewPadding(
-          top: 32,
-          bottom: size.width == 360 ? 0 : 24,
+    testWidgets('three full assets fit and only assets scroll at $size', (
+      tester,
+    ) async {
+      tester.view.physicalSize = size;
+      tester.view.devicePixelRatio = 1;
+      tester.view.padding = FakeViewPadding(
+        top: 32,
+        bottom: size.width == 360 ? 0 : 24,
+      );
+      addTearDown(tester.view.resetPadding);
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: AppTheme.light,
+          home: const DavochainDashboardScreen(),
+        ),
+      );
+      await tester.pump(const Duration(seconds: 1));
+      await tester.pumpAndSettle();
+      final viewport = find.byKey(const ValueKey('dashboard-assets'));
+      expect(viewport, findsOneWidget);
+      final visible = tester.getRect(viewport);
+      final scrollable = tester.state<ScrollableState>(
+        find.descendant(of: viewport, matching: find.byType(Scrollable)),
+      );
+      expect(scrollable.position.maxScrollExtent, greaterThan(0));
+      expect(
+        find.byKey(const ValueKey('dashboard-asset-USDC')).hitTestable(),
+        findsNothing,
+      );
+      expect(
+        find.byKey(const ValueKey('dashboard-asset-SOL')).hitTestable(),
+        findsNothing,
+      );
+      for (final code in ['USDT', 'BTC', 'ETH']) {
+        final row = tester.getRect(
+          find.byKey(ValueKey('dashboard-asset-$code')),
         );
-        addTearDown(tester.view.resetPadding);
-        addTearDown(tester.view.resetPhysicalSize);
-        addTearDown(tester.view.resetDevicePixelRatio);
-        await tester.pumpWidget(
-          MaterialApp(
-            theme: AppTheme.light,
-            home: const DavochainDashboardScreen(),
-          ),
-        );
-        await tester.pump(const Duration(seconds: 1));
-        await tester.pumpAndSettle();
-        final viewport = find.byKey(const ValueKey('dashboard-assets'));
-        expect(viewport, findsOneWidget);
-        final visible = tester.getRect(viewport);
-        final scrollable = tester.state<ScrollableState>(
-          find.descendant(of: viewport, matching: find.byType(Scrollable)),
-        );
-        expect(scrollable.position.maxScrollExtent, greaterThan(0));
-        expect(
-          find.byKey(const ValueKey('dashboard-asset-USDC')).hitTestable(),
-          findsNothing,
-        );
-        expect(
-          find.byKey(const ValueKey('dashboard-asset-SOL')).hitTestable(),
-          findsNothing,
-        );
-        for (final code in ['USDT', 'BTC']) {
-          final row = tester.getRect(
-            find.byKey(ValueKey('dashboard-asset-$code')),
-          );
-          expect(row.top, greaterThanOrEqualTo(visible.top));
-          expect(row.bottom, lessThanOrEqualTo(visible.bottom));
-        }
-        final promo = find.byKey(const ValueKey('dashboard-promo'));
-        final before = tester.getRect(promo);
-        await tester.drag(viewport, const Offset(0, -170));
-        await tester.pumpAndSettle();
-        expect(tester.getRect(promo), before);
-        expect(find.text('USD Coin').hitTestable(), findsOneWidget);
-        expect(find.text('Solana').hitTestable(), findsOneWidget);
-        expect(tester.takeException(), isNull);
-      },
-    );
+        expect(row.top, greaterThanOrEqualTo(visible.top));
+        expect(row.bottom, lessThanOrEqualTo(visible.bottom));
+      }
+      final promo = find.byKey(const ValueKey('dashboard-promo'));
+      final before = tester.getRect(promo);
+      await tester.drag(viewport, const Offset(0, -170));
+      await tester.pumpAndSettle();
+      expect(tester.getRect(promo), before);
+      expect(find.text('USD Coin').hitTestable(), findsOneWidget);
+      expect(find.text('Solana').hitTestable(), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
     testWidgets(
       'setup keeps leading rows complete and remaining assets scrollable at $size',
       (tester) async {

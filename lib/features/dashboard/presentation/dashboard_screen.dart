@@ -1,3 +1,5 @@
+import '../../wallets/simulation_crypto_addresses.dart';
+import '../../../shared/widgets/davo_address_qr.dart';
 import '../../wallets/presentation/wallet_picker_sheet.dart';
 import '../../wallets/asset_catalog_projection.dart';
 import '../../wallets/wallet_valuation.dart';
@@ -35,7 +37,6 @@ import '../../../core/theme/app_theme.dart';
 import '../../../shared/widgets/auth_widgets.dart' show Entrance;
 import '../../../shared/widgets/bank_details_share_button.dart';
 import '../../../shared/widgets/davo_toast.dart';
-import '../../../shared/widgets/solana_icon.dart';
 import '../../../core/navigation/app_page_route.dart';
 import '../../../core/preview/preview_account_state.dart';
 import '../../buy_crypto/presentation/buy_crypto_flow.dart';
@@ -47,8 +48,6 @@ import '../../profile_settings/presentation/verification/verification_overview_s
 part 'components/dashboard_panels.dart';
 part 'components/portfolio_panels.dart';
 part 'components/deposit_screens.dart';
-
-const _dashboardAssetRoot = 'assets/images/dashboard';
 
 class DavochainDashboardScreen extends StatelessWidget {
   const DavochainDashboardScreen({super.key, this.onRefresh});
@@ -102,7 +101,7 @@ class _DavochainDashboardScreenState extends State<DavoDashboardContent> {
                 builder: (context, constraints) {
                   final compact = constraints.maxHeight < 760;
                   final gap = compact
-                      ? 8.0
+                      ? 6.0
                       : constraints.maxHeight < 790
                       ? 12.0
                       : 16.0;
@@ -201,15 +200,12 @@ class _DavochainDashboardScreenState extends State<DavoDashboardContent> {
                             builder: (context, space) {
                               final visibleRows = setupComplete ? 4 : 3;
                               final rowHeight =
-                                  ((space.maxHeight - 4 - (visibleRows - 1)) /
-                                          visibleRows)
-                                      .clamp(52.0, 72.0);
-                              final windowHeight =
-                                  (4 +
-                                          rowHeight * visibleRows +
-                                          visibleRows -
-                                          1)
-                                      .clamp(0.0, space.maxHeight);
+                                  ((space.maxHeight - 8) / visibleRows).clamp(
+                                    48.0,
+                                    72.0,
+                                  );
+                              final windowHeight = (8 + rowHeight * visibleRows)
+                                  .clamp(0.0, space.maxHeight);
                               return Align(
                                 alignment: Alignment.topCenter,
                                 child: SizedBox(
@@ -292,7 +288,7 @@ class _DavochainDashboardScreenState extends State<DavoDashboardContent> {
       useSafeArea: true,
       backgroundColor: Colors.transparent,
       barrierColor: Colors.black.withValues(alpha: .32),
-      builder: (_) => const WalletPickerSheet(networkOnly: true),
+      builder: (_) => const WalletPickerSheet(),
     );
     if (!mounted || selected == null) return;
     if (selected == 'NGN') {

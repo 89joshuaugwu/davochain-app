@@ -1,3 +1,4 @@
+import 'package:davochain/shared/widgets/davo_naira_amount.dart';
 import 'package:davochain/core/theme/app_theme.dart';
 import 'package:davochain/features/buy_crypto/presentation/buy_crypto_models.dart';
 import 'package:davochain/features/buy_crypto/presentation/buy_crypto_screens.dart';
@@ -50,6 +51,11 @@ void main() {
         tester.getCenter(selector).dx,
         lessThan(tester.getTopLeft(input).dx),
       );
+      if (screen is BuyAmountScreen ||
+          (screen is TradeAmountScreen && screen.mode == TradeMode.sell)) {
+        expect(find.byType(DavoCashExchangeRate), findsOneWidget);
+        expect(find.textContaining('\u20a6'), findsNothing);
+      }
       expect(tester.takeException(), isNull);
       await tester.pumpWidget(const SizedBox());
     }

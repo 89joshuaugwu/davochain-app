@@ -55,6 +55,7 @@ class NotificationDeliveryController {
     final epoch = ++_epoch;
     _account = account;
     _generation = generation;
+    _dismissed.clear();
     return _serial(() async {
       await stopped;
       if (changedAccount) await phone.cancelAll();
@@ -102,7 +103,8 @@ class NotificationDeliveryController {
       if (!_valid(account, generation, epoch)) return;
       for (final item in snapshot.reversed) {
         if (!_valid(account, generation, epoch)) return;
-        if (!item.id.startsWith('$account:') ||
+        if (_dismissed.contains(item.id) ||
+            !item.id.startsWith('$account:') ||
             (_entries.containsKey(item.id) &&
                 _entries[item.id]!['state'] != 'queued')) {
           continue;
@@ -118,6 +120,11 @@ class NotificationDeliveryController {
             (preferencesAllow?.call(item) ?? true) &&
             await phone.enabled(channel: notificationChannel(item));
         if (!_valid(account, generation, epoch)) return;
+        if (_dismissed.contains(item.id)) {
+          entry['state'] = 'read';
+          await _checkpoint();
+          continue;
+        }
         if (!allowed) {
           entry['state'] = 'suppressed';
           await _checkpoint();
@@ -148,6 +155,7 @@ class NotificationDeliveryController {
         await _checkpoint();
         if (_valid(account, generation, epoch) &&
             entry['state'] == 'posted' &&
+            !_dismissed.contains(item.id) &&
             voiceEnabled?.call() == true &&
             item.kind == NotificationKind.deposit &&
             item.status?.toLowerCase() == 'completed') {
@@ -161,13 +169,25 @@ class NotificationDeliveryController {
     });
   }
 
-  Future<void> acknowledge(String id) => _serial(() async {
-    final entry = _entries[id];
-    if (entry == null || entry['state'] == 'read') return;
-    await phone.cancel(entry['id'] as int);
-    entry['state'] = 'read';
-    await _checkpoint();
-  });
+  final _dismissed = <String>{};
+  Future<void> acknowledge(String id) => acknowledgeMany([id]);
+  Future<void> acknowledgeMany(Iterable<String> ids) {
+    final epoch = _epoch;
+    final requested = ids.where((id) => id.startsWith('$_account:')).toList();
+    _dismissed.addAll(requested);
+    return _serial(() async {
+      if (epoch != _epoch) return;
+      for (final id in requested) {
+        final entry = _entries[id];
+        if (entry == null || entry['state'] == 'read') continue;
+        await phone.cancel(entry['id'] as int);
+        if (epoch != _epoch) return;
+        entry['state'] = 'read';
+      }
+      await _checkpoint();
+    });
+  }
+
   Future<void> deactivate() {
     ++_epoch;
     final stopped = phone.stopSpeaking();

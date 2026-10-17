@@ -72,7 +72,66 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
             onPressed: () => _push(context, const NotificationSettingsScreen()),
             icon: const Icon(Icons.settings_outlined),
           ),
-          const SizedBox(width: 8),
+          PopupMenuButton<String>(
+            tooltip: 'Notification actions',
+            onSelected: (action) async {
+              if (action == 'read') {
+                NotificationRuntime.instance.markAllInboxRead();
+                return;
+              }
+              final generation = inbox.generation;
+              final confirmed = await showDialog<bool>(
+                context: context,
+                builder: (dialog) => AlertDialog(
+                  title: const Text('Clear notifications?'),
+                  content: const Text(
+                    'This removes all messages from your inbox. Your transaction records will remain available.',
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(dialog, false),
+                      child: const Text('Cancel'),
+                    ),
+                    TextButton(
+                      onPressed: () => Navigator.pop(dialog, true),
+                      child: const Text('Clear notifications'),
+                    ),
+                  ],
+                ),
+              );
+              if (!mounted ||
+                  confirmed != true ||
+                  generation != inbox.generation) {
+                return;
+              }
+              NotificationRuntime.instance.clearInbox();
+            },
+            itemBuilder: (_) => [
+              PopupMenuItem(
+                value: 'read',
+                enabled: widget.hasNotifications && inbox.unreadCount > 0,
+                child: const Row(
+                  children: [
+                    Icon(Icons.done_all, size: 20),
+                    SizedBox(width: 12),
+                    Flexible(child: Text('Mark all as read')),
+                  ],
+                ),
+              ),
+              PopupMenuItem(
+                value: 'clear',
+                enabled: widget.hasNotifications && inbox.snapshot.isNotEmpty,
+                child: const Row(
+                  children: [
+                    Icon(Icons.delete_sweep_outlined, size: 20),
+                    SizedBox(width: 12),
+                    Flexible(child: Text('Clear notifications')),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(width: 4),
         ],
       ),
       body: SafeArea(
@@ -368,13 +427,17 @@ class _NotificationChannelScreenState extends State<NotificationChannelScreen> {
           const SizedBox(height: 17),
           Text(title, style: _t16b(context)),
           const SizedBox(height: 26),
-          const Text('Email and SMS delivery are not available yet.', style: TextStyle(fontSize: 12)),
+          const Text(
+            'Email and SMS delivery are not available yet.',
+            style: TextStyle(fontSize: 12),
+          ),
           const SizedBox(height: 12),
           _toggleRow(context, 'Phone notifications', pushSub, push, (v) async {
             if (v &&
                 NotificationRuntime.instance.initialized &&
                 !NotificationRuntime.instance.channelAllowed(widget.type)) {
-              if (NotificationRuntime.instance.allowed || NotificationRuntime.instance.permissionRequested) {
+              if (NotificationRuntime.instance.allowed ||
+                  NotificationRuntime.instance.permissionRequested) {
                 await NotificationRuntime.instance.openSettings();
               } else {
                 await NotificationRuntime.instance.enable();

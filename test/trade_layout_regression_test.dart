@@ -336,15 +336,23 @@ void main() {
         closeTo(tester.getTopRight(find.text('Amount').first).dx, .01),
       );
       expect(
-        tester.widget<DavoNairaAmount>(find.byType(DavoNairaAmount)).minorUnits,
+        tester
+            .widget<DavoNairaAmount>(find.byType(DavoNairaAmount).first)
+            .minorUnits,
         0,
       );
       expect(find.text('Available: 0.0086 BTC'), findsOneWidget);
-      expect(find.text('1 BTC \u2248 \u20a624,000,000.00'), findsOneWidget);
+      final rate = tester.widget<DavoCashExchangeRate>(
+        find.byType(DavoCashExchangeRate),
+      );
+      expect(rate.assetSymbol, 'BTC');
+      expect(rate.minorUnits, 2400000000);
       await tester.enterText(find.byType(TextField), '0.03045');
       await tester.pump();
       expect(
-        tester.widget<DavoNairaAmount>(find.byType(DavoNairaAmount)).minorUnits,
+        tester
+            .widget<DavoNairaAmount>(find.byType(DavoNairaAmount).first)
+            .minorUnits,
         73080000,
       );
       expect(tester.takeException(), isNull);
